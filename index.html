@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pantau Api Nanga Lauk</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%227%22 fill=%22%23C8401A%22/%3E%3C/svg%3E">
+<meta name="description" content="Pemantauan titik panas NASA FIRMS untuk Desa dan Hutan Desa Nanga Lauk, Kapuas Hulu.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+/* Layout: instrument header strip, map left (dominant), alert + register column right; stacks on phones */
+:root{
+  --bg:#ECEFEC; --panel:#FFFFFF; --fg:#17201B; --muted:#5B6A61; --line:#D3DBD5; --map:#DDE3DE; --land:#F7F8F6;
+  --ember:#C8401A; --ember-soft:#F7E1D8;
+  --z-hd:#C21D1D; --z-desa:#E2621B; --z-5:#E8A317; --z-25:#C9B21E; --z-kh:#8E7A9E; --z-out:#9AA49E;
+  --ok:#2F7D4F;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-data:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1310; --panel:#161D19; --fg:#E4EBE6; --muted:#93A398; --line:#2A352F; --map:#0B100D; --land:#1A221D;
+  --ember:#FF6B3D; --ember-soft:#3A1F16; --z-kh:#B4A1C4; --z-out:#6F7A73; --ok:#5CC28A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1310; --panel:#161D19; --fg:#E4EBE6; --muted:#93A398; --line:#2A352F; --map:#0B100D; --land:#1A221D;
+  --ember:#FF6B3D; --ember-soft:#3A1F16; --z-kh:#B4A1C4; --z-out:#6F7A73; --ok:#5CC28A; color-scheme:dark}
+html,body{height:100%}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.src{background:var(--panel);border:1px solid var(--line);padding:14px 16px;font-size:14px}
+.src h2{font:700 18px var(--f-display);text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px}
+.src table{border-collapse:collapse;width:100%;font-size:13px}
+.src th,.src td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.src th{color:var(--muted);font-weight:600}
+.src code{font-family:var(--f-data);font-size:12px}
+.tw{overflow-x:auto}
+.src a{color:var(--ember)}
+.dl{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 0}
+.dl a{font:500 13px var(--f-data);border:1px solid var(--line);padding:4px 10px;text-decoration:none;color:var(--fg)}
+body{background:var(--bg);color:var(--fg);font:15px/1.45 var(--f-body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px;box-sizing:border-box}
+*{box-sizing:border-box}
+.wrap{max-width:1440px;margin:0 auto;display:flex;flex-direction:column;gap:12px;min-height:100%}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 24px;border-bottom:2px solid var(--fg);padding-bottom:10px}
+h1{font:700 30px/1 var(--f-display);letter-spacing:.01em;margin:0;text-transform:uppercase;text-wrap:balance}
+h1 span{color:var(--ember)}
+.sub{color:var(--muted);font-size:13.5px;margin-top:4px}
+.status{min-width:0;max-width:100%;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font:500 12.5px var(--f-data)}
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:4px 10px;max-width:100%}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.dot.stale{background:var(--z-5)} .dot.off{background:var(--z-out)}
+.alert{display:flex;gap:14px;align-items:center;border:1px solid var(--line);border-left:6px solid var(--ok);background:var(--panel);padding:10px 14px}
+.alert.warn{border-left-color:var(--z-5)} .alert.crit{border-left-color:var(--z-hd);background:var(--ember-soft)}
+.alert b{font:700 19px var(--f-display);text-transform:uppercase;letter-spacing:.02em}
+.alert p{margin:0;color:var(--muted);font-size:13.5px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.controls .lbl{font:600 12px var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+.seg{display:inline-flex;border:1px solid var(--line);background:var(--panel)}
+.seg button{font:500 13px var(--f-body);color:var(--fg);background:none;border:0;padding:6px 12px;cursor:pointer;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--panel)}
+.seg button:focus-visible,.btn:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+.btn{font:500 13px var(--f-body);border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:6px 12px;cursor:pointer}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:12px;flex:1;min-height:560px}
+@media (max-width:980px){.main{grid-template-columns:minmax(0,1fr)}}
+#map{min-height:560px;height:100%;border:1px solid var(--line);background:var(--map);overflow:hidden;min-width:0}
+@media (max-width:980px){#map{height:62vh;min-height:380px}}
+.side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);padding:12px 14px;min-width:0}
+.card h2{font:700 15px var(--f-display);text-transform:uppercase;letter-spacing:.08em;margin:0 0 8px;color:var(--muted)}
+.zones{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:14px}
+.zones .z{display:flex;align-items:center;gap:8px}
+.sw{width:12px;height:12px;border-radius:50%;flex:none;border:1.5px solid rgba(0,0,0,.35)}
+.zones .n{font:500 14px var(--f-data);text-align:right;font-variant-numeric:tabular-nums}
+.zones .n.hot{color:var(--z-hd);font-weight:700}
+.list{max-height:420px;overflow:auto;margin:0 -14px;border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:4px 10px;padding:9px 14px;border-bottom:1px solid var(--line);cursor:pointer;align-items:start}
+.row:hover{background:var(--bg)}
+.row .t{font:500 12.5px var(--f-data);color:var(--muted)}
+.row .w{font-size:14px}
+.row .r{font:500 12.5px var(--f-data);text-align:right;white-space:nowrap}
+.empty{color:var(--muted);font-size:14px;padding:12px 0}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font:10px var(--f-data)}
+.foot{color:var(--muted);font-size:12.5px;line-height:1.5;border-top:1px solid var(--line);padding-top:10px}
+.foot a{color:var(--fg)}
+.leaflet-container{background:var(--map);font:13px var(--f-body)}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--panel);color:var(--fg);border-radius:2px}
+.leaflet-popup-content{margin:12px 14px;min-width:240px}
+.pop h3{margin:0 0 6px;font:700 17px var(--f-display);text-transform:uppercase;letter-spacing:.03em}
+.pop table{border-collapse:collapse;font-size:12.5px;width:100%}
+.pop td{padding:2px 0;vertical-align:top}
+.pop td:first-child{color:var(--muted);padding-right:10px;white-space:nowrap}
+.pop td:last-child{font-family:var(--f-data)}
+.pop a{color:var(--ember);font-weight:600}
+.lgd{background:var(--panel);color:var(--fg);border:1px solid var(--line);padding:8px 10px;font-size:12px;line-height:1.6}
+.lgd i{display:inline-block;width:18px;height:0;border-top:2px solid;vertical-align:middle;margin-right:6px}
+.petak-lbl{font:600 9px var(--f-data);color:#fff;text-shadow:0 0 2px #000,0 0 2px #000;white-space:nowrap}
+@media (prefers-reduced-motion:no-preference){.pulse{animation:p 1.6s ease-out infinite}@keyframes p{0%{stroke-opacity:.9}100%{stroke-opacity:.1}}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Pantau Api <span>Nanga Lauk</span></h1>
+      <div class="sub">Titik panas satelit NASA FIRMS (VIIRS &amp; MODIS) di Desa &amp; Hutan Desa Nanga Lauk dan Kabupaten Kapuas Hulu</div>
+    </div>
+    <div class="status" id="status"><span class="pill"><span class="dot off"></span>Menghubungkan data…</span></div>
+  </header>
+
+  <div class="alert" id="alert"><div><b id="alertTitle">Memuat data titik panas</b><p id="alertText">Data diperbarui otomatis dari NASA FIRMS setiap 3 jam oleh GitHub Actions.</p></div></div>
+
+  <div class="controls">
+    <span class="lbl">Periode</span>
+    <div class="seg" id="range" role="group" aria-label="Periode">
+      <button type="button" id="r1" data-d="1">24 jam</button>
+      <button type="button" id="r3" data-d="3">3 hari</button>
+      <button type="button" id="r7" data-d="7" aria-pressed="true">7 hari</button>
+      <button type="button" id="r30" data-d="30">30 hari</button>
+      <button type="button" id="r0" data-d="0">Semua</button>
+    </div>
+    <span class="lbl" style="margin-left:8px">Peta</span>
+    <div class="seg" role="group" aria-label="Fokus peta">
+      <button type="button" id="vNL">Nanga Lauk</button>
+      <button type="button" id="v25">Radius 25 km</button>
+      <button type="button" id="vKH">Kapuas Hulu</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div id="map" role="region" aria-label="Peta titik panas"></div>
+    <div class="side">
+      <div class="card">
+        <h2>Titik panas per zona</h2>
+        <div class="zones" id="zones"></div>
+      </div>
+      <div class="card chart">
+        <h2>Titik panas harian · Kapuas Hulu</h2>
+        <div id="chart"></div>
+      </div>
+      <div class="card">
+        <h2>Daftar titik · Kapuas Hulu (<span id="cnt">0</span>)</h2>
+        <div class="list" id="list"></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="src" id="sumber">
+    <h2>Sumber &amp; validasi data</h2>
+    <p>Semua titik panas berasal langsung dari <b>NASA FIRMS</b> (Fire Information for Resource Management System), produk Near Real-Time (NRT) yang dipakai juga oleh Global Forest Watch. Halaman ini tidak mengubah nilai asli FIRMS; kolom asli disimpan apa adanya di arsip CSV bulanan, ditambah zona, jarak ke batas desa, dan kode petak yang dihitung dari batas resmi.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Produk</th><th>DOI</th><th>Unduhan terakhir</th><th>SHA-256 file</th><th>Titik di kotak Kapuas Hulu (7 hari)</th></tr></thead>
+      <tbody id="srcRows"><tr><td colspan="5">Memuat…</td></tr></tbody>
+    </table></div>
+    <p><b>Unduh data untuk laporan:</b></p>
+    <div class="dl" id="dl"></div>
+    <p><b>Jejak audit:</b> setiap pembaruan (tiap 3 jam, GitHub Actions) mencatat URL sumber, waktu unduh UTC, ukuran, dan sidik SHA-256 file asli FIRMS. Riwayat perubahan seluruh file tercatat permanen di <a href="https://github.com/erikprcfi/titik-api-desa-nanga-lauk/commits/main" target="_blank" rel="noopener">riwayat commit GitHub</a>. Setiap titik juga bisa dicek silang lewat tautan "Cek di NASA FIRMS".</p>
+    <p><b>Batas wilayah:</b> Hutan Desa (SK.685/Menlhk-PSKL/PKPS/PSL.0/2/2017), Desa Nanga Lauk (BIG 2020, 1:10.000), grid patroli 250 m (PRCF Indonesia), kabupaten (BIG 2021). Jarak dihitung pada proyeksi WGS 1984 UTM Zona 49N. Waktu ditampilkan dalam WIB (UTC+7).</p>
+    <p><b>Catatan penggunaan:</b> titik panas adalah deteksi anomali panas oleh satelit (VIIRS piksel 375 m, MODIS 1 km), bukan konfirmasi kebakaran; verifikasi lapangan tetap diperlukan. Data NRT dapat diganti oleh produk Standard (SP) NASA setelah ±2–3 bulan; untuk laporan tahunan, angka dapat dicocokkan ulang dengan arsip FIRMS SP.</p>
+    <p><b>Sitasi:</b> We acknowledge the use of data and imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Earth Science Data and Information System (ESDIS). NRT VIIRS 375 m Active Fire products VNP14IMGTDL_NRT, VJ114IMGTDL_NRT, VJ214IMGTDL_NRT and MODIS Collection 61 NRT MCD14DL, distributed from NASA FIRMS.</p>
+    <p style="color:var(--muted)">Dikelola oleh Yayasan PRCF Indonesia &amp; LPHD Lauk Bersatu · Program SCCM Rimbak Pakai Pengidup.</p>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(async function(){
+const G=await (await fetch('data/geo.json',{cache:'no-cache'})).json(); G.img={url:'assets/s2_20260810.jpg',bounds:G.img_bounds};
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const ZONES=[
+ {id:'hd',  name:'Di dalam Hutan Desa', col:'--z-hd'},
+ {id:'desa',name:'Di dalam Desa Nanga Lauk', col:'--z-desa'},
+ {id:'r5',  name:'≤ 5 km dari batas desa', col:'--z-5'},
+ {id:'r25', name:'5–25 km dari batas desa', col:'--z-25'},
+ {id:'kh',  name:'Lainnya di Kapuas Hulu', col:'--z-kh'},
+ {id:'out', name:'Di luar Kapuas Hulu', col:'--z-out'}];
+const ZI=Object.fromEntries(ZONES.map((z,i)=>[z.id,i]));
+
+/* ---------- geometry helpers ---------- */
+function ringsOf(geom){ return geom.type==='Polygon'?[geom.coordinates]:geom.coordinates; }
+function inRing(x,y,r){let c=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const xi=r[i][0],yi=r[i][1],xj=r[j][0],yj=r[j][1];if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))c=!c;}return c;}
+function inPoly(x,y,geom){for(const p of ringsOf(geom)){if(inRing(x,y,p[0])){let hole=false;for(let k=1;k<p.length;k++)if(inRing(x,y,p[k]))hole=true;if(!hole)return true;}}return false;}
+function inFC(x,y,fc){for(const f of fc.features)if(inPoly(x,y,f.geometry))return f;return null;}
+const LAT0=0.97, KX=111320*Math.cos(LAT0*Math.PI/180), KY=110574;
+function segDist(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay;let t=((px-ax)*dx+(py-ay)*dy)/(dx*dx+dy*dy||1);t=Math.max(0,Math.min(1,t));const qx=ax+t*dx-px,qy=ay+t*dy-py;return Math.hypot(qx,qy);}
+const desaRings=[];for(const f of G.desa.features)for(const p of ringsOf(f.geometry))for(const r of p)desaRings.push(r.map(c=>[c[0]*KX,c[1]*KY]));
+function distDesaKm(lon,lat){const px=lon*KX,py=lat*KY;let m=1e12;for(const r of desaRings)for(let i=1;i<r.length;i++){const d=segDist(px,py,r[i-1][0],r[i-1][1],r[i][0],r[i][1]);if(d<m)m=d;}return m/1000;}
+const kh=G.kab.features.find(f=>f.properties.WADMKK==='Kapuas Hulu');
+
+function classify(p){
+  const x=p.lo,y=p.la; const o={zone:'out',dist:distDesaKm(x,y),petak:null};
+  const g=inFC(x,y,G.grid); if(g)o.petak=g.properties.PETAK;
+  if(inFC(x,y,G.hd))o.zone='hd';
+  else if(inFC(x,y,G.desa)){o.zone='desa';o.dist=0;}
+  else if(o.dist<=5)o.zone='r5';
+  else if(o.dist<=25)o.zone='r25';
+  else if(kh&&inPoly(x,y,kh.geometry))o.zone='kh';
+  if(o.zone==='hd')o.dist=0;
+  return o;
+}
+
+/* ---------- time helpers ---------- */
+function utcDate(p){return new Date(Date.UTC(+p.d.slice(0,4),+p.d.slice(5,7)-1,+p.d.slice(8,10),+p.t.slice(0,2),+p.t.slice(2,4)));}
+const BULAN=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+function wib(dt){const w=new Date(dt.getTime()+7*3600e3);return `${w.getUTCDate()} ${BULAN[w.getUTCMonth()]} ${w.getUTCFullYear()}, ${String(w.getUTCHours()).padStart(2,'0')}:${String(w.getUTCMinutes()).padStart(2,'0')} WIB`;}
+function ago(dt){const h=(Date.now()-dt.getTime())/3600e3;if(h<1)return `${Math.max(1,Math.round(h*60))} menit lalu`;if(h<48)return `${Math.round(h)} jam lalu`;return `${Math.round(h/24)} hari lalu`;}
+function confTxt(p){if(p.ins==='VIIRS')return {l:'Rendah',n:'Sedang (nominal)',h:'Tinggi'}[p.c]||p.c;const v=+p.c;return `${v}% (${v>=80?'tinggi':v>=30?'sedang':'rendah'})`;}
+function satTxt(p){return p.ins==='MODIS'?(p.sat==='T'?'MODIS Terra':'MODIS Aqua'):({N:'VIIRS S-NPP',N20:'VIIRS NOAA-20',N21:'VIIRS NOAA-21',J1:'VIIRS NOAA-20',J2:'VIIRS NOAA-21'}[p.sat]||('VIIRS '+p.sat));}
+function firmsUrl(p){return `https://firms.modaps.eosdis.nasa.gov/map/#d:${p.d}..${p.d};@${p.lo.toFixed(4)},${p.la.toFixed(4)},14.0z`;}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- map ---------- */
+const map=L.map('map',{zoomSnap:.25,preferCanvas:true});
+const esri=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Citra: Esri, Maxar, Earthstar Geographics'});
+const osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'});
+esri.addTo(map);
+map.createPane('base').style.zIndex=350;map.createPane('img').style.zIndex=360;
+const s2=L.imageOverlay(G.img.url,G.img.bounds,{opacity:.95,pane:'img',attribution:'Sentinel-2 10 Agu 2026: Copernicus/ESA'});
+const st=(c,w,o)=>({color:c,weight:w,fill:false,opacity:o??1});
+const kabL=L.geoJSON(G.kab,{pane:'base',style:f=>({color:'#ffffff',weight:f.properties.WADMKK==='Kapuas Hulu'?1.6:.6,fill:false,dashArray:f.properties.WADMKK==='Kapuas Hulu'?null:'3 3'})}).addTo(map);
+L.geoJSON(G.river,{style:{color:'#4A90C8',weight:1.1,opacity:.8},interactive:false}).addTo(map);
+L.geoJSON(G.buf25,{style:{color:css('--z-25'),weight:1.2,dashArray:'6 5',fill:false},interactive:false}).addTo(map);
+L.geoJSON(G.buf5,{style:{color:css('--z-5'),weight:1.4,dashArray:'6 4',fill:false},interactive:false}).addTo(map);
+L.geoJSON(G.desa,{style:{color:'#FFE14D',weight:2,fill:false},interactive:false}).addTo(map);
+const gridL=L.geoJSON(G.grid,{style:{color:'#ffffff',weight:.5,opacity:.55,fill:false},interactive:false});
+L.geoJSON(G.hd,{style:{color:'#FF3B30',weight:2.4,fill:false},interactive:false}).addTo(map);
+const lblL=L.layerGroup();
+for(const f of G.grid.features){const c=f.geometry.coordinates[0];let x=0,y=0;const n=c.length-1;for(let i=0;i<n;i++){x+=c[i][0];y+=c[i][1];}
+  lblL.addLayer(L.marker([y/n,x/n],{interactive:false,icon:L.divIcon({className:'petak-lbl',html:esc(f.properties.PETAK),iconSize:[24,10],iconAnchor:[12,5]})}));}
+function gridVis(){const z=map.getZoom();if(z>=13){gridL.addTo(map)}else{map.removeLayer(gridL)}if(z>=15){lblL.addTo(map)}else{map.removeLayer(lblL)}}
+map.on('zoomend',gridVis);
+const desaB=L.geoJSON(G.desa).getBounds(), b25=L.geoJSON(G.buf25).getBounds(), khB=L.geoJSON(kh).getBounds();
+map.fitBounds(desaB,{padding:[10,10]}); gridVis();
+const lg=L.control({position:'bottomleft'});
+lg.onAdd=()=>{const d=L.DomUtil.create('div','lgd');d.innerHTML=`<div><i style="border-color:#FF3B30"></i>Hutan Desa</div><div><i style="border-color:#FFE14D"></i>Desa Nanga Lauk</div><div><i style="border-color:${css('--z-5')};border-top-style:dashed"></i>Radius 5 km</div><div><i style="border-color:${css('--z-25')};border-top-style:dashed"></i>Radius 25 km</div><div><i style="border-color:#4A90C8"></i>Sungai utama</div>`;return d;};
+lg.addTo(map);
+L.control.scale({imperial:false,position:'bottomright'}).addTo(map);
+L.control.layers({'Citra satelit (Esri)':esri,'OpenStreetMap':osm},{'Sentinel-2 10 Agu 2026':s2},{position:'topright'}).addTo(map);
+const ptsL=L.layerGroup().addTo(map);
+
+/* ---------- state ---------- */
+let ALL=[], RANGE=7, STATUS=null, markers=new Map();
+function setRange(d){RANGE=d;for(const b of document.querySelectorAll('#range button'))b.setAttribute('aria-pressed',String(+b.dataset.d===d));try{localStorage.setItem('pa_range',String(d))}catch(e){}render();}
+for(const b of document.querySelectorAll('#range button'))b.addEventListener('click',()=>setRange(+b.dataset.d));
+try{const r=localStorage.getItem('pa_range');if(r!==null){RANGE=+r;for(const b of document.querySelectorAll('#range button'))b.setAttribute('aria-pressed',String(+b.dataset.d===RANGE));}}catch(e){}
+document.getElementById('vNL').onclick=()=>map.fitBounds(desaB,{padding:[10,10]});
+document.getElementById('v25').onclick=()=>map.fitBounds(b25,{padding:[10,10]});
+document.getElementById('vKH').onclick=()=>map.fitBounds(khB,{padding:[10,10]});
+
+function filtered(){const now=Date.now();return ALL.filter(p=>RANGE===0||now-p.when.getTime()<=RANGE*86400e3+3600e3).sort((a,b)=>b.when-a.when);}
+
+function popup(p){return `<div class="pop"><h3 style="color:${css(ZONES[ZI[p.c2.zone]].col)}">${esc(ZONES[ZI[p.c2.zone]].name)}</h3><table>
+<tr><td>Waktu</td><td>${wib(p.when)}<br><span style="color:var(--muted)">${p.d} ${p.t.slice(0,2)}:${p.t.slice(2)} UTC · ${p.dn==='D'?'siang':'malam'}</span></td></tr>
+<tr><td>Satelit</td><td>${esc(satTxt(p))}</td></tr>
+<tr><td>Keyakinan</td><td>${esc(confTxt(p))}</td></tr>
+<tr><td>FRP</td><td>${p.frp.toFixed(2)} MW</td></tr>
+<tr><td>Suhu kecerahan</td><td>${p.bt.toFixed(1)} K</td></tr>
+<tr><td>Koordinat</td><td>${p.la.toFixed(5)}, ${p.lo.toFixed(5)}</td></tr>
+<tr><td>Jarak ke desa</td><td>${p.c2.dist===0?'di dalam':p.c2.dist.toFixed(1)+' km'}</td></tr>
+${p.c2.petak?`<tr><td>Petak patroli</td><td><b>${esc(p.c2.petak)}</b></td></tr>`:''}
+</table><div style="margin-top:8px"><a href="${firmsUrl(p)}" target="_blank" rel="noopener">Cek di NASA FIRMS ↗</a></div></div>`;}
+
+function render(){
+  const FA=filtered(); const F=FA.filter(p=>p.c2.zone!=='out'); ptsL.clearLayers(); markers.clear();
+  const counts=ZONES.map(()=>0); for(const p of FA)counts[ZI[p.c2.zone]]++;
+  for(const p of [...FA].reverse()){
+    const z=ZONES[ZI[p.c2.zone]]; const r=Math.max(5,Math.min(13,4+Math.sqrt(p.frp)*1.6));
+    const m=L.circleMarker([p.la,p.lo],{radius:r,color:'#000',weight:1,fillColor:css(z.col),fillOpacity:.9}).bindPopup(popup(p));
+    if(p.c2.zone==='hd'||p.c2.zone==='desa'){L.circleMarker([p.la,p.lo],{radius:r+6,color:css(z.col),weight:2,fill:false,className:'pulse',interactive:false}).addTo(ptsL);}
+    m.addTo(ptsL); markers.set(p.k,m);
+  }
+  document.getElementById('zones').innerHTML=ZONES.map((z,i)=>`<div class="z"><span class="sw" style="background:${css(z.col)}"></span>${esc(z.name)}</div><div class="n ${i<3&&counts[i]?'hot':''}">${counts[i]}</div>`).join('');
+  document.getElementById('cnt').textContent=F.length;
+  const list=document.getElementById('list');
+  list.innerHTML=F.length?F.slice(0,400).map(p=>{const z=ZONES[ZI[p.c2.zone]];return `<div class="row" data-k="${esc(p.k)}" tabindex="0"><span class="sw" style="background:${css(z.col)};margin-top:4px"></span><div><div class="w">${esc(z.name)}${p.c2.petak?` · petak <b>${esc(p.c2.petak)}</b>`:''}</div><div class="t">${wib(p.when)} · ${esc(satTxt(p))}</div></div><div class="r">${p.c2.dist===0?'0 km':p.c2.dist.toFixed(1)+' km'}<br><span style="color:var(--muted)">${p.frp.toFixed(1)} MW</span></div></div>`}).join(''):`<div class="empty" style="padding:12px 14px">Tidak ada titik panas pada periode ini.</div>`;
+  for(const el of list.querySelectorAll('.row')){const go=()=>{const m=markers.get(el.dataset.k);if(m){map.setView(m.getLatLng(),Math.max(map.getZoom(),13));m.openPopup();}};el.onclick=go;el.onkeydown=e=>{if(e.key==='Enter')go();};}
+  // alert
+  const near=F.filter(p=>ZI[p.c2.zone]<=2), inside=F.filter(p=>ZI[p.c2.zone]<=1);
+  const A=document.getElementById('alert'),T=document.getElementById('alertTitle'),X=document.getElementById('alertText');
+  const per=RANGE===0?'seluruh data':RANGE===1?'24 jam terakhir':RANGE+' hari terakhir';
+  if(!ALL.length&&!STATUS){A.className='alert';T.textContent='Menunggu data';X.textContent='Data titik panas belum termuat di tampilan ini.';}
+  else if(inside.length){A.className='alert crit';T.textContent=`${inside.length} titik panas di dalam desa/Hutan Desa`;X.textContent=`Periode ${per}. Terbaru: ${wib(inside[0].when)}${inside[0].c2.petak?' di petak '+inside[0].c2.petak:''}. Segera cek lapangan.`;}
+  else if(near.length){A.className='alert warn';T.textContent=`${near.length} titik panas ≤ 5 km dari desa`;X.textContent=`Periode ${per}. Terdekat ${Math.min(...near.map(p=>p.c2.dist)).toFixed(1)} km dari batas desa. Pantau arah angin dan kondisi lapangan.`;}
+  else{const r25=F.filter(p=>p.c2.zone==='r25');A.className='alert';T.textContent='Aman: tidak ada titik panas di desa & radius 5 km';X.textContent=`Periode ${per}. ${r25.length?`${r25.length} titik di radius 5–25 km, terdekat ${Math.min(...r25.map(p=>p.c2.dist)).toFixed(1)} km.`:'Tidak ada titik di radius 25 km.'} Total ${F.length} titik di Kapuas Hulu.`;}
+  chart();
+}
+
+function chart(){
+  const days=[];const now=new Date();for(let i=29;i>=0;i--){const d=new Date(now.getTime()+7*3600e3-i*86400e3);days.push(d.toISOString().slice(0,10));}
+  const by=Object.fromEntries(days.map(d=>[d,{a:0,n:0}]));
+  for(const p of ALL){if(p.c2.zone==='out')continue;const w=new Date(p.when.getTime()+7*3600e3).toISOString().slice(0,10);if(by[w]){by[w].a++;if(ZI[p.c2.zone]<=3)by[w].n++;}}
+  const mx=Math.max(4,...days.map(d=>by[d].a)); const nice=Math.ceil(mx/4)*4;
+  const W=360,H=130,l=26,b=18,t=8,bw=(W-l-4)/days.length;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Jumlah titik panas harian 30 hari terakhir">`;
+  for(let i=0;i<=4;i++){const y=t+(H-b-t)*(1-i/4);s+=`<line x1="${l}" x2="${W}" y1="${y}" y2="${y}" stroke="${css('--line')}" stroke-width="1"/><text x="${l-4}" y="${y+3}" text-anchor="end">${nice*i/4}</text>`;}
+  days.forEach((d,i)=>{const v=by[d],x=l+i*bw+1,hA=(H-b-t)*v.a/nice,hN=(H-b-t)*v.n/nice;
+    if(v.a)s+=`<rect x="${x}" y="${H-b-hA}" width="${bw-2}" height="${hA}" fill="${css('--z-kh')}"><title>${d}: ${v.a} titik di Kapuas Hulu & sekitar desa</title></rect>`;
+    if(v.n)s+=`<rect x="${x}" y="${H-b-hN}" width="${bw-2}" height="${hN}" fill="${css('--ember')}"><title>${d}: ${v.n} titik ≤ 25 km dari desa</title></rect>`;
+    if(i%7===1)s+=`<text x="${i===29?W-1:x+bw/2}" y="${H-5}" text-anchor="${i===29?'end':'middle'}">${+d.slice(8)} ${BULAN[+d.slice(5,7)-1]}</text>`;});
+  s+=`</svg><div style="display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:4px"><span><span class="sw" style="display:inline-block;background:${css('--ember')};border:0;border-radius:2px;vertical-align:-1px"></span> ≤ 25 km dari desa</span><span><span class="sw" style="display:inline-block;background:${css('--z-kh')};border:0;border-radius:2px;vertical-align:-1px"></span> Kapuas Hulu lainnya</span></div>`;
+  document.getElementById('chart').innerHTML=s;
+}
+
+function setStatus(){
+  const el=document.getElementById('status');
+  if(!STATUS){el.innerHTML=`<span class="pill"><span class="dot off"></span>Belum ada data di tampilan ini</span>`;return;}
+  const last=new Date(STATUS.terakhir_cek_utc); const h=(Date.now()-last)/3600e3;
+  const latest=ALL.length?ALL.reduce((a,b)=>a.when>b.when?a:b):null;
+  const okSrc=(STATUS.sumber||[]).filter(s=>s.ok).length;
+  el.innerHTML=`<span class="pill"><span class="dot ${h>7?'stale':''}"></span>Cek terakhir ${wib(last)} (${ago(last)})</span><span class="pill">${okSrc}/${(STATUS.sumber||[]).length} sumber FIRMS OK</span>${latest?`<span class="pill">Deteksi terbaru ${ago(latest.when)}</span>`:''}`;
+}
+
+/* ---------- data ---------- */
+const ZMAP={'Hutan Desa':'hd','Desa Nanga Lauk':'desa','Radius 5 km':'r5','Radius 5-25 km':'r25','Kapuas Hulu':'kh','Luar Kapuas Hulu':'out'};
+render(); setStatus();
+async function load(){
+  try{
+    const [h,s]=await Promise.all([fetch('data/hotspots.json?'+Date.now()).then(r=>r.json()),fetch('data/status.json?'+Date.now()).then(r=>r.json())]);
+    ALL=h.titik.map(p=>{const q={...p};q.when=utcDate(q);q.c2={zone:ZMAP[q.z]||'out',dist:q.km,petak:q.pt||null};return q;});
+    STATUS=s; setStatus(); render(); fillSources();
+  }catch(e){document.getElementById('alertTitle').textContent='Data gagal dimuat';document.getElementById('alertText').textContent='Periksa koneksi internet, lalu muat ulang halaman.';}
+}
+function fillSources(){
+  const t=document.getElementById('srcRows'); if(!t||!STATUS)return;
+  t.innerHTML=(STATUS.sumber||[]).map(s=>`<tr><td>${esc(s.produk)}</td><td><a href="https://doi.org/${esc(s.doi)}" target="_blank" rel="noopener">${esc(s.doi)}</a></td><td>${s.ok?'OK':'Gagal'}</td><td><code>${s.sha256?esc(s.sha256.slice(0,16))+'…':'-'}</code></td><td>${s.baris_di_kotak_kapuas_hulu??'-'}</td></tr>`).join('');
+  document.getElementById('dl').innerHTML=(STATUS.bulan_arsip||[]).slice().reverse().map(m=>`<a href="data/archive/${m}.csv">Arsip ${m}.csv</a><a href="data/provenance/${m}.jsonl">Jejak audit ${m}.jsonl</a>`).join('');
+}
+load(); setInterval(load,10*60*1000);
+setInterval(setStatus,60000);
+})();
+</script>
+
+</body>
+</html>
