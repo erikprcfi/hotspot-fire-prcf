@@ -40,7 +40,7 @@ for d in (ARCH, PROV, EXP):
     os.makedirs(d, exist_ok=True)
 
 BBOX = (111.45, 0.0, 114.30, 1.70)
-UA = {"User-Agent": "titik-api-desa-nanga-lauk (github actions; PRCF Indonesia)"}
+UA = {"User-Agent": "hotspot-fire-prcf (github actions; PRCF Indonesia)"}
 NOW = datetime.datetime.now(datetime.timezone.utc)
 NOW_S = NOW.strftime("%Y-%m-%dT%H:%M:%SZ")
 

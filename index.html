@@ -436,7 +436,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 30px;justify-content:space-bet
     <p><b>Batas wilayah:</b> Hutan Desa Nanga Lauk (SK.685/Menlhk-PSKL/PKPS/PSL.0/2/2017) dan Desa Nanga Lauk (BIG 2020, 1:10.000) dengan grid patroli 250 m; Hutan Desa Batang Tau (SK.686/Menlhk-PSKL/PKPS/PSL.0/2/2017), Nyuai Peningun (SK.687/Menlhk-PSKL/PKPS/PSL.0/2/2017), Pundjung Batara (399/Ekbang/2015), Bumi Lestari (400/Ekbang/2015) dan Bukit Belang dari SHP areal PPHD, dengan batas desa dari peta batas desa Kabupaten Kapuas Hulu; kabupaten (BIG 2021). Zona dan jarak dihitung terhadap gabungan batas desa dan Hutan Desa masing-masing lokasi. Jarak dihitung pada WGS 1984 UTM Zona 49N. Waktu dalam WIB (UTC+7).</p>
     <p><b>Catatan penggunaan:</b> titik panas adalah deteksi anomali panas oleh satelit (VIIRS piksel 375 m, MODIS 1 km), bukan konfirmasi kebakaran; verifikasi lapangan tetap diperlukan. Data Januari–pertengahan Oktober 2026 akan terisi saat NASA menerbitkan arsip 2026.</p>
     <p><b>Sitasi:</b> We acknowledge the use of data and imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Earth Science Data and Information System (ESDIS). Cuaca: Open-Meteo / ECMWF ERA5 (Copernicus Climate Change Service).</p>
-    <p>Jejak audit &amp; kode sumber: <a href="https://github.com/erikprcfi/titik-api-desa-nanga-lauk" target="_blank" rel="noopener">github.com/erikprcfi/titik-api-desa-nanga-lauk</a></p>
+    <p>Jejak audit &amp; kode sumber: <a href="https://github.com/erikprcfi/hotspot-fire-prcf" target="_blank" rel="noopener">github.com/erikprcfi/hotspot-fire-prcf</a></p>
   </section>
 </main>
 
@@ -713,7 +713,7 @@ function fillSources(){
   const mine=ex.filter(f=>f.startsWith(`titik_panas_${id}_`)||f.startsWith(`kejadian_api_${id}_`));
   document.getElementById('dlFocus').innerHTML=mine.sort((x,y)=>(y.startsWith('titik')-x.startsWith('titik'))||(x.includes('cakupan')-y.includes('cakupan'))||order[fmtOf(x)]-order[fmtOf(y)]).map(f=>{const k=fmtOf(f),d=kind(f);return `<a class="file" href="data/export/${f}"><span class="badge b-${k.toLowerCase()}">${k}</span><span><b>${esc(d[0])}</b><small>${esc(d[1])}</small></span></a>`;}).join('');
   document.getElementById('dlYear').innerHTML=ex.filter(f=>f.startsWith('titik_panas_kapuashulu_')).sort().reverse().map(f=>`<a href="data/export/${f}">${esc(f.match(/\d{4}/)[0])}</a>`).join('');
-  document.getElementById('dlArch').innerHTML=(STATUS.tahun_arsip||[]).slice().reverse().map(y=>`<a href="data/archive/${y}.csv">${y}.csv</a>`).join('')+`<a href="data/provenance/arsip_tahunan_unduhan_awal.json">Jejak audit arsip</a><a href="https://github.com/erikprcfi/titik-api-desa-nanga-lauk/tree/main/data/provenance" target="_blank" rel="noopener">Semua jejak audit ↗</a>`;
+  document.getElementById('dlArch').innerHTML=(STATUS.tahun_arsip||[]).slice().reverse().map(y=>`<a href="data/archive/${y}.csv">${y}.csv</a>`).join('')+`<a href="data/provenance/arsip_tahunan_unduhan_awal.json">Jejak audit arsip</a><a href="https://github.com/erikprcfi/hotspot-fire-prcf/tree/main/data/provenance" target="_blank" rel="noopener">Semua jejak audit ↗</a>`;
 }
 /* ---------- riwayat ---------- */
 let STATS=null, EVENTS=[], HS='MODIS', HZ='desa', EZ=1;

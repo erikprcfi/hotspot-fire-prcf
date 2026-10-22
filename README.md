@@ -1,9 +1,9 @@
-# Fire Hotspot Nanga Lauk
+# Fire Hotspot PRCF
 
 Website pemantauan titik panas (hotspot) satelit untuk **Desa dan Hutan Desa Nanga Lauk**, Kecamatan Embaloh Hilir, Kabupaten Kapuas Hulu, Kalimantan Barat.
 Dikelola oleh Yayasan PRCF Indonesia dan LPHD Lauk Bersatu untuk program SCCM Rimbak Pakai Pengidup.
 
-**Website:** https://erikprcfi.github.io/titik-api-desa-nanga-lauk/
+**Website:** https://erikprcfi.github.io/hotspot-fire-prcf/
 
 ## Cara kerja
 - GitHub Actions (`.github/workflows/update.yml`) menjalankan `scripts/pipeline.py` **setiap 3 jam**.
