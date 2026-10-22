@@ -1,5 +1,5 @@
 {
- "terakhir_cek_utc": "2026-10-22T08:21:51Z",
+ "terakhir_cek_utc": "2026-10-22T08:27:45Z",
  "titik_baru": 0,
  "arsip_tahunan_diperbarui": 0,
  "jumlah_catatan": 70834,
@@ -92,6 +92,18 @@
   }
  ],
  "cakupan": {
+  "SP MODIS Terra/Aqua 1 km": [
+   "2001-02-25",
+   "2025-12-19"
+  ],
+  "SP VIIRS S-NPP 375 m": [
+   "2012-01-29",
+   "2025-12-11"
+  ],
+  "SP VIIRS NOAA-20 375 m": [
+   "2018-04-01",
+   "2025-12-25"
+  ],
   "NRT VIIRS S-NPP 375 m": [
    "2026-10-14",
    "2026-10-18"
@@ -107,18 +119,6 @@
   "NRT MODIS Terra/Aqua 1 km": [
    "2026-10-15",
    "2026-10-21"
-  ],
-  "SP MODIS Terra/Aqua 1 km": [
-   "2001-02-25",
-   "2025-12-19"
-  ],
-  "SP VIIRS S-NPP 375 m": [
-   "2012-01-29",
-   "2025-12-11"
-  ],
-  "SP VIIRS NOAA-20 375 m": [
-   "2018-04-01",
-   "2025-12-25"
   ]
  },
  "sistem": {
@@ -224,6 +224,12 @@
     "baru": 0,
     "ok": 4,
     "n": 4
+   },
+   {
+    "t": "2026-10-22T08:27:45Z",
+    "baru": 0,
+    "ok": 4,
+    "n": 4
    }
   ],
   "jadwal_cron_utc": "17 */3 * * *",
@@ -231,7 +237,7 @@
   "latensi_n": 0,
   "arsip_terverifikasi": 48,
   "hari_cuaca": 9425,
-  "jumlah_pembaruan_tercatat": 17
+  "jumlah_pembaruan_tercatat": 18
  },
  "sumber_doi": {
   "VIIRS_SNPP": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002",
