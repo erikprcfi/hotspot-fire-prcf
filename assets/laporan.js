@@ -233,10 +233,11 @@ function drawChart(title, labels, series, opts = {}) {
   const bars = series.filter(s => s.type !== 'line'), lines = series.filter(s => s.type === 'line');
   const tot = labels.map((_, i) => bars.reduce((p, s) => p + (s.values[i] || 0), 0)); const mx = Math.max(1, ...tot);
   const nice = v => { const e = Math.pow(10, Math.floor(Math.log10(v))); const f = v / e; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * e; };
-  const top = nice(mx * 1.12); const rmx = lines.length ? nice(Math.max(1, ...lines.flatMap(s => s.values.map(v => v || 0))) * 1.1) : 1;
+  const top = Math.max(5, nice(mx * 1.12)); const rmx = lines.length ? nice(Math.max(1, ...lines.flatMap(s => s.values.map(v => v || 0))) * 1.1) : 1;
   g.fillStyle = INK; g.font = 'bold 30px Arial'; g.fillText(title, 20, 42);
   g.font = '19px Arial'; for (let i = 0; i <= 5; i++) { const y = T + H * (1 - i / 5); g.strokeStyle = LINE; g.lineWidth = 1; g.beginPath(); g.moveTo(L, y); g.lineTo(L + W, y); g.stroke(); g.fillStyle = MUTED; g.textAlign = 'right'; g.fillText(fmt(Math.round(top * i / 5)), L - 10, y + 6); if (opts.right) { g.textAlign = 'left'; g.fillText(fmt(Math.round(rmx * i / 5)), L + W + 10, y + 6); } }
   g.textAlign = 'left'; const bw = W / labels.length;
+  if (opts.gap) { opts.gap.forEach((on, i) => { if (!on) return; g.fillStyle = '#ECEEEC'; g.fillRect(L + i * bw, T, bw, H); g.save(); g.translate(L + i * bw + bw / 2, T + H / 2); g.rotate(-Math.PI / 2); g.fillStyle = '#8A948D'; g.font = '17px Arial'; g.textAlign = 'center'; g.fillText('belum ada data titik panas', 0, 6); g.restore(); }); g.textAlign = 'left'; }
   labels.forEach((lab, i) => { let acc = 0; for (const s of bars) { const v = s.values[i] || 0; if (!v) continue; const h = H * v / top; g.fillStyle = s.color; g.fillRect(L + i * bw + bw * 0.12, T + H - H * (acc + v) / top, bw * 0.76, h); acc += v; }
     if (acc && labels.length <= 40) { g.fillStyle = INK; g.font = '17px Arial'; g.textAlign = 'center'; g.fillText(fmt(acc), L + i * bw + bw / 2, T + H - H * acc / top - 6); }
     const every = Math.ceil(labels.length / 24); if (i % every === 0) { g.save(); g.fillStyle = MUTED; g.font = '17px Arial'; g.translate(L + i * bw + bw / 2, T + H + 14); g.rotate(labels.length > 12 ? -Math.PI / 4 : 0); g.textAlign = labels.length > 12 ? 'right' : 'center'; g.fillText(lab, 0, 12); g.restore(); } });
@@ -244,7 +245,8 @@ function drawChart(title, labels, series, opts = {}) {
   for (const s of lines) { g.strokeStyle = s.color; g.lineWidth = 3; g.beginPath(); s.values.forEach((v, i) => { if (v === null || v === undefined) return; const x = L + i * bw + bw / 2, y = T + H - H * v / rmx; i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke(); s.values.forEach((v, i) => { if (v === null) return; g.beginPath(); g.arc(L + i * bw + bw / 2, T + H - H * v / rmx, 4, 0, 7); g.fillStyle = s.color; g.fill(); }); }
   g.font = '19px Arial'; g.fillStyle = MUTED; g.save(); g.translate(24, T + H / 2 + 60); g.rotate(-Math.PI / 2); g.fillText(opts.ylab || 'Jumlah deteksi', 0, 0); g.restore();
   if (opts.right) { g.save(); g.translate(c.width - 20, T + H / 2 - 60); g.rotate(Math.PI / 2); g.fillText(opts.rlab, 0, 0); g.restore(); }
-  let lx = L; const ly = c.height - 22; for (const s of series) { g.fillStyle = s.color; if (s.type === 'line') { g.fillRect(lx, ly - 8, 28, 4); } else g.fillRect(lx, ly - 15, 20, 18); g.fillStyle = INK; g.fillText(s.name, lx + 34, ly); lx += 44 + g.measureText(s.name).width; }
+  let lx = L; const ly = c.height - 22; if (opts.gap && opts.gap.some(Boolean)) { g.fillStyle = '#ECEEEC'; g.fillRect(lx, ly - 15, 20, 18); g.strokeStyle = '#8A948D'; g.strokeRect(lx, ly - 15, 20, 18); g.fillStyle = INK; g.font = '19px Arial'; g.fillText('Belum ada data', lx + 26, ly); lx += 32 + g.measureText('Belum ada data').width; }
+  for (const s of series) { g.fillStyle = s.color; if (s.type === 'line') { g.fillRect(lx, ly - 8, 28, 4); } else g.fillRect(lx, ly - 15, 20, 18); g.fillStyle = INK; g.fillText(s.name, lx + 34, ly); lx += 44 + g.measureText(s.name).width; }
   return c;
 }
 function drawContext(M) {
@@ -261,7 +263,8 @@ function tables(M) {
   T.zona = [['Zona', ...M.fams, 'Semua']].concat(ZONES.slice(0, M.W.zmax + 1).map((z, i) => [z, ...M.fams.map(f => fmt(M.rows.filter(r => r.z === i && famOf(r.sen) === f).length)), fmt(M.zc[i])]));
   const zn = ['Hutan Desa', 'Desa', '≤ 5 km', '5–25 km', 'Kapuas Hulu lain'].slice(0, M.W.zmax + 1);
   const lab = k => M.unit === 'bulan' ? BULAN[+k.slice(5, 7) - 1] + ' ' + k.slice(0, 4) : M.unit === 'hari' ? tglID(k) : k;
-  T.periode = [[M.unit[0].toUpperCase() + M.unit.slice(1), ...zn, 'Total', 'Hujan (mm)']].concat(M.per.map(p => [lab(p.k), ...p.z.map(String), fmt(p.n), p.rain === null ? '–' : fmt1(p.rain)]));
+  const inGap = p => { if (!M.gap) return false; const s0 = M.unit === 'hari' ? p.k : M.unit === 'bulan' ? p.k + '-01' : p.k + '-01-01'; const e0 = M.unit === 'hari' ? p.k : M.unit === 'bulan' ? iso(new Date(Date.UTC(+p.k.slice(0, 4), +p.k.slice(5, 7), 0))) : p.k + '-12-31'; return M.gap[0] <= (s0 < M.a ? M.a : s0) && M.gap[1] >= (e0 > M.b ? M.b : e0); };
+  T.periode = [[M.unit[0].toUpperCase() + M.unit.slice(1), ...zn, 'Total', 'Hujan (mm)']].concat(M.per.map(p => inGap(p) ? [lab(p.k), ...p.z.map(() => '–'), 'belum ada data', p.rain === null ? '–' : fmt1(p.rain)] : [lab(p.k), ...p.z.map(String), fmt(p.n), p.rain === null ? '–' : fmt1(p.rain)]));
   if (M.unit === 'hari') T.periode = [T.periode[0]].concat(T.periode.slice(1).filter((r, i) => M.per[i].n > 0 || (M.per[i].rain ?? 0) >= 0));
   T.petak = [['Petak', 'Deteksi', 'Tanggal (WIB)']].concat(Object.entries(M.petak).sort((x, y) => y[1].length - x[1].length).map(([p, d]) => [p, String(d.length), [...new Set(d)].join(', ')]));
   T.ev = [['ID kejadian', 'Mulai (WIB)', 'Selesai (WIB)', 'Deteksi', 'Zona', 'Petak', 'FRP maks (MW)', 'Cakupan piksel (ha)']].concat(M.events.slice(0, CAP_EVENTS).map(e => [e.id, e.mulai, e.selesai, String(e.n), ZONES[e.z], e.pt, fmt1(e.frp), fmt1(e.ha)]));
@@ -287,7 +290,8 @@ function figures(M) {
   F.map = drawMap(M, 'wide'); F.zoom = drawMap(M, 'zoom');
   const lab = k => M.unit === 'bulan' ? BULAN[+k.slice(5, 7) - 1] + ' ' + k.slice(2, 4) : M.unit === 'hari' ? +k.slice(8, 10) + ' ' + BULAN[+k.slice(5, 7) - 1] : k;
   const zser = ZONES.slice(0, M.W.zmax + 1).map((z, i) => ({ name: z, color: ZCOL[i], values: M.per.map(p => p.z[i]) }));
-  F.time = drawChart(`Titik panas & curah hujan per ${M.unit}`, M.per.map(p => lab(p.k)), zser.concat([{ name: 'Curah hujan (mm)', color: '#2F6FB0', type: 'line', values: M.per.map(p => p.rain === null ? null : Math.round(p.rain)) }]), { right: true, rlab: 'Curah hujan (mm)' });
+  const gapMask = M.per.map(p => { if (!M.gap) return false; const s0 = M.unit === 'hari' ? p.k : M.unit === 'bulan' ? p.k + '-01' : p.k + '-01-01'; const e0 = M.unit === 'hari' ? p.k : M.unit === 'bulan' ? iso(new Date(Date.UTC(+p.k.slice(0, 4), +p.k.slice(5, 7), 0))) : p.k + '-12-31'; const s1 = s0 < M.a ? M.a : s0, e1 = e0 > M.b ? M.b : e0; return M.gap[0] <= s1 && M.gap[1] >= e1; });
+  F.time = drawChart(`Titik panas & curah hujan per ${M.unit}`, M.per.map(p => lab(p.k)), zser.concat([{ name: 'Curah hujan (mm)', color: '#2F6FB0', type: 'line', values: M.per.map(p => p.rain === null ? null : Math.round(p.rain)) }]), { right: true, rlab: 'Curah hujan (mm)', gap: gapMask });
   if (M.unit === 'tahun') {
     const ys = M.per.map(p => p.k); const byF = f => ys.map(y => M.rows.filter(r => r.d.startsWith(y) && famOf(r.sen) === f).length);
     F.sensor = drawChart('Deteksi per tahun menurut sensor (bandingkan tren dalam sensor yang sama)', ys, [{ name: 'MODIS', color: '#8E7A9E', values: byF('MODIS') }, { name: 'VIIRS S-NPP', color: '#C9B21E', values: byF('VIIRS S-NPP') }, { name: 'VIIRS NOAA-20/21', color: '#E2621B', values: ys.map((y, i) => byF('VIIRS NOAA-20')[i] + byF('VIIRS NOAA-21')[i]) }]);
