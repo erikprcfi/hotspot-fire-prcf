@@ -39,9 +39,18 @@ function css() {
   .p3d .top{position:absolute;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 26px;display:flex;gap:10px;align-items:center;background:linear-gradient(#05080add,#05080a00);pointer-events:none}
   .p3d .top>*{pointer-events:auto}.p3d .x{width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:20px;backdrop-filter:blur(8px);flex:none}
   .p3d .tt{min-width:0;flex:1}.p3d .tt b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.p3d .tt span{font-size:11.5px;opacity:.75}
-  .p3d .side{position:absolute;right:10px;top:calc(env(safe-area-inset-top,0px) + 66px);display:grid;gap:8px}
-  .p3d .side button{width:44px;height:44px;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:rgba(10,16,14,.62);color:#fff;font:700 11px var(--f,sans-serif);backdrop-filter:blur(10px)}
-  .p3d .side button.on{background:#E2621B;border-color:#E2621B}
+  .p3d .side{position:absolute;right:10px;top:calc(env(safe-area-inset-top,0px) + 70px);display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+  .p3d .grp{display:flex;flex-direction:column;background:rgba(255,255,255,.94);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.35);overflow:hidden}
+  .p3d .grp button{width:44px;height:44px;border:0;background:transparent;color:#1B2A22;display:grid;place-items:center;position:relative;cursor:pointer}
+  .p3d .grp button+button{border-top:1px solid #E1E6E2}
+  .p3d .grp button svg{width:22px;height:22px}
+  .p3d .grp button.on{background:#E2621B;color:#fff}
+  .p3d .grp button:active{background:#EEF2EF}.p3d .grp button.on:active{background:#C9541A}
+  .p3d .grp button .lb{position:absolute;right:52px;top:50%;transform:translateY(-50%);background:rgba(10,16,14,.82);color:#fff;font:600 11px var(--f,sans-serif);padding:4px 8px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s}
+  .p3d .grp button:hover .lb,.p3d .grp button:focus-visible .lb{opacity:1}
+  .p3d #p3c svg{transition:transform .15s linear}
+  .p3d .scale{position:absolute;left:12px;top:calc(env(safe-area-inset-top,0px) + 70px);font:600 10.5px var(--f,sans-serif);color:#fff;text-shadow:0 1px 2px #000}
+  .p3d .scale i{display:block;height:6px;border:2px solid #fff;border-top:0;margin-top:2px;box-shadow:0 1px 2px #0008}
   .p3d .bot{position:absolute;left:0;right:0;bottom:0;padding:22px 12px calc(env(safe-area-inset-bottom,0px) + 12px);background:linear-gradient(#05080a00,#05080ae6);display:grid;gap:9px}
   .p3d .chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.p3d .chips::-webkit-scrollbar{display:none}
   .p3d .chips button{flex:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:999px;padding:7px 12px;font:600 12px var(--f,sans-serif)}
@@ -100,7 +109,7 @@ async function open(opt) {
   root = document.createElement('div'); root.className = 'p3d'; root.setAttribute('role', 'dialog'); root.setAttribute('aria-label', 'Peta 3D');
   root.innerHTML = `<div id="p3map"></div><div class="load" id="p3load">Memuat globe 3D…</div>
    <div class="top"><button class="x" id="p3x" aria-label="Tutup">✕</button><div class="tt"><b>${S ? S.hd_nama : 'Kapuas Hulu'} · 3D</b><span id="p3sub">NASA FIRMS · relief 3D</span></div></div>
-   <div class="side"><button id="p3g" title="Globe">🌏</button><button id="p3s" title="Putar otomatis">⟳</button><button id="p3p" title="Sudut pandang">3D</button><button id="p3h" title="Kembali ke lokasi">◎</button></div>
+   <div class="side"><div class="grp"><button id="p3zi" aria-label="Perbesar"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span class="lb">Perbesar</span></button><button id="p3zo" aria-label="Perkecil"><svg viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span class="lb">Perkecil</span></button><button id="p3c" aria-label="Arah utara"><svg viewBox="0 0 24 24"><path d="M12 3l4 9h-8z" fill="#E2421B"/><path d="M12 21l-4-9h8z" fill="currentColor" opacity=".55"/><circle cx="12" cy="12" r="1.6" fill="#fff"/></svg><span class="lb">Arah utara</span></button></div><div class="grp"><button id="p3p" aria-label="Tampilan 3D / datar"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M4 7.5L12 12l8-4.5M12 12v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="lb">Tampilan 3D / datar</span></button><button id="p3g" aria-label="Mode globe"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span class="lb">Mode globe</span></button><button id="p3s" aria-label="Putar otomatis"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lb">Putar otomatis</span></button><button id="p3h" aria-label="Kembali ke lokasi"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="lb">Kembali ke lokasi</span></button></div></div><div class="scale" id="p3sc"></div>
    <div class="bot"><div class="kpi" id="p3k"></div>
     <div class="chips">${[[1, '24 jam'], [3, '3 hari'], [7, '7 hari'], [30, '30 hari'], [0, 'Semua']].map(([d, n]) => `<button data-d="${d}">${n}</button>`).join('')}<span style="width:8px;flex:none"></span>
      ${[['none', 'Citra dasar'], ['true', 'Citra NASA kemarin'], ['co', 'Asap CO'], ['aod', 'Kabut asap AOD']].map(([k, n]) => `<button data-n="${k}">${n}</button>`).join('')}</div>
@@ -146,6 +155,14 @@ async function open(opt) {
   const sp = root.querySelector('#p3s'); sp.onclick = () => { spin = !spin; sp.classList.toggle('on', spin); };
   const pb = root.querySelector('#p3p'); pb.classList.add('on'); pb.onclick = () => { const on = map.getPitch() < 20; pb.classList.toggle('on', on); map.easeTo({ pitch: on ? 64 : 0, duration: 900 }); };
   root.querySelector('#p3h').onclick = () => map.flyTo({ center, zoom: S ? 10.2 : 8, pitch: 64, bearing: -24, duration: 2500 });
+  root.querySelector('#p3zi').onclick = () => map.zoomIn({ duration: 350 }); root.querySelector('#p3zo').onclick = () => map.zoomOut({ duration: 350 });
+  root.querySelector('#p3c').onclick = () => map.easeTo({ bearing: 0, duration: 600 });
+  const cmp = root.querySelector('#p3c svg'), sc = root.querySelector('#p3sc');
+  const upd = () => { if (!map) return; cmp.style.transform = `rotate(${-map.getBearing()}deg)`; pb.classList.toggle('on', map.getPitch() >= 20);
+    const y = map.getContainer().clientHeight * .5, a = map.unproject([10, y]), b = map.unproject([110, y]); const m = a.distanceTo(b); if (!isFinite(m) || m <= 0) { sc.innerHTML = ''; return; }
+    const nice = [1, 2, 5].flatMap(k => [1, 10, 100, 1e3, 1e4, 1e5, 1e6].map(p => k * p)).sort((x, z) => x - z).filter(v => v <= m).pop() || m; const w = 100 * nice / m;
+    sc.innerHTML = `${nice >= 1000 ? (nice / 1000).toLocaleString('id-ID') + ' km' : nice + ' m'}<i style="width:${w.toFixed(0)}px"></i>`; };
+  map.on('move', upd); map.on('load', upd);
   document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc); } });
 }
 window.FH3D = { open, close, isOpen: () => !!root };

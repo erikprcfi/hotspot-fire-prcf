@@ -214,7 +214,7 @@ def main():
             for g, v, ha, _ in polys:
                 gj["features"].append({"type": "Feature", "geometry": g, "properties": {"musim": wid, "lokasi": site["id"], "hd": site["hd_nama"], "desa": site["desa_nama"],
                     "awal_api": w["awal"], "akhir_api": w["akhir"], "keparahan": ["", "rendah–sedang", "sedang–tinggi", "tinggi"][v], "luas_ha": ha,
-                    "metode": "dNBR Sentinel-2 >= 0,27 (Key & Benson 2006), <= 1 km dari deteksi NASA FIRMS, >= 0,5 ha"}})
+                    "metode": "Sentinel-2: dNBR >= 0,27 (Key & Benson 2006), SWIR2 naik >= 0,02, NBR sesudah <= 0,20 di >= 2 citra, <= 1 km dari NASA FIRMS, >= 0,5 ha"}})
             print("  ", r.get("status"), r.get("luas_ha"), "ha", r.get("cerah_persen"), "% cerah")
             json.dump(idx, open(idx_f, "w"), indent=1, ensure_ascii=False)
             json.dump(gj, open(gj_f, "w"), separators=(",", ":"), ensure_ascii=False)
@@ -234,7 +234,7 @@ def write_shp(gj, S):
         F = [f for f in gj["features"] if f["properties"]["lokasi"] == site["id"]]
         base = f'bekas_terbakar_{site["id"]}'; tmp = os.path.join("/tmp", base)
         w = shapefile.Writer(tmp, shapeType=shapefile.POLYGON, encoding="utf-8")
-        for fd in [("MUSIM", "C", 40), ("HD", "C", 60), ("DESA", "C", 40), ("AWAL_API", "C", 10), ("AKHIR_API", "C", 10), ("KEPARAHAN", "C", 20), ("LUAS_HA", "N", 12, 3), ("METODE", "C", 120)]:
+        for fd in [("MUSIM", "C", 40), ("HD", "C", 60), ("DESA", "C", 40), ("AWAL_API", "C", 10), ("AKHIR_API", "C", 10), ("KEPARAHAN", "C", 20), ("LUAS_HA", "N", 12, 3), ("METODE", "C", 200)]:
             w.field(*fd)
         for f in F:
             g = stf(to_utm, shp(f["geometry"])); parts = []
