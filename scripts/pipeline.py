@@ -456,6 +456,43 @@ def web_years(recs, years):
                  r["id_kejadian"], num(r["luas_piksel_ha"]), r["kabupaten"], r["uid"]] for r in rows]
         json.dump({"kolom": WEB_COLS, "zona": ZONES, "baris": data}, open(f, "w"), separators=(",", ":"), ensure_ascii=False)
 
+CUACA_URL = ("https://archive-api.open-meteo.com/v1/archive?latitude=0.97&longitude=112.62&start_date={start}&end_date={end}"
+             "&daily=precipitation_sum,temperature_2m_max,relative_humidity_2m_mean,wind_speed_10m_max&timezone=Asia%2FJakarta")
+def update_weather(prov):
+    """Cuaca harian Desa Nanga Lauk (reanalisis ERA5 via Open-Meteo), diperbarui sekali sehari."""
+    f = os.path.join(DATA, "cuaca.json")
+    if os.path.exists(f):
+        old = json.load(open(f))
+        if old.get("diunduh_utc", "")[:10] == NOW_S[:10]:
+            return
+    end = (NOW - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+    old = json.load(open(f)) if os.path.exists(f) else None
+    start = "2001-01-01" if not old else (datetime.date.fromisoformat(old["t"][-1]) - datetime.timedelta(days=30)).isoformat()
+    url = CUACA_URL.format(start=start, end=end)
+    try:
+        raw, st, lm = fetch(url, 180)
+        d = json.loads(raw)["daily"]
+    except Exception as e:
+        prov.append({"jenis": "Cuaca", "url": url, "ok": False, "galat": str(e)[:200]}); return
+    keys = [("hujan", "precipitation_sum"), ("tmaks", "temperature_2m_max"), ("rh", "relative_humidity_2m_mean"), ("angin", "wind_speed_10m_max")]
+    ser = {}
+    if old:
+        for i, t in enumerate(old["t"]):
+            ser[t] = [old[k][i] for k, _ in keys]
+    for i, t in enumerate(d["time"]):
+        vals = [d[api][i] for _, api in keys]
+        if vals[0] is not None:
+            ser[t] = vals
+    ts = sorted(ser)
+    out = {"sumber": "Open-Meteo Historical Weather API – reanalisis ECMWF ERA5/ERA5-Land (Copernicus Climate Change Service)",
+           "lokasi": "0.97 LU, 112.62 BT (Desa Nanga Lauk)", "url_terakhir": url, "diunduh_utc": NOW_S,
+           "sha256_unduhan_terakhir": hashlib.sha256(raw).hexdigest(),
+           "satuan": {"hujan": "mm/hari", "tmaks": "°C", "rh": "%", "angin": "km/jam"}, "t": ts}
+    for j, (k, _) in enumerate(keys):
+        out[k] = [ser[t][j] for t in ts]
+    json.dump(out, open(f, "w"), separators=(",", ":"), ensure_ascii=False)
+    prov.append({"jenis": "Cuaca", "url": url, "ok": True, "ukuran_byte": len(raw), "sha256": out["sha256_unduhan_terakhir"], "hari_baru": len(d["time"])})
+
 def site_files(recs, events, prov, archive_years, n_new, sp_changed):
     cutoff = (NOW - datetime.timedelta(days=400)).strftime("%Y-%m-%d")
     pts = [{"k": r["uid"], "la": float(r["latitude"]), "lo": float(r["longitude"]), "d": r["acq_date"], "t": r["acq_time"],
@@ -506,6 +543,7 @@ def main():
     if sp_changed or full:
         changed_years |= set(years)
     exports(recs, events, changed_years, focus_changed=bool(changed_years) or full)
+    update_weather(prov)
     with open(os.path.join(PROV, NOW.strftime("%Y-%m") + ".jsonl"), "a", encoding="utf-8") as fh:
         fh.write(json.dumps({"waktu_utc": NOW_S, "titik_baru": n_new, "arsip_tahunan_diperbarui": sp_changed, "sumber": prov},
                             ensure_ascii=False) + "\n")

@@ -33,6 +33,17 @@ html,body{height:100%}
 .src table{border-collapse:collapse;width:100%;font-size:13px}
 .src .chart svg{width:100%;height:auto;display:block}
 .btn[aria-pressed="true"]{background:var(--fg);color:var(--panel)}
+.rp-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px 14px;align-items:end;margin:10px 0}
+.rp-form label{display:flex;flex-direction:column;gap:4px;font:600 12px var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.rp-form select,.rp-form input{font:14px var(--f-body);padding:7px 8px;border:1px solid var(--line);background:var(--panel);color:var(--fg)}
+.rp-btns{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}
+.rp-main{background:var(--ember);color:#fff;border-color:var(--ember)}
+.btn:disabled{opacity:.5;cursor:wait}
+.rp-note{color:var(--muted);font-size:13px}
+.rp-doc{border-top:2px solid var(--fg);margin-top:12px;padding-top:8px}
+.rp-doc h3{font:700 22px var(--f-display);text-transform:uppercase;margin:6px 0}
+.rp-doc h4{font:700 16px var(--f-display);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 6px;color:var(--muted)}
+.rp-doc li,.rp-doc p{max-width:90ch}
 .src th,.src td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 .src th{color:var(--muted);font-weight:600}
 .src code{font-family:var(--f-data);font-size:12px;white-space:nowrap}
@@ -178,12 +189,27 @@ h1 span{color:var(--ember)}
     <div class="tw" style="max-height:460px;overflow:auto;border:1px solid var(--line)"><table id="etable"><thead><tr><th>ID kejadian</th><th>Mulai (WIB)</th><th>Deteksi</th><th>Zona</th><th>Petak</th><th>Tutupan 2026</th><th>Gambut</th><th>Kawasan</th><th>Cakupan piksel (ha)</th></tr></thead><tbody></tbody></table></div>
   </section>
 
-  <section class="src" id="laporan">
-    <h2>Laporan otomatis (Word &amp; PDF)</h2>
-    <p>Laporan utuh dibuat ulang otomatis setiap pembaruan data: ringkasan, sumber data dan metode, peta, grafik tahunan/bulanan/jam deteksi, konteks kawasan–tutupan–gambut, tabel rekap per zona, sensor, waktu dan petak, daftar kejadian api, daftar detail setiap deteksi di desa dan radius 5 km, kamus data, serta jejak audit. File Word dapat disunting.</p>
-    <div class="dl" id="dlRep"></div>
-    <p style="margin-top:10px"><b>Laporan per tahun:</b></p>
-    <div class="dl" id="dlRepY"></div>
+  <section class="src" id="buat-laporan">
+    <h2>Buat laporan</h2>
+    <p>Pilih periode dan wilayah, lalu klik <b>Tampilkan laporan</b> untuk melihat isinya di layar. Laporan bisa diunduh sebagai <b>PDF</b> atau <b>Word</b> (bisa disunting), dan datanya sebagai <b>CSV</b>. Isinya disusun otomatis sesuai periode: ringkasan, analisa cuaca (curah hujan dibanding normal), peta, grafik, tabel rekap, kejadian api, daftar detail titik, kamus data, dan sumber data.</p>
+    <form id="rpForm" class="rp-form" onsubmit="return false">
+      <label>Periode<select id="rpPreset">
+        <option value="bulan_lalu">Bulan lalu</option><option value="bulan_ini">Bulan ini</option><option value="3_bulan">3 bulan terakhir</option>
+        <option value="tahun_lalu" selected>Tahun lalu</option><option value="tahun_ini">Tahun ini</option><option value="12_bulan">12 bulan terakhir</option>
+        <option value="semua">Semua data (2001–sekarang)</option><option value="kustom">Pilih tanggal sendiri</option></select></label>
+      <label>Dari tanggal<input type="date" id="rpFrom" min="2001-01-01"></label>
+      <label>Sampai tanggal<input type="date" id="rpTo" min="2001-01-01"></label>
+      <label>Wilayah<select id="rpWil"><option value="desa25" selected>Desa & radius 25 km</option><option value="desa5">Hutan Desa, desa & radius 5 km</option><option value="kh">Seluruh Kapuas Hulu</option></select></label>
+      <label>Sensor<select id="rpSen"><option value="semua" selected>VIIRS & MODIS</option><option value="viirs">VIIRS saja</option><option value="modis">MODIS saja</option></select></label>
+      <div class="rp-btns">
+        <button type="button" class="btn rp-main" id="rpLihat">Tampilkan laporan</button>
+        <button type="button" class="btn" id="rpPdf">Unduh PDF</button>
+        <button type="button" class="btn" id="rpDocx">Unduh Word</button>
+        <button type="button" class="btn" id="rpCsv">Unduh data CSV</button>
+      </div>
+    </form>
+    <p id="rpStatus" class="rp-note" role="status" aria-live="polite">Laporan dibuat langsung di browser Anda dari basis data terbaru.</p>
+    <div id="rpPreview"></div>
   </section>
 
   <section class="src" id="unduh">
@@ -384,9 +410,6 @@ function fillSources(){
   const ex=STATUS.ekspor||[]; const lbl=f=>f.replace(/_shp\.zip$/,' (SHP)').replace(/\.(kml|geojson|csv)$/,m=>' ('+m.slice(1).toUpperCase()+')').replace(/_/g,' ');
   document.getElementById('dlFocus').innerHTML=ex.filter(f=>!f.startsWith('titik_panas_kapuashulu_')).map(f=>`<a href="data/export/${f}">${esc(lbl(f))}</a>`).join('');
   document.getElementById('dlYear').innerHTML=ex.filter(f=>f.startsWith('titik_panas_kapuashulu_')).sort().reverse().map(f=>`<a href="data/export/${f}">${esc(f.match(/\d{4}/)[0])}</a>`).join('');
-  const R='data/laporan/laporan_titik_panas_nanga_lauk_';
-  document.getElementById('dlRep').innerHTML=`<a href="${R}lengkap.pdf">Laporan lengkap 2001–sekarang (PDF)</a><a href="${R}lengkap.docx">Laporan lengkap 2001–sekarang (Word)</a>`;
-  document.getElementById('dlRepY').innerHTML=(STATUS.tahun_arsip||[]).slice().reverse().map(y=>`<a href="${R}${y}.pdf">${y} PDF</a><a href="${R}${y}.docx">${y} Word</a>`).join('');
   document.getElementById('dlArch').innerHTML=(STATUS.tahun_arsip||[]).slice().reverse().map(y=>`<a href="data/archive/${y}.csv">${y}.csv</a>`).join('')+`<a href="data/provenance/arsip_tahunan_unduhan_awal.json">Jejak audit arsip tahunan</a><a href="https://github.com/erikprcfi/titik-api-desa-nanga-lauk/tree/main/data/provenance">Semua jejak audit</a>`;
 }
 /* ---------- riwayat ---------- */
@@ -426,5 +449,6 @@ setInterval(setStatus,60000);
 })();
 </script>
 
+<script src="assets/laporan.js"></script>
 </body>
 </html>
