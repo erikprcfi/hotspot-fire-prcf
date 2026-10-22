@@ -74,6 +74,35 @@ a{color:inherit}
 .sitebar button[aria-pressed="true"]{background:#fff;color:var(--brand);border-color:#fff}
 .sitebar i{width:8px;height:8px;border-radius:50%;background:#43B886;flex:none}
 .sitebar i.warn{background:#E5A93A}.sitebar i.crit{background:#F0605A}
+:root{--l0:#2F7FD1;--l1:#2E9E5B;--l2:#E0A800;--l3:#D93025}
+.fcw{display:grid;grid-template-columns:minmax(260px,1fr) 2.2fr;gap:16px}
+@media (max-width:900px){.fcw{grid-template-columns:1fr}}
+.fcw-hero{border-radius:16px;padding:18px;color:#fff}
+.fcw-hero .ey{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+.fcw-hero .lv{font-size:34px;font-weight:800;letter-spacing:-.02em;margin:4px 0}
+.fcw-hero p{margin:6px 0 0;font-size:13.5px;opacity:.95}
+.fcw-hero .cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.fcw-hero .cmp div{background:rgba(0,0,0,.16);border-radius:10px;padding:8px 10px;font-size:11.5px}
+.fcw-hero .cmp b{display:block;font-size:15px}
+.fcw-days{display:grid;grid-template-columns:repeat(7,minmax(96px,1fr));gap:8px;overflow-x:auto}
+.fcw-d{background:var(--surface-2);border:1px solid var(--line);border-top:5px solid var(--l0);border-radius:14px;padding:10px 8px;text-align:center;min-width:96px}
+.fcw-d .dn{font-weight:800;font-size:13.5px}.fcw-d .dd{font-size:11.5px;color:var(--muted)}
+.fcw-d .t{font:600 13px var(--f-data);margin-top:6px}.fcw-d .r{font-size:12px;color:#2F7FD1;font-weight:700}
+.fcw-d .ds{font-size:11px;color:var(--muted);min-height:28px;margin-top:3px;line-height:1.25}
+.fcw-d .src{font-size:10px;color:var(--muted);margin-top:4px;line-height:1.3}
+.lvp{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:999px;color:#fff;margin-top:6px}
+.lvp.l0{background:var(--l0)}.lvp.l1{background:var(--l1)}.lvp.l2{background:var(--l2);color:#2a2000}.lvp.l3{background:var(--l3)}
+.fcw-grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+@media (max-width:900px){.fcw-grid2{grid-template-columns:1fr}}
+.fcw-box{border:1px solid var(--line);border-radius:14px;padding:14px}
+.fcw-box h3{margin:0 0 8px;font-size:14px}
+.fcw-tab{width:100%;border-collapse:collapse;font-size:12.5px}
+.fcw-tab th{font-size:11px;color:var(--muted);text-align:center;padding:5px 3px;font-weight:700}
+.fcw-tab td{border-top:1px solid var(--line);padding:6px 3px;text-align:center;font-family:var(--f-data)}
+.fcw-tab th:first-child,.fcw-tab td:first-child{text-align:left;font-family:var(--f)}
+.fcw-tab i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.bmw{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+.bmw:first-of-type{border-top:0}.bmw img{width:34px;height:34px}.bmw .m{flex:1}.bmw .m small{display:block;color:var(--muted);font-size:12px}
 .chz{position:fixed;inset:0;z-index:3000;background:rgba(5,20,14,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:grid;place-items:start center;padding:max(20px,4vh) 12px;overflow:auto;transition:opacity .3s}
 .chz[hidden]{display:none}
 .chz-box{width:min(1100px,100%);background:var(--bg);border-radius:24px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.45)}
@@ -294,7 +323,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 30px;justify-content:space-bet
     <span class="brand-mark" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4.5 7 6.5 7 13a7 7 0 0 1-14 0c0-3.6 2.3-5.6 3.5-6.8 0 2.2 1.1 3.5 2.4 3.5 0-3.6.1-6.7 1.1-9.7z" fill="#F2683C"/></svg></span>
     <span class="brand-txt"><b>Fire Hotspot</b><small>Pemantauan Titik Panas Hutan Desa · Kapuas Hulu</small></span>
   </a>
-  <nav class="nav" aria-label="Navigasi"><a href="#peta">Peta</a><a href="#status-sistem">Status</a><a href="#riwayat">Riwayat</a><a href="#buat-laporan">Laporan</a><a href="#unduh">Data</a><a href="#sumber">Metodologi</a></nav>
+  <nav class="nav" aria-label="Navigasi"><a href="#peta">Peta</a><a href="#prakiraan">Prakiraan</a><a href="#status-sistem">Status</a><a href="#riwayat">Riwayat</a><a href="#buat-laporan">Laporan</a><a href="#unduh">Data</a><a href="#sumber">Metodologi</a></nav>
   <button type="button" class="inst" id="instBtn" aria-label="Pasang aplikasi di HP"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg><span class="inst-l">Pasang aplikasi</span><span class="inst-s">Pasang</span></button>
   <span class="live" id="livechip" title="Diperbarui otomatis setiap 3 jam mengikuti lintasan satelit NASA"><i></i><span>Near Real-Time</span></span>
 </div></div>
@@ -343,6 +372,11 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 30px;justify-content:space-bet
       <div class="rail-sec chart"><h4><span>Harian · 30 hari</span></h4><div id="chart"></div></div>
       <div class="list-wrap"><h4><span>Daftar titik</span><span class="num" id="cnt">0</span></h4><div class="list" id="list"></div></div>
     </aside>
+  </section>
+
+  <section class="card sec" id="prakiraan">
+    <div class="sec-h"><div><div class="kick">Peringatan dini</div><h2>Prakiraan cuaca &amp; bahaya kebakaran 7 hari</h2><p>Prakiraan resmi BMKG per desa (1–3 hari) dan model ECMWF (7 hari), diolah menjadi indeks bahaya kebakaran FDRS (Fire Weather Index) yang menjadi dasar sistem BMKG. Diperbarui otomatis setiap 3 jam.</p></div></div>
+    <div id="fcw"><p class="rp-note">Memuat prakiraan…</p></div>
   </section>
 
   <section class="card sec" id="status-sistem">
@@ -534,6 +568,38 @@ for(const b of document.querySelectorAll('#range button'))b.addEventListener('cl
 try{const r=localStorage.getItem('pa_range');if(r!==null){RANGE=+r;for(const b of document.querySelectorAll('#range button'))b.setAttribute('aria-pressed',String(+b.dataset.d===RANGE));}}catch(e){}
 document.getElementById('vNL').onclick=()=>map.fitBounds(desaB,{padding:[10,10]});
 document.getElementById('v25').onclick=()=>map.fitBounds(b25,{padding:[10,10]});
+/* ---------- prakiraan & peringatan dini ---------- */
+let FCD=null;
+const LVN=['Rendah','Sedang','Tinggi','Ekstrem'],HARIP=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const ADV=['Kondisi lembap, peluang api menyala kecil. Patroli rutin.','Bahan bakar mulai kering di tempat terbuka. Awasi pembakaran ladang.','Rumput dan serasah mudah terbakar. Tingkatkan patroli, tunda pembakaran lahan, siapkan alat pemadam.','Sangat mudah menyala dan sulit dipadamkan. Siagakan regu, larang pembakaran, waspada asap di lahan gambut.'];
+const dNm=d=>{const x=new Date(d+'T00:00:00Z');return {l:HARIP[x.getUTCDay()],s:HARIP[x.getUTCDay()].slice(0,3),t:`${x.getUTCDate()} ${BULAN[x.getUTCMonth()]}`};};
+const lvp=l=>`<span class="lvp l${l}">${LVN[l]}</span>`;
+function fcDaysW(L){const bm={},bh={};if(L.bmkg){for(const x of L.bmkg.fdrs||[])bm[x.tanggal]=x;for(const x of L.bmkg.harian||[])bh[x.tanggal]=x;}
+  return (L.hari||[]).map(h=>{const b=bm[h.tanggal];return {...h,lvE:h.level,lvB:b?b.level:null,lv:Math.max(h.level,b?b.level:0),bmD:bh[h.tanggal]||null,bmI:b||null};});}
+function renderFCw(){
+  const box=document.getElementById('fcw');if(!box||!SITE)return;const L=FCD&&FCD.lokasi&&FCD.lokasi[SITE.id];
+  if(!L){box.innerHTML='<p class="rp-note">Prakiraan untuk lokasi ini akan tersedia setelah pembaruan otomatis berikutnya.</p>';return;}
+  const N1=v=>Number(v).toLocaleString('id-ID',{minimumFractionDigits:1,maximumFractionDigits:1});
+  const D=fcDaysW(L),mx=Math.max(...D.map(d=>d.lv)),pk=D.find(d=>d.lv===mx),pn=dNm(pk.tanggal),bm=L.bmkg;
+  const kF=Math.max(...D.map(d=>Math.max(d.k_ffmc,d.bmI?d.bmI.k_ffmc:0))),kD=Math.max(...D.map(d=>Math.max(d.k_dc,d.bmI?d.bmI.k_dc:0)));
+  const grad=['linear-gradient(135deg,#1B4F8C,#2F7FD1)','linear-gradient(135deg,#1C6B43,#2E9E5B)','linear-gradient(135deg,#9A6A00,#E0A800)','linear-gradient(135deg,#8E1B13,#D93025)'][mx];
+  const col=k=>css('--l'+k);
+  const all=SITES.map(z=>{const Z=FCD.lokasi[z.id];if(!Z)return null;const DD=fcDaysW(Z);const m=Math.max(...DD.map(d=>d.lv));return {z,m,d:DD.find(d=>d.lv===m)};}).filter(Boolean);
+  box.innerHTML=`<div class="fcw"><div class="fcw-hero" style="background:${grad}"><div class="ey">Tingkat bahaya tertinggi · 7 hari</div><div class="lv">${LVN[mx].toUpperCase()}</div>
+   <div style="font-weight:600;font-size:13.5px">${esc(SITE.hd_nama)} · ${mx?`${pn.l}, ${pn.t}`:'sepanjang minggu'}</div><p>${ADV[mx]}</p>
+   <div class="cmp"><div>Penyulutan permukaan (FFMC)<b>${LVN[kF]}</b></div><div>Kekeringan dalam / gambut (DC)<b>${LVN[kD]}</b></div></div>
+   <p style="font-size:12px;opacity:.85">Diperbarui ${hhmmWIB(new Date(FCD.diperbarui_utc))} WIB</p></div>
+   <div><div class="fcw-days">${D.map((d,i)=>{const n=dNm(d.tanggal);return `<div class="fcw-d" style="border-top-color:${col(d.lv)}"><div class="dn">${i?n.s:'Hari ini'}</div><div class="dd">${n.t}</div><div class="t">${Math.round(d.tmaks)}° / ${Math.round(d.tmin)}°</div><div class="r">${N1(d.hujan)} mm</div><div class="ds">${esc(d.bmD?d.bmD.cuaca:d.cuaca)}</div>${lvp(d.lv)}<div class="src">${d.lvB!==null?`BMKG ${LVN[d.lvB]} · ECMWF ${LVN[d.lvE]}`:'ECMWF'}</div></div>`;}).join('')}</div>
+   <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center">${[0,1,2,3].map(lvp).join('')}<span class="rp-note" style="margin:0 0 0 4px">kelas FDRS Indonesia (de Groot dkk. 2006)</span></div></div></div>
+  <div class="fcw-grid2">
+   ${bm?`<div class="fcw-box"><h3>Prakiraan resmi BMKG · Desa ${esc(bm.desa||SITE.desa_nama)}</h3>${(bm.harian||[]).map(h=>{const n=dNm(h.tanggal);const ic=(bm.jam.find(j=>j.t.startsWith(h.tanggal)&&j.t.slice(11,13)==='13')||bm.jam.find(j=>j.t.startsWith(h.tanggal))||{}).ikon;return `<div class="bmw">${ic?`<img src="${encodeURI(ic)}" alt="">`:''}<div class="m"><b>${n.l}, ${n.t}</b><small>${esc(h.cuaca)} · RH ${h.rh??'–'}%</small></div><div style="text-align:right;font-family:var(--f-data);font-size:13px">${h.tmaks}° / ${h.tmin}°<div style="color:#2F7FD1;font-weight:700">${N1(h.hujan)} mm</div></div></div>`;}).join('')}<p class="rp-note">Sumber: BMKG (Badan Meteorologi, Klimatologi, dan Geofisika), kode wilayah ${esc(bm.adm4)}.</p></div>`:''}
+   <div class="fcw-box"><h3>Indeks bahaya kebakaran (FDRS)</h3><table class="fcw-tab"><thead><tr><th>Hari</th><th>FFMC</th><th>ISI</th><th>DC</th><th>FWI</th></tr></thead><tbody>${D.map(d=>{const n=dNm(d.tanggal);const c=k=>`<i style="background:${col(k)}"></i>`;return `<tr><td>${n.s} ${n.t}</td><td>${c(d.k_ffmc)}${N1(d.ffmc)}</td><td>${c(d.k_isi)}${N1(d.isi)}</td><td>${c(d.k_dc)}${Math.round(d.dc)}</td><td>${N1(d.fwi)}</td></tr>`;}).join('')}</tbody></table>
+   <p class="rp-note">Dari prakiraan ECMWF. FFMC = mudahnya serasah/rumput menyala; ISI = kecepatan menjalar; DC = kekeringan lapisan dalam &amp; gambut; FWI = intensitas umum. Tingkat harian = kelas tertinggi FFMC/DC; bila BMKG dan ECMWF berbeda dipakai yang lebih tinggi.</p></div>
+  </div>
+  ${all.length>1?`<div class="fcw-box" style="margin-top:16px"><h3>Semua lokasi · tingkat tertinggi 7 hari</h3><table class="fcw-tab"><tbody>${all.map(o=>{const n=dNm(o.d.tanggal);return `<tr><td><b>${esc(o.z.hd_nama)}</b> <span style="color:var(--muted)">· Desa ${esc(o.z.desa_nama)}</span></td><td>${o.m?`${n.l} ${n.t}`:'–'}</td><td>${lvp(o.m)}</td></tr>`;}).join('')}</tbody></table></div>`:''}
+  <p class="rp-note">Prakiraan dapat meleset; peringatan ini alat bantu kewaspadaan, bukan pengganti informasi resmi BMKG/Manggala Agni. Metode: Fire Weather Index (Van Wagner 1987) dari cuaca pukul 12.00 &amp; hujan 24 jam, riwayat ERA5 Copernicus ${L.hari_riwayat||''} hari; ECMWF IFS 0,25° (CC BY 4.0).</p>`;
+}
+
 /* ---------- lokasi Hutan Desa ---------- */
 const zoneOfCode=(c,kab)=>c<0?0:c===0?1:c<=5?2:c<=25?3:(kab==='Kapuas Hulu'?4:5);
 const ZID=['hd','desa','r5','r25','kh','out'];
@@ -560,7 +626,7 @@ function setSite(id,fly){
   document.getElementById('heroEye').textContent=`Desa ${SITE.desa_nama} · Kec. ${SITE.kec} · Kab. Kapuas Hulu · Kalimantan Barat`;
   document.title=`Fire Hotspot · ${SITE.hd_nama}`;
   siteLayers(); if(fly)map.flyToBounds(b25,{padding:[10,10],duration:.8}); else map.fitBounds(desaB,{padding:[10,10]});
-  reclass(); siteBar(); render(); kpis(); histChart(); eventTable(); histLayer(); fillSources();
+  reclass(); siteBar(); render(); kpis(); histChart(); eventTable(); histLayer(); fillSources(); renderFCw();
 }
 document.getElementById('vKH').onclick=()=>map.fitBounds(khB,{padding:[10,10]});
 
@@ -693,10 +759,10 @@ const ZMAP={'Hutan Desa':'hd','Desa Nanga Lauk':'desa','Radius 5 km':'r5','Radiu
 render(); setStatus();
 async function load(){
   try{
-    const [h,s]=await Promise.all([fetch('data/hotspots.json?'+Date.now()).then(r=>r.json()),fetch('data/status.json?'+Date.now()).then(r=>r.json())]);
+    const [h,s,f]=await Promise.all([fetch('data/hotspots.json?'+Date.now()).then(r=>r.json()),fetch('data/status.json?'+Date.now()).then(r=>r.json()),fetch('data/prakiraan.json?'+Date.now()).then(r=>r.ok?r.json():null).catch(()=>null)]);if(f)FCD=f;
     ALL=h.titik.map(p=>{const q={...p};q.when=utcDate(q);q.c2={zone:ZMAP[q.z]||'out',dist:q.km,petak:q.pt||null};return q;});
     STATUS=s; if(SITE)reclass(); else {let id='nangalauk';try{id=new URLSearchParams(location.search).get('lokasi')||JSON.parse(localStorage.getItem('fh_site'))||id;}catch(e){}setSite(id,false);}
-    setStatus(); siteBar(); render(); fillSources(); kpis(); sysPanel();
+    setStatus(); siteBar(); render(); fillSources(); kpis(); sysPanel(); renderFCw();
     if(!window._chzShown){window._chzShown=true;if(!new URLSearchParams(location.search).get('lokasi'))openChooser();}
   }catch(e){document.getElementById('alertTitle').textContent='Data gagal dimuat';document.getElementById('alertText').textContent='Periksa koneksi internet, lalu muat ulang halaman.';}
 }

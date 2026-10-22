@@ -669,6 +669,12 @@ def main():
         changed_years |= set(years)
     exports(recs, events, changed_years, focus_changed=bool(changed_years) or full)
     update_weather(prov)
+    try:  # prakiraan cuaca 7 hari & peringatan dini bahaya kebakaran (BMKG + ECMWF, FDRS)
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import prakiraan
+        prakiraan.update(SITES, prov)
+    except Exception as e:
+        prov.append({"jenis": "Prakiraan", "ok": False, "galat": str(e)[:200]})
     with open(os.path.join(PROV, NOW.strftime("%Y-%m") + ".jsonl"), "a", encoding="utf-8") as fh:
         fh.write(json.dumps({"waktu_utc": NOW_S, "titik_baru": n_new, "arsip_tahunan_diperbarui": sp_changed, "sumber": prov},
                             ensure_ascii=False) + "\n")
