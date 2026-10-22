@@ -219,6 +219,8 @@ svg{display:block}
 .pulse-ring{animation:pr 1.8s ease-out infinite;transform-origin:center;transform-box:fill-box}
 @keyframes pr{0%{opacity:.9;transform:scale(.6)}100%{opacity:0;transform:scale(1.6)}}
 .hs-icon{filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.6))}
+.topcards{pointer-events:none}.topcards>*{pointer-events:auto}.topcards.cards-off .tc-stack{pointer-events:none}
+.leaflet-zoom-anim .hs-icon{filter:none}.leaflet-zoom-anim .pulse-ring{animation:none;opacity:0}
 .me-dot{width:16px;height:16px;border-radius:50%;background:#1E6FD9;border:3px solid #fff;box-shadow:0 0 0 6px rgba(30,111,217,.25)}
 .petak-lbl{color:#fff;font:700 9px var(--f);text-shadow:0 0 3px #000;text-align:center}
 .focuslbl{position:absolute;z-index:500;left:50%;top:50%;transform:translate(-50%,-50%);padding:8px 14px;font-size:13px;font-weight:700;pointer-events:none;opacity:0;transition:opacity .25s}
@@ -654,9 +656,9 @@ function siteLayers(){if(!MAP||!SITE)return;ACT.clearLayers();
   B.desa=L.geoJSON(SITE.desa).getBounds().extend(L.geoJSON(SITE.hd).getBounds());B.r25=L.geoJSON(SITE.buf25).getBounds();B.hd=L.geoJSON(SITE.hd).getBounds();}
 function initMap(){
   MAP=L.map('map',{zoomControl:false,preferCanvas:true,attributionControl:true,zoomSnap:.25});
-  base.esri=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Esri, Maxar'});
-  base.osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'});
-  base.topo=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Esri'});
+  base.esri=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Esri, Maxar',updateWhenZooming:false,keepBuffer:3});
+  base.osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap',updateWhenZooming:false,keepBuffer:3});
+  base.topo=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Esri',updateWhenZooming:false,keepBuffer:3});
   MAP.createPane('img').style.zIndex=360;
   base.s2=L.imageOverlay('assets/s2_20260810.jpg',G.img_bounds,{opacity:.95,pane:'img',attribution:'Sentinel-2 10 Agu 2026 (ESA)'});
   const bm=store.get('base','esri');(base[bm]||base.esri).addTo(MAP);if(store.get('s2',false))base.s2.addTo(MAP);

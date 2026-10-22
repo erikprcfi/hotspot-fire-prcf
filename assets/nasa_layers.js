@@ -38,8 +38,8 @@ function create(map, opt = {}) {
     for (let k = days - 1; k >= 0; k--) {  // hari paling baru digambar paling atas
       const d = addDay(date, -k);
       const att = k === 0 ? `NASA GIBS · ${(alt && alt.short) || L0.short} · ${days > 1 ? addDay(date, 1 - days) + ' s.d. ' : ''}${date}` : '';
-      if (L0.wms) L.tileLayer.wms('https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi', { layers: L0.wms, format: 'image/png', transparent: true, version: '1.3.0', time: d, pane: 'nasa', attribution: att }).addTo(layer);
-      else L.tileLayer(`${BASE}${id}/default/${d}/${L0.m}/{z}/{y}/{x}.${L0.ext}`, { pane: 'nasa', maxNativeZoom: L0.z, maxZoom: 18, tileSize: 256, attribution: att }).addTo(layer);
+      if (L0.wms) L.tileLayer.wms('https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi', { layers: L0.wms, format: 'image/png', transparent: true, version: '1.3.0', time: d, pane: 'nasa', attribution: att, tileSize: 512, updateWhenZooming: false, updateWhenIdle: true, keepBuffer: 3 }).addTo(layer);
+      else L.tileLayer(`${BASE}${id}/default/${d}/${L0.m}/{z}/{y}/{x}.${L0.ext}`, { pane: 'nasa', maxNativeZoom: L0.z, maxZoom: 18, tileSize: 256, attribution: att, updateWhenZooming: false, keepBuffer: 3 }).addTo(layer);
     }
     layer.addTo(map); fire();
   }
