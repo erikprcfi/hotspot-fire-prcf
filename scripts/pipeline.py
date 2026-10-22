@@ -1,5 +1,5 @@
 """
-Pipeline basis data titik panas – Pantau Api Nanga Lauk
+Pipeline basis data titik panas – Fire Hotspot Nanga Lauk
 =======================================================
 
 Dijalankan otomatis oleh GitHub Actions setiap 3 jam (lihat .github/workflows/update.yml).

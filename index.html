@@ -2,8 +2,9 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
+<script>if((matchMedia('(display-mode: standalone)').matches||navigator.standalone)&&!/[?&]web=1/.test(location.search))location.replace('app.html'+location.hash.replace('#buat-laporan','#lap').replace('#status-sistem','#info'));</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Pantau Api Nanga Lauk</title>
+<title>Fire Hotspot Nanga Lauk</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%230B3B2C%22/%3E%3Cpath d=%22M16 6c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-3 0-6 1-9z%22 fill=%22%23F2683C%22/%3E%3C/svg%3E">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0B3B2C">
@@ -11,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Pantau Api">
+<meta name="apple-mobile-web-app-title" content="Fire Hotspot">
 <meta name="description" content="Sistem pemantauan titik panas satelit NASA FIRMS untuk Desa dan Hutan Desa Nanga Lauk, Kapuas Hulu, Kalimantan Barat.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -266,7 +267,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 30px;justify-content:space-bet
 <div class="topbar"><div class="wrap">
   <a class="brand" href="#">
     <span class="brand-mark" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4.5 7 6.5 7 13a7 7 0 0 1-14 0c0-3.6 2.3-5.6 3.5-6.8 0 2.2 1.1 3.5 2.4 3.5 0-3.6.1-6.7 1.1-9.7z" fill="#F2683C"/></svg></span>
-    <span class="brand-txt"><b>Pantau Api Nanga Lauk</b><small>Sistem Pemantauan Titik Panas Hutan Desa</small></span>
+    <span class="brand-txt"><b>Fire Hotspot Nanga Lauk</b><small>Sistem Pemantauan Titik Panas Hutan Desa</small></span>
   </a>
   <nav class="nav" aria-label="Navigasi"><a href="#peta">Peta</a><a href="#status-sistem">Status</a><a href="#riwayat">Riwayat</a><a href="#buat-laporan">Laporan</a><a href="#unduh">Data</a><a href="#sumber">Metodologi</a></nav>
   <button type="button" class="inst" id="instBtn" aria-label="Pasang aplikasi di HP"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg><span class="inst-l">Pasang aplikasi</span><span class="inst-s">Pasang</span></button>
@@ -414,7 +415,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 30px;justify-content:space-bet
 </main>
 
 <footer><div class="wrap">
-  <span>Pantau Api Nanga Lauk · Hutan Desa Nanga Lauk, Kapuas Hulu, Kalimantan Barat</span>
+  <span>Fire Hotspot Nanga Lauk · Hutan Desa Nanga Lauk, Kapuas Hulu, Kalimantan Barat</span>
   <span>Data: NASA FIRMS · ECMWF ERA5 · Copernicus Sentinel-2 · BIG · KLHK</span>
 </div></footer>
 
@@ -691,7 +692,7 @@ setInterval(setStatus,60000);
 <script src="assets/laporan.js"></script>
 <div class="scrim" id="instScrim" hidden></div>
 <div class="sheet" id="instSheet" hidden role="dialog" aria-labelledby="instT">
-  <h3 id="instT">Pasang Pantau Api di HP</h3>
+  <h3 id="instT">Pasang Fire Hotspot di HP</h3>
   <div id="instBody"></div>
   <button type="button" class="btn primary" id="instClose">Mengerti</button>
 </div>

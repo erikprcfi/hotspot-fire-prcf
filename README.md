@@ -1,4 +1,4 @@
-# Pantau Api Nanga Lauk
+# Fire Hotspot Nanga Lauk
 
 Website pemantauan titik panas (hotspot) satelit untuk **Desa dan Hutan Desa Nanga Lauk**, Kecamatan Embaloh Hilir, Kabupaten Kapuas Hulu, Kalimantan Barat.
 Dikelola oleh Yayasan PRCF Indonesia dan LPHD Lauk Bersatu untuk program SCCM Rimbak Pakai Pengidup.

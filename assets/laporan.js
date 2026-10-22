@@ -1,4 +1,4 @@
-/* Pembuat laporan titik panas – Pantau Api Nanga Lauk
+/* Pembuat laporan titik panas – Fire Hotspot Nanga Lauk
  * Semua laporan dibuat di browser pengguna dari basis data website (data/web/YYYY.json),
  * data cuaca (data/cuaca.json), batas wilayah (data/geo.json) dan kejadian api (data/kejadian.json).
  * Keluaran: pratinjau di layar, PDF (jsPDF + autoTable), Word (docx), dan CSV.
@@ -374,7 +374,7 @@ async function exportDOCX(M, F, T) {
   app.push(T.detail.length > 1 ? TB(T.detail, 13) : P('Tidak ada deteksi pada periode ini.'));
   const end = [H('Lampiran B. Kamus data'), TB(T.kamus, 16), H('Lampiran C. Sumber data, metode & jejak audit'), ...sources(M).map(([k, v]) => new d.Paragraph({ spacing: { after: 100 }, children: [run(k + '. ', { bold: true, size: 18 }), run(v, { size: 18 })] }))];
   const pg = { margin: { top: 1000, bottom: 1000, left: 1000, right: 1000 } };
-  const docx = new d.Document({ creator: 'Pantau Api Nanga Lauk', title: M.title, sections: [{ properties: { page: pg }, children: main }, { properties: { page: { ...pg, size: { orientation: d.PageOrientation.LANDSCAPE } } }, children: app }, { properties: { page: pg }, children: end }] });
+  const docx = new d.Document({ creator: 'Fire Hotspot Nanga Lauk', title: M.title, sections: [{ properties: { page: pg }, children: main }, { properties: { page: { ...pg, size: { orientation: d.PageOrientation.LANDSCAPE } } }, children: app }, { properties: { page: pg }, children: end }] });
   const blob = await d.Packer.toBlob(docx); dl(blob, fname(M, 'docx'));
 }
 
