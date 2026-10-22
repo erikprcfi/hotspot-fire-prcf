@@ -492,6 +492,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 30px;justify-content:space-bet
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="assets/nasa_layers.js"></script>
+<script src="assets/peta3d.js"></script>
 <script>
 (async function(){
 const G=await (await fetch('data/geo.json',{cache:'no-cache'})).json(); G.img={url:'assets/s2_20260810.jpg',bounds:G.img_bounds};
@@ -577,6 +578,7 @@ const PHL=L.geoJSON(null,{style:{color:'#FF2EBD',weight:1.5,fillOpacity:.5},onEa
 map.on('overlayadd',e=>{if(e.layer===PHL&&!PHL._loaded){PHL._loaded=1;fetch('data/hutan/peringatan.geojson').then(r=>r.json()).then(g=>PHL.addData(g)).catch(()=>{});}});
 L.control.layers({'Citra satelit (Esri)':esri,'OpenStreetMap':osm},{'Sentinel-2 10 Agu 2026':s2,'Bekas terbakar (Sentinel-2, sejak 2023)':BTL,'Kehilangan tutupan pohon 2001–2025 (GFW/UMD)':TCL,'Peringatan perubahan hutan 90 hari (Sentinel-2)':PHL},{position:'topright'}).addTo(map);
 const NASA=FHNasa.create(map); FHNasa.control(map,NASA,'topleft');
+{const C3=L.Control.extend({onAdd(){const b=L.DomUtil.create('button','leaflet-bar');b.type='button';b.title='Peta 3D & globe';b.textContent='3D';b.style.cssText='width:34px;height:34px;background:#fff;font:800 12px system-ui;color:#22382B;cursor:pointer';L.DomEvent.disableClickPropagation(b);b.onclick=()=>window.FH3D&&FH3D.open({sites:SITES,site:SITE,points:ALL});return b;}});new C3({position:'topleft'}).addTo(map);}
 const ptsL=L.layerGroup().addTo(map);
 
 /* ---------- state ---------- */
