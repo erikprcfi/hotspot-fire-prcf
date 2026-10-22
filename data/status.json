@@ -1,6 +1,6 @@
 {
- "terakhir_cek_utc": "2026-10-22T09:00:37Z",
- "titik_baru": 8,
+ "terakhir_cek_utc": "2026-10-22T15:26:50Z",
+ "titik_baru": 0,
  "arsip_tahunan_diperbarui": 0,
  "jumlah_catatan": 70842,
  "jumlah_sp": 70788,
@@ -45,10 +45,10 @@
    "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Thu, 22 Oct 2026 08:50:08 GMT",
-   "ukuran_byte": 6505570,
-   "sha256": "240824ecc0b183eaa3b2be288e1f89b3af32815bf8f5f071783d2b5b630616cb",
-   "baris_total": 79364,
+   "last_modified": "Thu, 22 Oct 2026 14:51:01 GMT",
+   "ukuran_byte": 6529848,
+   "sha256": "591a7398fc30f47128f16d58c4ed75dcc9154be64852d304ee1356d31fa58f61",
+   "baris_total": 79662,
    "baris_di_kotak": 5
   },
   {
@@ -58,10 +58,10 @@
    "doi": "10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Thu, 22 Oct 2026 08:42:22 GMT",
-   "ukuran_byte": 7268912,
-   "sha256": "97052a3b95f09a4b0ef097de9738df310b35e7440c2c1bd915e59781f7e4a916",
-   "baris_total": 86691,
+   "last_modified": "Thu, 22 Oct 2026 14:42:51 GMT",
+   "ukuran_byte": 7308464,
+   "sha256": "779fd0af30ed7ab8e605d3bdde748eb59439f1db5f5dcc270f02976a2905ba43",
+   "baris_total": 87163,
    "baris_di_kotak": 18
   },
   {
@@ -71,10 +71,10 @@
    "doi": "10.5067/VIIRS/VJ214IMG_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Thu, 22 Oct 2026 08:45:50 GMT",
-   "ukuran_byte": 7331610,
-   "sha256": "8659edf31f391e7ee448fa3d12a2a9157172654076088dc4f002748d3753e70a",
-   "baris_total": 87367,
+   "last_modified": "Thu, 22 Oct 2026 14:46:01 GMT",
+   "ukuran_byte": 7331694,
+   "sha256": "9c7e35dcfc9b9260de80b5cc637ead250e1ab8d19c2c150bab0f9de9537bc231",
+   "baris_total": 87368,
    "baris_di_kotak": 19
   },
   {
@@ -84,10 +84,10 @@
    "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Thu, 22 Oct 2026 08:47:46 GMT",
-   "ukuran_byte": 1062679,
-   "sha256": "08ab6d84bfbf4d722fd26f7505fd5a78c27af0ef17c9a5c4f4f58283658ab5bb",
-   "baris_total": 13767,
+   "last_modified": "Thu, 22 Oct 2026 14:48:04 GMT",
+   "ukuran_byte": 1104475,
+   "sha256": "9be6dfa18c2b769d2297ec17e422f8a50e4542bc0d6994147a2884e009442d02",
+   "baris_total": 14304,
    "baris_di_kotak": 10
   }
  ],
@@ -242,6 +242,12 @@
     "baru": 8,
     "ok": 4,
     "n": 4
+   },
+   {
+    "t": "2026-10-22T15:26:50Z",
+    "baru": 0,
+    "ok": 4,
+    "n": 4
    }
   ],
   "jadwal_cron_utc": "17 */3 * * *",
@@ -249,7 +255,7 @@
   "latensi_n": 8,
   "arsip_terverifikasi": 48,
   "hari_cuaca": 9425,
-  "jumlah_pembaruan_tercatat": 20
+  "jumlah_pembaruan_tercatat": 21
  },
  "sumber_doi": {
   "VIIRS_SNPP": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002",
@@ -391,6 +397,12 @@
   }
  ],
  "ekspor": [
+  "bekas_terbakar_batangtau_UTM49N_shp.zip",
+  "bekas_terbakar_bukitbelang_UTM49N_shp.zip",
+  "bekas_terbakar_bumilestari_UTM49N_shp.zip",
+  "bekas_terbakar_nangalauk_UTM49N_shp.zip",
+  "bekas_terbakar_nyuai_UTM49N_shp.zip",
+  "bekas_terbakar_pundjung_UTM49N_shp.zip",
   "kejadian_api_batangtau_radius25km.csv",
   "kejadian_api_batangtau_radius25km.geojson",
   "kejadian_api_batangtau_radius25km.kml",
