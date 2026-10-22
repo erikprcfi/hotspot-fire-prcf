@@ -55,7 +55,7 @@ svg{display:block}
 .sp-ring::before,.sp-ring::after{content:"";position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(242,104,60,.45);animation:ring 2.4s ease-out infinite}
 .sp-ring::after{animation-delay:1.2s}
 @keyframes ring{0%{transform:scale(.62);opacity:.9}100%{transform:scale(1.35);opacity:0}}
-.sp-logo{width:92px;height:92px;border-radius:28px;display:grid;place-items:center;background:linear-gradient(160deg,rgba(255,255,255,.14),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.18);box-shadow:0 24px 60px -16px rgba(242,104,60,.6);animation:breathe 2.4s ease-in-out infinite}
+.sp-logo{width:104px;height:104px;border-radius:28px;display:grid;place-items:center;box-shadow:0 24px 60px -16px rgba(242,104,60,.6);animation:breathe 2.4s ease-in-out infinite}
 @keyframes breathe{50%{transform:scale(1.05)}}
 .sp-name{font-size:34px;font-weight:800;letter-spacing:-.03em;margin-top:26px}
 .sp-name span{color:#F2683C}
@@ -144,7 +144,7 @@ svg{display:block}
 
 /* ---------- app bar ---------- */
 .appbar{position:fixed;top:0;left:0;right:0;z-index:60;height:var(--top);padding:env(safe-area-inset-top,0px) 14px 0;display:flex;align-items:center;gap:12px;background:var(--brand);color:var(--ink);box-shadow:0 1px 0 rgba(255,255,255,.06)}
-.ab-logo{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);flex:none}
+.ab-logo{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex:none;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
 .ab-back{width:36px;height:36px;border-radius:50%;display:none;place-items:center;flex:none;background:rgba(255,255,255,.08)}
 .appbar.stack .ab-back{display:grid}.appbar.stack .ab-logo{display:none}
 .ab-t{min-width:0;flex:1}
@@ -377,7 +377,7 @@ body.is-off .offline{display:block}
 
 <!-- ================= SPLASH ================= -->
 <div id="splash" role="status" aria-live="polite">
-  <div class="sp-ring"><div class="sp-logo"><svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4.5 7 6.5 7 13a7 7 0 0 1-14 0c0-3.6 2.3-5.6 3.5-6.8 0 2.2 1.1 3.5 2.4 3.5 0-3.6.1-6.7 1.1-9.7z" fill="#F2683C"/><path d="M12 13c.6 2 3 3 3 5.2a3 3 0 0 1-6 0c0-1.6 1-2.5 1.6-3 0 1 .5 1.5 1 1.5 0-1.5 0-2.6.4-3.7z" fill="#FFC15E"/></svg></div></div>
+  <div class="sp-ring"><div class="sp-logo"><img src="assets/logo_fh.svg" alt="Fire Hotspot" class="fh-logo" style="width:100%;height:100%;display:block"></div></div>
   <div class="sp-name">Fire <span>Hotspot</span></div>
   <div class="sp-sub">Hutan Desa · Kapuas Hulu</div>
   <div class="sp-bar"><i></i></div>
@@ -388,7 +388,7 @@ body.is-off .offline{display:block}
 <!-- ================= PILIH LOKASI ================= -->
 <div id="chooser" class="hide" role="dialog" aria-label="Pilih lokasi Hutan Desa">
   <div class="ch-hero">
-    <div class="ch-top"><img src="assets/logo_prcf.jpg" alt="Yayasan PRCF Indonesia" style="height:40px;border-radius:5px;flex:none"><span class="ab-logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4.5 7 6.5 7 13a7 7 0 0 1-14 0c0-3.6 2.3-5.6 3.5-6.8 0 2.2 1.1 3.5 2.4 3.5 0-3.6.1-6.7 1.1-9.7z" fill="#F2683C"/></svg></span><b>Fire Hotspot</b><span class="live" id="chLive"><i></i><span>LIVE</span></span></div>
+    <div class="ch-top"><img src="assets/logo_prcf.jpg" alt="Yayasan PRCF Indonesia" style="height:40px;border-radius:5px;flex:none"><span class="ab-logo"><img src="assets/logo_fh.svg" alt="Fire Hotspot" class="fh-logo" style="width:100%;height:100%;display:block"></span><b>Fire Hotspot</b><span class="live" id="chLive"><i></i><span>LIVE</span></span></div>
     <h1 id="chHi">Selamat datang</h1>
     <p>Pilih Hutan Desa yang ingin dipantau. Status dihitung dari titik panas satelit NASA 7 hari terakhir.</p>
     <div class="ch-sum" id="chSum"></div>
@@ -401,7 +401,7 @@ body.is-off .offline{display:block}
 <!-- ================= APP BAR ================= -->
 <header class="appbar" id="appbar">
   <button class="ab-back tap" id="abBack" aria-label="Kembali"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
-  <span class="ab-logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4.5 7 6.5 7 13a7 7 0 0 1-14 0c0-3.6 2.3-5.6 3.5-6.8 0 2.2 1.1 3.5 2.4 3.5 0-3.6.1-6.7 1.1-9.7z" fill="#F2683C"/></svg></span>
+  <span class="ab-logo"><img src="assets/logo_fh.svg" alt="Fire Hotspot" class="fh-logo" style="width:100%;height:100%;display:block"></span>
   <div class="ab-t" id="abT"><b id="abTitle">Fire Hotspot</b><small id="abSub">Hutan Desa Nanga Lauk</small></div>
   <span class="live off" id="live"><i></i><span>LIVE</span></span>
   <button class="ab-act tap" id="abRefresh" aria-label="Muat ulang data"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg></button>
