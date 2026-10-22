@@ -1,5 +1,5 @@
 {
- "terakhir_cek_utc": "2026-10-22T02:46:08Z",
+ "terakhir_cek_utc": "2026-10-22T02:48:40Z",
  "titik_baru": 0,
  "arsip_tahunan_diperbarui": 0,
  "jumlah_catatan": 70834,
@@ -84,7 +84,7 @@
    "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Thu, 22 Oct 2026 01:48:17 GMT",
+   "last_modified": "Thu, 22 Oct 2026 02:48:27 GMT",
    "ukuran_byte": 1146113,
    "sha256": "711844cace1faad737bb9561b57bfb62c478618196ad7599626779586af2d45f",
    "baris_total": 14838,
