@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Fire Hotspot">
-<meta name="description" content="Fire Hotspot: pemantauan titik panas satelit NASA FIRMS untuk Desa dan Hutan Desa Nanga Lauk, Kapuas Hulu.">
+<meta name="description" content="Fire Hotspot: pemantauan titik panas satelit NASA FIRMS untuk Hutan Desa di Kabupaten Kapuas Hulu.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
@@ -65,6 +65,33 @@ svg{display:block}
 @keyframes load{0%{transform:translateX(-110%)}100%{transform:translateX(260%)}}
 .sp-msg{font:12px var(--f-data);opacity:.7;margin-top:14px;min-height:18px}
 .sp-foot{position:absolute;bottom:calc(30px + env(safe-area-inset-bottom,0px));font-size:11px;opacity:.55;text-align:center;line-height:1.6;padding:0 20px}
+
+/* ---------- pilih lokasi (layar awal) ---------- */
+#chooser{position:fixed;inset:0;z-index:85;background:var(--bg);overflow-y:auto;transform:translateY(0);transition:transform .38s cubic-bezier(.2,.85,.25,1),opacity .3s;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+#chooser.hide{transform:translateY(-100%);opacity:0;pointer-events:none}
+.ch-hero{background:radial-gradient(120% 90% at 10% 0%,#1E7A58 0%,#0B3B2C 55%,#072A1F 100%);color:#E9F2ED;padding:calc(18px + env(safe-area-inset-top,0px)) 18px 70px;border-radius:0 0 30px 30px;position:relative}
+.ch-top{display:flex;align-items:center;gap:10px}
+.ch-top .ab-logo{width:40px;height:40px}
+.ch-top b{font-size:20px;font-weight:800;letter-spacing:-.02em;flex:1}
+.ch-hero h1{font-size:26px;line-height:1.15;letter-spacing:-.025em;margin:22px 0 6px;font-weight:800}
+.ch-hero p{margin:0;opacity:.78;font-size:14px}
+.ch-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.ch-sum div{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:9px 10px}
+.ch-sum b{display:block;font:600 19px var(--f-data)}.ch-sum span{font-size:11px;opacity:.75}
+.ch-list{padding:0 14px;margin-top:-48px;position:relative;display:grid;gap:12px}
+.sc{display:flex;gap:14px;align-items:center;width:100%;text-align:left;background:var(--surface);border-radius:22px;padding:12px;box-shadow:var(--shadow);border:1.5px solid transparent}
+.sc.last{border-color:var(--brand-3)}
+.sc .th{width:78px;height:78px;border-radius:18px;flex:none;background:linear-gradient(150deg,#14563F,#0B3B2C);display:grid;place-items:center;overflow:hidden}
+.sc .m{flex:1;min-width:0}
+.sc .m b{display:block;font-size:16px;font-weight:800;letter-spacing:-.01em}
+.sc .m small{display:block;color:var(--muted);font-size:12.5px;line-height:1.4}
+.sc .m .meta{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:6px;font-size:12px;color:var(--muted)}
+.sc .m .meta b{display:inline;font-size:12px;color:var(--fg);font-weight:700}
+.sc .r{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex:none}
+.sc .go{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);color:var(--muted)}
+.ch-all{margin:14px 14px 0;width:calc(100% - 28px)}
+.ch-note{margin:14px 18px 0;font-size:12px;color:var(--muted);text-align:center}
+.ab-sw{display:inline-flex;align-items:center;gap:4px}
 
 /* ---------- app bar ---------- */
 .appbar{position:fixed;top:0;left:0;right:0;z-index:60;height:var(--top);padding:env(safe-area-inset-top,0px) 14px 0;display:flex;align-items:center;gap:12px;background:var(--brand);color:var(--ink);box-shadow:0 1px 0 rgba(255,255,255,.06)}
@@ -268,6 +295,13 @@ body.is-off .offline{display:block}
 .ico-sq{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex:none;color:#fff}
 .ico-sq svg{width:19px;height:19px}
 .prose p{margin:0 0 10px;font-size:14px}
+.ab-t{cursor:pointer}.appbar.stack .ab-t{cursor:default}
+.site{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 14px;border-radius:18px;border:1.5px solid var(--line);background:var(--surface-2);margin-bottom:8px}
+.site[aria-pressed="true"]{border-color:var(--brand-3);background:var(--ok-soft)}
+.site .m{flex:1;min-width:0}.site .m b{display:block;font-size:14.5px}.site .m small{display:block;color:var(--muted);font-size:12px}
+.sbadge{flex:none;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:4px 9px;border-radius:999px;color:#fff}
+.sb-ok{background:var(--ok)}.sb-warn{background:var(--warn)}.sb-crit{background:var(--crit)}
+.site-lbl{background:rgba(12,28,21,.78);color:#fff;font:700 11px var(--f);padding:3px 8px;border-radius:999px;white-space:nowrap;border:1px solid rgba(255,255,255,.25);transform:translate(-50%,-50%);display:inline-block}
 .prose b{font-weight:700}
 </style>
 </head>
@@ -277,17 +311,30 @@ body.is-off .offline{display:block}
 <div id="splash" role="status" aria-live="polite">
   <div class="sp-ring"><div class="sp-logo"><svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4.5 7 6.5 7 13a7 7 0 0 1-14 0c0-3.6 2.3-5.6 3.5-6.8 0 2.2 1.1 3.5 2.4 3.5 0-3.6.1-6.7 1.1-9.7z" fill="#F2683C"/><path d="M12 13c.6 2 3 3 3 5.2a3 3 0 0 1-6 0c0-1.6 1-2.5 1.6-3 0 1 .5 1.5 1 1.5 0-1.5 0-2.6.4-3.7z" fill="#FFC15E"/></svg></div></div>
   <div class="sp-name">Fire <span>Hotspot</span></div>
-  <div class="sp-sub">Hutan Desa Nanga Lauk</div>
+  <div class="sp-sub">Hutan Desa · Kapuas Hulu</div>
   <div class="sp-bar"><i></i></div>
   <div class="sp-msg" id="spMsg">Menghubungkan ke NASA FIRMS…</div>
   <div class="sp-foot">Data satelit NASA FIRMS · VIIRS &amp; MODIS<br>Kapuas Hulu, Kalimantan Barat</div>
+</div>
+
+<!-- ================= PILIH LOKASI ================= -->
+<div id="chooser" class="hide" role="dialog" aria-label="Pilih lokasi Hutan Desa">
+  <div class="ch-hero">
+    <div class="ch-top"><span class="ab-logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4.5 7 6.5 7 13a7 7 0 0 1-14 0c0-3.6 2.3-5.6 3.5-6.8 0 2.2 1.1 3.5 2.4 3.5 0-3.6.1-6.7 1.1-9.7z" fill="#F2683C"/></svg></span><b>Fire Hotspot</b><span class="live" id="chLive"><i></i><span>LIVE</span></span></div>
+    <h1 id="chHi">Selamat datang</h1>
+    <p>Pilih Hutan Desa yang ingin dipantau. Status dihitung dari titik panas satelit NASA 7 hari terakhir.</p>
+    <div class="ch-sum" id="chSum"></div>
+  </div>
+  <div class="ch-list" id="chList"></div>
+  <button class="btn ch-all tap" id="chAll"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Lihat semua lokasi di peta</button>
+  <p class="ch-note">Kabupaten Kapuas Hulu · Kalimantan Barat · data NASA FIRMS (VIIRS &amp; MODIS)</p>
 </div>
 
 <!-- ================= APP BAR ================= -->
 <header class="appbar" id="appbar">
   <button class="ab-back tap" id="abBack" aria-label="Kembali"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
   <span class="ab-logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4.5 7 6.5 7 13a7 7 0 0 1-14 0c0-3.6 2.3-5.6 3.5-6.8 0 2.2 1.1 3.5 2.4 3.5 0-3.6.1-6.7 1.1-9.7z" fill="#F2683C"/></svg></span>
-  <div class="ab-t"><b id="abTitle">Fire Hotspot</b><small id="abSub">Hutan Desa Nanga Lauk</small></div>
+  <div class="ab-t" id="abT"><b id="abTitle">Fire Hotspot</b><small id="abSub">Hutan Desa Nanga Lauk</small></div>
   <span class="live off" id="live"><i></i><span>LIVE</span></span>
   <button class="ab-act tap" id="abRefresh" aria-label="Muat ulang data"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg></button>
 </header>
@@ -304,7 +351,7 @@ body.is-off .offline{display:block}
         <dl><dt>Tanggal</dt><dd id="lt1">–</dd><dt>Sumber</dt><dd id="lt2">–</dd><dt>Lokasi</dt><dd id="lt3">–</dd></dl>
       </button>
       <button class="glass tc tap" id="tcStatus">
-        <h3>Status Nanga Lauk <span class="lvl ok" id="stLvl">Aman</span></h3>
+        <h3><span id="stTitle">Status Nanga Lauk</span> <span class="lvl ok" id="stLvl">Aman</span></h3>
         <p id="stTxt">Memuat data…</p>
       </button>
     </div>
@@ -373,7 +420,7 @@ body.is-off .offline{display:block}
 <!-- ================= UNDUH ================= -->
 <section class="view" id="v-unduh" data-title="Unduh Data" data-sub="SHP, KML, GeoJSON & CSV">
   <div class="pad">
-    <div class="h2">Desa Nanga Lauk &amp; radius 25 km</div>
+    <div class="h2" id="dlHead">Desa Nanga Lauk &amp; radius 25 km</div>
     <div class="group" id="dlFocus"></div>
     <div class="h2">Seluruh Kapuas Hulu per tahun (SHP)</div>
     <div class="group"><div class="yrs" id="dlYear"></div></div>
@@ -405,7 +452,7 @@ body.is-off .offline{display:block}
       <a class="row tap" href="index.html?web=1"><span class="ico-sq" style="background:#3B5BB5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg></span><span class="m"><b>Buka versi website</b><small>Tampilan lengkap untuk laptop</small></span><span class="chev">›</span></a>
       <a class="row tap" href="https://github.com/erikprcfi/titik-api-desa-nanga-lauk" target="_blank" rel="noopener"><span class="ico-sq" style="background:#2A2F2C"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 9l-4 3 4 3M16 9l4 3-4 3M14 5l-4 14"/></svg></span><span class="m"><b>Kode &amp; jejak audit (GitHub)</b><small>Semua data dan riwayat terbuka</small></span><span class="chev">›</span></a>
     </div>
-    <p class="small muted" style="text-align:center;margin-top:18px">Fire Hotspot · Hutan Desa Nanga Lauk<br>Kec. Embaloh Hilir, Kab. Kapuas Hulu, Kalimantan Barat</p>
+    <p class="small muted" style="text-align:center;margin-top:18px">Fire Hotspot · Pemantauan Hutan Desa<br>Kabupaten Kapuas Hulu, Kalimantan Barat</p>
   </div>
 </section>
 
@@ -456,6 +503,9 @@ $$('#theme .chip').forEach(b=>b.onclick=()=>{store.set('theme',b.dataset.t);appl
 const ZN=['Hutan Desa','Desa Nanga Lauk','Radius 5 km','Radius 5-25 km','Kapuas Hulu','Luar Kapuas Hulu'];
 const ZCOL=['--z-hd','--z-desa','--z-5','--z-25','--z-kh','--z-out'];
 const ZLBL=['Hutan Desa','Desa Nanga Lauk','≤ 5 km dari desa','5–25 km dari desa','Kapuas Hulu','Luar Kapuas Hulu'];
+const ZS=['Hutan Desa','Desa','Radius 5 km','Radius 5–25 km','Kapuas Hulu','Luar Kapuas Hulu'];
+let SITES=[], SI=0, SITE=null; const CUACAS={};
+const zoneOfCode=(c,kab)=>c<0?0:c===0?1:c<=5?2:c<=25?3:(kab==='Kapuas Hulu'?4:5);
 const SENS=[{id:'MODIS',nm:'TERRA/AQUA',shape:'penta'},{id:'SNPP',nm:'S-NPP',shape:'hexa'},{id:'N20',nm:'NOAA-20',shape:'star'},{id:'N21',nm:'NOAA-21',shape:'diam'}];
 const sensOf=p=>p.ins==='MODIS'?'MODIS':(p.sat==='N'?'SNPP':(p.sat==='N20'||p.sat==='J1')?'N20':'N21');
 const satName=p=>p.ins==='MODIS'?(String(p.sat).startsWith('T')?'MODIS Terra':'MODIS Aqua'):({SNPP:'VIIRS S-NPP',N20:'VIIRS NOAA-20',N21:'VIIRS NOAA-21'}[sensOf(p)]);
@@ -470,8 +520,11 @@ function shapeSVG(sh,fill,size=14,stroke='#111'){
   return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}"><polygon points="${h},1 ${s-1},${h} ${h},${s-1} 1,${h}" fill="${fill}" stroke="${stroke}" stroke-width="1.1"/></svg>`;
 }
 const shapeOf=p=>SENS.find(s=>s.id===sensOf(p)).shape;
-const zIdx=p=>Math.max(0,ZN.indexOf(p.z));
-const locTxt=p=>{const i=zIdx(p);if(i<=1)return `${i===0?'Hutan Desa':'Desa'} Nanga Lauk${p.pt?' · petak '+p.pt:''}`;if(i<=3)return `${N1(p.km)} km dari Desa Nanga Lauk`;return `${p.kab||'Luar Kapuas Hulu'} · ${N1(p.km)} km dari desa`;};
+const zIdx=p=>(p.ls&&p.ls.length>SI)?zoneOfCode(p.ls[SI],p.kab):Math.max(0,ZN.indexOf(p.z));
+const kmOf=p=>(p.ls&&p.ls.length>SI)?Math.max(0,p.ls[SI]):p.km;
+const evZ=e=>(e.ls&&e.ls.length>SI)?zoneOfCode(e.ls[SI],'Kapuas Hulu'):evZ(e);
+const dNm=()=>SITE?SITE.desa_nama:'Nanga Lauk';
+const locTxt=p=>{const i=zIdx(p);if(i<=1)return `${i===0?(SITE?SITE.hd_nama:'Hutan Desa'):'Desa '+dNm()}${p.pt&&SITE&&SITE.id==='nangalauk'?' · petak '+p.pt:''}`;if(i<=3)return `${N1(kmOf(p))} km dari Desa ${dNm()}`;return `${p.kab||'Luar Kapuas Hulu'} · ${N1(kmOf(p))} km dari desa`;};
 
 /* ---------- state ---------- */
 let G=null, STATUS=null, ALL=[], STATS=null, EVENTS=null, CUACA=null;
@@ -515,7 +568,14 @@ setTimeout(hideSplash,6000);
 const spMsg=t=>{$('#spMsg').textContent=t;};
 
 /* ---------- map ---------- */
-let MAP=null, ptsL=null, meL=null, B={}, base={};
+let MAP=null, ptsL=null, meL=null, ACT=null, B={}, base={};
+const PADV={paddingTopLeft:[10,150],paddingBottomRight:[60,150]};
+function siteLayers(){if(!MAP||!SITE)return;ACT.clearLayers();
+  L.geoJSON(SITE.buf25,{style:{color:'#C9B21E',weight:1.2,dashArray:'6 5',fill:false},interactive:false}).addTo(ACT);
+  L.geoJSON(SITE.buf5,{style:{color:'#E8A317',weight:1.4,dashArray:'6 4',fill:false},interactive:false}).addTo(ACT);
+  L.geoJSON(SITE.desa,{style:{color:'#FFE14D',weight:2.6,fill:false},interactive:false}).addTo(ACT);
+  L.geoJSON(SITE.hd,{style:{color:'#FF3B30',weight:3,fill:false},interactive:false}).addTo(ACT);
+  B.desa=L.geoJSON(SITE.desa).getBounds().extend(L.geoJSON(SITE.hd).getBounds());B.r25=L.geoJSON(SITE.buf25).getBounds();B.hd=L.geoJSON(SITE.hd).getBounds();}
 function initMap(){
   MAP=L.map('map',{zoomControl:false,preferCanvas:true,attributionControl:true,zoomSnap:.25});
   base.esri=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Esri, Maxar'});
@@ -527,19 +587,18 @@ function initMap(){
   const kh=G.kab.features.find(f=>f.properties.WADMKK==='Kapuas Hulu');
   L.geoJSON(G.kab,{style:f=>({color:'#fff',weight:f.properties.WADMKK==='Kapuas Hulu'?1.6:.6,opacity:.85,fill:false,dashArray:f.properties.WADMKK==='Kapuas Hulu'?null:'3 3'}),interactive:false}).addTo(MAP);
   L.geoJSON(G.river,{style:{color:'#5AA9E6',weight:1.1,opacity:.85},interactive:false}).addTo(MAP);
-  L.geoJSON(G.buf25,{style:{color:'#C9B21E',weight:1.2,dashArray:'6 5',fill:false},interactive:false}).addTo(MAP);
-  L.geoJSON(G.buf5,{style:{color:'#E8A317',weight:1.4,dashArray:'6 4',fill:false},interactive:false}).addTo(MAP);
-  L.geoJSON(G.desa,{style:{color:'#FFE14D',weight:2,fill:false},interactive:false}).addTo(MAP);
+  ACT=L.layerGroup().addTo(MAP);
+  for(const st of SITES){L.geoJSON(st.desa,{style:{color:'#FFE14D',weight:1.6,opacity:.9,fill:false},interactive:false}).addTo(MAP);
+    L.geoJSON(st.hd,{style:{color:'#FF3B30',weight:2.2,fill:true,fillOpacity:.07},interactive:false}).addTo(MAP);
+    L.marker([st.pusat[0],st.pusat[1]],{icon:L.divIcon({className:'',html:`<span class="site-lbl">${esc(st.hd_nama.replace('Hutan Desa ','HD '))}</span>`,iconSize:[0,0]})}).on('click',()=>applySite(st.id,true)).addTo(MAP);}
   const gridL=L.geoJSON(G.grid,{style:{color:'#fff',weight:.5,opacity:.55,fill:false},interactive:false});
-  L.geoJSON(G.hd,{style:{color:'#FF3B30',weight:2.4,fill:true,fillOpacity:.06},interactive:false}).addTo(MAP);
   const lbl=L.layerGroup();for(const f of G.grid.features){const c=f.geometry.coordinates[0];let x=0,y=0;const n=c.length-1;for(let i=0;i<n;i++){x+=c[i][0];y+=c[i][1];}lbl.addLayer(L.marker([y/n,x/n],{interactive:false,icon:L.divIcon({className:'petak-lbl',html:esc(f.properties.PETAK),iconSize:[24,10],iconAnchor:[12,5]})}));}
   MAP.on('zoomend',()=>{const z=MAP.getZoom();z>=13?gridL.addTo(MAP):MAP.removeLayer(gridL);z>=15?lbl.addTo(MAP):MAP.removeLayer(lbl);});
-  B.desa=L.geoJSON(G.desa).getBounds();B.r25=L.geoJSON(G.buf25).getBounds();B.kh=L.geoJSON(kh).getBounds();B.hd=L.geoJSON(G.hd).getBounds();
-  MAP.fitBounds(B.r25,{paddingTopLeft:[10,150],paddingBottomRight:[60,150]});
+  B.kh=L.geoJSON(kh).getBounds();B.all=L.latLngBounds(SITES.map(x=>L.geoJSON(x.buf5).getBounds()).reduce((a,b)=>a.extend(b)));
   ptsL=L.layerGroup().addTo(MAP);
 }
-const FOCI=[['r25','Radius 25 km'],['desa','Desa Nanga Lauk'],['hd','Hutan Desa'],['kh','Kapuas Hulu']];let FI=0;
-$('#fabFocus').onclick=()=>{FI=(FI+1)%FOCI.length;const [k,n]=FOCI[FI];MAP.flyToBounds(B[k],{padding:[24,24],duration:.8});const l=$('#focusLbl');l.textContent='Fokus: '+n;l.classList.add('on');clearTimeout(l._t);l._t=setTimeout(()=>l.classList.remove('on'),1300);};
+const FOCI=[['r25','Radius 25 km'],['desa','Desa'],['hd','Hutan Desa'],['all','Semua lokasi'],['kh','Kapuas Hulu']];let FI=0;
+$('#fabFocus').onclick=()=>{FI=(FI+1)%FOCI.length;const [k,n0]=FOCI[FI];const n=k==='desa'?'Desa '+dNm():k==='hd'?SITE.hd_nama:n0;MAP.flyToBounds(B[k],{...PADV,duration:.8});const l=$('#focusLbl');l.textContent='Fokus: '+n;l.classList.add('on');clearTimeout(l._t);l._t=setTimeout(()=>l.classList.remove('on'),1300);};
 $('#eye').onclick=()=>{const off=$('#topcards').classList.toggle('cards-off');$('#eyeX').style.display=off?'none':'';store.set('cards',!off);};
 if(store.get('cards',true)===false){$('#topcards').classList.add('cards-off');$('#eyeX').style.display='none';}
 $('#fabMe').onclick=()=>{
@@ -571,10 +630,10 @@ function renderMap(){
 function statusCard(){
   const now=Date.now(); const F=ALL.filter(p=>now-p.when<=7*864e5+36e5);
   const inside=F.filter(p=>zIdx(p)<=1), near=F.filter(p=>zIdx(p)<=2), r25=F.filter(p=>zIdx(p)===3);
-  const lv=$('#stLvl'),tx=$('#stTxt');
+  const lv=$('#stLvl'),tx=$('#stTxt');$('#stTitle').textContent='Status '+dNm();
   if(inside.length){lv.className='lvl crit';lv.textContent='Siaga';tx.textContent=`${inside.length} titik panas di dalam desa/Hutan Desa dalam 7 hari. Terbaru ${wibShort(inside.sort((a,b)=>b.when-a.when)[0].when)}. Segera cek lapangan.`;}
-  else if(near.length){lv.className='lvl warn';lv.textContent='Waspada';tx.textContent=`${near.length} titik ≤ 5 km dari desa (7 hari). Terdekat ${N1(Math.min(...near.map(p=>p.km)))} km.`;}
-  else{lv.className='lvl ok';lv.textContent='Aman';tx.textContent=`Tidak ada titik di desa & radius 5 km (7 hari).${r25.length?` ${r25.length} titik di radius 5–25 km, terdekat ${N1(Math.min(...r25.map(p=>p.km)))} km.`:''}`;}
+  else if(near.length){lv.className='lvl warn';lv.textContent='Waspada';tx.textContent=`${near.length} titik ≤ 5 km dari desa (7 hari). Terdekat ${N1(Math.min(...near.map(p=>kmOf(p))))} km.`;}
+  else{lv.className='lvl ok';lv.textContent='Aman';tx.textContent=`Tidak ada titik di desa & radius 5 km (7 hari).${r25.length?` ${r25.length} titik di radius 5–25 km, terdekat ${N1(Math.min(...r25.map(p=>kmOf(p))))} km.`:''}`;}
 }
 $('#tcStatus').onclick=()=>openSheet(zonaHelp());
 
@@ -582,7 +641,7 @@ $('#tcStatus').onclick=()=>openSheet(zonaHelp());
 function detail(p){
   const lvl=confLvl(p), i=zIdx(p);
   openSheet(`<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px"><span style="width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:var(--surface-2)">${shapeSVG(shapeOf(p),css(CCOL[lvl]),24)}</span>
-  <div><h3>${esc(ZLBL[i])}</h3><span class="zb" style="background:${css(ZCOL[i])}">${esc(ZN[i])}</span> <span class="zb" style="background:${css(CCOL[lvl])};color:${lvl==='md'?'#111':'#fff'}">Keyakinan ${({hi:'tinggi',md:'sedang',lo:'rendah'})[lvl]}</span></div></div>
+  <div><h3>${esc(ZLBL[i])}</h3><span class="zb" style="background:${css(ZCOL[i])}">${esc(ZS[i])}</span> <span class="zb" style="background:${css(CCOL[lvl])};color:${lvl==='md'?'#111':'#fff'}">Keyakinan ${({hi:'tinggi',md:'sedang',lo:'rendah'})[lvl]}</span></div></div>
   <dl class="kv">
   <dt>Waktu</dt><dd>${esc(wibShort(p.when))}<small>${p.d} ${p.t.slice(0,2)}:${p.t.slice(2)} UTC · ${p.dn==='D'?'siang':'malam'} · ${ago(p.when)}</small></dd>
   <dt>Satelit</dt><dd>${esc(satName(p))}</dd>
@@ -590,7 +649,7 @@ function detail(p){
   <dt>FRP</dt><dd>${N1(p.frp)} MW<small>energi radiasi api</small></dd>
   <dt>Suhu kecerahan</dt><dd>${N1(p.bt)} K</dd>
   <dt>Koordinat</dt><dd class="num">${p.la.toFixed(5)}, ${p.lo.toFixed(5)}</dd>
-  <dt>Jarak ke desa</dt><dd>${i<=1?'di dalam':N1(p.km)+' km'}</dd>
+  <dt>Jarak ke desa</dt><dd>${i<=1?'di dalam':N1(kmOf(p))+' km'}</dd>
   ${p.pt?`<dt>Petak patroli</dt><dd>${esc(p.pt)}</dd>`:''}
   ${p.kw?`<dt>Fungsi kawasan</dt><dd>${esc(p.kw)}</dd>`:''}
   ${p.tl?`<dt>Tutupan 2026</dt><dd>${esc(p.tl)}</dd>`:''}
@@ -608,7 +667,7 @@ function detail(p){
 }
 
 /* ---------- list sheet ---------- */
-function ptRow(p){const i=zIdx(p);return `<button class="pt tap" data-k="${esc(p.k)}"><span class="sh">${shapeSVG(shapeOf(p),markerColor(p),16)}</span><span class="m"><b>${esc(locTxt(p))}</b><small>${esc(wibShort(p.when))} · ${esc(satName(p))}</small></span><span class="r">${i<=1?'0':N1(p.km)} km<small>${N1(p.frp)} MW</small></span></button>`;}
+function ptRow(p){const i=zIdx(p);return `<button class="pt tap" data-k="${esc(p.k)}"><span class="sh">${shapeSVG(shapeOf(p),markerColor(p),16)}</span><span class="m"><b>${esc(locTxt(p))}</b><small>${esc(wibShort(p.when))} · ${esc(satName(p))}</small></span><span class="r">${i<=1?'0':N1(kmOf(p))} km<small>${N1(p.frp)} MW</small></span></button>`;}
 function bindPts(root,list){root.querySelectorAll('.pt').forEach(b=>b.onclick=()=>{const p=list.find(x=>x.k===b.dataset.k);if(!p)return;closeAll();go('home');setTimeout(()=>{MAP.flyTo([p.la,p.lo],13,{duration:.8});setTimeout(()=>detail(p),850);},120);});}
 $('#fabList').onclick=()=>{const F=filtered().filter(p=>zIdx(p)<=4);
   const cnt=[0,1,2,3,4].map(i=>F.filter(p=>zIdx(p)===i).length);
@@ -634,7 +693,7 @@ $('#fabLayer').onclick=()=>{const cur=store.get('base','esri');
   <div class="lbl">Tambahan</div><div class="opts"><button class="optc" id="lyS2" aria-pressed="${MAP.hasLayer(base.s2)}"><span class="rd"></span><span><b>Citra Sentinel-2 10 Agustus 2026</b><small>Komposit warna asli, bebas awan, area desa</small></span></button></div>
   <div class="lbl">Legenda</div><div class="small" style="display:grid;gap:6px">
    <div><i style="display:inline-block;width:22px;border-top:2.5px solid #FF3B30;vertical-align:middle;margin-right:8px"></i>Batas Hutan Desa</div>
-   <div><i style="display:inline-block;width:22px;border-top:2.5px solid #FFE14D;vertical-align:middle;margin-right:8px"></i>Batas Desa Nanga Lauk</div>
+   <div><i style="display:inline-block;width:22px;border-top:2.5px solid #FFE14D;vertical-align:middle;margin-right:8px"></i>Batas desa</div>
    <div><i style="display:inline-block;width:22px;border-top:2.5px dashed #E8A317;vertical-align:middle;margin-right:8px"></i>Radius 5 km</div>
    <div><i style="display:inline-block;width:22px;border-top:2.5px dashed #C9B21E;vertical-align:middle;margin-right:8px"></i>Radius 25 km</div>
    <div><i style="display:inline-block;width:22px;border-top:2.5px solid #5AA9E6;vertical-align:middle;margin-right:8px"></i>Sungai utama</div>
@@ -642,6 +701,54 @@ $('#fabLayer').onclick=()=>{const cur=store.get('base','esri');
   $$('#lyB .optc').forEach(b=>b.onclick=()=>{['esri','topo','osm'].forEach(k=>MAP.removeLayer(base[k]));base[b.dataset.b].addTo(MAP);store.set('base',b.dataset.b);$$('#lyB .optc').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});
   $('#lyS2').onclick=e=>{const on=!MAP.hasLayer(base.s2);on?base.s2.addTo(MAP):MAP.removeLayer(base.s2);store.set('s2',on);e.currentTarget.setAttribute('aria-pressed',String(on));if(on)MAP.flyToBounds(B.desa,{padding:[20,20],duration:.6});};
 };
+
+/* ---------- lokasi Hutan Desa ---------- */
+function siteStatus(k){const now=Date.now();const F=ALL.filter(p=>now-p.when<=7*864e5+36e5&&p.ls&&p.ls.length>k);const c=F.map(p=>p.ls[k]);
+  const inside=c.filter(v=>v<=0).length, near=c.filter(v=>v<=5).length, r25=c.filter(v=>v<=25).length;
+  return {lvl:inside?'crit':near?'warn':'ok',txt:inside?'Siaga':near?'Waspada':'Aman',inside,near,r25};}
+function applySite(id,fly){
+  const k=Math.max(0,SITES.findIndex(x=>x.id===id));SI=k;SITE=SITES[k]||null;if(!SITE)return;
+  store.set('site',SITE.id);window.FH_SITE=SITE.id;if(window.PantauLaporan&&PantauLaporan.reset)PantauLaporan.reset();
+  ZLBL[1]='Desa '+SITE.desa_nama;
+  $('#v-home').dataset.sub=SITE.hd_nama+' ▾';$$('.view').forEach(v=>{if(v.id!=='v-home')v.dataset.sub=(v.dataset.base||(v.dataset.base=v.dataset.sub));});
+  if(!$('#appbar').classList.contains('stack'))$('#abSub').textContent=(CUR==='home'?SITE.hd_nama+' ▾':$(views[CUR]).dataset.sub);
+  $('#v-lap').dataset.sub=SITE.hd_nama+' · PDF, Word, CSV';if(CUR==='lap')$('#abSub').textContent=$('#v-lap').dataset.sub;
+  $('#v-data').dataset.sub=SITE.hd_nama;if(CUR==='data')$('#abSub').textContent=SITE.hd_nama;
+  siteLayers();if(MAP){if(fly)MAP.flyToBounds(B.r25,{...PADV,duration:.9});else MAP.fitBounds(B.r25,PADV);}FI=0;
+  CUACA=CUACAS[SITE.id]||null;getCuaca().then(()=>dataMocks());
+  if(STATUS){renderMap();statusCard();downloads();dataMocks();}
+}
+function getCuaca(){const id=SITE.id;if(CUACAS[id]){CUACA=CUACAS[id];return Promise.resolve(CUACA);}
+  return J(id==='nangalauk'?'data/cuaca.json':`data/cuaca_${id}.json`).then(c=>{CUACAS[id]=c;if(SITE.id===id)CUACA=c;return c;}).catch(()=>null);}
+function siteSheet(){
+  openSheet(`<h3>Pilih lokasi Hutan Desa</h3><p class="sub">${SITES.length} lokasi dipantau · status 7 hari terakhir</p>
+  ${SITES.map((x,k)=>{const st=siteStatus(k);return `<button class="site tap" data-id="${x.id}" aria-pressed="${k===SI}"><span class="ico-sq" style="background:${k===SI?'var(--brand-3)':'#5E6B64'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 11h-4l4 7H5l4-7H5z"/><path d="M12 20v2"/></svg></span>
+   <span class="m"><b>${esc(x.hd_nama)}</b><small>Desa ${esc(x.desa_nama)} · Kec. ${esc(x.kec)} · ${N(Math.round(x.luas_hd_ha))} ha</small><small>${st.r25} titik ≤ 25 km${st.near?` · ${st.near} titik ≤ 5 km`:''}</small></span><span class="sbadge sb-${st.lvl}">${st.txt}</span></button>`;}).join('')}
+  <button class="btn full tap" id="allSites" style="width:100%;margin-top:4px">Lihat semua lokasi di peta</button>`);
+  $$('#sheetBody .site').forEach(b=>b.onclick=()=>{history.back();setTimeout(()=>{if(CUR!=='home')go('home');applySite(b.dataset.id,true);},60);});
+  $('#allSites').onclick=()=>{history.back();setTimeout(()=>{if(CUR!=='home')go('home');MAP.flyToBounds(B.all,{...PADV,duration:.9});},60);};
+}
+function thumb(st){const P=[];const rings=g=>(g.type==='Polygon'?[g.coordinates]:g.coordinates).flat();
+  const all=[...st.desa.features,...st.hd.features].flatMap(f=>rings(f.geometry));let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const r of all)for(const [x,y] of r){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);}
+  const sc=64/Math.max(x1-x0,y1-y0),ox=(78-(x1-x0)*sc)/2,oy=(78-(y1-y0)*sc)/2;const path=fs=>fs.flatMap(f=>rings(f.geometry)).map(r=>'M'+r.filter((_,i)=>i%2===0||r.length<200).map(([x,y])=>`${(ox+(x-x0)*sc).toFixed(1)},${(oy+(y1-y)*sc).toFixed(1)}`).join('L')+'Z').join('');
+  return `<svg width="78" height="78" viewBox="0 0 78 78"><path d="${path(st.desa.features)}" fill="rgba(255,225,77,.12)" stroke="#FFE14D" stroke-width="1.4"/><path d="${path(st.hd.features)}" fill="rgba(255,59,48,.45)" stroke="#FF5A4F" stroke-width="1.4"/></svg>`;}
+function greet(){const h=W7(new Date()).getUTCHours();return h<4?'Selamat malam':h<11?'Selamat pagi':h<15?'Selamat siang':h<18?'Selamat sore':'Selamat malam';}
+function chooser(fromBar){
+  const last=store.get('site','nangalauk');const S=SITES.map((x,k)=>({x,k,st:siteStatus(k)}));
+  $('#chHi').textContent=greet();
+  const nW=S.filter(o=>o.st.lvl!=='ok').length, n25=S.reduce((a,o)=>a+o.st.r25,0);
+  $('#chSum').innerHTML=`<div><b>${SITES.length}</b><span>Hutan Desa dipantau</span></div><div><b>${S.length-nW}</b><span>berstatus aman</span></div><div><b>${n25}</b><span>titik ≤ 25 km (7 hari)</span></div>`;
+  $('#chList').innerHTML=S.map(({x,k,st})=>`<button class="sc tap${x.id===last?' last':''}" data-id="${x.id}"><span class="th">${thumb(x)}</span>
+   <span class="m"><b>${esc(x.hd_nama)}</b><small>Desa ${esc(x.desa_nama)} · Kec. ${esc(x.kec)}</small><span class="meta"><span><b>${N(Math.round(x.luas_hd_ha))}</b> ha</span><span><b>${st.r25}</b> titik ≤ 25 km</span>${st.near?`<span><b>${st.near}</b> titik ≤ 5 km</span>`:''}</span></span>
+   <span class="r"><span class="sbadge sb-${st.lvl}">${st.txt}</span><span class="go"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></span></span></button>`).join('');
+  const L0=$('#live');$('#chLive').className=L0.className;$('#chLive').querySelector('span').textContent=L0.querySelector('span').textContent;
+  const close=()=>{$('#chooser').classList.add('hide');setTimeout(()=>MAP&&MAP.invalidateSize(),400);};
+  $$('#chList .sc').forEach(b=>b.onclick=()=>{const id=b.dataset.id;if(fromBar)history.back();else close();if(CUR!=='home')go('home');setTimeout(()=>applySite(id,true),fromBar?80:200);});
+  $('#chAll').onclick=()=>{if(fromBar)history.back();else close();if(CUR!=='home')go('home');setTimeout(()=>MAP.flyToBounds(B.all,{...PADV,duration:.9}),250);};
+  $('#chooser').scrollTop=0;$('#chooser').classList.remove('hide');
+  if(fromBar)pushLayer(close);
+}
+$('#abT').onclick=()=>{if(!$('#appbar').classList.contains('stack')&&SITES.length)chooser(true);};
 
 /* ---------- live chip ---------- */
 function liveChip(){const el=$('#live');if(!STATUS){el.className='live off';return;}const last=new Date(STATUS.terakhir_cek_utc);const h=(Date.now()-last)/36e5;
@@ -654,22 +761,24 @@ const J=u=>fetch(u+(u.includes('?')?'&':'?')+'t='+Date.now()).then(r=>{if(!r.ok)
 async function load(first){
   try{
     if(first)spMsg('Memuat batas wilayah…');
-    if(!G){G=await J('data/geo.json');initMap();}
+    if(!G){G=await J('data/geo.json');SITES=G.sites||[];initMap();applySite(new URLSearchParams(location.search).get('lokasi')||store.get('site','nangalauk'),false);}
     if(first)spMsg('Mengambil titik panas terbaru…');
     const [h,s]=await Promise.all([J('data/hotspots.json'),J('data/status.json')]);
     ALL=h.titik.map(p=>({...p,when:new Date(Date.UTC(+p.d.slice(0,4),+p.d.slice(5,7)-1,+p.d.slice(8,10),+p.t.slice(0,2),+p.t.slice(2,4)))}));
     STATUS=s; if(first)spMsg(`${N(s.jumlah_catatan)} deteksi tersinkron ✓`);
     renderMap(); statusCard(); liveChip(); sysPanel(); downloads(); dataMocks();
   }catch(e){console.error(e);if(first)spMsg('Tidak ada sinyal — memakai data tersimpan');liveChip();if(!G){$('#stTxt').textContent='Data belum tersedia. Sambungkan internet lalu ketuk ⟳.';}}
-  if(first)hideSplash();
+  if(first){const deep=location.hash.length>1||new URLSearchParams(location.search).get('lokasi');if(SITES.length&&!deep)chooser(false);hideSplash();}
 }
 $('#abRefresh').onclick=async e=>{const b=e.currentTarget;b.style.transition='transform .8s';b.style.transform='rotate(360deg)';await load();setTimeout(()=>{b.style.transition='none';b.style.transform='';},850);};
 
 /* ---------- history (stats/events/weather) ---------- */
 let histP=null;
-function loadHist(){if(!histP)histP=Promise.all([J('data/stats.json'),J('data/kejadian.json'),J('data/cuaca.json')]).then(([a,b,c])=>{STATS=a;EVENTS=b;CUACA=c;dataMocks();}).catch(e=>{histP=null;});return histP;}
+function loadHist(){if(!histP)histP=Promise.all([J('data/stats.json'),J('data/kejadian.json'),SITE?getCuaca():J('data/cuaca.json')]).then(([a,b,c])=>{STATS=a;EVENTS=Array.isArray(b)?b:b.baris.map(r=>Object.fromEntries(b.kolom.map((k,i)=>[k,r[i]])));if(c)CUACA=c;dataMocks();}).catch(e=>{histP=null;});return histP;}
 
-function yearTotals(sens,zmax){const out={};for(const [y,v] of Object.entries(STATS.tahunan)){let t=0;for(const [f,z] of Object.entries(v)){if(sens!=='semua'&&f!==sens)continue;for(const [zn,c] of Object.entries(z))if(ZN.indexOf(zn)<=zmax)t+=c;}out[y]=t;}return out;}
+const statsT=()=>(STATS.per_lokasi&&SITE&&STATS.per_lokasi[SITE.id])||STATS.tahunan;
+const ZNS=()=>(STATS.per_lokasi&&SITE&&STATS.per_lokasi[SITE.id])?STATS.zona_lokasi:ZN;
+function yearTotals(sens,zmax){const out={},zn=ZNS();for(const [y,v] of Object.entries(statsT())){let t=0;for(const [f,z] of Object.entries(v)){if(sens!=='semua'&&!f.startsWith(sens))continue;for(const [k,c] of Object.entries(z))if(zn.indexOf(k)<=zmax)t+=c;}out[y]=t;}return out;}
 function dataMocks(){
   const F=filtered();
   $('#mk1').innerHTML=`<div class="mh"><i></i>Sebaran Titik Panas</div>${[0,1,2,3,4].map(i=>`<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #eee"><span><b style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${css(ZCOL[i])};margin-right:4px"></b>${ZLBL[i]}</span><b>${F.filter(p=>zIdx(p)===i).length}</b></div>`).join('')}`;
@@ -681,12 +790,12 @@ function dataMocks(){
     $('#mk3').innerHTML=`<div class="mh"><i></i>Hujan 30 hari</div><svg viewBox="0 0 120 70" width="100%" height="86">${last.map((v,i)=>`<rect x="${i*4}" y="${68-64*(v||0)/mx}" width="3" height="${64*(v||0)/mx}" fill="#3B6FD1"/>`).join('')}</svg><div>s.d. ${CUACA.t[n-1]}</div>`;
     const s7=CUACA.hujan.slice(n-7).reduce((a,b)=>a+(b||0),0);$('#dc3').textContent=`Hujan 7 hari: ${N1(s7)} mm`;}
   else $('#mk3').innerHTML='<div class="mh"><i></i>Hujan 30 hari</div><div style="color:#888">memuat…</div>';
-  if(EVENTS){const E=EVENTS.filter(e=>ZN.indexOf(e.zona_terdekat)<=2).slice(-5).reverse();
-    $('#mk4').innerHTML=`<div class="mh"><i></i>Kejadian Api</div>${E.map(e=>`<div style="padding:3px 0;border-bottom:1px solid #eee"><b>${esc(e.mulai_wib.slice(0,10))}</b> · ${esc(e.zona_terdekat)}</div>`).join('')}`;
-    $('#dc4').textContent=`${N(EVENTS.filter(e=>ZN.indexOf(e.zona_terdekat)<=2).length)} kejadian di desa & radius 5 km`;}
+  if(EVENTS){const E=EVENTS.filter(e=>evZ(e)<=2).slice(-5).reverse();
+    $('#mk4').innerHTML=`<div class="mh"><i></i>Kejadian Api</div>${E.map(e=>`<div style="padding:3px 0;border-bottom:1px solid #eee"><b>${esc(e.mulai_wib.slice(0,10))}</b> · ${esc(ZLBL[evZ(e)])}</div>`).join('')}`;
+    $('#dc4').textContent=`${N(EVENTS.filter(e=>evZ(e)<=2).length)} kejadian di desa & radius 5 km`;}
   else $('#mk4').innerHTML='<div class="mh"><i></i>Kejadian Api</div><div style="color:#888">memuat…</div>';
 }
-$$('.dcard').forEach(b=>b.onclick=async()=>{const k=b.dataset.page;if(k!=='sebaran'){await loadHist();if(!STATS)return openSheet('<h3>Belum bisa dimuat</h3><p class="sub">Sambungkan internet lalu coba lagi.</p>');}PAGES[k]();});
+$$('.dcard').forEach(b=>b.onclick=async()=>{const k=b.dataset.page;if(k!=='sebaran'){await loadHist();if(k==='cuaca')await getCuaca();if(k==='cuaca'&&!CUACA)return openSheet('<h3>Data cuaca belum tersedia</h3><p class="sub">Sambungkan internet lalu coba lagi.</p>');if(!STATS)return openSheet('<h3>Belum bisa dimuat</h3><p class="sub">Sambungkan internet lalu coba lagi.</p>');}PAGES[k]();});
 
 /* ---------- charts ---------- */
 function barChart(labels,series,{h=200,every=1,stack=true,line=null}={}){
@@ -710,20 +819,20 @@ const PAGES={
    const zc=[0,1,2,3,4].map(i=>F.filter(p=>zIdx(p)===i).length);const pet={};F.forEach(p=>{if(p.pt)pet[p.pt]=(pet[p.pt]||0)+1;});
    const sc=SENS.map(s=>F.filter(p=>sensOf(p)===s.id).length);
    return `<div class="seg" id="sbP" style="margin-bottom:14px">${[[1,'24 jam'],[7,'7 hari'],[30,'30 hari'],[365,'1 tahun'],[0,'Semua']].map(([d,t])=>`<button class="chip" data-d="${d}" aria-pressed="${P===d}">${t}</button>`).join('')}</div>
-   <div class="stat3"><div class="card"><b>${F.length}</b><span>titik di Kapuas Hulu</span></div><div class="card"><b>${zc[0]+zc[1]+zc[2]}</b><span>desa &amp; radius 5 km</span></div><div class="card"><b>${F.length?N1(Math.min(...F.map(p=>p.km))):'–'}</b><span>km titik terdekat</span></div></div>
+   <div class="stat3"><div class="card"><b>${F.length}</b><span>titik di Kapuas Hulu</span></div><div class="card"><b>${zc[0]+zc[1]+zc[2]}</b><span>desa &amp; radius 5 km</span></div><div class="card"><b>${F.length?N1(Math.min(...F.map(p=>kmOf(p)))):'–'}</b><span>km titik terdekat</span></div></div>
    <div class="h2">Per zona</div><div class="card">${[0,1,2,3,4].map(i=>{const m=Math.max(1,...zc);return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0"><span style="width:10px;height:10px;border-radius:3px;background:${css(ZCOL[i])}"></span><span style="flex:1;font-size:13.5px">${ZLBL[i]}</span><span style="width:34%;height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden"><i style="display:block;height:100%;width:${100*zc[i]/m}%;background:${css(ZCOL[i])}"></i></span><b class="num" style="width:36px;text-align:right">${zc[i]}</b></div>`;}).join('')}</div>
    <div class="h2">Per satelit</div><div class="card" style="display:grid;grid-template-columns:repeat(4,1fr);text-align:center">${SENS.map((s,i)=>`<div><div style="display:grid;place-items:center;height:22px">${shapeSVG(s.shape,css('--accent'),16,'none')}</div><b class="num" style="font-size:20px">${sc[i]}</b><div class="small muted">${s.nm}</div></div>`).join('')}</div>
    ${Object.keys(pet).length?`<div class="h2">Petak patroli terdampak</div><div class="card seg">${Object.entries(pet).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<span class="chip">Petak ${esc(k)} <b>${v}</b></span>`).join('')}</div>`:''}
    <div class="h2">Titik terbaru</div><div class="card" style="padding:4px 14px"><div class="ptlist" id="sbL">${F.length?F.slice(0,60).map(ptRow).join(''):'<div class="empty">Tidak ada titik pada periode ini.</div>'}</div></div>`;};
   const draw=()=>{$('#pageBody').innerHTML=html();$$('#sbP .chip').forEach(b=>b.onclick=()=>{P=+b.dataset.d;draw();});const now=Date.now();bindPts($('#sbL'),ALL);};
-  openPage('Sebaran Titik Panas','Kapuas Hulu & Desa Nanga Lauk','',draw);
+  openPage('Sebaran Titik Panas',SITE.hd_nama,'',draw);
  },
  grafik(){
   let S='semua',Z=3;
-  const draw=()=>{const yrs=Object.keys(STATS.tahunan).sort();
-   const zs=[0,1,2,3,4].filter(i=>i<=Z);const ser=zs.map(i=>({c:css(ZCOL[i]),v:yrs.map(y=>{let t=0;for(const [f,z] of Object.entries(STATS.tahunan[y])){if(S!=='semua'&&f!==S)continue;t+=z[ZN[i]]||0;}return t;})}));
+  const draw=()=>{const TT=statsT(),zn=ZNS();const yrs=Object.keys(TT).sort();
+   const zs=[0,1,2,3,4].filter(i=>i<=Z);const ser=zs.map(i=>({c:css(ZCOL[i]),v:yrs.map(y=>{let t=0;for(const [f,z] of Object.entries(TT[y])){if(S!=='semua'&&!f.startsWith(S))continue;t+=z[zn[i]]||0;}return t;})}));
    const tot=yrs.map((_,k)=>ser.reduce((a,s)=>a+s.v[k],0));const peak=tot.indexOf(Math.max(...tot));const all=tot.reduce((a,b)=>a+b,0);
-   const hd=yrs.reduce((a,y)=>a+Object.values(STATS.tahunan[y]).reduce((b,z)=>b+(z['Hutan Desa']||0),0),0);
+   const hd=yrs.reduce((a,y)=>a+Object.values(TT[y]).reduce((b,z)=>b+(z['Hutan Desa']||0),0),0);
    REDRAW=draw;
    $('#pageBody').innerHTML=`<div class="seg" id="gS">${[['semua','Semua sensor'],['MODIS','MODIS'],['VIIRS','VIIRS']].map(([k,t])=>`<button class="chip" data-s="${k}" aria-pressed="${S===k}">${t}</button>`).join('')}</div>
    <div class="seg" id="gZ" style="margin-top:8px">${[[2,'Desa & 5 km'],[3,'Sampai 25 km'],[4,'Kapuas Hulu']].map(([k,t])=>`<button class="chip" data-z="${k}" aria-pressed="${Z===k}">${t}</button>`).join('')}</div>
@@ -732,7 +841,7 @@ const PAGES={
    <div class="h2">Rekap per tahun</div><div class="group">${yrs.slice().reverse().map((y,k)=>{const i=yrs.length-1-k;return `<div class="row"><span class="m"><b>${y}</b><small>${zs.map(z=>`${ZLBL[z]}: ${ser[zs.indexOf(z)].v[i]}`).join(' · ')}</small></span><b class="num">${N(tot[i])}</b></div>`;}).join('')}</div>
    <p class="small muted" style="margin:12px 4px">VIIRS tersedia sejak 2012 (S-NPP) dan 2018 (NOAA-20); MODIS sejak 2000. Tahun berjalan dapat bertambah.</p>`;
    $$('#gS .chip').forEach(b=>b.onclick=()=>{S=b.dataset.s;draw();});$$('#gZ .chip').forEach(b=>b.onclick=()=>{Z=+b.dataset.z;draw();});};
-  openPage('Grafik dan Rekap','Tren titik panas 2001–sekarang','',draw);
+  openPage('Grafik dan Rekap',SITE.hd_nama+' · 2001–sekarang','',draw);
  },
  cuaca(){
   const draw=()=>{const C=CUACA,n=C.t.length;const last=n-1;const L30=[...Array(30)].map((_,k)=>n-30+k);
@@ -741,7 +850,7 @@ const PAGES={
    const dry=C.hujan.slice(0).reverse().findIndex(v=>(v||0)>=1);
    const risk=s7<10?['crit','Kering','Risiko kebakaran meningkat. Tingkatkan patroli dan hindari pembakaran lahan.']:s7<50?['warn','Sedang','Hujan ada tetapi belum merata. Tetap waspada.']:['ok','Basah','Curah hujan tinggi, risiko kebakaran rendah.'];
    const mon=[...Array(12)].map((_,m)=>{const ys=new Set();let s=0;C.t.forEach((t,i)=>{if(t>='2001'&&t<'2026'&&+t.slice(5,7)===m+1){s+=C.hujan[i]||0;ys.add(t.slice(0,4));}});return Math.round(s/Math.max(1,ys.size));});
-   const hm=[...Array(12)].fill(0);if(STATS){/* pola bulanan dari kejadian ≤25 km */for(const e of EVENTS)if(ZN.indexOf(e.zona_terdekat)<=3)hm[+e.mulai_wib.slice(5,7)-1]+=e.jumlah_deteksi;}
+   const hm=[...Array(12)].fill(0);if(STATS){/* pola bulanan dari kejadian ≤25 km */for(const e of EVENTS)if(evZ(e)<=3)hm[+e.mulai_wib.slice(5,7)-1]+=e.jumlah_deteksi;}
    REDRAW=draw;
    $('#pageBody').innerHTML=`<div class="risk" style="background:var(--${risk[0]}-soft)"><span class="ico-sq" style="background:var(--${risk[0]})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c1 4.5 7 6.5 7 13a7 7 0 0 1-14 0c0-3.6 2.3-5.6 3.5-6.8 0 2.2 1.1 3.5 2.4 3.5 0-3.6.1-6.7 1.1-9.7z"/></svg></span><div><b>Kondisi ${risk[1]}</b><div class="small">${risk[2]}</div></div></div>
    <p class="small muted" style="margin:6px 4px 0">Indikasi sederhana dari total hujan 7 hari (bukan indeks resmi FDRS/BMKG).</p>
@@ -750,26 +859,27 @@ const PAGES={
    <div class="h2">Musim kebakaran</div><div class="card chart">${barChart(BULAN,[{c:css('--accent'),v:hm}],{h:190,line:{c:'#3B6FD1',v:mon}})}<div class="legend"><span><i style="background:${css('--accent')}"></i>Deteksi ≤ 25 km (2001–kini)</span><span><i style="background:#3B6FD1"></i>Hujan normal (mm/bulan)</span></div>
    <p class="small" style="margin:10px 0 0">Titik panas paling banyak muncul saat bulan kering (Juli–September) ketika curah hujan turun; pada bulan basah titik panas hampir tidak ada.</p></div>
    <p class="small muted" style="margin:12px 4px">Sumber: ${esc(C.sumber)} · lokasi ${esc(C.lokasi)}.</p>`;};
-  openPage('Cuaca &amp; Musim Api','Curah hujan ERA5 di Nanga Lauk','',draw);
+  openPage('Cuaca &amp; Musim Api','Curah hujan ERA5 · Desa '+dNm(),'',draw);
  },
  kejadian(){
   let Z=2;
-  const draw=()=>{const E=EVENTS.filter(e=>ZN.indexOf(e.zona_terdekat)<=Z).slice().reverse();
+  const draw=()=>{const E=EVENTS.filter(e=>evZ(e)<=Z).slice().reverse();
    $('#pageBody').innerHTML=`<div class="seg" id="kZ">${[[0,'Hutan Desa'],[1,'Desa'],[2,'Desa & 5 km'],[3,'Sampai 25 km']].map(([k,t])=>`<button class="chip" data-z="${k}" aria-pressed="${Z===k}">${t}</button>`).join('')}</div>
    <p class="small muted" style="margin:10px 4px 12px">${N(E.length)} kejadian. Deteksi berjarak ≤ 1 km dan ≤ 2 hari digabung menjadi satu kejadian.</p>
-   ${E.slice(0,150).map(e=>{const i=ZN.indexOf(e.zona_terdekat);return `<button class="card ev tap" data-id="${esc(e.id_kejadian)}"><div class="top"><b>${esc(e.mulai_wib)} WIB</b><span class="zb" style="background:${css(ZCOL[i])}">${esc(ZLBL[i])}</span></div><code>${esc(e.id_kejadian)}</code><div class="meta"><span><b>${e.jumlah_deteksi}</b> deteksi</span><span>FRP maks <b>${e.frp_maks_mw}</b> MW</span>${e.petak?`<span>Petak <b>${esc(e.petak)}</b></span>`:''}${e.tutupan_2026?`<span>${esc(e.tutupan_2026)}</span>`:''}${e.gambut?`<span>Gambut: ${esc(e.gambut)}</span>`:''}<span>${esc(e.sensor)}</span></div></button>`;}).join('')||'<div class="empty">Tidak ada kejadian.</div>'}`;
+   ${E.slice(0,150).map(e=>{const i=evZ(e);return `<button class="card ev tap" data-id="${esc(e.id_kejadian)}"><div class="top"><b>${esc(e.mulai_wib)} WIB</b><span class="zb" style="background:${css(ZCOL[i])}">${esc(ZLBL[i])}</span></div><code>${esc(e.id_kejadian)}</code><div class="meta"><span><b>${e.jumlah_deteksi}</b> deteksi</span><span>FRP maks <b>${e.frp_maks_mw}</b> MW</span>${e.petak?`<span>Petak <b>${esc(e.petak)}</b></span>`:''}${e.tutupan_2026?`<span>${esc(e.tutupan_2026)}</span>`:''}${e.gambut?`<span>Gambut: ${esc(e.gambut)}</span>`:''}<span>${esc(e.sensor)}</span></div></button>`;}).join('')||'<div class="empty">Tidak ada kejadian.</div>'}`;
    $$('#kZ .chip').forEach(b=>b.onclick=()=>{Z=+b.dataset.z;draw();});
    $$('#pageBody .ev').forEach(b=>b.onclick=()=>{const e=EVENTS.find(x=>x.id_kejadian===b.dataset.id);closeAll();go('home');setTimeout(()=>{MAP.flyTo([e.lat,e.lon],13,{duration:.8});const m=L.circleMarker([e.lat,e.lon],{radius:16,color:'#fff',weight:2,fillColor:css('--accent'),fillOpacity:.35}).addTo(MAP);setTimeout(()=>MAP.removeLayer(m),8000);},150);});};
-  openPage('Kejadian Api','Riwayat 2001–sekarang','',draw);
+  openPage('Kejadian Api',SITE.hd_nama+' · 2001–sekarang','',draw);
  }
 };
 
 /* ---------- unduh ---------- */
 function downloads(){
-  const ex=STATUS.ekspor||[];const fmtOf=f=>f.endsWith('_shp.zip')?'SHP':f.split('.').pop().toUpperCase();const baseOf=f=>f.replace(/_shp\.zip$/,'').replace(/\.(kml|geojson|csv)$/,'');
-  const desc={'titik_panas_desa_radius25km_semua_tahun':['Titik panas','Semua tahun · satu titik per deteksi'],'kejadian_api_desa_radius25km':['Kejadian api','Titik pusat kejadian'],'kejadian_api_desa_radius25km_titik':['Kejadian api','Titik pusat kejadian'],'kejadian_api_desa_radius25km_cakupan_piksel_UTM49N':['Kejadian api · poligon','Cakupan piksel UTM 49N (bukan luas terbakar)']};
-  const order={SHP:0,KML:1,GEOJSON:2,CSV:3};
-  $('#dlFocus').innerHTML=ex.filter(f=>!f.startsWith('titik_panas_kapuashulu_')).sort((a,b)=>baseOf(b).localeCompare(baseOf(a))||order[fmtOf(a)]-order[fmtOf(b)]).map(f=>{const k=fmtOf(f),d=desc[baseOf(f)]||[baseOf(f).replace(/_/g,' '),''];return `<a class="row tap" href="data/export/${f}" download><span class="badge b-${k.toLowerCase()}">${k}</span><span class="m"><b>${esc(d[0])}</b><small>${esc(d[1])}</small></span><span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M4 19.5h16"/></svg></span></a>`;}).join('');
+  if(!STATUS||!SITE)return;const ex=STATUS.ekspor||[];const id=SITE.id;const fmtOf=f=>f.endsWith('_shp.zip')?'SHP':f.split('.').pop().toUpperCase();
+  const kind=f=>f.startsWith('titik_panas_')?['Titik panas','Semua tahun · satu titik per deteksi']:f.includes('_cakupan_piksel')?['Kejadian api · poligon','Cakupan piksel UTM 49N (bukan luas terbakar)']:['Kejadian api','Titik pusat kejadian'];
+  const order={SHP:0,KML:1,GEOJSON:2,CSV:3};const mine=ex.filter(f=>f.startsWith(`titik_panas_${id}_`)||f.startsWith(`kejadian_api_${id}_`));
+  $('#dlHead').textContent=`${SITE.hd_nama} · Desa ${SITE.desa_nama} & radius 25 km`;
+  $('#dlFocus').innerHTML=mine.sort((a,b)=>kind(a)[0].localeCompare(kind(b)[0])*-1||order[fmtOf(a)]-order[fmtOf(b)]).map(f=>{const k=fmtOf(f),d=kind(f);return `<a class="row tap" href="data/export/${f}" download><span class="badge b-${k.toLowerCase()}">${k}</span><span class="m"><b>${esc(d[0])}</b><small>${esc(d[1])}</small></span><span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M4 19.5h16"/></svg></span></a>`;}).join('')||'<div class="empty">File untuk lokasi ini sedang disiapkan.</div>';
   $('#dlYear').innerHTML=ex.filter(f=>f.startsWith('titik_panas_kapuashulu_')).sort().reverse().map(f=>`<a class="tap" href="data/export/${f}" download>${f.match(/\d{4}/)[0]}</a>`).join('');
   $('#dlArch').innerHTML=(STATUS.tahun_arsip||[]).slice().reverse().map(y=>`<a class="tap" href="data/archive/${y}.csv" download>${y}</a>`).join('');
 }

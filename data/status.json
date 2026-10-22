@@ -1,5 +1,5 @@
 {
- "terakhir_cek_utc": "2026-10-22T04:18:13Z",
+ "terakhir_cek_utc": "2026-10-22T08:21:51Z",
  "titik_baru": 0,
  "arsip_tahunan_diperbarui": 0,
  "jumlah_catatan": 70834,
@@ -45,11 +45,11 @@
    "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Thu, 22 Oct 2026 03:51:00 GMT",
-   "ukuran_byte": 6930678,
-   "sha256": "e8014441355ac7ef675c787d98f3f519b74b6ed524322b2c957f826c7ba2692f",
-   "baris_total": 84602,
-   "baris_di_kotak": 3
+   "last_modified": "Thu, 22 Oct 2026 07:49:42 GMT",
+   "ukuran_byte": 6153245,
+   "sha256": "11b77036e390dc459cbee2959101e94c9757c4f919d99bbc0ce3314b931538c9",
+   "baris_total": 75057,
+   "baris_di_kotak": 2
   },
   {
    "jenis": "NRT 7 hari",
@@ -58,11 +58,11 @@
    "doi": "10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Thu, 22 Oct 2026 03:43:26 GMT",
-   "ukuran_byte": 7705082,
-   "sha256": "50b0f9b835fcb63571db3e104d61c67d96add506d83b735fe462bb21da5a06f6",
-   "baris_total": 91879,
-   "baris_di_kotak": 19
+   "last_modified": "Thu, 22 Oct 2026 07:42:19 GMT",
+   "ukuran_byte": 6810016,
+   "sha256": "516c369c2ae1ffa8a980a52b497a500af6eeeedc63088d502acd47ba11a4d342",
+   "baris_total": 81213,
+   "baris_di_kotak": 18
   },
   {
    "jenis": "NRT 7 hari",
@@ -71,10 +71,10 @@
    "doi": "10.5067/VIIRS/VJ214IMG_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Thu, 22 Oct 2026 03:46:22 GMT",
-   "ukuran_byte": 7735054,
-   "sha256": "8e0a89de80220ef0b6a142758a772bb36c5acff34961bb25835902c5c911d1f2",
-   "baris_total": 92207,
+   "last_modified": "Thu, 22 Oct 2026 07:45:03 GMT",
+   "ukuran_byte": 6722057,
+   "sha256": "b682d62a7a08fdf97a208a0e8ee651d28638bd2385382aad147248610e339ea0",
+   "baris_total": 80114,
    "baris_di_kotak": 14
   },
   {
@@ -84,10 +84,10 @@
    "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Thu, 22 Oct 2026 03:48:18 GMT",
-   "ukuran_byte": 1146113,
-   "sha256": "711844cace1faad737bb9561b57bfb62c478618196ad7599626779586af2d45f",
-   "baris_total": 14838,
+   "last_modified": "Thu, 22 Oct 2026 07:46:50 GMT",
+   "ukuran_byte": 1023992,
+   "sha256": "db63a1297e80b4e601b5f9d0172d310057194f387167d25ae8aec3901e3f019f",
+   "baris_total": 13268,
    "baris_di_kotak": 10
   }
  ],
@@ -200,6 +200,30 @@
     "baru": 0,
     "ok": 4,
     "n": 4
+   },
+   {
+    "t": "2026-10-22T08:07:21Z",
+    "baru": 0,
+    "ok": 4,
+    "n": 4
+   },
+   {
+    "t": "2026-10-22T08:15:16Z",
+    "baru": 0,
+    "ok": 4,
+    "n": 4
+   },
+   {
+    "t": "2026-10-22T08:20:00Z",
+    "baru": 0,
+    "ok": 4,
+    "n": 4
+   },
+   {
+    "t": "2026-10-22T08:21:51Z",
+    "baru": 0,
+    "ok": 4,
+    "n": 4
    }
   ],
   "jadwal_cron_utc": "17 */3 * * *",
@@ -207,7 +231,7 @@
   "latensi_n": 0,
   "arsip_terverifikasi": 48,
   "hari_cuaca": 9425,
-  "jumlah_pembaruan_tercatat": 13
+  "jumlah_pembaruan_tercatat": 17
  },
  "sumber_doi": {
   "VIIRS_SNPP": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002",
@@ -215,16 +239,182 @@
   "VIIRS_NOAA21": "10.5067/VIIRS/VJ214IMG_NRT.002",
   "MODIS": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
  },
+ "lokasi": [
+  {
+   "id": "nangalauk",
+   "hd_nama": "Hutan Desa Nanga Lauk",
+   "lphd": "LPHD Lauk Bersatu",
+   "kec": "Embaloh Hilir",
+   "sk": "SK.685/Menlhk-PSKL/PKPS/PSL.0/2/2017",
+   "sk_tgl": "",
+   "luas_sk": null,
+   "sumber_batas": "Batas desa BIG 2020; areal HD SK.685/2017",
+   "desa_nama": "Nanga Lauk",
+   "luas_hd_ha": 1430.8,
+   "luas_desa_ha": 12582.1,
+   "pusat": [
+    0.95916,
+    112.60578
+   ],
+   "pusat_wilayah": [
+    0.96574,
+    112.61627
+   ]
+  },
+  {
+   "id": "batangtau",
+   "hd_nama": "Hutan Desa Batang Tau",
+   "lphd": "LPHD Batang Tau",
+   "kec": "Boyan Tanjung",
+   "sk": "SK.686/Menlhk-PSKL/PKPS/PSL.0/2/2017",
+   "sk_tgl": "2017-02-23",
+   "luas_sk": 335.0,
+   "sk_pak": "SK.65/Menhut-II/2014",
+   "sumber_batas": "Batas desa Kapuas Hulu (BATASDESA_KAPUASHULU_AR); areal HD dari SHP PPHD",
+   "desa_nama": "Sri Wangi",
+   "luas_hd_ha": 337.0,
+   "luas_desa_ha": 3602.9,
+   "pusat": [
+    0.35188,
+    112.47474
+   ],
+   "pusat_wilayah": [
+    0.36439,
+    112.46613
+   ]
+  },
+  {
+   "id": "nyuai",
+   "hd_nama": "Hutan Desa Nyuai Peningun",
+   "lphd": "LPHD Nyuai",
+   "kec": "Boyan Tanjung",
+   "sk": "SK.687/Menlhk-PSKL/PKPS/PSL.0/2/2017",
+   "sk_tgl": "2017-02-23",
+   "luas_sk": 4160.0,
+   "sk_pak": "SK.62/ Menhut-II/2014",
+   "sumber_batas": "Batas desa Kapuas Hulu (BATASDESA_KAPUASHULU_AR); areal HD dari SHP PPHD",
+   "desa_nama": "Nanga Jemah",
+   "luas_hd_ha": 4376.0,
+   "luas_desa_ha": 31170.8,
+   "pusat": [
+    0.28671,
+    112.43727
+   ],
+   "pusat_wilayah": [
+    0.27242,
+    112.48543
+   ]
+  },
+  {
+   "id": "pundjung",
+   "hd_nama": "Hutan Desa Pundjung Batara",
+   "lphd": "LPHD Nanga Betung",
+   "kec": "Boyan Tanjung",
+   "sk": "399/Ekbang/2015",
+   "sk_tgl": "2015-02-13",
+   "luas_sk": 1995.0,
+   "sk_pak": "SK.27/Menhut-II/2014",
+   "sumber_batas": "Batas desa Kapuas Hulu (BATASDESA_KAPUASHULU_AR); areal HD dari SHP PPHD",
+   "desa_nama": "Nanga Betung",
+   "luas_hd_ha": 1974.9,
+   "luas_desa_ha": 4224.0,
+   "pusat": [
+    0.44538,
+    112.5353
+   ],
+   "pusat_wilayah": [
+    0.44568,
+    112.52126
+   ]
+  },
+  {
+   "id": "bumilestari",
+   "hd_nama": "Hutan Desa Bumi Lestari",
+   "lphd": "LPHD Penepian Raya",
+   "kec": "Jongkong",
+   "sk": "400/Ekbang/2015",
+   "sk_tgl": "2015-02-13",
+   "luas_sk": 1285.0,
+   "sk_pak": "SK.64/Menhut-II/2014",
+   "sumber_batas": "Batas desa Kapuas Hulu (BATASDESA_KAPUASHULU_AR); areal HD dari SHP PPHD",
+   "desa_nama": "Penepian Raya",
+   "luas_hd_ha": 1288.0,
+   "luas_desa_ha": 6623.3,
+   "pusat": [
+    0.6392,
+    112.47058
+   ],
+   "pusat_wilayah": [
+    0.66444,
+    112.44269
+   ]
+  },
+  {
+   "id": "bukitbelang",
+   "hd_nama": "Hutan Desa Bukit Belang",
+   "lphd": "",
+   "kec": "Mentebah",
+   "sk": "SK 66/Men-Hut/2014",
+   "sk_tgl": "2014-01-21",
+   "luas_sk": null,
+   "sk_pak": "",
+   "sumber_batas": "Batas desa Kapuas Hulu (BATASDESA_KAPUASHULU_AR); areal HD dari SHP PPHD",
+   "desa_nama": "Tanjung",
+   "luas_hd_ha": 3617.7,
+   "luas_desa_ha": 22964.2,
+   "pusat": [
+    0.46533,
+    113.02894
+   ],
+   "pusat_wilayah": [
+    0.42853,
+    113.00972
+   ]
+  }
+ ],
  "ekspor": [
-  "kejadian_api_desa_radius25km.csv",
-  "kejadian_api_desa_radius25km.geojson",
-  "kejadian_api_desa_radius25km.kml",
-  "kejadian_api_desa_radius25km_cakupan_piksel_UTM49N_shp.zip",
-  "kejadian_api_desa_radius25km_titik_shp.zip",
-  "titik_panas_desa_radius25km_semua_tahun.csv",
-  "titik_panas_desa_radius25km_semua_tahun.geojson",
-  "titik_panas_desa_radius25km_semua_tahun.kml",
-  "titik_panas_desa_radius25km_semua_tahun_shp.zip",
+  "kejadian_api_batangtau_radius25km.csv",
+  "kejadian_api_batangtau_radius25km.geojson",
+  "kejadian_api_batangtau_radius25km.kml",
+  "kejadian_api_batangtau_radius25km_cakupan_piksel_UTM49N_shp.zip",
+  "kejadian_api_batangtau_radius25km_titik_shp.zip",
+  "kejadian_api_bukitbelang_radius25km.csv",
+  "kejadian_api_bukitbelang_radius25km.geojson",
+  "kejadian_api_bukitbelang_radius25km.kml",
+  "kejadian_api_bukitbelang_radius25km_cakupan_piksel_UTM49N_shp.zip",
+  "kejadian_api_bukitbelang_radius25km_titik_shp.zip",
+  "kejadian_api_bumilestari_radius25km.csv",
+  "kejadian_api_bumilestari_radius25km.geojson",
+  "kejadian_api_bumilestari_radius25km.kml",
+  "kejadian_api_bumilestari_radius25km_cakupan_piksel_UTM49N_shp.zip",
+  "kejadian_api_bumilestari_radius25km_titik_shp.zip",
+  "kejadian_api_nangalauk_radius25km.csv",
+  "kejadian_api_nangalauk_radius25km.geojson",
+  "kejadian_api_nangalauk_radius25km.kml",
+  "kejadian_api_nangalauk_radius25km_cakupan_piksel_UTM49N_shp.zip",
+  "kejadian_api_nangalauk_radius25km_titik_shp.zip",
+  "kejadian_api_nyuai_radius25km.csv",
+  "kejadian_api_nyuai_radius25km.geojson",
+  "kejadian_api_nyuai_radius25km.kml",
+  "kejadian_api_nyuai_radius25km_cakupan_piksel_UTM49N_shp.zip",
+  "kejadian_api_nyuai_radius25km_titik_shp.zip",
+  "kejadian_api_pundjung_radius25km.csv",
+  "kejadian_api_pundjung_radius25km.geojson",
+  "kejadian_api_pundjung_radius25km.kml",
+  "kejadian_api_pundjung_radius25km_cakupan_piksel_UTM49N_shp.zip",
+  "kejadian_api_pundjung_radius25km_titik_shp.zip",
+  "titik_panas_batangtau_radius25km_semua_tahun.csv",
+  "titik_panas_batangtau_radius25km_semua_tahun.geojson",
+  "titik_panas_batangtau_radius25km_semua_tahun.kml",
+  "titik_panas_batangtau_radius25km_semua_tahun_shp.zip",
+  "titik_panas_bukitbelang_radius25km_semua_tahun.csv",
+  "titik_panas_bukitbelang_radius25km_semua_tahun.geojson",
+  "titik_panas_bukitbelang_radius25km_semua_tahun.kml",
+  "titik_panas_bukitbelang_radius25km_semua_tahun_shp.zip",
+  "titik_panas_bumilestari_radius25km_semua_tahun.csv",
+  "titik_panas_bumilestari_radius25km_semua_tahun.geojson",
+  "titik_panas_bumilestari_radius25km_semua_tahun.kml",
+  "titik_panas_bumilestari_radius25km_semua_tahun_shp.zip",
   "titik_panas_kapuashulu_2001_shp.zip",
   "titik_panas_kapuashulu_2002_shp.zip",
   "titik_panas_kapuashulu_2003_shp.zip",
@@ -250,6 +440,18 @@
   "titik_panas_kapuashulu_2023_shp.zip",
   "titik_panas_kapuashulu_2024_shp.zip",
   "titik_panas_kapuashulu_2025_shp.zip",
-  "titik_panas_kapuashulu_2026_shp.zip"
+  "titik_panas_kapuashulu_2026_shp.zip",
+  "titik_panas_nangalauk_radius25km_semua_tahun.csv",
+  "titik_panas_nangalauk_radius25km_semua_tahun.geojson",
+  "titik_panas_nangalauk_radius25km_semua_tahun.kml",
+  "titik_panas_nangalauk_radius25km_semua_tahun_shp.zip",
+  "titik_panas_nyuai_radius25km_semua_tahun.csv",
+  "titik_panas_nyuai_radius25km_semua_tahun.geojson",
+  "titik_panas_nyuai_radius25km_semua_tahun.kml",
+  "titik_panas_nyuai_radius25km_semua_tahun_shp.zip",
+  "titik_panas_pundjung_radius25km_semua_tahun.csv",
+  "titik_panas_pundjung_radius25km_semua_tahun.geojson",
+  "titik_panas_pundjung_radius25km_semua_tahun.kml",
+  "titik_panas_pundjung_radius25km_semua_tahun_shp.zip"
  ]
 }

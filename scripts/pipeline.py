@@ -59,7 +59,8 @@ BASE = "https://firms.modaps.eosdis.nasa.gov/data/"
 FIELDS = ["uid", "status_data", "sensor", "produk", "latitude", "longitude", "acq_date", "acq_time", "waktu_wib",
           "satellite", "instrument", "confidence", "frp", "brightness", "bright2", "scan", "track", "daynight",
           "version", "type", "luas_piksel_ha", "zona", "jarak_desa_km", "petak", "kabupaten",
-          "fungsi_kawasan", "tutupan_2026", "gambut", "id_kejadian", "diunduh_utc"]
+          "fungsi_kawasan", "tutupan_2026", "gambut", "id_kejadian", "lokasi_terdekat", "zona_lokasi", "jarak_lokasi_km",
+          "diunduh_utc"]
 ZONES = ["Hutan Desa", "Desa Nanga Lauk", "Radius 5 km", "Radius 5-25 km", "Kapuas Hulu", "Luar Kapuas Hulu"]
 TYPE_TXT = {"0": "kebakaran vegetasi (dugaan)", "1": "gunung api", "2": "sumber panas statis (industri dsb.)", "3": "lepas pantai"}
 
@@ -75,6 +76,48 @@ def utm_geom(g):
 
 def union_fc(fc):
     return unary_union([shape(f["geometry"]) for f in fc["features"]])
+# ---- lokasi Hutan Desa yang dipantau (geo.json "sites"); kode per lokasi: -1 = di dalam HD,
+#      0 = di dalam desa (atau areal HD+desa), >0 = jarak (km) ke batas areal desa+HD
+SITES = geo.get("sites", [])
+SITE_IDS = [x["id"] for x in SITES]
+ZONES_LOK = ["Hutan Desa", "Desa", "Radius 5 km", "Radius 5-25 km", "Kapuas Hulu", "Luar Kapuas Hulu"]
+_S_HD, _S_AREA, _S_BOUND = [], [], []
+for _s in SITES:
+    _h = union_fc(_s["hd"]); _a = unary_union([_h, union_fc(_s["desa"])])
+    _S_HD.append(prep(_h)); _S_AREA.append(prep(_a)); _S_BOUND.append(utm_geom(_a).boundary)
+def site_codes(lat, lon):
+    pt = Point(lon, lat); x, y = to_utm(lon, lat); out = []
+    for i in range(len(SITES)):
+        if _S_HD[i].contains(pt): out.append(-1.0)
+        elif _S_AREA[i].contains(pt): out.append(0.0)
+        else: out.append(max(1.0, math.ceil(Point(x, y).distance(_S_BOUND[i]))) / 1000.0)  # km, dibulatkan ke atas per meter (tidak pernah 0 = di dalam)
+    return out
+def site_codes_many(recs):
+    """Kode per lokasi untuk banyak catatan sekaligus (vektor, cepat)."""
+    import numpy as np, shapely
+    lon = np.array([float(r["longitude"]) for r in recs]); lat = np.array([float(r["latitude"]) for r in recs])
+    xs, ys = _to_utm.transform(lon, lat); pts = shapely.points(xs, ys)
+    cols = []
+    for i, s in enumerate(SITES):
+        h = union_fc(s["hd"]); a = unary_union([h, union_fc(s["desa"])])
+        inh = shapely.contains_xy(h, lon, lat); ina = shapely.contains_xy(a, lon, lat)
+        d = np.maximum(1.0, np.ceil(shapely.distance(_S_BOUND[i], pts))) / 1000.0  # km, dibulatkan ke atas per meter
+        cols.append(np.where(inh, -1.0, np.where(ina, 0.0, d)))
+    return np.column_stack(cols) if cols else np.zeros((len(recs), 0))
+def zone_of_code(c, kab):
+    return 0 if c < 0 else 1 if c == 0 else 2 if c <= 5 else 3 if c <= 25 else (4 if kab == "Kapuas Hulu" else 5)
+CODE = {}  # uid -> [kode per lokasi]; diisi di main()
+def compute_codes(recs):
+    CODE.clear()
+    rs = list(recs.values())
+    if not SITES or not rs:
+        return
+    arr = site_codes_many(rs)
+    for r, row in zip(rs, arr):
+        CODE[r["uid"]] = [float(v) for v in row]
+def site_label(i):
+    return f'{SITES[i]["hd_nama"]} (Desa {SITES[i]["desa_nama"]})'
+
 HD = prep(union_fc(geo["hd"])); DESA_G = union_fc(geo["desa"]); DESA = prep(DESA_G)
 DESA_UTM_BOUND = utm_geom(DESA_G).boundary
 def layer(fc, key):
@@ -105,7 +148,11 @@ def enrich(lat, lon):
         zona = ("Radius 5 km" if dist <= 5 else "Radius 5-25 km" if dist <= 25
                 else "Kapuas Hulu" if kab == "Kapuas Hulu" else "Luar Kapuas Hulu")
     near = dist <= 6
-    return {"zona": zona, "jarak_desa_km": f"{dist:.2f}", "petak": lookup(L_GRID, pt) if near else "",
+    lok = {}
+    if SITES:
+        cs = site_codes(lat, lon); i = min(range(len(cs)), key=lambda k: cs[k])
+        lok = {"lokasi_terdekat": site_label(i), "zona_lokasi": ZONES_LOK[zone_of_code(cs[i], kab)], "jarak_lokasi_km": f"{max(cs[i], 0):.2f}"}
+    return {**lok, "zona": zona, "jarak_desa_km": f"{dist:.2f}", "petak": lookup(L_GRID, pt) if near else "",
             "kabupaten": kab, "fungsi_kawasan": lookup(L_KWS, pt) if near else "",
             "tutupan_2026": lookup(L_TL, pt) if near else "", "gambut": lookup(L_GB, pt) if near else ""}
 
@@ -292,6 +339,11 @@ def cluster(recs, dist_m=1000.0, days=2):
                        "gambut": "; ".join(sorted({r["gambut"] for r in rs if r["gambut"]})),
                        "kabupaten": "; ".join(sorted({r["kabupaten"] for r in rs if r["kabupaten"]})),
                        "lat": round(lat, 5), "lon": round(lon, 5), "_fp": fp})
+        if SITES:
+            ls = [min(CODE.get(r["uid"], [99.0] * len(SITES))[i] for r in rs) for i in range(len(SITES))]
+            k = min(range(len(ls)), key=lambda i: ls[i]); kab0 = rs[0]["kabupaten"]
+            events[-1].update(lokasi_terdekat=site_label(k), zona_lokasi=ZONES_LOK[zone_of_code(ls[k], kab0)],
+                              jarak_lokasi_km=round(max(ls[k], 0), 2), _ls=ls)
     events.sort(key=lambda e: e["mulai_wib"])
     return events
 
@@ -302,7 +354,7 @@ SHP_PT = [("UID", "C", 80), ("STATUS", "C", 4), ("SENSOR", "C", 25), ("TGL_UTC",
           ("WAKTU_WIB", "C", 16), ("SATELIT", "C", 6), ("KEYAKINAN", "C", 8), ("FRP_MW", "N", 10, 2), ("SUHU_K", "N", 8, 2),
           ("SCAN_KM", "N", 6, 2), ("TRACK_KM", "N", 6, 2), ("SIANG_MLM", "C", 1), ("VERSI", "C", 8), ("TIPE", "C", 2),
           ("LUAS_PX_HA", "N", 8, 1), ("ZONA", "C", 20), ("JARAK_KM", "N", 8, 2), ("PETAK", "C", 6), ("KABUPATEN", "C", 25),
-          ("KAWASAN", "C", 40), ("TUTUPAN26", "C", 40), ("GAMBUT", "C", 50), ("KEJADIAN", "C", 20), ("LAT", "N", 10, 5), ("LON", "N", 11, 5)]
+          ("KAWASAN", "C", 40), ("TUTUPAN26", "C", 40), ("GAMBUT", "C", 50), ("KEJADIAN", "C", 20), ("LOKASI", "C", 80), ("LAT", "N", 10, 5), ("LON", "N", 11, 5)]
 SHP_EV = [("KEJADIAN", "C", 20), ("MULAI_WIB", "C", 16), ("SELESAI", "C", 16), ("DURASI_HR", "N", 7, 2), ("N_DETEKSI", "N", 6, 0),
           ("SENSOR", "C", 80), ("STATUS", "C", 10), ("FRP_MAKS", "N", 10, 2), ("FRP_TOTAL", "N", 12, 2), ("LUAS_PX_HA", "N", 10, 1),
           ("ZONA", "C", 20), ("JARAK_MIN", "N", 8, 2), ("PETAK", "C", 120), ("KAWASAN", "C", 80), ("TUTUPAN26", "C", 120),
@@ -316,7 +368,7 @@ def pt_values(r):
     return [r["uid"], r["status_data"], r["sensor"], r["acq_date"], r["acq_time"], r["waktu_wib"], r["satellite"], r["confidence"],
             num(r["frp"]), num(r["brightness"]), num(r["scan"]), num(r["track"]), r["daynight"], r["version"], r.get("type", ""),
             num(r["luas_piksel_ha"]), r["zona"], num(r["jarak_desa_km"]), r["petak"], r["kabupaten"], r["fungsi_kawasan"],
-            r["tutupan_2026"], r["gambut"], r["id_kejadian"], num(r["latitude"]), num(r["longitude"])]
+            r["tutupan_2026"], r["gambut"], r["id_kejadian"], r.get("lokasi_terdekat", ""), num(r["latitude"]), num(r["longitude"])]
 def ev_values(e):
     return [e["id_kejadian"], e["mulai_wib"], e["selesai_wib"], e["durasi_hari"], e["jumlah_deteksi"], e["sensor"][:80],
             e["status_data"], e["frp_maks_mw"], e["frp_total_mw"], e["luas_cakupan_piksel_ha"], e["zona_terdekat"], e["jarak_min_km"],
@@ -341,6 +393,10 @@ def write_shp_zip(path, base, kind, fields, items, values, geom, prj):
         try: os.remove(f"{tmp}.{ext}")
         except OSError: pass
 
+def zidx(z):
+    if z in ZONES: return ZONES.index(z)
+    if z.startswith("Desa"): return 1
+    return ZONES_LOK.index(z) if z in ZONES_LOK else 4
 def esc(s):
     return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 def write_kml(path, title, items, is_event=False):
@@ -361,7 +417,7 @@ def write_kml(path, title, items, is_event=False):
             desc = "".join(f"<b>{k}</b>: {esc(it[k])}<br/>" for k in FIELDS if it.get(k, "") != "")
         kv = ([(k, v) for k, v in it.items() if not k.startswith("_")] if is_event else [(k, it.get(k, "")) for k in FIELDS])
         ext = "".join(f'<Data name="{k}"><value>{esc(v)}</value></Data>' for k, v in kv)
-        out.append(f'<Placemark><name>{esc(name)}</name><styleUrl>#z{ZONES.index(z)}</styleUrl>'
+        out.append(f'<Placemark><name>{esc(name)}</name><styleUrl>#z{zidx(z)}</styleUrl>'
                    f'<description><![CDATA[{desc}]]></description><ExtendedData>{ext}</ExtendedData>'
                    f'<Point><coordinates>{lon},{lat},0</coordinates></Point></Placemark>')
     out.append("</Document></kml>")
@@ -382,28 +438,24 @@ def write_csv(path, items, fields):
     with open(path, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=fields, extrasaction="ignore"); w.writeheader(); w.writerows(items)
 
+def site_view(r, i):
+    """Salinan catatan dengan zona & jarak relatif terhadap lokasi ke-i."""
+    c = CODE[r["uid"]][i]; z = zone_of_code(c, r["kabupaten"])
+    q = dict(r); q["zona"] = ("Desa " + SITES[i]["desa_nama"]) if z == 1 else ZONES_LOK[z]; q["jarak_desa_km"] = f"{max(c, 0):.2f}"
+    q["lokasi_terdekat"] = site_label(i)
+    return q
+def site_event(e, i):
+    c = e["_ls"][i]; z = zone_of_code(c, e["kabupaten"].split("; ")[0] if e["kabupaten"] else "")
+    q = dict(e); q["zona_terdekat"] = ("Desa " + SITES[i]["desa_nama"]) if z == 1 else ZONES_LOK[z]; q["jarak_min_km"] = round(max(c, 0), 2)
+    q.pop("lokasi_terdekat", None); q.pop("zona_lokasi", None); q.pop("jarak_lokasi_km", None)
+    return q
+
 def exports(recs, events, years_changed, focus_changed=True):
-    focus = sorted([r for r in recs.values() if r["zona"] in ZONES[:4]], key=lambda r: (r["acq_date"], r["acq_time"]))
-    ev_focus = [e for e in events if e["zona_terdekat"] in ZONES[:4]]
     pt_geom = lambda w, r: w.point(float(r["longitude"]), float(r["latitude"]))
-    if not focus_changed and os.path.exists(os.path.join(EXP, "titik_panas_desa_radius25km_semua_tahun.csv")):
-        focus = None
-    # 1) radius 25 km desa – semua tahun
-    b = "titik_panas_desa_radius25km_semua_tahun"
-    if focus is None:
+    if not focus_changed and all(os.path.exists(os.path.join(EXP, f"titik_panas_{x}_radius25km_semua_tahun.csv")) for x in SITE_IDS):
         return _year_exports(recs, years_changed, pt_geom)
-    write_csv(os.path.join(EXP, b + ".csv"), focus, FIELDS)
-    write_geojson(os.path.join(EXP, b + ".geojson"), focus)
-    write_kml(os.path.join(EXP, b + ".kml"), "Titik panas radius 25 km Desa Nanga Lauk", focus)
-    write_shp_zip(os.path.join(EXP, b + "_shp.zip"), b, shapefile.POINT, SHP_PT, focus, pt_values, pt_geom, PRJ_WGS)
-    # 2) kejadian api – radius 25 km (titik pusat + poligon cakupan piksel UTM)
-    b = "kejadian_api_desa_radius25km"
-    write_csv(os.path.join(EXP, b + ".csv"), [{k: v for k, v in e.items() if not k.startswith("_")} for e in ev_focus],
-              [k for k in (ev_focus[0] if ev_focus else {"id_kejadian": 0}) if not k.startswith("_")])
-    write_geojson(os.path.join(EXP, b + ".geojson"), ev_focus, True)
-    write_kml(os.path.join(EXP, b + ".kml"), "Kejadian api radius 25 km Desa Nanga Lauk", ev_focus, True)
-    write_shp_zip(os.path.join(EXP, b + "_titik_shp.zip"), b + "_titik", shapefile.POINT, SHP_EV, ev_focus, ev_values,
-                  lambda w, e: w.point(e["lon"], e["lat"]), PRJ_WGS)
+    for old in glob.glob(os.path.join(EXP, "*desa_radius25km*")):
+        os.remove(old)  # nama lama (sebelum multi-lokasi)
     def poly(w, e):
         g = e["_fp"]; parts = []
         for p in (g.geoms if g.geom_type == "MultiPolygon" else [g]):
@@ -411,8 +463,26 @@ def exports(recs, events, years_changed, focus_changed=True):
             for h in p.interiors:
                 parts.append(list(h.coords) if h.is_ccw else list(h.coords)[::-1])
         w.poly(parts)
-    write_shp_zip(os.path.join(EXP, b + "_cakupan_piksel_UTM49N_shp.zip"), b + "_cakupan_piksel", shapefile.POLYGON, SHP_EV,
-                  ev_focus, ev_values, poly, PRJ_UTM)
+    for i, st in enumerate(SITES):
+        sid = st["id"]; nm = f'{st["hd_nama"]} / Desa {st["desa_nama"]}'
+        focus = sorted([site_view(r, i) for r in recs.values() if CODE[r["uid"]][i] <= 25], key=lambda r: (r["acq_date"], r["acq_time"]))
+        ev_focus = [site_event(e, i) for e in events if e.get("_ls") and e["_ls"][i] <= 25]
+        # 1) titik panas radius 25 km – semua tahun
+        b = f"titik_panas_{sid}_radius25km_semua_tahun"
+        write_csv(os.path.join(EXP, b + ".csv"), focus, FIELDS)
+        write_geojson(os.path.join(EXP, b + ".geojson"), focus)
+        write_kml(os.path.join(EXP, b + ".kml"), f"Titik panas radius 25 km – {nm}", focus)
+        write_shp_zip(os.path.join(EXP, b + "_shp.zip"), b, shapefile.POINT, SHP_PT, focus, pt_values, pt_geom, PRJ_WGS)
+        # 2) kejadian api radius 25 km (titik pusat + poligon cakupan piksel UTM)
+        b = f"kejadian_api_{sid}_radius25km"
+        keys = [k for k in (ev_focus[0] if ev_focus else {"id_kejadian": 0}) if not k.startswith("_")]
+        write_csv(os.path.join(EXP, b + ".csv"), [{k: v for k, v in e.items() if not k.startswith("_")} for e in ev_focus], keys)
+        write_geojson(os.path.join(EXP, b + ".geojson"), ev_focus, True)
+        write_kml(os.path.join(EXP, b + ".kml"), f"Kejadian api radius 25 km – {nm}", ev_focus, True)
+        write_shp_zip(os.path.join(EXP, b + "_titik_shp.zip"), b + "_titik", shapefile.POINT, SHP_EV, ev_focus, ev_values,
+                      lambda w, e: w.point(e["lon"], e["lat"]), PRJ_WGS)
+        write_shp_zip(os.path.join(EXP, b + "_cakupan_piksel_UTM49N_shp.zip"), b + "_cakupan_piksel", shapefile.POLYGON, SHP_EV,
+                      ev_focus, ev_values, poly, PRJ_UTM)
     _year_exports(recs, years_changed, pt_geom)
 
 def _year_exports(recs, years_changed, pt_geom):
@@ -427,7 +497,7 @@ def _year_exports(recs, years_changed, pt_geom):
             write_shp_zip(f, f"titik_panas_kapuashulu_{y}", shapefile.POINT, SHP_PT, rows, pt_values, pt_geom, PRJ_WGS)
 
 # ------------------------------------------------------------------ website
-WEB_COLS = ["d", "t", "wib", "lat", "lon", "sen", "sat", "conf", "frp", "bt", "dn", "z", "km", "pt", "kw", "tl", "gb", "st", "ev", "ha", "kab", "uid"]
+WEB_COLS = ["d", "t", "wib", "lat", "lon", "sen", "sat", "conf", "frp", "bt", "dn", "z", "km", "pt", "kw", "tl", "gb", "st", "ev", "ha", "kab", "uid", "ls"]
 def coverage(recs):
     """Rentang data per jenis: arsip final (SP) per sensor dan NRT."""
     out = {}
@@ -453,27 +523,36 @@ def web_years(recs, years):
         data = [[r["acq_date"], r["acq_time"], r["waktu_wib"], round(num(r["latitude"]), 5), round(num(r["longitude"]), 5), r["sensor"],
                  r["satellite"], r["confidence"], num(r["frp"]), num(r["brightness"]), r["daynight"], ZONES.index(r["zona"]),
                  round(num(r["jarak_desa_km"]), 2), r["petak"], r["fungsi_kawasan"], r["tutupan_2026"], r["gambut"], r["status_data"],
-                 r["id_kejadian"], num(r["luas_piksel_ha"]), r["kabupaten"], r["uid"]] for r in rows]
-        json.dump({"kolom": WEB_COLS, "zona": ZONES, "baris": data}, open(f, "w"), separators=(",", ":"), ensure_ascii=False)
+                 r["id_kejadian"], num(r["luas_piksel_ha"]), r["kabupaten"], r["uid"], CODE.get(r["uid"], [])] for r in rows]
+        json.dump({"kolom": WEB_COLS, "zona": ZONES, "lokasi": SITE_IDS, "baris": data}, open(f, "w"), separators=(",", ":"), ensure_ascii=False)
 
-CUACA_URL = ("https://archive-api.open-meteo.com/v1/archive?latitude=0.97&longitude=112.62&start_date={start}&end_date={end}"
+CUACA_URL = ("https://archive-api.open-meteo.com/v1/archive?latitude={lat}&longitude={lon}&start_date={start}&end_date={end}"
              "&daily=precipitation_sum,temperature_2m_max,relative_humidity_2m_mean,wind_speed_10m_max&timezone=Asia%2FJakarta")
+def weather_targets():
+    out = [("cuaca.json", 0.97, 112.62, "Desa Nanga Lauk")]
+    for x in SITES:
+        if x["id"] != "nangalauk":
+            la, lo = x["pusat_wilayah"]; out.append((f'cuaca_{x["id"]}.json', round(la, 2), round(lo, 2), "Desa " + x["desa_nama"]))
+    return out
 def update_weather(prov):
-    """Cuaca harian Desa Nanga Lauk (reanalisis ERA5 via Open-Meteo), diperbarui sekali sehari."""
-    f = os.path.join(DATA, "cuaca.json")
-    if os.path.exists(f):
-        old = json.load(open(f))
-        if old.get("diunduh_utc", "")[:10] == NOW_S[:10]:
-            return
-    end = (NOW - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+    """Cuaca harian tiap lokasi (reanalisis ERA5 via Open-Meteo), diperbarui sekali sehari per lokasi."""
+    import time
+    for k, (fn, la, lo, nm) in enumerate(weather_targets()):
+        if k:
+            time.sleep(3)
+        _update_weather_one(prov, os.path.join(DATA, fn), la, lo, nm)
+def _update_weather_one(prov, f, la, lo, nm):
     old = json.load(open(f)) if os.path.exists(f) else None
+    if old and old.get("diunduh_utc", "")[:10] == NOW_S[:10]:
+        return
+    end = (NOW - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
     start = "2001-01-01" if not old else (datetime.date.fromisoformat(old["t"][-1]) - datetime.timedelta(days=30)).isoformat()
-    url = CUACA_URL.format(start=start, end=end)
+    url = CUACA_URL.format(lat=la, lon=lo, start=start, end=end)
     try:
-        raw, st, lm = fetch(url, 180)
+        raw, st, lm = fetch(url, 300)
         d = json.loads(raw)["daily"]
     except Exception as e:
-        prov.append({"jenis": "Cuaca", "url": url, "ok": False, "galat": str(e)[:200]}); return
+        prov.append({"jenis": "Cuaca", "lokasi": nm, "url": url, "ok": False, "galat": str(e)[:200]}); return
     keys = [("hujan", "precipitation_sum"), ("tmaks", "temperature_2m_max"), ("rh", "relative_humidity_2m_mean"), ("angin", "wind_speed_10m_max")]
     ser = {}
     if old:
@@ -485,13 +564,13 @@ def update_weather(prov):
             ser[t] = vals
     ts = sorted(ser)
     out = {"sumber": "Open-Meteo Historical Weather API – reanalisis ECMWF ERA5/ERA5-Land (Copernicus Climate Change Service)",
-           "lokasi": "0.97 LU, 112.62 BT (Desa Nanga Lauk)", "url_terakhir": url, "diunduh_utc": NOW_S,
+           "lokasi": f"{la:.2f} LU, {lo:.2f} BT ({nm})", "url_terakhir": url, "diunduh_utc": NOW_S,
            "sha256_unduhan_terakhir": hashlib.sha256(raw).hexdigest(),
            "satuan": {"hujan": "mm/hari", "tmaks": "°C", "rh": "%", "angin": "km/jam"}, "t": ts}
     for j, (k, _) in enumerate(keys):
         out[k] = [ser[t][j] for t in ts]
     json.dump(out, open(f, "w"), separators=(",", ":"), ensure_ascii=False)
-    prov.append({"jenis": "Cuaca", "url": url, "ok": True, "ukuran_byte": len(raw), "sha256": out["sha256_unduhan_terakhir"], "hari_baru": len(d["time"])})
+    prov.append({"jenis": "Cuaca", "lokasi": nm, "url": url, "ok": True, "ukuran_byte": len(raw), "sha256": out["sha256_unduhan_terakhir"], "hari_baru": len(d["time"])})
 
 def system_health(recs):
     """Bukti operasional: riwayat pembaruan otomatis, keterlambatan data, dan kelengkapan basis data."""
@@ -531,10 +610,11 @@ def site_files(recs, events, prov, archive_years, n_new, sp_changed):
             "sat": r["satellite"], "ins": r["instrument"], "c": r["confidence"], "frp": num(r["frp"]), "bt": num(r["brightness"]),
             "dn": r["daynight"], "v": r["version"], "st": r["status_data"], "ty": r.get("type", ""), "z": r["zona"],
             "km": num(r["jarak_desa_km"]), "pt": r["petak"], "kab": r["kabupaten"], "kw": r["fungsi_kawasan"],
-            "tl": r["tutupan_2026"], "gb": r["gambut"], "ha": num(r["luas_piksel_ha"]), "ev": r["id_kejadian"]}
+            "tl": r["tutupan_2026"], "gb": r["gambut"], "ha": num(r["luas_piksel_ha"]), "ev": r["id_kejadian"],
+            "ls": CODE.get(r["uid"], [])}
            for r in recs.values() if r["acq_date"] >= cutoff and r["zona"] != "Luar Kapuas Hulu"]
     pts.sort(key=lambda p: (p["d"], p["t"]))
-    json.dump({"diperbarui_utc": NOW_S, "titik": pts}, open(os.path.join(DATA, "hotspots.json"), "w"), separators=(",", ":"))
+    json.dump({"diperbarui_utc": NOW_S, "lokasi": SITE_IDS, "titik": pts}, open(os.path.join(DATA, "hotspots.json"), "w"), separators=(",", ":"))
     # statistik tahunan per sensor & zona (tanpa sumber statis/gunung api/lepas pantai)
     ann = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
     for r in recs.values():
@@ -542,10 +622,21 @@ def site_files(recs, events, prov, archive_years, n_new, sp_changed):
             continue
         fam = "MODIS" if r["instrument"] == "MODIS" else ("VIIRS S-NPP" if "S-NPP" in r["sensor"] else "VIIRS NOAA")
         ann[r["acq_date"][:4]][fam][r["zona"]] += 1
-    stats = {"tahunan": {y: {f: dict(z) for f, z in v.items()} for y, v in sorted(ann.items())}, "zona": ZONES}
+    per = {sid: defaultdict(lambda: defaultdict(lambda: defaultdict(int))) for sid in SITE_IDS}
+    for r in recs.values():
+        if r.get("type") in ("1", "2", "3"):
+            continue
+        fam = "MODIS" if r["instrument"] == "MODIS" else ("VIIRS S-NPP" if "S-NPP" in r["sensor"] else "VIIRS NOAA")
+        for i, sid in enumerate(SITE_IDS):
+            per[sid][r["acq_date"][:4]][fam][ZONES_LOK[zone_of_code(CODE[r["uid"]][i], r["kabupaten"])]] += 1
+    stats = {"tahunan": {y: {f: dict(z) for f, z in v.items()} for y, v in sorted(ann.items())}, "zona": ZONES,
+             "zona_lokasi": ZONES_LOK, "per_lokasi": {sid: {y: {f: dict(z) for f, z in v.items()} for y, v in sorted(d.items())} for sid, d in per.items()}}
     json.dump(stats, open(os.path.join(DATA, "stats.json"), "w"), separators=(",", ":"))
-    evf = [{k: v for k, v in e.items() if not k.startswith("_")} for e in events if e["zona_terdekat"] in ZONES[:4]]
-    json.dump(evf, open(os.path.join(DATA, "kejadian.json"), "w"), separators=(",", ":"), ensure_ascii=False)
+    EVK = ["id_kejadian", "mulai_wib", "selesai_wib", "jumlah_deteksi", "sensor", "status_data", "frp_maks_mw", "luas_cakupan_piksel_ha",
+           "zona_terdekat", "jarak_min_km", "petak", "fungsi_kawasan", "tutupan_2026", "gambut", "lat", "lon", "ls"]
+    evf = [[e[k] for k in EVK[:-1]] + [[(-1 if v < 0 else 0 if v == 0 else max(0.001, round(v, 3))) for v in e.get("_ls", [])]] for e in events
+           if e["zona_terdekat"] in ZONES[:4] or (e.get("_ls") and min(e["_ls"]) <= 25)]
+    json.dump({"kolom": EVK, "lokasi": SITE_IDS, "baris": evf}, open(os.path.join(DATA, "kejadian.json"), "w"), separators=(",", ":"), ensure_ascii=False)
     n_sp = sum(1 for r in recs.values() if r["status_data"] == "SP")
     status = {"terakhir_cek_utc": NOW_S, "titik_baru": n_new, "arsip_tahunan_diperbarui": sp_changed,
               "jumlah_catatan": len(recs), "jumlah_sp": n_sp, "jumlah_nrt": len(recs) - n_sp,
@@ -553,6 +644,7 @@ def site_files(recs, events, prov, archive_years, n_new, sp_changed):
               "tahun_arsip": archive_years, "sumber": [p for p in prov if p.get("jenis") == "NRT 7 hari"],
               "cakupan": coverage(recs), "sistem": system_health(recs),
               "sumber_doi": {k: v["doi"] for k, v in SENSORS.items()},
+              "lokasi": [{k: v for k, v in x.items() if k not in ("hd", "desa", "buf5", "buf25")} for x in SITES],
               "ekspor": sorted(os.path.basename(f) for f in glob.glob(os.path.join(EXP, "*")))}
     json.dump(status, open(os.path.join(DATA, "status.json"), "w"), indent=1, ensure_ascii=False)
 
@@ -569,6 +661,7 @@ def main():
     sp_changed = 0
     if full or NOW.hour < 3 or "--cek-arsip" in sys.argv:  # cek arsip tahunan sekali sehari
         sp_changed = ingest_sp(recs, prov, [NOW.year - 1, NOW.year], force=False)
+    compute_codes(recs)
     events = cluster(recs)
     years = save_archive(recs)
     changed_years = {r["acq_date"][:4] for u, r in recs.items() if u not in before} | {y for u, y in before.items() if u not in recs}

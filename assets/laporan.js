@@ -17,7 +17,7 @@ const WIL = {
   kh: { nama: 'Seluruh Kabupaten Kapuas Hulu', zmax: 4, ext: 'kh' },
 };
 const CAP_DETAIL = 220, CAP_EVENTS = 40;
-let G = null, STATUS = null, EVENTS = null, CUACA = null, IMG = null; const YEARS = {};
+let G = null, G0 = null, STATUS = null, EVENTS = null, CUACA = null, IMG = null, IMG0 = null, SI = 0, SITE = null; const YEARS = {}, CUACAS = {};
 let LAST = null;
 
 /* ---------------- util ---------------- */
@@ -35,11 +35,28 @@ function loadScript(src) { return new Promise((ok, no) => { if (document.querySe
 const status = (t, err) => { const el = $('#rpStatus'); el.textContent = t; el.style.color = err ? 'var(--z-hd)' : 'var(--muted)'; };
 
 async function base() {
-  if (G) return;
+  if (G0) return setSite(window.FH_SITE);
   const j = u => fetch(u + '?' + Date.now()).then(r => { if (!r.ok) throw new Error(u); return r.json(); });
-  [G, STATUS, EVENTS, CUACA] = await Promise.all([j('data/geo.json'), j('data/status.json'), j('data/kejadian.json'), j('data/cuaca.json')]);
-  IMG = await new Promise(ok => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = 'assets/s2_20260810.jpg'; });
+  [G0, STATUS, EVENTS, CUACA] = await Promise.all([j('data/geo.json'), j('data/status.json'), j('data/kejadian.json'), j('data/cuaca.json')]); G = G0; CUACAS.nangalauk = CUACA;
+  if (!Array.isArray(EVENTS)) EVENTS = EVENTS.baris.map(r => Object.fromEntries(EVENTS.kolom.map((k, i) => [k, r[i]])));
+  IMG0 = await new Promise(ok => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = 'assets/s2_20260810.jpg'; });
+  await setSite(window.FH_SITE);
 }
+/* ---------------- lokasi Hutan Desa yang dipilih ---------------- */
+async function setSite(id) {
+  const S = G0.sites || []; SI = Math.max(0, S.findIndex(x => x.id === id)); SITE = S[SI] || null;
+  if (!SITE) { G = G0; IMG = IMG0; return; }
+  const nl = SITE.id === 'nangalauk';
+  G = Object.assign({}, G0, { desa: SITE.desa, hd: SITE.hd, buf5: SITE.buf5, buf25: SITE.buf25, grid: nl ? G0.grid : { type: 'FeatureCollection', features: [] } });
+  IMG = nl ? IMG0 : null;
+  ZONES[1] = 'Desa ' + SITE.desa_nama;
+  WIL.desa25.nama = `${SITE.hd_nama}, Desa ${SITE.desa_nama} & radius 25 km`;
+  WIL.desa5.nama = `${SITE.hd_nama}, Desa ${SITE.desa_nama} & radius 5 km`;
+  if (!CUACAS[SITE.id]) { try { const r = await fetch(`data/cuaca_${SITE.id}.json?${Date.now()}`); if (r.ok) CUACAS[SITE.id] = await r.json(); } catch (e) { } }
+  CUACA = CUACAS[SITE.id] || CUACAS.nangalauk;
+}
+const zoneOfCode = (c, kab) => c < 0 ? 0 : c === 0 ? 1 : c <= 5 ? 2 : c <= 25 ? 3 : kab === 'Kapuas Hulu' ? 4 : 5;
+function siteRow(r) { if (!SITE || !r.ls || r.ls.length <= SI) return r; const c = r.ls[SI]; return Object.assign({}, r, { z: zoneOfCode(c, r.kab), km: Math.max(0, c) }); }
 async function yearData(y) {
   if (YEARS[y]) return YEARS[y];
   const r = await fetch(`data/web/${y}.json?${Date.now()}`); if (!r.ok) return (YEARS[y] = []);
@@ -87,7 +104,7 @@ function monthlyRain(ym) { let s = 0, n = 0; CUACA.t.forEach((t, i) => { if (t.s
 async function buildModel(a, b, wilKey, sensor) {
   await base(); const W = WIL[wilKey];
   const years = []; for (let y = +a.slice(0, 4); y <= +b.slice(0, 4); y++) years.push(y);
-  const all = (await Promise.all(years.map(yearData))).flat();
+  const all = (await Promise.all(years.map(yearData))).flat().map(siteRow);
   const rows = all.filter(r => r.d >= a && r.d <= b && r.z <= W.zmax && (sensor === 'semua' || (sensor === 'viirs' ? !r.sen.startsWith('MODIS') : r.sen.startsWith('MODIS'))));
   rows.sort((x, y) => (x.d + x.t).localeCompare(y.d + y.t));
   const len = daysBetween(a, b), gap = gapIn(a, b), zc = ZONES.map((_, i) => rows.filter(r => r.z === i).length);
@@ -99,7 +116,7 @@ async function buildModel(a, b, wilKey, sensor) {
     const vs = []; const yA = +a.slice(0, 4);
     for (let y = 2013; y <= 2025; y++) {
       if (y === yA && +b.slice(0, 4) === yA) continue;
-      const a2 = y + a.slice(4), b2 = (y + (+b.slice(0, 4) - yA)) + b.slice(4); if (isNaN(D(a2)) || isNaN(D(b2))) continue; const yd = (await Promise.all([y, y + (+b.slice(0, 4) - yA)].filter((v, i, s) => s.indexOf(v) === i).map(yearData))).flat();
+      const a2 = y + a.slice(4), b2 = (y + (+b.slice(0, 4) - yA)) + b.slice(4); if (isNaN(D(a2)) || isNaN(D(b2))) continue; const yd = (await Promise.all([y, y + (+b.slice(0, 4) - yA)].filter((v, i, s) => s.indexOf(v) === i).map(yearData))).flat().map(siteRow);
       vs.push(yd.filter(r => r.d >= a2 && r.d <= b2 && r.z <= W.zmax && r.sen.includes('S-NPP')).length);
     }
     const cur = rows.filter(r => r.sen.includes('S-NPP')).length;
@@ -130,7 +147,7 @@ function summary(M) {
   s.push(`Periode ${M.periodeTxt} (${fmt(M.len)} hari), wilayah ${M.W.nama}, sensor ${M.sensor === 'semua' ? 'VIIRS & MODIS' : M.sensor.toUpperCase()}: ${fmt(M.rows.length)} deteksi titik panas.`);
   const hd = M.rows.filter(r => r.z === 0);
   s.push(`Di dalam Hutan Desa: ${z[0]} deteksi` + (hd.length ? ' (' + hd.slice(0, 6).map(r => `${r.wib} WIB, petak ${r.pt || '-'}`).join('; ') + (hd.length > 6 ? '; …' : '') + ').' : '.'));
-  s.push(`Di dalam Desa Nanga Lauk (di luar Hutan Desa): ${z[1]}; radius 0–5 km dari batas desa: ${z[2]}` + (M.W.zmax >= 3 ? `; radius 5–25 km: ${fmt(z[3])}` : '') + (M.W.zmax >= 4 ? `; bagian lain Kapuas Hulu: ${fmt(z[4])}` : '') + '.');
+  s.push(`Di dalam ${ZONES[1]} (di luar Hutan Desa): ${z[1]}; radius 0–5 km dari batas desa: ${z[2]}` + (M.W.zmax >= 3 ? `; radius 5–25 km: ${fmt(z[3])}` : '') + (M.W.zmax >= 4 ? `; bagian lain Kapuas Hulu: ${fmt(z[4])}` : '') + '.');
   s.push(`Kejadian api (deteksi berjarak ≤ 1 km dan ≤ 2 hari) di desa dan radius 5 km: ${M.events.length}.`);
   if (M.trend) {
     const t = M.trend, r = t.mean ? t.cur / t.mean : null;
@@ -221,7 +238,7 @@ function drawMap(M, which) {
   for (let x = Math.ceil(bb[0] / step) * step; x < bb[2]; x += step) { const [px] = P(x, bb[1]); g.fillText(x.toFixed(2) + '°BT', px - 40, oy + sc * (bb[3] - bb[1]) + 26); }
   for (let y = Math.ceil(bb[1] / step) * step; y < bb[3]; y += step) { const [, py] = P(bb[0], y); g.save(); g.translate(ox - 10, py + 40); g.rotate(-Math.PI / 2); g.fillText(y.toFixed(2) + '°LU', 0, 0); g.restore(); }
   // legenda
-  const items = [['#FF3B30', 'Hutan Desa', 'l'], [which === 'zoom' ? '#FFE14D' : '#222', 'Desa Nanga Lauk', 'l']];
+  const items = [['#FF3B30', 'Hutan Desa', 'l'], [which === 'zoom' ? '#FFE14D' : '#222', ZONES[1], 'l']];
   for (let zi = 0; zi <= (which === 'zoom' ? 2 : M.W.zmax); zi++) items.push([ZCOL[zi], `${ZONES[zi]} (${(which === 'zoom' ? M.near : M.rows).filter(r => r.z === zi).length})`, 'p']);
   const lx = ox + 14, lh = 30; let ly = oy + 14; g.fillStyle = 'rgba(255,255,255,.9)'; g.fillRect(lx - 8, ly - 8, 400, items.length * lh + 12);
   for (const [col, t, k] of items) { if (k === 'l') { g.strokeStyle = col; g.lineWidth = 4; g.beginPath(); g.moveTo(lx, ly + 12); g.lineTo(lx + 30, ly + 12); g.stroke(); } else { g.beginPath(); g.arc(lx + 15, ly + 12, 8, 0, 7); g.fillStyle = col; g.fill(); g.strokeStyle = '#000'; g.lineWidth = 1; g.stroke(); } g.fillStyle = INK; g.font = '21px Arial'; g.fillText(t, lx + 42, ly + 19); ly += lh; }
@@ -278,7 +295,8 @@ function sources(M) {
   return [
     ['Titik panas', 'NASA FIRMS (Fire Information for Resource Management System). Arsip tahunan final (SP): MODIS sejak Nov 2000, VIIRS S-NPP sejak 2012, VIIRS NOAA-20 sejak 2018; data terbaru Near Real-Time (VIIRS S-NPP/NOAA-20/NOAA-21, MODIS). DOI: 10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002; 10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002; 10.5067/VIIRS/VJ214IMG_NRT.002; 10.5067/FIRMS/MODIS/MCD14DL.NRT.0061.'],
     ['Cuaca', `${CUACA.sumber}, titik ${CUACA.lokasi}. Data reanalisis (model iklim yang diasimilasi pengamatan, grid ±9–25 km), bukan stasiun di desa: cocok untuk melihat pola basah/kering dan perbandingan dengan normal, tetapi cenderung mencatat lebih banyak hari hujan ringan dibanding alat ukur di lapangan.`],
-    ['Batas wilayah', 'Hutan Desa SK.685/Menlhk-PSKL/PKPS/PSL.0/2/2017; batas desa BIG 2020 (1:10.000); grid patroli 250 m PRCF Indonesia; batas kabupaten BIG 2021; fungsi kawasan SK.733/2014 jo. SK.6630/2021; tutupan lahan 2026; gambut Kementan (BBSDLP) 1:50.000.'],
+    ['Batas wilayah', (!SITE || SITE.id === 'nangalauk') ? 'Hutan Desa SK.685/Menlhk-PSKL/PKPS/PSL.0/2/2017; batas desa BIG 2020 (1:10.000); grid patroli 250 m PRCF Indonesia; batas kabupaten BIG 2021; fungsi kawasan SK.733/2014 jo. SK.6630/2021; tutupan lahan 2026; gambut Kementan (BBSDLP) 1:50.000.'
+      : `${SITE.hd_nama} (${SITE.lphd || 'LPHD'}), Desa ${SITE.desa_nama}, Kec. ${SITE.kec}; ${SITE.sk ? 'SK hak pengelolaan ' + SITE.sk + (SITE.sk_tgl ? ' tanggal ' + tglID(SITE.sk_tgl) : '') : 'nomor SK belum tercantum pada data batas'}; luas areal ${fmt1(SITE.luas_hd_ha)} ha (dihitung dari poligon). Batas desa dari peta batas desa Kabupaten Kapuas Hulu; batas kabupaten BIG 2021. Petak patroli, fungsi kawasan, tutupan lahan dan gambut belum tersedia untuk lokasi ini.`],
     ['Pengolahan', 'Nilai asli FIRMS tidak diubah. Deteksi tipe gunung api, sumber panas statis (industri), dan lepas pantai tidak dihitung. Tren antar-tahun dibandingkan dalam sensor yang sama (VIIRS lebih peka dari MODIS).'],
     ['Jejak audit', `Setiap unduhan sumber dicatat (URL, waktu, SHA-256) di https://github.com/erikprcfi/titik-api-desa-nanga-lauk/tree/main/data/provenance. Basis data diperbarui ${STATUS.terakhir_cek_utc} (UTC). Setiap titik dapat dicek silang di https://firms.modaps.eosdis.nasa.gov/map.`],
     ['Keterbatasan', 'Satelit mendeteksi panas saat melintas (beberapa kali sehari); api kecil, singkat, atau di bawah tajuk dan saat tertutup awan dapat tidak terdeteksi. Luas terbakar perlu diukur dengan analisa citra (burn scar) atau lapangan.'],
@@ -386,7 +404,7 @@ function exportCSV(M) {
   dl(new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' }), fname(M, 'csv'));
 }
 function dl(blob, name) { const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(u); a.remove(); }, 2000); }
-function fname(M, ext) { return `laporan_titik_panas_${M.wilKey}_${M.a}_sd_${M.b}.${ext}`.replace('laporan_titik_panas', ext === 'csv' ? 'data_titik_panas' : 'laporan_titik_panas'); }
+function fname(M, ext) { return `laporan_titik_panas_${SITE ? SITE.id + '_' : ''}${M.wilKey}_${M.a}_sd_${M.b}.${ext}`.replace('laporan_titik_panas', ext === 'csv' ? 'data_titik_panas' : 'laporan_titik_panas'); }
 
 /* ---------------- UI ---------------- */
 function presetRange(p) {
@@ -409,7 +427,7 @@ async function run(kind) {
   const btns = document.querySelectorAll('#rpForm button'); btns.forEach(x => x.disabled = true);
   try {
     status('Mengambil data dan menyusun laporan…');
-    const key = [a, b, $('#rpWil').value, $('#rpSen').value].join('|');
+    const key = [a, b, $('#rpWil').value, $('#rpSen').value, window.FH_SITE || ''].join('|');
     if (!LAST || LAST.key !== key) { const M = await buildModel(a, b, $('#rpWil').value, $('#rpSen').value); const F = figures(M), T = tables(M); LAST = { key, M, F, T }; preview(M, F, T); }
     const { M, F, T } = LAST;
     if (kind === 'pdf') { status('Membuat PDF…'); const n = await exportPDF(M, F, T); status(`PDF selesai (${n} halaman) dan sudah diunduh.`); }
@@ -429,6 +447,6 @@ function init() {
   $('#rpDocx').addEventListener('click', () => run('docx')); $('#rpCsv').addEventListener('click', () => run('csv'));
   $('#rpTo').max = iso(new Date(Date.now() + 7 * 36e5));
 }
-window.PantauLaporan = { buildModel, figures, tables, exportPDF, exportDOCX, presetRange };
+window.PantauLaporan = { buildModel, figures, tables, exportPDF, exportDOCX, presetRange, reset: () => { LAST = null; } };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

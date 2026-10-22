@@ -1,7 +1,7 @@
 {
-  "name": "Fire Hotspot Nanga Lauk",
+  "name": "Fire Hotspot",
   "short_name": "Fire Hotspot",
-  "description": "Fire Hotspot: pemantauan titik panas satelit NASA FIRMS untuk Desa dan Hutan Desa Nanga Lauk, Kapuas Hulu.",
+  "description": "Fire Hotspot: pemantauan titik panas satelit NASA FIRMS untuk Hutan Desa di Kabupaten Kapuas Hulu.",
   "id": "./",
   "start_url": "./app.html",
   "scope": "./",
