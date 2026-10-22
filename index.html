@@ -4,239 +4,369 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Pantau Api Nanga Lauk</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%227%22 fill=%22%23C8401A%22/%3E%3C/svg%3E">
-<meta name="description" content="Pemantauan titik panas NASA FIRMS untuk Desa dan Hutan Desa Nanga Lauk, Kapuas Hulu.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%230B3B2C%22/%3E%3Cpath d=%22M16 6c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-3 0-6 1-9z%22 fill=%22%23F2683C%22/%3E%3C/svg%3E">
+<meta name="description" content="Sistem pemantauan titik panas satelit NASA FIRMS untuk Desa dan Hutan Desa Nanga Lauk, Kapuas Hulu, Kalimantan Barat.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
-/* Layout: instrument header strip, map left (dominant), alert + register column right; stacks on phones */
+/* Layout: forest-green command band with KPI tiles, map console (map + intelligence rail), then analysis sections as quiet cards */
 :root{
-  --bg:#ECEFEC; --panel:#FFFFFF; --fg:#17201B; --muted:#5B6A61; --line:#D3DBD5; --map:#DDE3DE; --land:#F7F8F6;
-  --ember:#C8401A; --ember-soft:#F7E1D8;
-  --z-hd:#C21D1D; --z-desa:#E2621B; --z-5:#E8A317; --z-25:#C9B21E; --z-kh:#8E7A9E; --z-out:#9AA49E;
-  --ok:#2F7D4F;
-  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
-  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-data:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --bg:#F3F5F3; --surface:#FFFFFF; --surface-2:#F8FAF8; --fg:#0E1A14; --muted:#5E6B64; --faint:#8A968F; --line:#E1E6E2; --line-2:#CED6D0;
+  --brand:#0B3B2C; --brand-2:#14563F; --brand-ink:#E9F2ED; --accent:#E4572E; --accent-soft:#FCE9E2; --gold:#B8912A;
+  --ok:#1F8A5B; --ok-soft:#E3F3EA; --warn:#C98A0B; --warn-soft:#FBF1DA; --crit:#C42B2B; --crit-soft:#FBE4E2;
+  --z-hd:#C42B2B; --z-desa:#E4572E; --z-5:#E8A317; --z-25:#C9B21E; --z-kh:#8E7A9E; --z-out:#9AA49E;
+  --map:#DCE3DE; --shadow:0 1px 2px rgba(14,26,20,.05),0 8px 24px -12px rgba(14,26,20,.12);
+  --r:14px; --r-sm:10px;
+  --f:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0E1310; --panel:#161D19; --fg:#E4EBE6; --muted:#93A398; --line:#2A352F; --map:#0B100D; --land:#1A221D;
-  --ember:#FF6B3D; --ember-soft:#3A1F16; --z-kh:#B4A1C4; --z-out:#6F7A73; --ok:#5CC28A; color-scheme:dark}}
+  --bg:#0A110D; --surface:#111A15; --surface-2:#16211B; --fg:#E7EEE9; --muted:#97A69E; --faint:#6F7D75; --line:#22302A; --line-2:#2E3D35;
+  --brand:#0A2E22; --brand-2:#1E6B4F; --brand-ink:#E9F2ED; --accent:#F2683C; --accent-soft:#3A1E15; --gold:#D6B04A;
+  --ok:#43B886; --ok-soft:#12291E; --warn:#E5A93A; --warn-soft:#2E2412; --crit:#F0605A; --crit-soft:#3A1716;
+  --z-kh:#B4A1C4; --z-out:#6F7A73; --map:#0B100D; --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -12px rgba(0,0,0,.6); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0E1310; --panel:#161D19; --fg:#E4EBE6; --muted:#93A398; --line:#2A352F; --map:#0B100D; --land:#1A221D;
-  --ember:#FF6B3D; --ember-soft:#3A1F16; --z-kh:#B4A1C4; --z-out:#6F7A73; --ok:#5CC28A; color-scheme:dark}
-html,body{height:100%}
-:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-.src{background:var(--panel);border:1px solid var(--line);padding:14px 16px;font-size:14px}
-.src h2{font:700 18px var(--f-display);text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px}
-.src table{border-collapse:collapse;width:100%;font-size:13px}
-.src .chart svg{width:100%;height:auto;display:block}
-.btn[aria-pressed="true"]{background:var(--fg);color:var(--panel)}
-.rp-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px 14px;align-items:end;margin:10px 0}
-.rp-form label{display:flex;flex-direction:column;gap:4px;font:600 12px var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.rp-form select,.rp-form input{font:14px var(--f-body);padding:7px 8px;border:1px solid var(--line);background:var(--panel);color:var(--fg)}
-.rp-btns{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}
-.rp-main{background:var(--ember);color:#fff;border-color:var(--ember)}
-.btn:disabled{opacity:.5;cursor:wait}
-.rp-note{color:var(--muted);font-size:13px}
-.rp-doc{border-top:2px solid var(--fg);margin-top:12px;padding-top:8px}
-.rp-doc h3{font:700 22px var(--f-display);text-transform:uppercase;margin:6px 0}
-.rp-doc h4{font:700 16px var(--f-display);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 6px;color:var(--muted)}
-.rp-doc li,.rp-doc p{max-width:90ch}
-.src th,.src td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
-.src th{color:var(--muted);font-weight:600}
-.src code{font-family:var(--f-data);font-size:12px;white-space:nowrap}
-#etable thead th{position:sticky;top:0;background:var(--panel)}
-.tw{overflow-x:auto}
-.src a{color:var(--ember)}
-.dl{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 0}
-.dl a{font:500 13px var(--f-data);border:1px solid var(--line);padding:4px 10px;text-decoration:none;color:var(--fg)}
-body{background:var(--bg);color:var(--fg);font:15px/1.45 var(--f-body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px;box-sizing:border-box}
+  --bg:#0A110D; --surface:#111A15; --surface-2:#16211B; --fg:#E7EEE9; --muted:#97A69E; --faint:#6F7D75; --line:#22302A; --line-2:#2E3D35;
+  --brand:#0A2E22; --brand-2:#1E6B4F; --brand-ink:#E9F2ED; --accent:#F2683C; --accent-soft:#3A1E15; --gold:#D6B04A;
+  --ok:#43B886; --ok-soft:#12291E; --warn:#E5A93A; --warn-soft:#2E2412; --crit:#F0605A; --crit-soft:#3A1716;
+  --z-kh:#B4A1C4; --z-out:#6F7A73; --map:#0B100D; --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -12px rgba(0,0,0,.6); color-scheme:dark}
 *{box-sizing:border-box}
-.wrap{max-width:1440px;margin:0 auto;display:flex;flex-direction:column;gap:12px;min-height:100%}
-header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 24px;border-bottom:2px solid var(--fg);padding-bottom:10px}
-h1{font:700 30px/1 var(--f-display);letter-spacing:.01em;margin:0;text-transform:uppercase;text-wrap:balance}
-h1 span{color:var(--ember)}
-.sub{color:var(--muted);font-size:13.5px;margin-top:4px}
-.status{min-width:0;max-width:100%;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font:500 12.5px var(--f-data)}
-.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:4px 10px;max-width:100%}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
-.dot.stale{background:var(--z-5)} .dot.off{background:var(--z-out)}
-.alert{display:flex;gap:14px;align-items:center;border:1px solid var(--line);border-left:6px solid var(--ok);background:var(--panel);padding:10px 14px}
-.alert.warn{border-left-color:var(--z-5)} .alert.crit{border-left-color:var(--z-hd);background:var(--ember-soft)}
-.alert b{font:700 19px var(--f-display);text-transform:uppercase;letter-spacing:.02em}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 var(--f);-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom,0px)}
+a{color:inherit}
+.wrap{max-width:1360px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+/* ---- top bar ---- */
+.topbar{position:sticky;top:0;z-index:1000;background:var(--brand);color:var(--brand-ink);padding-top:env(safe-area-inset-top,0px);border-bottom:1px solid rgba(255,255,255,.08)}
+.topbar .wrap{display:flex;align-items:center;gap:24px;height:60px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;min-width:0}
+.brand-mark{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.08);display:grid;place-items:center;flex:none;border:1px solid rgba(255,255,255,.12)}
+.brand b{font-weight:800;letter-spacing:-.01em;font-size:16px;white-space:nowrap}
+.brand small{display:block;font-size:11.5px;opacity:.7;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav{display:flex;gap:4px;margin-left:auto}
+.nav a{font-size:13.5px;font-weight:600;text-decoration:none;padding:8px 12px;border-radius:8px;opacity:.82}
+.nav a:hover{background:rgba(255,255,255,.08);opacity:1}
+@media (max-width:900px){.nav{display:none}}
+.live{display:inline-flex;align-items:center;gap:8px;font:500 12px var(--f-data);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);padding:6px 11px;border-radius:999px;white-space:nowrap}
+.live i{width:8px;height:8px;border-radius:50%;background:#4ADE9B;box-shadow:0 0 0 0 rgba(74,222,155,.6)}
+@media (prefers-reduced-motion:no-preference){.live i{animation:beat 2.2s infinite}@keyframes beat{0%{box-shadow:0 0 0 0 rgba(74,222,155,.55)}70%{box-shadow:0 0 0 8px rgba(74,222,155,0)}100%{box-shadow:0 0 0 0 rgba(74,222,155,0)}}}
+@media (max-width:600px){.live{display:none}}
+
+/* ---- hero band ---- */
+.hero{background:linear-gradient(180deg,var(--brand) 0,var(--brand) 62%,transparent 62%);color:var(--brand-ink);padding-top:28px}
+.hero-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px 32px;margin-bottom:22px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
+.hero h1{font-size:clamp(26px,3.4vw,40px);line-height:1.08;letter-spacing:-.025em;font-weight:800;margin:6px 0 8px;text-wrap:balance}
+.hero p.lead{margin:0;max-width:62ch;opacity:.82;font-size:15px}
+.status{display:flex;flex-wrap:wrap;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:8px;font:500 12px var(--f-data);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);padding:6px 11px;border-radius:999px}
+.dot{width:8px;height:8px;border-radius:50%;background:#4ADE9B}.dot.stale{background:#F5B83D}.dot.off{background:#9AA49E}
+
+/* ---- status + KPI ---- */
+.kpis{display:grid;grid-template-columns:1.55fr repeat(4,1fr);gap:12px}
+@media (max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}.alert{grid-column:1/-1}}
+@media (max-width:520px){.kpis{grid-template-columns:1fr}}
+.alert,.kpi{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px 20px;min-width:0}
+.alert{display:flex;gap:16px;align-items:flex-start;border-left:0;position:relative;overflow:hidden}
+.alert::before{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:var(--ok)}
+.alert .ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:none;background:var(--ok-soft);color:var(--ok)}
+.alert.warn::before{background:var(--warn)}.alert.warn .ico{background:var(--warn-soft);color:var(--warn)}
+.alert.crit::before{background:var(--crit)}.alert.crit .ico{background:var(--crit-soft);color:var(--crit)}
+.alert .lvl{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.alert b{display:block;font-size:17px;line-height:1.3;font-weight:700;margin:3px 0 4px;letter-spacing:-.01em}
 .alert p{margin:0;color:var(--muted);font-size:13.5px}
-.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.controls .lbl{font:600 12px var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:4px}
-.seg{display:inline-flex;border:1px solid var(--line);background:var(--panel)}
-.seg button{font:500 13px var(--f-body);color:var(--fg);background:none;border:0;padding:6px 12px;cursor:pointer;border-right:1px solid var(--line)}
-.seg button:last-child{border-right:0}
-.seg button[aria-pressed="true"]{background:var(--fg);color:var(--panel)}
-.seg button:focus-visible,.btn:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
-.btn{font:500 13px var(--f-body);border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:6px 12px;cursor:pointer}
-.main{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:12px;flex:1;min-height:560px}
-@media (max-width:980px){.main{grid-template-columns:minmax(0,1fr)}}
-#map{min-height:560px;height:100%;border:1px solid var(--line);background:var(--map);overflow:hidden;min-width:0}
-@media (max-width:980px){#map{height:62vh;min-height:380px}}
-.side{display:flex;flex-direction:column;gap:12px;min-width:0}
-.card{background:var(--panel);border:1px solid var(--line);padding:12px 14px;min-width:0}
-.card h2{font:700 15px var(--f-display);text-transform:uppercase;letter-spacing:.08em;margin:0 0 8px;color:var(--muted)}
-.zones{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:14px}
-.zones .z{display:flex;align-items:center;gap:8px}
-.sw{width:12px;height:12px;border-radius:50%;flex:none;border:1.5px solid rgba(0,0,0,.35)}
-.zones .n{font:500 14px var(--f-data);text-align:right;font-variant-numeric:tabular-nums}
-.zones .n.hot{color:var(--z-hd);font-weight:700}
-.list{max-height:420px;overflow:auto;margin:0 -14px;border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:4px 10px;padding:9px 14px;border-bottom:1px solid var(--line);cursor:pointer;align-items:start}
-.row:hover{background:var(--bg)}
-.row .t{font:500 12.5px var(--f-data);color:var(--muted)}
-.row .w{font-size:14px}
-.row .r{font:500 12.5px var(--f-data);text-align:right;white-space:nowrap}
-.empty{color:var(--muted);font-size:14px;padding:12px 0}
+.kpi .k{font-size:12px;font-weight:600;color:var(--muted)}
+.kpi .v{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:14px;font-weight:600;color:var(--muted);margin-left:3px}
+.kpi .s{font-size:12px;color:var(--faint)}
+
+/* ---- sections ---- */
+main{display:flex;flex-direction:column;gap:22px;padding:22px 0 40px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);min-width:0}
+.sec{padding:26px 28px}
+@media (max-width:600px){.sec{padding:20px 18px}}
+.sec-h{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;margin-bottom:16px}
+.sec-h h2{font-size:22px;letter-spacing:-.02em;font-weight:800;margin:4px 0 0}
+.sec-h p{margin:6px 0 0;color:var(--muted);max-width:70ch;font-size:14px}
+.kick{font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h3.sub{font-size:15px;font-weight:700;margin:22px 0 10px;letter-spacing:-.01em}
+
+/* ---- controls ---- */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.ctl{display:flex;align-items:center;gap:10px}
+.ctl>span{font-size:12px;font-weight:600;color:var(--muted)}
+.seg{display:inline-flex;padding:3px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);gap:2px;flex-wrap:wrap}
+.seg button{font:600 13px var(--f);color:var(--muted);background:transparent;border:0;padding:7px 13px;border-radius:8px;cursor:pointer;transition:background .15s,color .15s,box-shadow .15s}
+.seg button:hover{color:var(--fg)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.08),0 0 0 1px var(--line-2)}
+.btn{display:inline-flex;align-items:center;gap:8px;font:600 13.5px var(--f);color:var(--fg);background:var(--surface);border:1px solid var(--line-2);padding:9px 15px;border-radius:10px;cursor:pointer;text-decoration:none;transition:border-color .15s,background .15s,transform .05s}
+.btn:hover{border-color:var(--fg)}
+.btn:active{transform:translateY(1px)}
+.btn svg{width:16px;height:16px;flex:none}
+.btn.primary{background:var(--brand-2);border-color:var(--brand-2);color:#fff}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn[aria-pressed="true"]{background:var(--fg);color:var(--surface);border-color:var(--fg)}
+.btn:disabled{opacity:.55;cursor:progress}
+
+/* ---- map console ---- */
+.console{display:grid;grid-template-columns:minmax(0,1fr) 380px;overflow:hidden}
+@media (max-width:1050px){.console{grid-template-columns:minmax(0,1fr)}}
+.console-map{display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--line)}
+.console-map .toolbar{padding:14px 16px;border-bottom:1px solid var(--line)}
+#map{height:640px;background:var(--map)}
+@media (max-width:1050px){#map{height:60vh;min-height:380px}.console-map{border-right:0;border-bottom:1px solid var(--line)}}
+.rail{display:flex;flex-direction:column;min-width:0;max-height:707px}
+@media (max-width:1050px){.rail{max-height:none}}
+.rail-sec{padding:16px 18px;border-bottom:1px solid var(--line)}
+.rail h4{margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between}
+.zones{display:flex;flex-direction:column;gap:8px}
+.zr{display:grid;grid-template-columns:10px minmax(0,1fr) 70px 34px;gap:10px;align-items:center;font-size:13px}
+.zr .bar{height:6px;border-radius:6px;background:var(--surface-2);overflow:hidden;border:1px solid var(--line)}
+.zr .bar i{display:block;height:100%;border-radius:6px}
+.zr b{text-align:right;font:600 13px var(--f-data);font-variant-numeric:tabular-nums}
+.zr b.hot{color:var(--crit)}
+.sw{width:10px;height:10px;border-radius:50%;flex:none;box-shadow:0 0 0 2px var(--surface),0 0 0 3px rgba(0,0,0,.12)}
 .chart svg{width:100%;height:auto;display:block}
 .chart text{fill:var(--muted);font:10px var(--f-data)}
-.foot{color:var(--muted);font-size:12.5px;line-height:1.5;border-top:1px solid var(--line);padding-top:10px}
-.foot a{color:var(--fg)}
-.leaflet-container{background:var(--map);font:13px var(--f-body)}
-.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--panel);color:var(--fg);border-radius:2px}
-.leaflet-popup-content{margin:12px 14px;min-width:240px}
-.pop h3{margin:0 0 6px;font:700 17px var(--f-display);text-transform:uppercase;letter-spacing:.03em}
+.list-wrap{flex:1;min-height:200px;display:flex;flex-direction:column}
+.list-wrap h4{padding:16px 18px 0}
+.list{overflow:auto;flex:1}
+.row{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:4px 12px;padding:11px 18px;border-top:1px solid var(--line);cursor:pointer;align-items:start}
+.row:hover{background:var(--surface-2)}
+.row .w{font-size:13.5px;font-weight:600}
+.row .t{font:400 12px var(--f-data);color:var(--muted);margin-top:2px}
+.row .r{font:600 12.5px var(--f-data);text-align:right;white-space:nowrap}
+.empty{color:var(--muted);font-size:13.5px}
+
+/* ---- leaflet skin ---- */
+.leaflet-container{font:13px var(--f);background:var(--map)}
+.leaflet-bar,.leaflet-control-layers{border:0!important;border-radius:10px!important;box-shadow:0 4px 16px rgba(0,0,0,.18)!important;overflow:hidden}
+.leaflet-bar a{background:var(--surface);color:var(--fg);border-bottom:1px solid var(--line)!important;width:34px!important;height:34px!important;line-height:34px!important}
+.leaflet-control-layers{background:var(--surface);color:var(--fg)}
+.leaflet-control-layers-expanded{padding:10px 12px}
+.leaflet-popup-content-wrapper{background:var(--surface);color:var(--fg);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.25)}
+.leaflet-popup-tip{background:var(--surface)}
+.leaflet-popup-content{margin:14px 16px;min-width:260px}
+.pop h3{margin:0 0 8px;font-size:15px;font-weight:800;letter-spacing:-.01em}
 .pop table{border-collapse:collapse;font-size:12.5px;width:100%}
-.pop td{padding:2px 0;vertical-align:top}
-.pop td:first-child{color:var(--muted);padding-right:10px;white-space:nowrap}
-.pop td:last-child{font-family:var(--f-data)}
-.pop a{color:var(--ember);font-weight:600}
-.lgd{background:var(--panel);color:var(--fg);border:1px solid var(--line);padding:8px 10px;font-size:12px;line-height:1.6}
-.lgd i{display:inline-block;width:18px;height:0;border-top:2px solid;vertical-align:middle;margin-right:6px}
+.pop td{padding:3px 0;vertical-align:top;border-top:1px solid var(--line)}
+.pop td:first-child{color:var(--muted);padding-right:12px;white-space:nowrap}
+.pop td:last-child{font-family:var(--f-data);font-size:12px}
+.pop a{color:var(--accent);font-weight:700;text-decoration:none}
+.lgd{background:var(--surface);color:var(--fg);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.75;box-shadow:0 4px 16px rgba(0,0,0,.18)}
+.lgd i{display:inline-block;width:18px;height:0;border-top:2.5px solid;vertical-align:middle;margin-right:8px}
 .petak-lbl{font:600 9px var(--f-data);color:#fff;text-shadow:0 0 2px #000,0 0 2px #000;white-space:nowrap}
 @media (prefers-reduced-motion:no-preference){.pulse{animation:p 1.6s ease-out infinite}@keyframes p{0%{stroke-opacity:.9}100%{stroke-opacity:.1}}}
-</style>
 
+/* ---- tables ---- */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-sm)}
+table.t{border-collapse:collapse;width:100%;font-size:13px}
+table.t th{text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface-2);padding:10px 12px;border-bottom:1px solid var(--line);position:sticky;top:0}
+table.t td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t tr:last-child td{border-bottom:0}
+table.t tbody tr:hover td{background:var(--surface-2)}
+code{font-family:var(--f-data);font-size:12px;white-space:nowrap}
+
+/* ---- report builder ---- */
+.builder{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:980px){.builder{grid-template-columns:1fr}}
+.step{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:16px}
+.step .lab{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;margin-bottom:12px}
+.step .lab i{width:22px;height:22px;border-radius:50%;background:var(--brand-2);color:#fff;font:700 11.5px var(--f);font-style:normal;display:grid;place-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:600 12.5px var(--f);color:var(--fg);background:var(--surface);border:1px solid var(--line-2);border-radius:999px;padding:6px 12px;cursor:pointer}
+.chip:hover{border-color:var(--fg)}
+.chip[aria-pressed="true"]{background:var(--brand-2);border-color:var(--brand-2);color:#fff}
+.dates{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.dates label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;font-weight:600;color:var(--muted)}
+.dates input{font:500 13.5px var(--f);padding:8px 10px;border:1px solid var(--line-2);border-radius:9px;background:var(--surface);color:var(--fg);min-width:0}
+.opt{display:flex;flex-direction:column;gap:6px}
+.opt button{display:flex;flex-direction:column;align-items:flex-start;text-align:left;font:600 13px var(--f);color:var(--fg);background:var(--surface);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;cursor:pointer}
+.opt button small{font-weight:500;color:var(--muted);font-size:12px}
+.opt button[aria-pressed="true"]{border-color:var(--brand-2);box-shadow:0 0 0 1px var(--brand-2);background:var(--ok-soft)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.actions .sp{flex:1}
+.rp-note{color:var(--muted);font-size:13px;margin:10px 0 0}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+#rpPreview:not(:empty){margin-top:18px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface-2);padding:8px}
+.rp-doc{background:var(--surface);border-radius:10px;padding:28px 32px;max-width:980px;margin:0 auto;box-shadow:var(--shadow)}
+@media (max-width:600px){.rp-doc{padding:18px}}
+.rp-doc h3{font-size:22px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
+.rp-doc h4{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:24px 0 8px}
+.rp-doc li,.rp-doc p{max-width:88ch}
+.rp-doc .tw table{border-collapse:collapse;width:100%;min-width:760px;font-size:12.5px}
+.rp-doc .tw th{background:var(--brand);color:#fff;text-align:left;padding:7px 9px;font-weight:600}
+.rp-doc .tw td{padding:6px 9px;border-bottom:1px solid var(--line)}
+
+/* ---- downloads ---- */
+.files{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.file{display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-sm);text-decoration:none;background:var(--surface);transition:border-color .15s,box-shadow .15s}
+.file:hover{border-color:var(--line-2);box-shadow:var(--shadow)}
+.badge{font:700 10.5px var(--f-data);letter-spacing:.04em;padding:5px 7px;border-radius:6px;flex:none;min-width:58px;text-align:center}
+.b-shp{background:#E3F3EA;color:#14563F}.b-kml{background:#E6EEFB;color:#22509C}.b-geojson{background:#F1E9FB;color:#5B2D91}.b-csv{background:#FBF1DA;color:#8A5A00}
+.file b{font-size:13px;font-weight:600;line-height:1.35;display:block}
+.file small{color:var(--muted);font-size:12px}
+.years{display:flex;flex-wrap:wrap;gap:6px}
+.years a{font:500 12.5px var(--f-data);text-decoration:none;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.years a:hover{border-color:var(--fg)}
+
+/* ---- method ---- */
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:6px 0 18px}
+.fact{border:1px solid var(--line);border-radius:var(--r-sm);padding:16px;background:var(--surface-2)}
+.fact b{display:block;font-size:13.5px;margin-bottom:6px}
+.fact p{margin:0;color:var(--muted);font-size:13.2px}
+.src p{color:var(--muted);font-size:13.5px;max-width:95ch}
+.src p b{color:var(--fg)}
+.src a{color:var(--accent)}
+
+footer{border-top:1px solid var(--line);padding:26px 0 36px;color:var(--muted);font-size:12.5px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:10px 30px;justify-content:space-between}
+</style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div>
-      <h1>Pantau Api <span>Nanga Lauk</span></h1>
-      <div class="sub">Titik panas satelit NASA FIRMS (VIIRS &amp; MODIS) di Desa &amp; Hutan Desa Nanga Lauk dan Kabupaten Kapuas Hulu</div>
-    </div>
-    <div class="status" id="status"><span class="pill"><span class="dot off"></span>Menghubungkan data…</span></div>
-  </header>
+<div class="topbar"><div class="wrap">
+  <a class="brand" href="#">
+    <span class="brand-mark" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4.5 7 6.5 7 13a7 7 0 0 1-14 0c0-3.6 2.3-5.6 3.5-6.8 0 2.2 1.1 3.5 2.4 3.5 0-3.6.1-6.7 1.1-9.7z" fill="#F2683C"/></svg></span>
+    <span><b>Pantau Api Nanga Lauk</b><small>Sistem Pemantauan Titik Panas Hutan Desa</small></span>
+  </a>
+  <nav class="nav" aria-label="Navigasi"><a href="#peta">Peta</a><a href="#riwayat">Riwayat</a><a href="#buat-laporan">Laporan</a><a href="#unduh">Data</a><a href="#sumber">Metodologi</a></nav>
+  <span class="live" id="livechip"><i></i><span>Memuat…</span></span>
+</div></div>
 
-  <div class="alert" id="alert"><div><b id="alertTitle">Memuat data titik panas</b><p id="alertText">Data diperbarui otomatis dari NASA FIRMS setiap 3 jam oleh GitHub Actions.</p></div></div>
-
-  <div class="controls">
-    <span class="lbl">Periode</span>
-    <div class="seg" id="range" role="group" aria-label="Periode">
-      <button type="button" id="r1" data-d="1">24 jam</button>
-      <button type="button" id="r3" data-d="3">3 hari</button>
-      <button type="button" id="r7" data-d="7" aria-pressed="true">7 hari</button>
-      <button type="button" id="r30" data-d="30">30 hari</button>
-      <button type="button" id="r0" data-d="0">400 hari</button>
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-head">
+      <div>
+        <div class="eyebrow">Desa Nanga Lauk · Kec. Embaloh Hilir · Kab. Kapuas Hulu · Kalimantan Barat</div>
+        <h1>Pemantauan Titik Panas Satelit<br>Hutan Desa Nanga Lauk</h1>
+        <p class="lead">Data NASA FIRMS (VIIRS &amp; MODIS) sejak 2001, diperbarui otomatis setiap 3 jam dan dianalisa terhadap batas Hutan Desa, petak patroli, kawasan hutan, tutupan lahan, gambut, dan cuaca.</p>
+      </div>
+      <div class="status" id="status"><span class="pill"><span class="dot off"></span>Menghubungkan data…</span></div>
     </div>
-    <span class="lbl" style="margin-left:8px">Peta</span>
-    <div class="seg" role="group" aria-label="Fokus peta">
-      <button type="button" id="vNL">Nanga Lauk</button>
-      <button type="button" id="v25">Radius 25 km</button>
-      <button type="button" id="vKH">Kapuas Hulu</button>
+    <div class="kpis">
+      <div class="alert" id="alert" role="status" aria-live="polite">
+        <span class="ico" id="alertIco" aria-hidden="true"></span>
+        <div><div class="lvl" id="alertLvl">Status</div><b id="alertTitle">Memuat data titik panas</b><p id="alertText">Data diperbarui otomatis dari NASA FIRMS setiap 3 jam.</p></div>
+      </div>
+      <div class="kpi"><div class="k">Titik panas 24 jam</div><div class="v num" id="k24">–</div><div class="s">di Kapuas Hulu</div></div>
+      <div class="kpi"><div class="k">7 hari, radius 25 km</div><div class="v num" id="k7">–</div><div class="s">dari batas desa</div></div>
+      <div class="kpi"><div class="k">Titik terdekat (30 hari)</div><div class="v num" id="kNear">–</div><div class="s" id="kNearS">dari batas desa</div></div>
+      <div class="kpi"><div class="k">Deteksi di Hutan Desa</div><div class="v num" id="kHD">–</div><div class="s" id="kHDS">sejak 2001</div></div>
     </div>
   </div>
+</section>
 
-  <div class="main">
-    <div id="map" role="region" aria-label="Peta titik panas"></div>
-    <div class="side">
-      <div class="card">
-        <h2>Titik panas per zona</h2>
-        <div class="zones" id="zones"></div>
+<main class="wrap">
+  <section class="card console" id="peta" aria-label="Peta titik panas">
+    <div class="console-map">
+      <div class="toolbar">
+        <div class="ctl"><span>Periode</span>
+          <div class="seg" id="range" role="group" aria-label="Periode">
+            <button type="button" id="r1" data-d="1">24 jam</button><button type="button" id="r3" data-d="3">3 hari</button><button type="button" id="r7" data-d="7" aria-pressed="true">7 hari</button><button type="button" id="r30" data-d="30">30 hari</button><button type="button" id="r0" data-d="0">400 hari</button>
+          </div></div>
+        <div class="ctl"><span>Fokus</span>
+          <div class="seg" role="group" aria-label="Fokus peta">
+            <button type="button" id="vNL">Nanga Lauk</button><button type="button" id="v25">Radius 25 km</button><button type="button" id="vKH">Kapuas Hulu</button>
+          </div></div>
       </div>
-      <div class="card chart">
-        <h2>Titik panas harian · Kapuas Hulu</h2>
-        <div id="chart"></div>
-      </div>
-      <div class="card">
-        <h2>Daftar titik · Kapuas Hulu (<span id="cnt">0</span>)</h2>
-        <div class="list" id="list"></div>
-      </div>
+      <div id="map" role="region" aria-label="Peta titik panas"></div>
     </div>
-  </div>
-
-  <section class="src" id="riwayat">
-    <h2>Riwayat titik panas 2001–sekarang</h2>
-    <p>Jumlah deteksi per tahun dari arsip NASA FIRMS. Bandingkan tahun hanya dalam sensor yang sama: MODIS (piksel 1 km, sejak 2001) dan VIIRS S-NPP (piksel 375 m, sejak 2012) punya kepekaan berbeda.</p>
-    <div class="controls" style="margin:6px 0 10px">
-      <div class="seg" id="hsens" role="group" aria-label="Sensor">
-        <button type="button" data-s="MODIS" aria-pressed="true">MODIS 2001–</button>
-        <button type="button" data-s="VIIRS S-NPP">VIIRS S-NPP 2012–</button>
-      </div>
-      <div class="seg" id="hzone" role="group" aria-label="Wilayah">
-        <button type="button" data-z="desa" aria-pressed="true">Desa + radius 5 km</button>
-        <button type="button" data-z="r25">Radius 25 km</button>
-        <button type="button" data-z="kh">Kapuas Hulu</button>
-      </div>
-    </div>
-    <div id="hchart" class="chart"></div>
-    <h2 style="margin-top:18px">Kejadian api di dalam desa &amp; radius 25 km</h2>
-    <p>Satu kejadian = kumpulan deteksi yang berjarak ≤ 1 km dan ≤ 2 hari. <i>Luas cakupan piksel</i> adalah gabungan luas piksel satelit, <b>bukan luas terbakar</b>; luas terbakar diukur dari citra (burn scar) atau lapangan.</p>
-    <div class="controls" style="margin:6px 0 10px">
-      <div class="seg" id="ezone" role="group" aria-label="Zona kejadian">
-        <button type="button" data-z="1" aria-pressed="true">Di dalam desa / HD</button>
-        <button type="button" data-z="2">≤ 5 km</button>
-        <button type="button" data-z="3">Semua ≤ 25 km</button>
-      </div>
-      <button type="button" class="btn" id="histmap" aria-pressed="false">Tampilkan kejadian di peta</button>
-    </div>
-    <div class="tw" style="max-height:460px;overflow:auto;border:1px solid var(--line)"><table id="etable"><thead><tr><th>ID kejadian</th><th>Mulai (WIB)</th><th>Deteksi</th><th>Zona</th><th>Petak</th><th>Tutupan 2026</th><th>Gambut</th><th>Kawasan</th><th>Cakupan piksel (ha)</th></tr></thead><tbody></tbody></table></div>
+    <aside class="rail">
+      <div class="rail-sec"><h4><span>Titik panas per zona</span></h4><div class="zones" id="zones"></div></div>
+      <div class="rail-sec chart"><h4><span>Harian · 30 hari</span></h4><div id="chart"></div></div>
+      <div class="list-wrap"><h4><span>Daftar titik</span><span class="num" id="cnt">0</span></h4><div class="list" id="list"></div></div>
+    </aside>
   </section>
 
-  <section class="src" id="buat-laporan">
-    <h2>Buat laporan</h2>
-    <p>Pilih periode dan wilayah, lalu klik <b>Tampilkan laporan</b> untuk melihat isinya di layar. Laporan bisa diunduh sebagai <b>PDF</b> atau <b>Word</b> (bisa disunting), dan datanya sebagai <b>CSV</b>. Isinya disusun otomatis sesuai periode: ringkasan, analisa cuaca (curah hujan dibanding normal), peta, grafik, tabel rekap, kejadian api, daftar detail titik, kamus data, dan sumber data.</p>
-    <form id="rpForm" class="rp-form" onsubmit="return false">
-      <label>Periode<select id="rpPreset">
-        <option value="bulan_lalu">Bulan lalu</option><option value="bulan_ini">Bulan ini</option><option value="3_bulan">3 bulan terakhir</option>
-        <option value="tahun_lalu" selected>Tahun lalu</option><option value="tahun_ini">Tahun ini</option><option value="12_bulan">12 bulan terakhir</option>
-        <option value="semua">Semua data (2001–sekarang)</option><option value="kustom">Pilih tanggal sendiri</option></select></label>
-      <label>Dari tanggal<input type="date" id="rpFrom" min="2001-01-01"></label>
-      <label>Sampai tanggal<input type="date" id="rpTo" min="2001-01-01"></label>
-      <label>Wilayah<select id="rpWil"><option value="desa25" selected>Desa & radius 25 km</option><option value="desa5">Hutan Desa, desa & radius 5 km</option><option value="kh">Seluruh Kapuas Hulu</option></select></label>
-      <label>Sensor<select id="rpSen"><option value="semua" selected>VIIRS & MODIS</option><option value="viirs">VIIRS saja</option><option value="modis">MODIS saja</option></select></label>
-      <div class="rp-btns">
-        <button type="button" class="btn rp-main" id="rpLihat">Tampilkan laporan</button>
-        <button type="button" class="btn" id="rpPdf">Unduh PDF</button>
-        <button type="button" class="btn" id="rpDocx">Unduh Word</button>
-        <button type="button" class="btn" id="rpCsv">Unduh data CSV</button>
+  <section class="card sec" id="riwayat">
+    <div class="sec-h"><div><div class="kick">Riwayat 2001 – sekarang</div><h2>Tren titik panas jangka panjang</h2><p>Jumlah deteksi per tahun dari arsip final NASA. Bandingkan tahun dalam sensor yang sama: MODIS (1 km, sejak 2001) dan VIIRS S-NPP (375 m, sejak 2012) memiliki kepekaan berbeda.</p></div>
+      <div class="toolbar">
+        <div class="seg" id="hsens" role="group" aria-label="Sensor"><button type="button" data-s="MODIS" aria-pressed="true">MODIS</button><button type="button" data-s="VIIRS S-NPP">VIIRS S-NPP</button></div>
+        <div class="seg" id="hzone" role="group" aria-label="Wilayah"><button type="button" data-z="desa" aria-pressed="true">Desa + 5 km</button><button type="button" data-z="r25">Radius 25 km</button><button type="button" data-z="kh">Kapuas Hulu</button></div>
+      </div></div>
+    <div id="hchart" class="chart"></div>
+    <h3 class="sub">Kejadian api di desa dan sekitarnya</h3>
+    <p class="rp-note" style="margin:-4px 0 12px">Satu kejadian = deteksi berjarak ≤ 1 km dan ≤ 2 hari. <i>Cakupan piksel</i> adalah gabungan luas piksel satelit, <b>bukan luas terbakar</b>.</p>
+    <div class="toolbar" style="margin-bottom:12px">
+      <div class="seg" id="ezone" role="group" aria-label="Zona kejadian"><button type="button" data-z="1" aria-pressed="true">Di dalam desa / HD</button><button type="button" data-z="2">≤ 5 km</button><button type="button" data-z="3">Semua ≤ 25 km</button></div>
+      <button type="button" class="btn" id="histmap" aria-pressed="false">Tampilkan kejadian di peta</button>
+    </div>
+    <div class="tw" style="max-height:440px;overflow:auto"><table class="t" id="etable"><thead><tr><th>ID kejadian</th><th>Mulai (WIB)</th><th>Deteksi</th><th>Zona</th><th>Petak</th><th>Tutupan 2026</th><th>Gambut</th><th>Kawasan</th><th>Cakupan piksel (ha)</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section class="card sec" id="buat-laporan">
+    <div class="sec-h"><div><div class="kick">Laporan</div><h2>Buat laporan sesuai periode</h2><p>Laporan disusun otomatis di browser Anda dari basis data terbaru: ringkasan, analisa cuaca, peta, grafik, rekap, kejadian api, detail titik, dan sumber data. Tampilkan dulu di layar, lalu unduh.</p></div></div>
+    <form id="rpForm" onsubmit="return false">
+      <select id="rpPreset" class="vh" tabindex="-1" aria-hidden="true">
+        <option value="bulan_lalu">Bulan lalu</option><option value="bulan_ini">Bulan ini</option><option value="3_bulan">3 bulan terakhir</option><option value="tahun_lalu" selected>Tahun lalu</option><option value="tahun_ini">Tahun ini</option><option value="12_bulan">12 bulan terakhir</option><option value="semua">Semua data</option><option value="kustom">Kustom</option></select>
+      <select id="rpWil" class="vh" tabindex="-1" aria-hidden="true"><option value="desa25" selected>desa25</option><option value="desa5">desa5</option><option value="kh">kh</option></select>
+      <select id="rpSen" class="vh" tabindex="-1" aria-hidden="true"><option value="semua" selected>semua</option><option value="viirs">viirs</option><option value="modis">modis</option></select>
+      <div class="builder">
+        <div class="step"><div class="lab"><i>1</i>Periode</div>
+          <div class="chips" data-for="rpPreset" role="group" aria-label="Periode">
+            <button type="button" class="chip" data-v="bulan_lalu">Bulan lalu</button><button type="button" class="chip" data-v="bulan_ini">Bulan ini</button><button type="button" class="chip" data-v="3_bulan">3 bulan</button><button type="button" class="chip" data-v="tahun_lalu">Tahun lalu</button><button type="button" class="chip" data-v="tahun_ini">Tahun ini</button><button type="button" class="chip" data-v="12_bulan">12 bulan</button><button type="button" class="chip" data-v="semua">2001 – sekarang</button>
+          </div>
+          <div class="dates"><label>Dari<input type="date" id="rpFrom" min="2001-01-01"></label><label>Sampai<input type="date" id="rpTo" min="2001-01-01"></label></div>
+        </div>
+        <div class="step"><div class="lab"><i>2</i>Wilayah</div>
+          <div class="opt" data-for="rpWil" role="group" aria-label="Wilayah">
+            <button type="button" data-v="desa5">Hutan Desa &amp; desa<small>termasuk radius 5 km dari batas desa</small></button>
+            <button type="button" data-v="desa25">Desa &amp; radius 25 km<small>pilihan baku untuk pemantauan</small></button>
+            <button type="button" data-v="kh">Seluruh Kapuas Hulu<small>konteks kabupaten</small></button>
+          </div></div>
+        <div class="step"><div class="lab"><i>3</i>Sensor satelit</div>
+          <div class="opt" data-for="rpSen" role="group" aria-label="Sensor">
+            <button type="button" data-v="semua">VIIRS &amp; MODIS<small>paling lengkap</small></button>
+            <button type="button" data-v="viirs">VIIRS saja<small>375 m, sejak 2012</small></button>
+            <button type="button" data-v="modis">MODIS saja<small>1 km, seri konsisten sejak 2001</small></button>
+          </div></div>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn primary" id="rpLihat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Tampilkan laporan</button>
+        <span class="sp"></span>
+        <button type="button" class="btn" id="rpPdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg>PDF</button>
+        <button type="button" class="btn" id="rpDocx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg>Word</button>
+        <button type="button" class="btn" id="rpCsv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg>Data CSV</button>
       </div>
     </form>
     <p id="rpStatus" class="rp-note" role="status" aria-live="polite">Laporan dibuat langsung di browser Anda dari basis data terbaru.</p>
     <div id="rpPreview"></div>
   </section>
 
-  <section class="src" id="unduh">
-    <h2>Unduh data (SHP · KML · GeoJSON · CSV)</h2>
-    <p>Semua file memakai WGS 1984 (kecuali poligon cakupan piksel: UTM 49N) dan berisi kolom asli FIRMS, ditambah zona, jarak ke desa, petak, kabupaten, fungsi kawasan, tutupan 2026, gambut, luas piksel deteksi, dan ID kejadian. Diperbarui otomatis tiap 3 jam.</p>
-    <div class="dl" id="dlFocus"></div>
-    <p style="margin-top:10px"><b>Per tahun, seluruh Kapuas Hulu (SHP):</b></p>
-    <div class="dl" id="dlYear"></div>
-    <p style="margin-top:10px"><b>Basis data induk &amp; jejak audit:</b></p>
-    <div class="dl" id="dlArch"></div>
+  <section class="card sec" id="unduh">
+    <div class="sec-h"><div><div class="kick">Data terbuka</div><h2>Unduh data spasial</h2><p>Setiap file berisi kolom asli NASA FIRMS ditambah zona, jarak ke desa, petak patroli, kabupaten, fungsi kawasan, tutupan lahan 2026, gambut, luas piksel deteksi, dan ID kejadian. Koordinat WGS 1984 (poligon cakupan piksel: UTM 49N).</p></div></div>
+    <div class="files" id="dlFocus"></div>
+    <h3 class="sub">Per tahun · seluruh Kapuas Hulu (SHP)</h3>
+    <div class="years" id="dlYear"></div>
+    <h3 class="sub">Basis data induk &amp; jejak audit</h3>
+    <div class="years" id="dlArch"></div>
   </section>
 
-  <section class="src" id="sumber">
-    <h2>Sumber &amp; validasi data</h2>
-    <p>Semua titik panas berasal langsung dari <b>NASA FIRMS</b> (Fire Information for Resource Management System), sumber yang sama dengan Global Forest Watch. Dua jenis data dipakai: <b>arsip tahunan final NASA (SP)</b> untuk 2000–2025 (MODIS sejak Nov 2000, VIIRS S-NPP sejak 2012, VIIRS NOAA-20 sejak 2018), dan <b>Near Real-Time (NRT)</b> untuk data terbaru. Ketika NASA menerbitkan arsip tahunan baru, catatan NRT tahun itu otomatis diganti dengan versi final. Nilai asli FIRMS tidak diubah. Deteksi bertipe gunung api, sumber panas statis (industri), dan lepas pantai (kolom <code>type</code> 1–3) tetap disimpan tetapi tidak dihitung dalam statistik dan kejadian api.</p>
+  <section class="card sec src" id="sumber">
+    <div class="sec-h"><div><div class="kick">Metodologi</div><h2>Sumber data, metode, dan validasi</h2></div></div>
+    <div class="facts">
+      <div class="fact"><b>Sumber resmi NASA</b><p>Titik panas dari NASA FIRMS, sumber yang sama dengan Global Forest Watch. Arsip final (SP) 2001–2025 dan Near Real-Time untuk data terbaru; NRT otomatis diganti saat arsip final terbit.</p></div>
+      <div class="fact"><b>Nilai asli tidak diubah</b><p>Setiap unduhan dicatat URL, waktu, ukuran, dan sidik SHA-256. Riwayat perubahan seluruh data tersimpan permanen di repositori publik.</p></div>
+      <div class="fact"><b>Konteks lokal</b><p>Setiap titik dianalisa terhadap batas Hutan Desa, desa, petak patroli 250 m, fungsi kawasan, tutupan lahan 2026, gambut, dan cuaca harian ERA5.</p></div>
+    </div>
     <p><b>Ringkasan basis data:</b> <span id="dbsum">memuat…</span></p>
-    <div class="tw"><table>
-      <thead><tr><th>Produk NRT (pembaruan tiap 3 jam)</th><th>DOI</th><th>Unduhan terakhir</th><th>SHA-256 file</th><th>Titik di kotak Kapuas Hulu (7 hari)</th></tr></thead>
-      <tbody id="srcRows"><tr><td colspan="5">Memuat…</td></tr></tbody>
-    </table></div>
-        <p><b>Jejak audit:</b> setiap pembaruan (tiap 3 jam, GitHub Actions) mencatat URL sumber, waktu unduh UTC, ukuran, dan sidik SHA-256 file asli FIRMS. Riwayat perubahan seluruh file tercatat permanen di <a href="https://github.com/erikprcfi/titik-api-desa-nanga-lauk/commits/main" target="_blank" rel="noopener">riwayat commit GitHub</a>. Setiap titik juga bisa dicek silang lewat tautan "Cek di NASA FIRMS".</p>
-    <p><b>Batas wilayah:</b> Hutan Desa (SK.685/Menlhk-PSKL/PKPS/PSL.0/2/2017), Desa Nanga Lauk (BIG 2020, 1:10.000), grid patroli 250 m (PRCF Indonesia), kabupaten (BIG 2021). Jarak dihitung pada proyeksi WGS 1984 UTM Zona 49N. Waktu ditampilkan dalam WIB (UTC+7).</p>
-    <p><b>Catatan penggunaan:</b> titik panas adalah deteksi anomali panas oleh satelit (VIIRS piksel 375 m, MODIS 1 km), bukan konfirmasi kebakaran; verifikasi lapangan tetap diperlukan. Data NRT (terbaru) bersifat sementara sampai NASA menerbitkan arsip tahunan final; website ini menggantinya secara otomatis. Data Januari–pertengahan Oktober 2026 belum tersedia di file publik dan akan terisi saat arsip 2026 terbit (atau dengan MAP_KEY FIRMS).</p>
-    <p><b>Sitasi:</b> We acknowledge the use of data and imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Earth Science Data and Information System (ESDIS). NRT VIIRS 375 m Active Fire products VNP14IMGTDL_NRT, VJ114IMGTDL_NRT, VJ214IMGTDL_NRT and MODIS Collection 61 NRT MCD14DL, distributed from NASA FIRMS.</p>
-    <p style="color:var(--muted)">Dikelola oleh Yayasan PRCF Indonesia &amp; LPHD Lauk Bersatu · Program SCCM Rimbak Pakai Pengidup.</p>
+    <div class="tw" style="margin:12px 0 16px"><table class="t">
+      <thead><tr><th>Produk NRT (tiap 3 jam)</th><th>DOI</th><th>Unduhan terakhir</th><th>SHA-256 file</th><th>Titik di Kapuas Hulu (7 hari)</th></tr></thead>
+      <tbody id="srcRows"><tr><td colspan="5">Memuat…</td></tr></tbody></table></div>
+    <p><b>Batas wilayah:</b> Hutan Desa (SK.685/Menlhk-PSKL/PKPS/PSL.0/2/2017), Desa Nanga Lauk (BIG 2020, 1:10.000), grid patroli 250 m, kabupaten (BIG 2021). Jarak dihitung pada WGS 1984 UTM Zona 49N. Waktu dalam WIB (UTC+7).</p>
+    <p><b>Catatan penggunaan:</b> titik panas adalah deteksi anomali panas oleh satelit (VIIRS piksel 375 m, MODIS 1 km), bukan konfirmasi kebakaran; verifikasi lapangan tetap diperlukan. Data Januari–pertengahan Oktober 2026 akan terisi saat NASA menerbitkan arsip 2026.</p>
+    <p><b>Sitasi:</b> We acknowledge the use of data and imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Earth Science Data and Information System (ESDIS). Cuaca: Open-Meteo / ECMWF ERA5 (Copernicus Climate Change Service).</p>
+    <p>Jejak audit &amp; kode sumber: <a href="https://github.com/erikprcfi/titik-api-desa-nanga-lauk" target="_blank" rel="noopener">github.com/erikprcfi/titik-api-desa-nanga-lauk</a></p>
   </section>
-</div>
+</main>
+
+<footer><div class="wrap">
+  <span>Pantau Api Nanga Lauk · Hutan Desa Nanga Lauk, Kapuas Hulu, Kalimantan Barat</span>
+  <span>Data: NASA FIRMS · ECMWF ERA5 · Copernicus Sentinel-2 · BIG · KLHK</span>
+</div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
@@ -351,19 +481,22 @@ function render(){
     if(p.c2.zone==='hd'||p.c2.zone==='desa'){L.circleMarker([p.la,p.lo],{radius:r+6,color:css(z.col),weight:2,fill:false,className:'pulse',interactive:false}).addTo(ptsL);}
     m.addTo(ptsL); markers.set(p.k,m);
   }
-  document.getElementById('zones').innerHTML=ZONES.map((z,i)=>`<div class="z"><span class="sw" style="background:${css(z.col)}"></span>${esc(z.name)}</div><div class="n ${i<3&&counts[i]?'hot':''}">${counts[i]}</div>`).join('');
+  const cmax=Math.max(1,...counts);
+  document.getElementById('zones').innerHTML=ZONES.map((z,i)=>`<div class="zr"><span class="sw" style="background:${css(z.col)}"></span><span>${esc(z.name)}</span><span class="bar"><i style="width:${Math.round(100*counts[i]/cmax)}%;background:${css(z.col)}"></i></span><b class="${i<3&&counts[i]?'hot':''}">${counts[i]}</b></div>`).join('');
   document.getElementById('cnt').textContent=F.length;
   const list=document.getElementById('list');
   list.innerHTML=F.length?F.slice(0,400).map(p=>{const z=ZONES[ZI[p.c2.zone]];return `<div class="row" data-k="${esc(p.k)}" tabindex="0"><span class="sw" style="background:${css(z.col)};margin-top:4px"></span><div><div class="w">${esc(z.name)}${p.c2.petak?` · petak <b>${esc(p.c2.petak)}</b>`:''}</div><div class="t">${wib(p.when)} · ${esc(satTxt(p))}</div></div><div class="r">${p.c2.dist===0?'0 km':p.c2.dist.toFixed(1)+' km'}<br><span style="color:var(--muted)">${p.frp.toFixed(1)} MW</span></div></div>`}).join(''):`<div class="empty" style="padding:12px 14px">Tidak ada titik panas pada periode ini.</div>`;
   for(const el of list.querySelectorAll('.row')){const go=()=>{const m=markers.get(el.dataset.k);if(m){map.setView(m.getLatLng(),Math.max(map.getZoom(),13));m.openPopup();}};el.onclick=go;el.onkeydown=e=>{if(e.key==='Enter')go();};}
   // alert
   const near=F.filter(p=>ZI[p.c2.zone]<=2), inside=F.filter(p=>ZI[p.c2.zone]<=1);
-  const A=document.getElementById('alert'),T=document.getElementById('alertTitle'),X=document.getElementById('alertText');
+  const A=document.getElementById('alert'),T=document.getElementById('alertTitle'),X=document.getElementById('alertText'),LV=document.getElementById('alertLvl'),IC=document.getElementById('alertIco');
+  const ICO={ok:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>',warn:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3l9.5 17h-19L12 3z"/><path d="M12 10v4m0 3v.01"/></svg>',crit:'<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 4.5 7 6.5 7 13a7 7 0 0 1-14 0c0-3.6 2.3-5.6 3.5-6.8 0 2.2 1.1 3.5 2.4 3.5 0-3.6.1-6.7 1.1-9.7z"/></svg>'};
+  const lvl=k=>{IC.innerHTML=ICO[k];LV.textContent={ok:'Status · Aman',warn:'Status · Waspada',crit:'Status · Siaga'}[k];};
   const per=RANGE===0?'seluruh data':RANGE===1?'24 jam terakhir':RANGE+' hari terakhir';
   if(!ALL.length&&!STATUS){A.className='alert';T.textContent='Menunggu data';X.textContent='Data titik panas belum termuat di tampilan ini.';}
-  else if(inside.length){A.className='alert crit';T.textContent=`${inside.length} titik panas di dalam desa/Hutan Desa`;X.textContent=`Periode ${per}. Terbaru: ${wib(inside[0].when)}${inside[0].c2.petak?' di petak '+inside[0].c2.petak:''}. Segera cek lapangan.`;}
-  else if(near.length){A.className='alert warn';T.textContent=`${near.length} titik panas ≤ 5 km dari desa`;X.textContent=`Periode ${per}. Terdekat ${Math.min(...near.map(p=>p.c2.dist)).toFixed(1)} km dari batas desa. Pantau arah angin dan kondisi lapangan.`;}
-  else{const r25=F.filter(p=>p.c2.zone==='r25');A.className='alert';T.textContent='Aman: tidak ada titik panas di desa & radius 5 km';X.textContent=`Periode ${per}. ${r25.length?`${r25.length} titik di radius 5–25 km, terdekat ${Math.min(...r25.map(p=>p.c2.dist)).toFixed(1)} km.`:'Tidak ada titik di radius 25 km.'} Total ${F.length} titik di Kapuas Hulu.`;}
+  else if(inside.length){A.className='alert crit';lvl('crit');T.textContent=`${inside.length} titik panas di dalam desa/Hutan Desa`;X.textContent=`Periode ${per}. Terbaru: ${wib(inside[0].when)}${inside[0].c2.petak?' di petak '+inside[0].c2.petak:''}. Segera cek lapangan.`;}
+  else if(near.length){A.className='alert warn';lvl('warn');T.textContent=`${near.length} titik panas ≤ 5 km dari desa`;X.textContent=`Periode ${per}. Terdekat ${Math.min(...near.map(p=>p.c2.dist)).toFixed(1)} km dari batas desa. Pantau arah angin dan kondisi lapangan.`;}
+  else{const r25=F.filter(p=>p.c2.zone==='r25');A.className='alert';lvl('ok');T.textContent='Tidak ada titik panas di desa & radius 5 km';X.textContent=`Periode ${per}. ${r25.length?`${r25.length} titik di radius 5–25 km, terdekat ${Math.min(...r25.map(p=>p.c2.dist)).toFixed(1)} km.`:'Tidak ada titik di radius 25 km.'} Total ${F.length} titik di Kapuas Hulu.`;}
   chart();
 }
 
@@ -377,19 +510,31 @@ function chart(){
   for(let i=0;i<=4;i++){const y=t+(H-b-t)*(1-i/4);s+=`<line x1="${l}" x2="${W}" y1="${y}" y2="${y}" stroke="${css('--line')}" stroke-width="1"/><text x="${l-4}" y="${y+3}" text-anchor="end">${nice*i/4}</text>`;}
   days.forEach((d,i)=>{const v=by[d],x=l+i*bw+1,hA=(H-b-t)*v.a/nice,hN=(H-b-t)*v.n/nice;
     if(v.a)s+=`<rect x="${x}" y="${H-b-hA}" width="${bw-2}" height="${hA}" fill="${css('--z-kh')}"><title>${d}: ${v.a} titik di Kapuas Hulu & sekitar desa</title></rect>`;
-    if(v.n)s+=`<rect x="${x}" y="${H-b-hN}" width="${bw-2}" height="${hN}" fill="${css('--ember')}"><title>${d}: ${v.n} titik ≤ 25 km dari desa</title></rect>`;
+    if(v.n)s+=`<rect x="${x}" y="${H-b-hN}" width="${bw-2}" height="${hN}" fill="${css('--accent')}"><title>${d}: ${v.n} titik ≤ 25 km dari desa</title></rect>`;
     if(i%7===1)s+=`<text x="${i===29?W-1:x+bw/2}" y="${H-5}" text-anchor="${i===29?'end':'middle'}">${+d.slice(8)} ${BULAN[+d.slice(5,7)-1]}</text>`;});
-  s+=`</svg><div style="display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:4px"><span><span class="sw" style="display:inline-block;background:${css('--ember')};border:0;border-radius:2px;vertical-align:-1px"></span> ≤ 25 km dari desa</span><span><span class="sw" style="display:inline-block;background:${css('--z-kh')};border:0;border-radius:2px;vertical-align:-1px"></span> Kapuas Hulu lainnya</span></div>`;
+  s+=`</svg><div style="display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:4px"><span><span class="sw" style="display:inline-block;background:${css('--accent')};border:0;border-radius:2px;vertical-align:-1px"></span> ≤ 25 km dari desa</span><span><span class="sw" style="display:inline-block;background:${css('--z-kh')};border:0;border-radius:2px;vertical-align:-1px"></span> Kapuas Hulu lainnya</span></div>`;
   document.getElementById('chart').innerHTML=s;
 }
 
+function kpis(){
+  const now=Date.now(); const N=v=>Number(v).toLocaleString('id-ID');
+  const kh=ALL.filter(p=>p.c2.zone!=='out');
+  document.getElementById('k24').textContent=N(kh.filter(p=>now-p.when<=86400e3+3600e3).length);
+  document.getElementById('k7').textContent=N(kh.filter(p=>ZI[p.c2.zone]<=3&&now-p.when<=7*86400e3+3600e3).length);
+  const m30=kh.filter(p=>now-p.when<=30*86400e3);
+  if(m30.length){const n=m30.reduce((a,b)=>a.c2.dist<b.c2.dist?a:b);document.getElementById('kNear').innerHTML=n.c2.dist===0?'0<small>km</small>':`${n.c2.dist.toFixed(1).replace('.',',')}<small>km</small>`;document.getElementById('kNearS').textContent=`${wib(n.when).split(',')[0]} · ${satTxt(n)}`;}
+  else{document.getElementById('kNear').textContent='–';document.getElementById('kNearS').textContent='tidak ada titik dalam 30 hari';}
+  if(STATS){let hd=0;for(const y of Object.values(STATS.tahunan))for(const f of Object.values(y))hd+=f['Hutan Desa']||0;document.getElementById('kHD').textContent=N(hd);
+    const lastHD=EVENTS.filter(e=>e.zona_terdekat==='Hutan Desa').map(e=>e.mulai_wib).sort().pop();if(lastHD)document.getElementById('kHDS').textContent=`sejak 2001 · terakhir ${lastHD.slice(0,10)}`;}
+}
 function setStatus(){
   const el=document.getElementById('status');
   if(!STATUS){el.innerHTML=`<span class="pill"><span class="dot off"></span>Belum ada data di tampilan ini</span>`;return;}
   const last=new Date(STATUS.terakhir_cek_utc); const h=(Date.now()-last)/3600e3;
   const latest=ALL.length?ALL.reduce((a,b)=>a.when>b.when?a:b):null;
   const okSrc=(STATUS.sumber||[]).filter(s=>s.ok).length;
-  el.innerHTML=`<span class="pill"><span class="dot ${h>7?'stale':''}"></span>Cek terakhir ${wib(last)} (${ago(last)})</span><span class="pill">${okSrc}/${(STATUS.sumber||[]).length} sumber FIRMS OK</span>${latest?`<span class="pill">Deteksi terbaru ${ago(latest.when)}</span>`:''}`;
+  el.innerHTML=`<span class="pill"><span class="dot ${h>7?'stale':''}"></span>Diperbarui ${ago(last)}</span><span class="pill">${okSrc}/${(STATUS.sumber||[]).length} sumber NASA aktif</span>${latest?`<span class="pill">Deteksi terbaru ${ago(latest.when)}</span>`:''}`;
+  const lc=document.getElementById('livechip'); if(lc) lc.querySelector('span').textContent=`Langsung · ${wib(last).split(', ')[1]}`;
 }
 
 /* ---------- data ---------- */
@@ -399,7 +544,7 @@ async function load(){
   try{
     const [h,s]=await Promise.all([fetch('data/hotspots.json?'+Date.now()).then(r=>r.json()),fetch('data/status.json?'+Date.now()).then(r=>r.json())]);
     ALL=h.titik.map(p=>{const q={...p};q.when=utcDate(q);q.c2={zone:ZMAP[q.z]||'out',dist:q.km,petak:q.pt||null};return q;});
-    STATUS=s; setStatus(); render(); fillSources();
+    STATUS=s; setStatus(); render(); fillSources(); kpis();
   }catch(e){document.getElementById('alertTitle').textContent='Data gagal dimuat';document.getElementById('alertText').textContent='Periksa koneksi internet, lalu muat ulang halaman.';}
 }
 function fillSources(){
@@ -407,10 +552,15 @@ function fillSources(){
   t.innerHTML=(STATUS.sumber||[]).map(s=>`<tr><td>${esc(s.sensor)}</td><td><a href="https://doi.org/${esc(s.doi)}" target="_blank" rel="noopener">${esc(s.doi)}</a></td><td>${s.ok?'OK':'Gagal'}</td><td><code>${s.sha256?esc(s.sha256.slice(0,16))+'…':'-'}</code></td><td>${s.baris_di_kotak??'-'}</td></tr>`).join('');
   const nf=n=>Number(n).toLocaleString('id-ID');
   document.getElementById('dbsum').textContent=`${nf(STATUS.jumlah_catatan)} deteksi di kotak Kapuas Hulu (${STATUS.rentang[0]} s.d. ${STATUS.rentang[1]}): ${nf(STATUS.jumlah_sp)} dari arsip final NASA (SP) dan ${nf(STATUS.jumlah_nrt)} Near Real-Time.`;
-  const ex=STATUS.ekspor||[]; const lbl=f=>f.replace(/_shp\.zip$/,' (SHP)').replace(/\.(kml|geojson|csv)$/,m=>' ('+m.slice(1).toUpperCase()+')').replace(/_/g,' ');
-  document.getElementById('dlFocus').innerHTML=ex.filter(f=>!f.startsWith('titik_panas_kapuashulu_')).map(f=>`<a href="data/export/${f}">${esc(lbl(f))}</a>`).join('');
+  const ex=STATUS.ekspor||[];
+  const desc={'titik_panas_desa_radius25km_semua_tahun':['Titik panas · desa & radius 25 km','Semua tahun, satu titik per deteksi'],'kejadian_api_desa_radius25km':['Kejadian api · titik pusat','Desa & radius 25 km, semua tahun'],'kejadian_api_desa_radius25km_titik':['Kejadian api · titik pusat','Desa & radius 25 km, semua tahun'],'kejadian_api_desa_radius25km_cakupan_piksel_UTM49N':['Kejadian api · poligon cakupan piksel','UTM 49N · bukan luas terbakar']};
+  const fmtOf=f=>f.endsWith('_shp.zip')?'SHP':f.split('.').pop().toUpperCase();
+  const baseOf=f=>f.replace(/_shp\.zip$/,'').replace(/\.(kml|geojson|csv)$/,'');
+  const grp=f=>baseOf(f).replace(/_titik$/,'').replace(/_cakupan_piksel_UTM49N$/,'~');
+  const order={SHP:0,KML:1,GEOJSON:2,CSV:3};
+  document.getElementById('dlFocus').innerHTML=ex.filter(f=>!f.startsWith('titik_panas_kapuashulu_')).sort((x,y)=>grp(y).localeCompare(grp(x))||order[fmtOf(x)]-order[fmtOf(y)]).map(f=>{const k=fmtOf(f),d=desc[baseOf(f)]||[baseOf(f).replace(/_/g,' '),''];return `<a class="file" href="data/export/${f}"><span class="badge b-${k.toLowerCase()}">${k}</span><span><b>${esc(d[0])}</b><small>${esc(d[1])}</small></span></a>`;}).join('');
   document.getElementById('dlYear').innerHTML=ex.filter(f=>f.startsWith('titik_panas_kapuashulu_')).sort().reverse().map(f=>`<a href="data/export/${f}">${esc(f.match(/\d{4}/)[0])}</a>`).join('');
-  document.getElementById('dlArch').innerHTML=(STATUS.tahun_arsip||[]).slice().reverse().map(y=>`<a href="data/archive/${y}.csv">${y}.csv</a>`).join('')+`<a href="data/provenance/arsip_tahunan_unduhan_awal.json">Jejak audit arsip tahunan</a><a href="https://github.com/erikprcfi/titik-api-desa-nanga-lauk/tree/main/data/provenance">Semua jejak audit</a>`;
+  document.getElementById('dlArch').innerHTML=(STATUS.tahun_arsip||[]).slice().reverse().map(y=>`<a href="data/archive/${y}.csv">${y}.csv</a>`).join('')+`<a href="data/provenance/arsip_tahunan_unduhan_awal.json">Jejak audit arsip</a><a href="https://github.com/erikprcfi/titik-api-desa-nanga-lauk/tree/main/data/provenance" target="_blank" rel="noopener">Semua jejak audit ↗</a>`;
 }
 /* ---------- riwayat ---------- */
 let STATS=null, EVENTS=[], HS='MODIS', HZ='desa', EZ=1;
@@ -442,13 +592,20 @@ function histLayer(){histL.clearLayers(); if(!HISTON){map.removeLayer(histL);ret
   for(const e of evSel()){const z=ZONES[ZI[ZMAP[e.zona_terdekat]]];L.circleMarker([e.lat,e.lon],{radius:4+Math.min(8,Math.sqrt(e.jumlah_deteksi)),color:'#fff',weight:1,fillColor:css(z.col),fillOpacity:.75}).bindPopup(`<div class="pop"><h3>${esc(e.id_kejadian)}</h3><table><tr><td>Mulai</td><td>${esc(e.mulai_wib)} WIB</td></tr><tr><td>Selesai</td><td>${esc(e.selesai_wib)} WIB</td></tr><tr><td>Deteksi</td><td>${e.jumlah_deteksi} (${esc(e.sensor)})</td></tr><tr><td>Zona</td><td>${esc(e.zona_terdekat)}</td></tr>${e.petak?`<tr><td>Petak</td><td>${esc(e.petak)}</td></tr>`:''}<tr><td>FRP maks</td><td>${e.frp_maks_mw} MW</td></tr><tr><td>Cakupan piksel</td><td>${e.luas_cakupan_piksel_ha} ha (bukan luas terbakar)</td></tr><tr><td>Status</td><td>${esc(e.status_data)}</td></tr></table></div>`).addTo(histL);}
   histL.addTo(map);}
 document.getElementById('histmap').addEventListener('click',e=>{HISTON=!HISTON;e.target.setAttribute('aria-pressed',String(HISTON));e.target.textContent=HISTON?'Sembunyikan kejadian di peta':'Tampilkan kejadian di peta';histLayer();if(HISTON)map.fitBounds(b25,{padding:[10,10]});});
-async function loadHist(){try{const [st,ev]=await Promise.all([fetch('data/stats.json?'+Date.now()).then(r=>r.json()),fetch('data/kejadian.json?'+Date.now()).then(r=>r.json())]);STATS=st;EVENTS=ev;histChart();eventTable();}catch(e){document.getElementById('hchart').textContent='Riwayat gagal dimuat.';}}
+async function loadHist(){try{const [st,ev]=await Promise.all([fetch('data/stats.json?'+Date.now()).then(r=>r.json()),fetch('data/kejadian.json?'+Date.now()).then(r=>r.json())]);STATS=st;EVENTS=ev;histChart();eventTable();kpis();}catch(e){document.getElementById('hchart').textContent='Riwayat gagal dimuat.';}}
 loadHist();
 load(); setInterval(load,10*60*1000);
 setInterval(setStatus,60000);
 })();
 </script>
-
 <script src="assets/laporan.js"></script>
+<script>
+(function(){
+  const sync=()=>{for(const g of document.querySelectorAll('[data-for]')){const v=document.getElementById(g.dataset.for).value;for(const b of g.querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.v===v));}};
+  for(const g of document.querySelectorAll('[data-for]'))for(const b of g.querySelectorAll('button'))b.addEventListener('click',()=>{const s=document.getElementById(g.dataset.for);s.value=b.dataset.v;s.dispatchEvent(new Event('change'));sync();});
+  for(const id of ['rpFrom','rpTo'])document.getElementById(id).addEventListener('change',()=>setTimeout(sync,0));
+  sync();
+})();
+</script>
 </body>
 </html>
