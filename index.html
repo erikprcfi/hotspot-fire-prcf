@@ -84,7 +84,9 @@ a{color:inherit}
 .fcw-hero .cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
 .fcw-hero .cmp div{background:rgba(0,0,0,.16);border-radius:10px;padding:8px 10px;font-size:11.5px}
 .fcw-hero .cmp b{display:block;font-size:15px}
-.fcw-days{display:grid;grid-template-columns:repeat(7,minmax(96px,1fr));gap:8px;overflow-x:auto}
+.fcw-days{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(100px,1fr);gap:8px;overflow-x:auto;padding-bottom:6px}
+.fcw-d.far{opacity:.8;border-style:dashed;border-top-style:solid}
+.fcw-sep{display:flex;flex-direction:column;justify-content:center;text-align:center;font-size:11px;color:var(--muted);border-left:2px dashed var(--line);padding:0 6px;min-width:90px}.fcw-sep b{color:var(--fg);font-size:12px}
 .fcw-d{background:var(--surface-2);border:1px solid var(--line);border-top:5px solid var(--l0);border-radius:14px;padding:10px 8px;text-align:center;min-width:96px}
 .fcw-d .dn{font-weight:800;font-size:13.5px}.fcw-d .dd{font-size:11.5px;color:var(--muted)}
 .fcw-d .t{font:600 13px var(--f-data);margin-top:6px}.fcw-d .r{font-size:12px;color:#2F7FD1;font-weight:700}
@@ -381,7 +383,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 30px;justify-content:space-bet
   </section>
 
   <section class="card sec" id="prakiraan">
-    <div class="sec-h"><div><div class="kick">Peringatan dini</div><h2>Prakiraan cuaca &amp; bahaya kebakaran 7 hari</h2><p>Prakiraan resmi BMKG per desa (1–3 hari) dan model ECMWF (7 hari), diolah menjadi indeks bahaya kebakaran FDRS (Fire Weather Index) yang menjadi dasar sistem BMKG. Diperbarui otomatis setiap 3 jam.</p></div></div>
+    <div class="sec-h"><div><div class="kick">Peringatan dini</div><h2>Prakiraan cuaca 14 hari, bahaya kebakaran &amp; riwayat cuaca</h2><p>Prakiraan resmi BMKG per desa (1–3 hari) dan model ECMWF (7 hari), diolah menjadi indeks bahaya kebakaran FDRS (Fire Weather Index) yang menjadi dasar sistem BMKG. Diperbarui otomatis setiap 3 jam.</p></div></div>
     <div id="fcw"><p class="rp-note">Memuat prakiraan…</p></div>
   </section>
 
@@ -586,7 +588,7 @@ function renderFCw(){
   const box=document.getElementById('fcw');if(!box||!SITE)return;const L=FCD&&FCD.lokasi&&FCD.lokasi[SITE.id];
   if(!L){box.innerHTML='<p class="rp-note">Prakiraan untuk lokasi ini akan tersedia setelah pembaruan otomatis berikutnya.</p>';return;}
   const N1=v=>Number(v).toLocaleString('id-ID',{minimumFractionDigits:1,maximumFractionDigits:1});
-  const D=fcDaysW(L),mx=Math.max(...D.map(d=>d.lv)),pk=D.find(d=>d.lv===mx),pn=dNm(pk.tanggal),bm=L.bmkg;
+  const DA=fcDaysW(L),D=DA.slice(0,7),mx=Math.max(...D.map(d=>d.lv)),pk=D.find(d=>d.lv===mx),pn=dNm(pk.tanggal),bm=L.bmkg;
   const kF=Math.max(...D.map(d=>Math.max(d.k_ffmc,d.bmI?d.bmI.k_ffmc:0))),kD=Math.max(...D.map(d=>Math.max(d.k_dc,d.bmI?d.bmI.k_dc:0)));
   const grad=['linear-gradient(135deg,#1B4F8C,#2F7FD1)','linear-gradient(135deg,#1C6B43,#2E9E5B)','linear-gradient(135deg,#9A6A00,#E0A800)','linear-gradient(135deg,#8E1B13,#D93025)'][mx];
   const col=k=>css('--l'+k);
@@ -595,15 +597,17 @@ function renderFCw(){
    <div style="font-weight:600;font-size:13.5px">${esc(SITE.hd_nama)} · ${mx?`${pn.l}, ${pn.t}`:'sepanjang minggu'}</div><p>${ADV[mx]}</p>
    <div class="cmp"><div>Penyulutan permukaan (FFMC)<b>${LVN[kF]}</b></div><div>Kekeringan dalam / gambut (DC)<b>${LVN[kD]}</b></div></div>
    <p style="font-size:12px;opacity:.85">Diperbarui ${hhmmWIB(new Date(FCD.diperbarui_utc))} WIB</p></div>
-   <div><div class="fcw-days">${D.map((d,i)=>{const n=dNm(d.tanggal);return `<div class="fcw-d" style="border-top-color:${col(d.lv)}"><div class="dn">${i?n.s:'Hari ini'}</div><div class="dd">${n.t}</div><div class="t">${Math.round(d.tmaks)}° / ${Math.round(d.tmin)}°</div><div class="r">${N1(d.hujan)} mm</div><div class="ds">${esc(d.bmD?d.bmD.cuaca:d.cuaca)}</div>${lvp(d.lv)}<div class="src">${d.lvB!==null?`BMKG ${LVN[d.lvB]} · ECMWF ${LVN[d.lvE]}`:'ECMWF'}</div></div>`;}).join('')}</div>
+   <div style="min-width:0"><div class="fcw-days">${DA.map((d,i)=>{const n=dNm(d.tanggal);return `${i===7?`<div class="fcw-sep"><b>Hari 8–${DA.length}</b>kecenderungan, keyakinan lebih rendah</div>`:''}<div class="fcw-d${i>=7?' far':''}" style="border-top-color:${col(d.lv)}"><div class="dn">${i?n.s:'Hari ini'}</div><div class="dd">${n.t}</div><div class="t">${Math.round(d.tmaks)}° / ${Math.round(d.tmin)}°</div><div class="r">${N1(d.hujan)} mm</div><div class="ds">${esc(d.bmD?d.bmD.cuaca:d.cuaca)}</div>${lvp(d.lv)}<div class="src">${d.lvB!==null?`BMKG ${LVN[d.lvB]} · ECMWF ${LVN[d.lvE]}`:'ECMWF'}${i>=3?` · keyakinan ${d.keyakinan||(i<7?'sedang':'rendah')}`:''}</div></div>`;}).join('')}</div>
    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center">${[0,1,2,3].map(lvp).join('')}<span class="rp-note" style="margin:0 0 0 4px">kelas FDRS Indonesia (de Groot dkk. 2006)</span></div></div></div>
   <div class="fcw-grid2">
    ${bm?`<div class="fcw-box"><h3>Prakiraan resmi BMKG · Desa ${esc(bm.desa||SITE.desa_nama)}</h3>${(bm.harian||[]).map(h=>{const n=dNm(h.tanggal);const ic=(bm.jam.find(j=>j.t.startsWith(h.tanggal)&&j.t.slice(11,13)==='13')||bm.jam.find(j=>j.t.startsWith(h.tanggal))||{}).ikon;return `<div class="bmw">${ic?`<img src="${encodeURI(ic)}" alt="">`:''}<div class="m"><b>${n.l}, ${n.t}</b><small>${esc(h.cuaca)} · RH ${h.rh??'–'}%</small></div><div style="text-align:right;font-family:var(--f-data);font-size:13px">${h.tmaks}° / ${h.tmin}°<div style="color:#2F7FD1;font-weight:700">${N1(h.hujan)} mm</div></div></div>`;}).join('')}<p class="rp-note">Sumber: BMKG (Badan Meteorologi, Klimatologi, dan Geofisika), kode wilayah ${esc(bm.adm4)}.</p></div>`:''}
-   <div class="fcw-box"><h3>Indeks bahaya kebakaran (FDRS)</h3><table class="fcw-tab"><thead><tr><th>Hari</th><th>FFMC</th><th>ISI</th><th>DC</th><th>FWI</th></tr></thead><tbody>${D.map(d=>{const n=dNm(d.tanggal);const c=k=>`<i style="background:${col(k)}"></i>`;return `<tr><td>${n.s} ${n.t}</td><td>${c(d.k_ffmc)}${N1(d.ffmc)}</td><td>${c(d.k_isi)}${N1(d.isi)}</td><td>${c(d.k_dc)}${Math.round(d.dc)}</td><td>${N1(d.fwi)}</td></tr>`;}).join('')}</tbody></table>
+   <div class="fcw-box"><h3>Indeks bahaya kebakaran (FDRS)</h3><table class="fcw-tab"><thead><tr><th>Hari</th><th>FFMC</th><th>ISI</th><th>DC</th><th>FWI</th></tr></thead><tbody>${DA.map((d,i)=>{const n=dNm(d.tanggal);const c=k=>`<i style="background:${col(k)}"></i>`;return `<tr${i>=7?' style="opacity:.6"':''}><td>${n.s} ${n.t}</td><td>${c(d.k_ffmc)}${N1(d.ffmc)}</td><td>${c(d.k_isi)}${N1(d.isi)}</td><td>${c(d.k_dc)}${Math.round(d.dc)}</td><td>${N1(d.fwi)}</td></tr>`;}).join('')}</tbody></table>
    <p class="rp-note">Dari prakiraan ECMWF. FFMC = mudahnya serasah/rumput menyala; ISI = kecepatan menjalar; DC = kekeringan lapisan dalam &amp; gambut; FWI = intensitas umum. Tingkat harian = kelas tertinggi FFMC/DC; bila BMKG dan ECMWF berbeda dipakai yang lebih tinggi.</p></div>
   </div>
+  <div class="fcw-box" style="margin-top:16px"><h3>Riwayat cuaca · Desa ${esc(SITE.desa_nama)}</h3><div id="rcWeb"></div></div>
   ${all.length>1?`<div class="fcw-box" style="margin-top:16px"><h3>Semua lokasi · tingkat tertinggi 7 hari</h3><table class="fcw-tab"><tbody>${all.map(o=>{const n=dNm(o.d.tanggal);return `<tr><td><b>${esc(o.z.hd_nama)}</b> <span style="color:var(--muted)">· Desa ${esc(o.z.desa_nama)}</span></td><td>${o.m?`${n.l} ${n.t}`:'–'}</td><td>${lvp(o.m)}</td></tr>`;}).join('')}</tbody></table></div>`:''}
-  <p class="rp-note">Prakiraan dapat meleset; peringatan ini alat bantu kewaspadaan, bukan pengganti informasi resmi BMKG/Manggala Agni. Metode: Fire Weather Index (Van Wagner 1987) dari cuaca pukul 12.00 &amp; hujan 24 jam, riwayat ERA5 Copernicus ${L.hari_riwayat||''} hari; ECMWF IFS 0,25° (CC BY 4.0).</p>`;
+  <p class="rp-note">Hari 1–3: BMKG + ECMWF (keyakinan tinggi) · hari 4–7: ECMWF (sedang) · hari 8–14: ECMWF, kecenderungan (rendah). Prakiraan dapat meleset; peringatan ini alat bantu kewaspadaan, bukan pengganti informasi resmi BMKG/Manggala Agni. Metode: Fire Weather Index (Van Wagner 1987) dari cuaca pukul 12.00 &amp; hujan 24 jam, riwayat ERA5 Copernicus ${L.hari_riwayat||''} hari; ECMWF IFS 0,25° (CC BY 4.0).</p>`;
+  if(window.FHRiwayat)FHRiwayat.render(document.getElementById('rcWeb'),{site:SITE,hotspots:ALL,si:SI});
 }
 
 /* ---------- lokasi Hutan Desa ---------- */
@@ -827,6 +831,7 @@ setInterval(setStatus,60000);
 })();
 </script>
 <script src="assets/laporan.js"></script>
+<script src="assets/riwayat_cuaca.js"></script>
 <div class="chz" id="chz" hidden role="dialog" aria-labelledby="chzT"><div class="chz-box">
   <div class="chz-head"><img class="org-l" src="assets/logo_prcf.jpg" alt="Yayasan PRCF Indonesia"><div class="eyebrow">Fire Hotspot · Kabupaten Kapuas Hulu</div><h2 id="chzT">Pilih Hutan Desa yang ingin dipantau</h2><p>Status dihitung dari titik panas satelit NASA FIRMS 7 hari terakhir terhadap batas desa dan Hutan Desa masing-masing.</p></div>
   <div class="chz-grid" id="chzGrid"></div>

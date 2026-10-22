@@ -83,6 +83,9 @@ svg{display:block}
 .fc-day .ds{font-size:11px;color:var(--muted);min-height:28px;line-height:1.25;margin-top:4px}
 .lvp{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:999px;color:#fff;margin-top:6px}
 .lvp.l0{background:var(--l0)}.lvp.l1{background:var(--l1)}.lvp.l2{background:var(--l2);color:#2a2000}.lvp.l3{background:var(--l3)}
+.fc-day.far{opacity:.78;border-style:dashed;border-top-style:solid}
+.fc-sep{flex:none;width:86px;display:flex;flex-direction:column;justify-content:center;text-align:center;font-size:11px;color:var(--muted);line-height:1.35;border-left:2px dashed var(--line);padding-left:8px}
+.fc-sep b{display:block;color:var(--fg);font-size:12.5px}
 .fc-day .src{font-size:9.5px;color:var(--muted);margin-top:5px;line-height:1.3}
 .bm-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
 .bm-row:last-child{border-bottom:0}
@@ -814,11 +817,11 @@ function renderFC(){
   const rk=riskOf(SITE.id),el=$('#stRisk');
   if(rk){const dn=dName(rk.day.tanggal);el.hidden=false;el.innerHTML=`<span>Bahaya kebakaran 7 hari:</span>${lvp(rk.lv)}<span style="opacity:.85">${rk.lv?`puncak ${dn.l} ${dn.t}`:''} ›</span>`;el.onclick=e=>{e.stopPropagation();go('fc');};}else el.hidden=true;
   if(!L){box.innerHTML='<div class="empty">Prakiraan untuk lokasi ini belum tersedia. Akan muncul setelah pembaruan otomatis berikutnya.</div>';return;}
-  const D=fcDays(L);const mx=Math.max(...D.map(d=>d.lv));const pk=D.find(d=>d.lv===mx);const pn=dName(pk.tanggal);
+  const DA=fcDays(L),D=DA.slice(0,7);const mx=Math.max(...D.map(d=>d.lv));const pk=D.find(d=>d.lv===mx);const pn=dName(pk.tanggal);
   const upd=new Date(FC.diperbarui_utc);
   const grad=['linear-gradient(135deg,#1B4F8C,#2F7FD1)','linear-gradient(135deg,#1C6B43,#2E9E5B)','linear-gradient(135deg,#9A6A00,#E0A800)','linear-gradient(135deg,#8E1B13,#D93025)'][mx];
   const bm=L.bmkg;
-  const chartPts=[...(L.riwayat||[]).slice(-21).map(r=>({d:r.tanggal,f:r.ffmc,dc:r.dc,fc:false})),...D.map(d=>({d:d.tanggal,f:d.ffmc,dc:d.dc,fc:true}))];
+  const chartPts=[...(L.riwayat||[]).slice(-21).map(r=>({d:r.tanggal,f:r.ffmc,dc:r.dc,fc:false})),...DA.map(d=>({d:d.tanggal,f:d.ffmc,dc:d.dc,fc:true}))];
   const W=360,H=150,l=28,b=20,t=8,n=chartPts.length,x=i=>l+(W-l-6)*i/(n-1),y=v=>t+(H-b-t)*(1-v/100);
   let ch=`<svg viewBox="0 0 ${W} ${H}">`;[[0,73,0],[73,78,1],[78,83,2],[83,100,3]].forEach(([a,c,k])=>{ch+=`<rect x="${l}" y="${y(c)}" width="${W-l-6}" height="${y(a)-y(c)}" fill="${lvCol(k)}" opacity=".13"/>`;});
   [0,25,50,73,83,100].forEach(v=>{ch+=`<text x="${l-4}" y="${y(v)+3}" text-anchor="end">${v}</text>`;});
@@ -834,10 +837,10 @@ function renderFC(){
     <div style="background:rgba(0,0,0,.16);border-radius:12px;padding:8px 10px"><div style="font-size:11px;opacity:.85">Penyulutan permukaan (FFMC)</div><b>${LVN[Math.max(...D.map(d=>Math.max(d.k_ffmc,d.bmI?d.bmI.k_ffmc:0)))]}</b></div>
     <div style="background:rgba(0,0,0,.16);border-radius:12px;padding:8px 10px"><div style="font-size:11px;opacity:.85">Kekeringan dalam / gambut (DC)</div><b>${LVN[Math.max(...D.map(d=>Math.max(d.k_dc,d.bmI?d.bmI.k_dc:0)))]}</b></div></div>
    <span class="pk">Diperbarui ${hhmm(upd)} WIB · BMKG + ECMWF</span></div>
-  <div class="h2">7 hari ke depan</div>
-  <div class="fc-days">${D.map(d=>{const dn=dName(d.tanggal);return `<div class="fc-day" style="border-top-color:${lvCol(d.lv)}"><div class="dn">${d.tanggal===D[0].tanggal?'Hari ini':dn.s}</div><div class="dd">${dn.t}</div>
+  <div class="h2">${DA.length} hari ke depan</div>
+  <div class="fc-days">${DA.map((d,i)=>{const dn=dName(d.tanggal);return `${i===7?`<div class="fc-sep"><b>Hari 8–${DA.length}</b>kecenderungan<br>keyakinan lebih rendah</div>`:''}<div class="fc-day${i>=7?' far':''}" style="border-top-color:${lvCol(d.lv)}"><div class="dn">${d.tanggal===D[0].tanggal?'Hari ini':dn.s}</div><div class="dd">${dn.t}</div>
     <div class="ic">${wxIcon(d.kode_cuaca,d.hujan)}</div><div class="tt">${Math.round(d.tmaks)}°<span> / ${Math.round(d.tmin)}°</span></div><div class="rr">${N1(d.hujan)} mm</div>
-    <div class="ds">${esc(d.bmD?d.bmD.cuaca:d.cuaca)}</div>${lvp(d.lv)}<div class="src">${d.lvB!==null?`BMKG: ${LVN[d.lvB]}<br>ECMWF: ${LVN[d.lvE]}`:'ECMWF'}</div></div>`;}).join('')}</div>
+    <div class="ds">${esc(d.bmD?d.bmD.cuaca:d.cuaca)}</div>${lvp(d.lv)}<div class="src">${d.lvB!==null?`BMKG: ${LVN[d.lvB]}<br>ECMWF: ${LVN[d.lvE]}`:'ECMWF'}${i>=3?`<br>keyakinan ${d.keyakinan||(i<7?'sedang':'rendah')}`:''}</div></div>`;}).join('')}</div>
   <div class="legend-l">${[0,1,2,3].map(lvp).join('')}<span class="small muted" style="align-self:center">kelas FDRS Indonesia</span></div>
   ${bm?`<div class="h2">Prakiraan resmi BMKG · Desa ${esc(bm.desa||SITE.desa_nama)}</div>
   <div class="card">${(bm.harian||[]).map(h=>{const dn=dName(h.tanggal);const ic=(bm.jam.find(j=>j.t.startsWith(h.tanggal)&&j.t.slice(11,13)==='13')||bm.jam.find(j=>j.t.startsWith(h.tanggal))||{}).ikon;return `<div class="bm-row">${ic?`<img src="${encodeURI(ic)}" alt="" loading="lazy">`:''}<span class="m"><b>${dn.l}, ${dn.t}</b><small>${esc(h.cuaca)} · RH ${h.rh??'–'}%</small></span><span class="r">${h.tmaks}° / ${h.tmin}°<small>${N1(h.hujan)} mm</small></span></div>`;}).join('')}
@@ -845,14 +848,17 @@ function renderFC(){
    <p class="small muted" style="margin:8px 0 0">Sumber: BMKG (Badan Meteorologi, Klimatologi, dan Geofisika), prakiraan per 3 jam untuk kode wilayah ${esc(bm.adm4)}. Hujan dalam mm.</p></div>`:''}
   <div class="h2">Indeks bahaya kebakaran (FDRS)</div>
   <div class="card"><table class="ix"><thead><tr><th>Hari</th><th>FFMC<br>penyulutan</th><th>ISI<br>penjalaran</th><th>DC<br>kekeringan</th><th>FWI</th></tr></thead><tbody>
-   ${D.map(d=>{const dn=dName(d.tanggal);const c=k=>`<i style="background:${lvCol(k)}"></i>`;return `<tr><td>${dn.s} ${dn.t}</td><td>${c(d.k_ffmc)}${N1(d.ffmc)}</td><td>${c(d.k_isi)}${N1(d.isi)}</td><td>${c(d.k_dc)}${N(Math.round(d.dc))}</td><td>${N1(d.fwi)}</td></tr>`;}).join('')}</tbody></table>
-   <p class="small muted" style="margin:8px 0 0">Nilai dari prakiraan ECMWF. <b>FFMC</b>: kekeringan serasah & rumput, mudahnya api menyala. <b>ISI</b>: kecepatan menjalar dengan angin. <b>DC</b>: kekeringan lapisan dalam & gambut, potensi asap. <b>FWI</b>: intensitas api secara umum.</p></div>
+   ${DA.map((d,i)=>{const dn=dName(d.tanggal);const c=k=>`<i style="background:${lvCol(k)}"></i>`;return `<tr${i>=7?' style="opacity:.6"':''}><td>${dn.s} ${dn.t}</td><td>${c(d.k_ffmc)}${N1(d.ffmc)}</td><td>${c(d.k_isi)}${N1(d.isi)}</td><td>${c(d.k_dc)}${N(Math.round(d.dc))}</td><td>${N1(d.fwi)}</td></tr>`;}).join('')}</tbody></table>
+   <p class="small muted" style="margin:8px 0 0">Nilai dari prakiraan ECMWF; baris pudar = hari 8–14 (keyakinan rendah). <b>FFMC</b>: kekeringan serasah & rumput, mudahnya api menyala. <b>ISI</b>: kecepatan menjalar dengan angin. <b>DC</b>: kekeringan lapisan dalam & gambut, potensi asap. <b>FWI</b>: intensitas api secara umum.</p></div>
+  <div class="h2">Riwayat cuaca · Desa ${esc(SITE.desa_nama)}</div>
+  <div class="card" id="rcBox"></div>
   <div class="h2">Kekeringan bahan bakar (FFMC) · 3 minggu + prakiraan</div>
   <div class="card chart">${ch}<p class="small muted" style="margin:6px 0 0">Garis = FFMC harian; latar warna = kelas Rendah/Sedang/Tinggi/Ekstrem. DC hari ini ${N(Math.round(D[0].dc))} (${LVN[D[0].k_dc]}).</p></div>
   ${others.length>1?`<div class="h2">Semua lokasi · 7 hari</div><div class="card" style="padding:4px 14px">${others.map(o=>{const dn=dName(o.r.day.tanggal);return `<button class="allsite tap" data-id="${o.z.id}"><span class="m"><b>${esc(o.z.hd_nama)}</b><small>Desa ${esc(o.z.desa_nama)} · ${o.r.lv?`puncak ${dn.l} ${dn.t}`:'rendah sepanjang minggu'}</small></span>${lvp(o.r.lv)}</button>`;}).join('')}</div>`:''}
   <div class="h2">Sumber &amp; metode</div>
   <div class="card prose small"><p><b>Cuaca 1–3 hari:</b> prakiraan resmi BMKG per desa (API Prakiraan Cuaca Publik BMKG).</p><p><b>Cuaca 7 hari:</b> model ECMWF IFS 0,25° (European Centre for Medium-Range Weather Forecasts), juga dipakai sistem bahaya kebakaran global Copernicus.</p><p><b>Indeks:</b> Fire Weather Index (Van Wagner 1987) dari cuaca pukul 12.00 dan hujan 24 jam, dengan riwayat cuaca ERA5 ${L.hari_riwayat||''} hari terakhir. Kelas mengikuti FDRS Indonesia/Malaysia (de Groot dkk. 2006), dasar sistem FDRS BMKG.</p><p><b>Tingkat harian</b> = kelas tertinggi antara FFMC dan DC. Bila BMKG dan ECMWF berbeda, dipakai yang lebih tinggi (prinsip kehati-hatian).</p><p class="muted">Prakiraan dapat meleset. Peringatan ini alat bantu kewaspadaan, bukan pengganti informasi resmi BMKG/Manggala Agni.</p></div>`;
   $$('#fcBody .allsite').forEach(b=>b.onclick=()=>applySite(b.dataset.id,false));
+  if(window.FHRiwayat)FHRiwayat.render($('#rcBox'),{site:SITE,hotspots:ALL,si:SI});
 }
 
 /* ---------- live chip ---------- */
@@ -1044,5 +1050,6 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(
 })();
 </script>
 <script src="assets/laporan.js"></script>
+<script src="assets/riwayat_cuaca.js"></script>
 </body>
 </html>

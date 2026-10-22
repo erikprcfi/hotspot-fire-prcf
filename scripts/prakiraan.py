@@ -235,7 +235,7 @@ def update(sites, prov):
             la, lo = s["pusat_wilayah"]
             url = (f"https://api.open-meteo.com/v1/forecast?latitude={la:.3f}&longitude={lo:.3f}&models=ecmwf_ifs025"
                    f"&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation"
-                   f"&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max&forecast_days=8&timezone={TZ}")
+                   f"&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max&forecast_days=15&timezone={TZ}")
             fc, sha = get(url)
             prov.append({"jenis": "Prakiraan: ECMWF", "lokasi": s["id"], "url": url, "ok": True, "sha256": sha})
             fnoon = noon_inputs(fc["hourly"], before=kemarin if len(kemarin) == 24 else None)
@@ -249,14 +249,15 @@ def update(sites, prov):
             base_state = state
             D = fc["daily"]; hari = []
             st = base_state
-            for i, k in enumerate(D["time"][:8]):
+            for i, k in enumerate(D["time"][:15]):
                 if k < today:
                     continue
                 v = fnoon.get(k)
-                if v is None:  # hari pertama: jam-jam awal hari sudah lewat -> hujan 24 jam dari analisis
+                if v is None or D["precipitation_sum"][i] is None:  # di luar jangkauan model
                     continue
                 st, idx = step(st, *v)
-                hari.append({"tanggal": k, "cuaca": WMO.get(D["weather_code"][i], ""), "kode_cuaca": D["weather_code"][i],
+                n_ke = len(hari) + 1
+                hari.append({"tanggal": k, "keyakinan": "tinggi" if n_ke <= 3 else "sedang" if n_ke <= 7 else "rendah", "cuaca": WMO.get(D["weather_code"][i], ""), "kode_cuaca": D["weather_code"][i],
                              "tmin": D["temperature_2m_min"][i], "tmaks": D["temperature_2m_max"][i], "hujan": D["precipitation_sum"][i],
                              "angin_maks": D["wind_speed_10m_max"][i], "siang": {"suhu": v[0], "rh": v[1], "angin": v[2], "hujan24": round(v[3], 1)}, **idx})
             bm = bmkg(s, prov)
@@ -273,7 +274,12 @@ def update(sites, prov):
                 bm["fdrs"] = fd
             if len(days) < 60:
                 raise RuntimeError(f"riwayat cuaca baru {len(days)} hari (perlu >= 60 hari untuk indeks kekeringan)")
-            out["lokasi"][s["id"]] = {"hari": hari[:7], "riwayat": riwayat[-45:], "bmkg": bm,
+            # riwayat indeks lengkap (±400 hari) untuk menu riwayat cuaca – berkas terpisah agar ringan
+            json.dump({"t": [r["tanggal"] for r in riwayat], "hujan": [r["hujan"] for r in riwayat], "ffmc": [r["ffmc"] for r in riwayat],
+                       "dc": [r["dc"] for r in riwayat], "isi": [r["isi"] for r in riwayat], "fwi": [r["fwi"] for r in riwayat],
+                       "level": [r["level"] for r in riwayat], "sumber": [r["sumber"] for r in riwayat]},
+                      open(os.path.join(PDIR, f'fdrs_{s["id"]}.json'), "w"), separators=(",", ":"))
+            out["lokasi"][s["id"]] = {"hari": hari[:14], "riwayat": riwayat[-45:], "bmkg": bm,
                                       "titik": [round(la, 4), round(lo, 4)], "hari_riwayat": len(riwayat)}
         except Exception as e:
             prov.append({"jenis": "Prakiraan", "lokasi": s["id"], "ok": False, "galat": str(e)[:200]})
