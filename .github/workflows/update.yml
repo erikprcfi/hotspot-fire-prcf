@@ -45,7 +45,15 @@ jobs:
           git config user.name "pantau-api-bot"
           git config user.email "actions@users.noreply.github.com"
           git add data
-          if git diff --cached --quiet; then echo "Tidak ada perubahan"; else git commit -m "Data FIRMS $(date -u +%Y-%m-%dT%H:%MZ)" && git push; fi
+          if git diff --cached --quiet; then echo "Tidak ada perubahan"; exit 0; fi
+          git commit -m "Data FIRMS $(date -u +%Y-%m-%dT%H:%MZ)"
+          # bila ada perubahan lain di GitHub saat run berjalan: gabungkan (data bot diutamakan) lalu coba lagi
+          for i in 1 2 3 4 5; do
+            git push && exit 0
+            git pull --no-rebase --no-edit -X ours origin main || true
+            sleep $((i*5))
+          done
+          exit 1
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
