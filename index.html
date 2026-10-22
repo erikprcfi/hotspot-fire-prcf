@@ -31,9 +31,12 @@ html,body{height:100%}
 .src{background:var(--panel);border:1px solid var(--line);padding:14px 16px;font-size:14px}
 .src h2{font:700 18px var(--f-display);text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px}
 .src table{border-collapse:collapse;width:100%;font-size:13px}
+.src .chart svg{width:100%;height:auto;display:block}
+.btn[aria-pressed="true"]{background:var(--fg);color:var(--panel)}
 .src th,.src td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 .src th{color:var(--muted);font-weight:600}
-.src code{font-family:var(--f-data);font-size:12px}
+.src code{font-family:var(--f-data);font-size:12px;white-space:nowrap}
+#etable thead th{position:sticky;top:0;background:var(--panel)}
 .tw{overflow-x:auto}
 .src a{color:var(--ember)}
 .dl{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 0}
@@ -119,7 +122,7 @@ h1 span{color:var(--ember)}
       <button type="button" id="r3" data-d="3">3 hari</button>
       <button type="button" id="r7" data-d="7" aria-pressed="true">7 hari</button>
       <button type="button" id="r30" data-d="30">30 hari</button>
-      <button type="button" id="r0" data-d="0">Semua</button>
+      <button type="button" id="r0" data-d="0">400 hari</button>
     </div>
     <span class="lbl" style="margin-left:8px">Peta</span>
     <div class="seg" role="group" aria-label="Fokus peta">
@@ -147,18 +150,55 @@ h1 span{color:var(--ember)}
     </div>
   </div>
 
+  <section class="src" id="riwayat">
+    <h2>Riwayat titik panas 2001–sekarang</h2>
+    <p>Jumlah deteksi per tahun dari arsip NASA FIRMS. Bandingkan tahun hanya dalam sensor yang sama: MODIS (piksel 1 km, sejak 2001) dan VIIRS S-NPP (piksel 375 m, sejak 2012) punya kepekaan berbeda.</p>
+    <div class="controls" style="margin:6px 0 10px">
+      <div class="seg" id="hsens" role="group" aria-label="Sensor">
+        <button type="button" data-s="MODIS" aria-pressed="true">MODIS 2001–</button>
+        <button type="button" data-s="VIIRS S-NPP">VIIRS S-NPP 2012–</button>
+      </div>
+      <div class="seg" id="hzone" role="group" aria-label="Wilayah">
+        <button type="button" data-z="desa" aria-pressed="true">Desa + radius 5 km</button>
+        <button type="button" data-z="r25">Radius 25 km</button>
+        <button type="button" data-z="kh">Kapuas Hulu</button>
+      </div>
+    </div>
+    <div id="hchart" class="chart"></div>
+    <h2 style="margin-top:18px">Kejadian api di dalam desa &amp; radius 25 km</h2>
+    <p>Satu kejadian = kumpulan deteksi yang berjarak ≤ 1 km dan ≤ 2 hari. <i>Luas cakupan piksel</i> adalah gabungan luas piksel satelit, <b>bukan luas terbakar</b>; luas terbakar diukur dari citra (burn scar) atau lapangan.</p>
+    <div class="controls" style="margin:6px 0 10px">
+      <div class="seg" id="ezone" role="group" aria-label="Zona kejadian">
+        <button type="button" data-z="1" aria-pressed="true">Di dalam desa / HD</button>
+        <button type="button" data-z="2">≤ 5 km</button>
+        <button type="button" data-z="3">Semua ≤ 25 km</button>
+      </div>
+      <button type="button" class="btn" id="histmap" aria-pressed="false">Tampilkan kejadian di peta</button>
+    </div>
+    <div class="tw" style="max-height:460px;overflow:auto;border:1px solid var(--line)"><table id="etable"><thead><tr><th>ID kejadian</th><th>Mulai (WIB)</th><th>Deteksi</th><th>Zona</th><th>Petak</th><th>Tutupan 2026</th><th>Gambut</th><th>Kawasan</th><th>Cakupan piksel (ha)</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section class="src" id="unduh">
+    <h2>Unduh data (SHP · KML · GeoJSON · CSV)</h2>
+    <p>Semua file memakai WGS 1984 (kecuali poligon cakupan piksel: UTM 49N) dan berisi kolom asli FIRMS, ditambah zona, jarak ke desa, petak, kabupaten, fungsi kawasan, tutupan 2026, gambut, luas piksel deteksi, dan ID kejadian. Diperbarui otomatis tiap 3 jam.</p>
+    <div class="dl" id="dlFocus"></div>
+    <p style="margin-top:10px"><b>Per tahun, seluruh Kapuas Hulu (SHP):</b></p>
+    <div class="dl" id="dlYear"></div>
+    <p style="margin-top:10px"><b>Basis data induk &amp; jejak audit:</b></p>
+    <div class="dl" id="dlArch"></div>
+  </section>
+
   <section class="src" id="sumber">
     <h2>Sumber &amp; validasi data</h2>
-    <p>Semua titik panas berasal langsung dari <b>NASA FIRMS</b> (Fire Information for Resource Management System), produk Near Real-Time (NRT) yang dipakai juga oleh Global Forest Watch. Halaman ini tidak mengubah nilai asli FIRMS; kolom asli disimpan apa adanya di arsip CSV bulanan, ditambah zona, jarak ke batas desa, dan kode petak yang dihitung dari batas resmi.</p>
+    <p>Semua titik panas berasal langsung dari <b>NASA FIRMS</b> (Fire Information for Resource Management System), sumber yang sama dengan Global Forest Watch. Dua jenis data dipakai: <b>arsip tahunan final NASA (SP)</b> untuk 2000–2025 (MODIS sejak Nov 2000, VIIRS S-NPP sejak 2012, VIIRS NOAA-20 sejak 2018), dan <b>Near Real-Time (NRT)</b> untuk data terbaru. Ketika NASA menerbitkan arsip tahunan baru, catatan NRT tahun itu otomatis diganti dengan versi final. Nilai asli FIRMS tidak diubah. Deteksi bertipe gunung api, sumber panas statis (industri), dan lepas pantai (kolom <code>type</code> 1–3) tetap disimpan tetapi tidak dihitung dalam statistik dan kejadian api.</p>
+    <p><b>Ringkasan basis data:</b> <span id="dbsum">memuat…</span></p>
     <div class="tw"><table>
-      <thead><tr><th>Produk</th><th>DOI</th><th>Unduhan terakhir</th><th>SHA-256 file</th><th>Titik di kotak Kapuas Hulu (7 hari)</th></tr></thead>
+      <thead><tr><th>Produk NRT (pembaruan tiap 3 jam)</th><th>DOI</th><th>Unduhan terakhir</th><th>SHA-256 file</th><th>Titik di kotak Kapuas Hulu (7 hari)</th></tr></thead>
       <tbody id="srcRows"><tr><td colspan="5">Memuat…</td></tr></tbody>
     </table></div>
-    <p><b>Unduh data untuk laporan:</b></p>
-    <div class="dl" id="dl"></div>
-    <p><b>Jejak audit:</b> setiap pembaruan (tiap 3 jam, GitHub Actions) mencatat URL sumber, waktu unduh UTC, ukuran, dan sidik SHA-256 file asli FIRMS. Riwayat perubahan seluruh file tercatat permanen di <a href="https://github.com/erikprcfi/titik-api-desa-nanga-lauk/commits/main" target="_blank" rel="noopener">riwayat commit GitHub</a>. Setiap titik juga bisa dicek silang lewat tautan "Cek di NASA FIRMS".</p>
+        <p><b>Jejak audit:</b> setiap pembaruan (tiap 3 jam, GitHub Actions) mencatat URL sumber, waktu unduh UTC, ukuran, dan sidik SHA-256 file asli FIRMS. Riwayat perubahan seluruh file tercatat permanen di <a href="https://github.com/erikprcfi/titik-api-desa-nanga-lauk/commits/main" target="_blank" rel="noopener">riwayat commit GitHub</a>. Setiap titik juga bisa dicek silang lewat tautan "Cek di NASA FIRMS".</p>
     <p><b>Batas wilayah:</b> Hutan Desa (SK.685/Menlhk-PSKL/PKPS/PSL.0/2/2017), Desa Nanga Lauk (BIG 2020, 1:10.000), grid patroli 250 m (PRCF Indonesia), kabupaten (BIG 2021). Jarak dihitung pada proyeksi WGS 1984 UTM Zona 49N. Waktu ditampilkan dalam WIB (UTC+7).</p>
-    <p><b>Catatan penggunaan:</b> titik panas adalah deteksi anomali panas oleh satelit (VIIRS piksel 375 m, MODIS 1 km), bukan konfirmasi kebakaran; verifikasi lapangan tetap diperlukan. Data NRT dapat diganti oleh produk Standard (SP) NASA setelah ±2–3 bulan; untuk laporan tahunan, angka dapat dicocokkan ulang dengan arsip FIRMS SP.</p>
+    <p><b>Catatan penggunaan:</b> titik panas adalah deteksi anomali panas oleh satelit (VIIRS piksel 375 m, MODIS 1 km), bukan konfirmasi kebakaran; verifikasi lapangan tetap diperlukan. Data NRT (terbaru) bersifat sementara sampai NASA menerbitkan arsip tahunan final; website ini menggantinya secara otomatis. Data Januari–pertengahan Oktober 2026 belum tersedia di file publik dan akan terisi saat arsip 2026 terbit (atau dengan MAP_KEY FIRMS).</p>
     <p><b>Sitasi:</b> We acknowledge the use of data and imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Earth Science Data and Information System (ESDIS). NRT VIIRS 375 m Active Fire products VNP14IMGTDL_NRT, VJ114IMGTDL_NRT, VJ214IMGTDL_NRT and MODIS Collection 61 NRT MCD14DL, distributed from NASA FIRMS.</p>
     <p style="color:var(--muted)">Dikelola oleh Yayasan PRCF Indonesia &amp; LPHD Lauk Bersatu · Program SCCM Rimbak Pakai Pengidup.</p>
   </section>
@@ -260,6 +300,12 @@ function popup(p){return `<div class="pop"><h3 style="color:${css(ZONES[ZI[p.c2.
 <tr><td>Koordinat</td><td>${p.la.toFixed(5)}, ${p.lo.toFixed(5)}</td></tr>
 <tr><td>Jarak ke desa</td><td>${p.c2.dist===0?'di dalam':p.c2.dist.toFixed(1)+' km'}</td></tr>
 ${p.c2.petak?`<tr><td>Petak patroli</td><td><b>${esc(p.c2.petak)}</b></td></tr>`:''}
+${p.kw?`<tr><td>Fungsi kawasan</td><td>${esc(p.kw)}</td></tr>`:''}
+${p.tl?`<tr><td>Tutupan 2026</td><td>${esc(p.tl)}</td></tr>`:''}
+${p.gb?`<tr><td>Gambut</td><td>${esc(p.gb)}</td></tr>`:''}
+<tr><td>Luas piksel deteksi</td><td>${p.ha.toFixed(1)} ha <span style="color:var(--muted)">(bukan luas terbakar)</span></td></tr>
+<tr><td>Status data</td><td>${p.st==='SP'?'Arsip final NASA (SP)':'Near Real-Time (NRT)'}</td></tr>
+${p.ev?`<tr><td>ID kejadian</td><td>${esc(p.ev)}</td></tr>`:''}
 </table><div style="margin-top:8px"><a href="${firmsUrl(p)}" target="_blank" rel="noopener">Cek di NASA FIRMS ↗</a></div></div>`;}
 
 function render(){
@@ -324,9 +370,46 @@ async function load(){
 }
 function fillSources(){
   const t=document.getElementById('srcRows'); if(!t||!STATUS)return;
-  t.innerHTML=(STATUS.sumber||[]).map(s=>`<tr><td>${esc(s.produk)}</td><td><a href="https://doi.org/${esc(s.doi)}" target="_blank" rel="noopener">${esc(s.doi)}</a></td><td>${s.ok?'OK':'Gagal'}</td><td><code>${s.sha256?esc(s.sha256.slice(0,16))+'…':'-'}</code></td><td>${s.baris_di_kotak_kapuas_hulu??'-'}</td></tr>`).join('');
-  document.getElementById('dl').innerHTML=(STATUS.bulan_arsip||[]).slice().reverse().map(m=>`<a href="data/archive/${m}.csv">Arsip ${m}.csv</a><a href="data/provenance/${m}.jsonl">Jejak audit ${m}.jsonl</a>`).join('');
+  t.innerHTML=(STATUS.sumber||[]).map(s=>`<tr><td>${esc(s.sensor)}</td><td><a href="https://doi.org/${esc(s.doi)}" target="_blank" rel="noopener">${esc(s.doi)}</a></td><td>${s.ok?'OK':'Gagal'}</td><td><code>${s.sha256?esc(s.sha256.slice(0,16))+'…':'-'}</code></td><td>${s.baris_di_kotak??'-'}</td></tr>`).join('');
+  const nf=n=>Number(n).toLocaleString('id-ID');
+  document.getElementById('dbsum').textContent=`${nf(STATUS.jumlah_catatan)} deteksi di kotak Kapuas Hulu (${STATUS.rentang[0]} s.d. ${STATUS.rentang[1]}): ${nf(STATUS.jumlah_sp)} dari arsip final NASA (SP) dan ${nf(STATUS.jumlah_nrt)} Near Real-Time.`;
+  const ex=STATUS.ekspor||[]; const lbl=f=>f.replace(/_shp\.zip$/,' (SHP)').replace(/\.(kml|geojson|csv)$/,m=>' ('+m.slice(1).toUpperCase()+')').replace(/_/g,' ');
+  document.getElementById('dlFocus').innerHTML=ex.filter(f=>!f.startsWith('titik_panas_kapuashulu_')).map(f=>`<a href="data/export/${f}">${esc(lbl(f))}</a>`).join('');
+  document.getElementById('dlYear').innerHTML=ex.filter(f=>f.startsWith('titik_panas_kapuashulu_')).sort().reverse().map(f=>`<a href="data/export/${f}">${esc(f.match(/\d{4}/)[0])}</a>`).join('');
+  document.getElementById('dlArch').innerHTML=(STATUS.tahun_arsip||[]).slice().reverse().map(y=>`<a href="data/archive/${y}.csv">${y}.csv</a>`).join('')+`<a href="data/provenance/arsip_tahunan_unduhan_awal.json">Jejak audit arsip tahunan</a><a href="https://github.com/erikprcfi/titik-api-desa-nanga-lauk/tree/main/data/provenance">Semua jejak audit</a>`;
 }
+/* ---------- riwayat ---------- */
+let STATS=null, EVENTS=[], HS='MODIS', HZ='desa', EZ=1;
+const ZN=['Hutan Desa','Desa Nanga Lauk','Radius 5 km','Radius 5-25 km','Kapuas Hulu','Luar Kapuas Hulu'];
+function segBind(id,attr,set){for(const b of document.querySelectorAll('#'+id+' button'))b.addEventListener('click',()=>{for(const x of document.querySelectorAll('#'+id+' button'))x.setAttribute('aria-pressed',String(x===b));set(b.dataset[attr]);});}
+segBind('hsens','s',v=>{HS=v;histChart();}); segBind('hzone','z',v=>{HZ=v;histChart();}); segBind('ezone','z',v=>{EZ=+v;eventTable();histLayer();});
+function histChart(){
+  if(!STATS)return; const yrs=Object.keys(STATS.tahunan).filter(y=>STATS.tahunan[y][HS]);
+  const groups=HZ==='desa'?[['Hutan Desa','--z-hd'],['Desa Nanga Lauk','--z-desa'],['Radius 5 km','--z-5']]:HZ==='r25'?[['Hutan Desa','--z-hd'],['Desa Nanga Lauk','--z-desa'],['Radius 5 km','--z-5'],['Radius 5-25 km','--z-25']]:[['Hutan Desa','--z-hd'],['Desa Nanga Lauk','--z-desa'],['Radius 5 km','--z-5'],['Radius 5-25 km','--z-25'],['Kapuas Hulu','--z-kh']];
+  const val=(y,z)=>(STATS.tahunan[y][HS]||{})[z]||0; const tot=y=>groups.reduce((a,g)=>a+val(y,g[0]),0);
+  const mx=Math.max(1,...yrs.map(tot)); const step=Math.pow(10,Math.floor(Math.log10(mx)))/(mx/Math.pow(10,Math.floor(Math.log10(mx)))>5?1:2); const top=Math.ceil(mx/step)*step;
+  const W=900,H=240,l=46,b=22,t=10,bw=(W-l-6)/yrs.length;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Jumlah titik panas per tahun">`;
+  for(let i=0;i<=4;i++){const y=t+(H-b-t)*(1-i/4);s+=`<line x1="${l}" x2="${W}" y1="${y}" y2="${y}" stroke="${css('--line')}"/><text x="${l-5}" y="${y+3}" text-anchor="end">${Math.round(top*i/4).toLocaleString('id-ID')}</text>`;}
+  yrs.forEach((y,i)=>{let acc=0;const x=l+i*bw+2;
+    for(const [z,c] of groups){const v=val(y,z);if(!v)continue;const h=(H-b-t)*v/top;s+=`<rect x="${x}" y="${H-b-(H-b-t)*(acc+v)/top}" width="${bw-4}" height="${h}" fill="${css(c)}"><title>${y} · ${z}: ${v}</title></rect>`;acc+=v;}
+    if(acc)s+=`<text x="${x+(bw-4)/2}" y="${H-b-(H-b-t)*acc/top-3}" text-anchor="middle">${acc}</text>`;
+    if(yrs.length<20||i%2===0)s+=`<text x="${x+(bw-4)/2}" y="${H-6}" text-anchor="middle">${y}</text>`;});
+  s+=`</svg><div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted);margin-top:4px">${groups.map(g=>`<span><span class="sw" style="display:inline-block;background:${css(g[1])};border:0;border-radius:2px;vertical-align:-1px"></span> ${g[0]}</span>`).join('')}</div>`;
+  document.getElementById('hchart').innerHTML=s;
+}
+function evSel(){return EVENTS.filter(e=>ZN.indexOf(e.zona_terdekat)<=EZ).slice().reverse();}
+function eventTable(){
+  const tb=document.querySelector('#etable tbody'); const E=evSel();
+  tb.innerHTML=E.length?E.slice(0,300).map(e=>`<tr><td><code>${esc(e.id_kejadian)}</code></td><td>${esc(e.mulai_wib)}</td><td>${e.jumlah_deteksi}</td><td>${esc(e.zona_terdekat)}${e.jarak_min_km>0?' ('+e.jarak_min_km.toFixed(1)+' km)':''}</td><td>${esc(e.petak)}</td><td>${esc(e.tutupan_2026)}</td><td>${esc(e.gambut)}</td><td>${esc(e.fungsi_kawasan)}</td><td>${e.luas_cakupan_piksel_ha}</td></tr>`).join('')+(E.length>300?`<tr><td colspan="9">… ${E.length-300} kejadian lain ada di file unduhan.</td></tr>`:''):`<tr><td colspan="9">Tidak ada kejadian.</td></tr>`;
+}
+const histL=L.layerGroup(); let HISTON=false;
+function histLayer(){histL.clearLayers(); if(!HISTON){map.removeLayer(histL);return;}
+  for(const e of evSel()){const z=ZONES[ZI[ZMAP[e.zona_terdekat]]];L.circleMarker([e.lat,e.lon],{radius:4+Math.min(8,Math.sqrt(e.jumlah_deteksi)),color:'#fff',weight:1,fillColor:css(z.col),fillOpacity:.75}).bindPopup(`<div class="pop"><h3>${esc(e.id_kejadian)}</h3><table><tr><td>Mulai</td><td>${esc(e.mulai_wib)} WIB</td></tr><tr><td>Selesai</td><td>${esc(e.selesai_wib)} WIB</td></tr><tr><td>Deteksi</td><td>${e.jumlah_deteksi} (${esc(e.sensor)})</td></tr><tr><td>Zona</td><td>${esc(e.zona_terdekat)}</td></tr>${e.petak?`<tr><td>Petak</td><td>${esc(e.petak)}</td></tr>`:''}<tr><td>FRP maks</td><td>${e.frp_maks_mw} MW</td></tr><tr><td>Cakupan piksel</td><td>${e.luas_cakupan_piksel_ha} ha (bukan luas terbakar)</td></tr><tr><td>Status</td><td>${esc(e.status_data)}</td></tr></table></div>`).addTo(histL);}
+  histL.addTo(map);}
+document.getElementById('histmap').addEventListener('click',e=>{HISTON=!HISTON;e.target.setAttribute('aria-pressed',String(HISTON));e.target.textContent=HISTON?'Sembunyikan kejadian di peta':'Tampilkan kejadian di peta';histLayer();if(HISTON)map.fitBounds(b25,{padding:[10,10]});});
+async function loadHist(){try{const [st,ev]=await Promise.all([fetch('data/stats.json?'+Date.now()).then(r=>r.json()),fetch('data/kejadian.json?'+Date.now()).then(r=>r.json())]);STATS=st;EVENTS=ev;histChart();eventTable();}catch(e){document.getElementById('hchart').textContent='Riwayat gagal dimuat.';}}
+loadHist();
 load(); setInterval(load,10*60*1000);
 setInterval(setStatus,60000);
 })();

@@ -1,0 +1,914 @@
+[
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2000/modis_2000_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 53996,
+  "sha256": "ffdedd9211fba5526064a26cd28735c354cacbbef7df6a2f388a0100bb045e69",
+  "baris_total": 691,
+  "baris_kotak": 0,
+  "tanggal_min": "2000-11-01",
+  "tanggal_max": "2000-12-31",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:16Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2000,
+  "last_modified": "Wed, 04 Dec 2024 21:10:13 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2001/modis_2001_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 1179929,
+  "sha256": "9fcaeaf6515aaa6335c7d442d711425f33bd75ac7dc078c4f46ab14fcc97372d",
+  "baris_total": 15078,
+  "baris_kotak": 192,
+  "tanggal_min": "2001-01-01",
+  "tanggal_max": "2001-12-31",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:17Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2001,
+  "last_modified": "Wed, 04 Dec 2024 21:10:27 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2002/modis_2002_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 9595460,
+  "sha256": "8de9de871b0ecec11282cb351fdfe608473006f5ed7d97037bf7e2a1923a7a36",
+  "baris_total": 123327,
+  "baris_kotak": 2223,
+  "tanggal_min": "2002-01-01",
+  "tanggal_max": "2002-12-31",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:18Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2002,
+  "last_modified": "Wed, 04 Dec 2024 21:10:39 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2003/modis_2003_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 4875686,
+  "sha256": "aa64834a096c7d8c73a2d77fb02ef599158d33563423ca67c431719dc41334d0",
+  "baris_total": 62751,
+  "baris_kotak": 1214,
+  "tanggal_min": "2003-01-01",
+  "tanggal_max": "2003-12-31",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:18Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2003,
+  "last_modified": "Wed, 04 Dec 2024 21:11:17 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2004/modis_2004_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 8322604,
+  "sha256": "0e6a418dbed38654e13186897006409bb9508d6e9eb460acad35c913f8b8c576",
+  "baris_total": 107117,
+  "baris_kotak": 2183,
+  "tanggal_min": "2004-01-01",
+  "tanggal_max": "2004-12-31",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:19Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2004,
+  "last_modified": "Wed, 04 Dec 2024 21:11:33 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2005/modis_2005_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 5798891,
+  "sha256": "d4f9134c67b220136d0d4de12434b675c6c8476fba9464bfe9531d76ec69188b",
+  "baris_total": 74797,
+  "baris_kotak": 821,
+  "tanggal_min": "2005-01-01",
+  "tanggal_max": "2005-12-31",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:20Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2005,
+  "last_modified": "Wed, 04 Dec 2024 21:12:20 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2006/modis_2006_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 12058484,
+  "sha256": "a94389d5be532e5c2f7048230f2c1d90a2187a4455f6c1674bafa2500db53133",
+  "baris_total": 154985,
+  "baris_kotak": 2310,
+  "tanggal_min": "2006-01-01",
+  "tanggal_max": "2006-12-30",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:21Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2006,
+  "last_modified": "Wed, 04 Dec 2024 21:12:43 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2007/modis_2007_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 3346298,
+  "sha256": "61e8dabddc4043e194edb972c40d01c29dcb9471eebaa3682835feeac24de801",
+  "baris_total": 43224,
+  "baris_kotak": 963,
+  "tanggal_min": "2007-01-01",
+  "tanggal_max": "2007-12-31",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:21Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2007,
+  "last_modified": "Wed, 04 Dec 2024 21:13:28 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2008/modis_2008_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 3186516,
+  "sha256": "24fba3b1a40ea19b72e9d2830355af13029ea2650b031da9e808fe23003e2072",
+  "baris_total": 41161,
+  "baris_kotak": 867,
+  "tanggal_min": "2008-01-01",
+  "tanggal_max": "2008-12-31",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:22Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2008,
+  "last_modified": "Wed, 04 Dec 2024 21:13:58 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2009/modis_2009_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 7945933,
+  "sha256": "c45f4871fc9d3090fec52d5293d7475d3624472a8828abfcccd0979337b9fe47",
+  "baris_total": 102344,
+  "baris_kotak": 2131,
+  "tanggal_min": "2009-01-01",
+  "tanggal_max": "2009-12-31",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:23Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2009,
+  "last_modified": "Wed, 04 Dec 2024 21:14:55 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2010/modis_2010_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 1604037,
+  "sha256": "12a3ac027fec3870c8a9caba4415d34ffa0a28e4960e121b2fdb7c1c55f1aa56",
+  "baris_total": 20792,
+  "baris_kotak": 326,
+  "tanggal_min": "2010-01-01",
+  "tanggal_max": "2010-12-31",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:24Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2010,
+  "last_modified": "Wed, 04 Dec 2024 21:15:25 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2011/modis_2011_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 4871314,
+  "sha256": "4a0cffe94dc448061fff1a9bb8120b714fb56e33f1bb6291968fd8d3d876295a",
+  "baris_total": 62790,
+  "baris_kotak": 932,
+  "tanggal_min": "2011-01-01",
+  "tanggal_max": "2011-12-31",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:24Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2011,
+  "last_modified": "Wed, 04 Dec 2024 21:17:00 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2012/modis_2012_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 5524163,
+  "sha256": "2c4e88d3b132f9ed94d75b24cfafccf347bac343f2a7c50cd6ba47b0f5bfacf5",
+  "baris_total": 71135,
+  "baris_kotak": 1258,
+  "tanggal_min": "2012-01-01",
+  "tanggal_max": "2012-12-31",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:25Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2012,
+  "last_modified": "Wed, 04 Dec 2024 21:17:09 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2013/modis_2013_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 4178716,
+  "sha256": "c1287263311b2829411c586a5eb1fccbb8484f1b10356f0be847fea97eba3c9b",
+  "baris_total": 53852,
+  "baris_kotak": 688,
+  "tanggal_min": "2013-01-01",
+  "tanggal_max": "2013-12-31",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:26Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2013,
+  "last_modified": "Wed, 04 Dec 2024 21:17:39 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2014/modis_2014_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 8933232,
+  "sha256": "3c6c51a63ba857d81e30e8017864cf457e0736dcfe4971b7669be9ec6b40f32f",
+  "baris_total": 115121,
+  "baris_kotak": 1152,
+  "tanggal_min": "2014-01-01",
+  "tanggal_max": "2014-12-30",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:26Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2014,
+  "last_modified": "Wed, 04 Dec 2024 21:17:59 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2015/modis_2015_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 13914029,
+  "sha256": "986e4a768333b229fbf48759f7ca7b019b9eb4192f85251946ea6ac3220199b0",
+  "baris_total": 178578,
+  "baris_kotak": 1426,
+  "tanggal_min": "2015-01-01",
+  "tanggal_max": "2015-12-31",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:28Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2015,
+  "last_modified": "Wed, 04 Dec 2024 21:18:15 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2016/modis_2016_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 1861699,
+  "sha256": "47a08f058c57baa2ea725ec980e67a1089d7583eb3e2a042fc019cf35589d1a6",
+  "baris_total": 24061,
+  "baris_kotak": 523,
+  "tanggal_min": "2016-01-01",
+  "tanggal_max": "2016-12-31",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:28Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2016,
+  "last_modified": "Wed, 04 Dec 2024 21:18:55 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2017/modis_2017_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 1382026,
+  "sha256": "054a1cccca3da84fc35fee962d5f4167ea2a3ce221be3be7884d4c4b5aa89061",
+  "baris_total": 17823,
+  "baris_kotak": 337,
+  "tanggal_min": "2017-01-01",
+  "tanggal_max": "2017-12-31",
+  "versi": [
+   "6.2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:29Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2017,
+  "last_modified": "Wed, 04 Dec 2024 21:21:46 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2018/modis_2018_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 2996769,
+  "sha256": "3e7b488cf08c3043fe0ebf0db447d10e57cc6c25aadf900ca8183eae73300a0e",
+  "baris_total": 38074,
+  "baris_kotak": 675,
+  "tanggal_min": "2018-01-01",
+  "tanggal_max": "2018-12-31",
+  "versi": [
+   "6.03"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:29Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2018,
+  "last_modified": "Wed, 04 Dec 2024 21:21:56 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2019/modis_2019_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 7142482,
+  "sha256": "049f010fb65375c1bd5020a0aeb00f0c0a93630585c8439e4979894bafee35ec",
+  "baris_total": 90475,
+  "baris_kotak": 814,
+  "tanggal_min": "2019-01-01",
+  "tanggal_max": "2019-12-31",
+  "versi": [
+   "6.03"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:30Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2019,
+  "last_modified": "Wed, 04 Dec 2024 21:24:44 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2020/modis_2020_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 1272113,
+  "sha256": "e00db019742905232b11f56bb5cfb9158d5d10479c3d895202376b1046baf19f",
+  "baris_total": 16201,
+  "baris_kotak": 169,
+  "tanggal_min": "2020-01-01",
+  "tanggal_max": "2020-12-31",
+  "versi": [
+   "6.03"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:30Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2020,
+  "last_modified": "Wed, 04 Dec 2024 21:27:06 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2021/modis_2021_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 1114710,
+  "sha256": "62d0c407f9e9ebbecdddeae1529cc405e254e0aaa4a01f7a427929a186e3d0a0",
+  "baris_total": 14210,
+  "baris_kotak": 246,
+  "tanggal_min": "2021-01-01",
+  "tanggal_max": "2021-12-31",
+  "versi": [
+   "6.03"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:31Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2021,
+  "last_modified": "Wed, 04 Dec 2024 21:29:24 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2022/modis_2022_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 883571,
+  "sha256": "7ba203f76f72e96d73b03abb76a08613d59edb2c90fe17aaf580a18648f6fd33",
+  "baris_total": 11279,
+  "baris_kotak": 159,
+  "tanggal_min": "2022-01-03",
+  "tanggal_max": "2022-12-31",
+  "versi": [
+   "6.03"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:31Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2022,
+  "last_modified": "Wed, 04 Dec 2024 21:28:48 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2023/modis_2023_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 4151442,
+  "sha256": "9f9d79cc84eefab271fc82e63b7c49309547a1c31639bfd8590be91d1eea7f1e",
+  "baris_total": 52156,
+  "baris_kotak": 692,
+  "tanggal_min": "2023-01-01",
+  "tanggal_max": "2023-12-31",
+  "versi": [
+   "61.03"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:32Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2023,
+  "last_modified": "Mon, 03 Jun 2024 18:11:54 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2024/modis_2024_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 1865779,
+  "sha256": "ac90c680c1d0cd493b6997388ea5084037b2f1104c415a4570e4a05c6ef359d2",
+  "baris_total": 23542,
+  "baris_kotak": 534,
+  "tanggal_min": "2024-01-01",
+  "tanggal_max": "2024-12-30",
+  "versi": [
+   "61.03"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:33Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2024,
+  "last_modified": "Tue, 24 Jun 2025 16:50:20 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2025/modis_2025_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 1409943,
+  "sha256": "949bf85a132fe817d0778e164c92ec0378a6045c0f72e684a70b2d16a3c3a19a",
+  "baris_total": 17847,
+  "baris_kotak": 493,
+  "tanggal_min": "2025-01-01",
+  "tanggal_max": "2025-12-31",
+  "versi": [
+   "61.03"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:33Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "MODIS",
+  "tahun": 2025,
+  "last_modified": "Sat, 10 Oct 2026 13:17:42 GMT",
+  "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2012/viirs-snpp_2012_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 25193408,
+  "sha256": "be12c40c90faf9b9a5144f57f1e0ae917f44b65d5a1231b118b634652d892dec",
+  "baris_total": 318613,
+  "baris_kotak": 3983,
+  "tanggal_min": "2012-01-20",
+  "tanggal_max": "2012-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:35Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_SNPP",
+  "tahun": 2012,
+  "last_modified": "Tue, 24 Jun 2025 19:10:11 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2013/viirs-snpp_2013_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 20276400,
+  "sha256": "3883e4cc54b8b362c47edd7d0af4d87459d562f58257c3e1d2f9e88f4f3dd26b",
+  "baris_total": 257222,
+  "baris_kotak": 2240,
+  "tanggal_min": "2013-01-01",
+  "tanggal_max": "2013-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:36Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_SNPP",
+  "tahun": 2013,
+  "last_modified": "Tue, 24 Jun 2025 18:59:19 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2014/viirs-snpp_2014_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 43844957,
+  "sha256": "f774a04bb726c39157138a4bbdb17b737f5c8433fb076efcf2ea0afbc6f36938",
+  "baris_total": 555597,
+  "baris_kotak": 4229,
+  "tanggal_min": "2014-01-01",
+  "tanggal_max": "2014-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:40Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_SNPP",
+  "tahun": 2014,
+  "last_modified": "Tue, 24 Jun 2025 18:50:58 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2015/viirs-snpp_2015_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 69346331,
+  "sha256": "88ffeba70b181aedbf8601504e082a1d3e8cc690902f5e86979ae4716f240208",
+  "baris_total": 875824,
+  "baris_kotak": 4903,
+  "tanggal_min": "2015-01-01",
+  "tanggal_max": "2015-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:45Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_SNPP",
+  "tahun": 2015,
+  "last_modified": "Tue, 24 Jun 2025 18:42:36 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2016/viirs-snpp_2016_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 9242773,
+  "sha256": "5a9d7a854583476b6cc5444407db63ec6cad5c7a936f62231e304c87c31300da",
+  "baris_total": 117250,
+  "baris_kotak": 1891,
+  "tanggal_min": "2016-01-01",
+  "tanggal_max": "2016-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:46Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_SNPP",
+  "tahun": 2016,
+  "last_modified": "Tue, 24 Jun 2025 18:30:53 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2017/viirs-snpp_2017_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 7181743,
+  "sha256": "8ec126472021982aaaf9d71f99a975517e08f838527fa8ac6c94e08240e71073",
+  "baris_total": 90849,
+  "baris_kotak": 1119,
+  "tanggal_min": "2017-01-01",
+  "tanggal_max": "2017-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:46Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_SNPP",
+  "tahun": 2017,
+  "last_modified": "Tue, 24 Jun 2025 18:19:40 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2018/viirs-snpp_2018_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 15118642,
+  "sha256": "677dd2fcbb5d9445e372b0a79fc6553a2cc838862686ae4c4cd98fc89ebc4b44",
+  "baris_total": 191173,
+  "baris_kotak": 2774,
+  "tanggal_min": "2018-01-01",
+  "tanggal_max": "2018-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:48Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_SNPP",
+  "tahun": 2018,
+  "last_modified": "Tue, 24 Jun 2025 18:07:50 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2019/viirs-snpp_2019_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 34617768,
+  "sha256": "1dd309b8ae9dd74464f6fce4e0b61c261b7f39326c2dde3f029db55e22fe1a82",
+  "baris_total": 437281,
+  "baris_kotak": 2646,
+  "tanggal_min": "2019-01-01",
+  "tanggal_max": "2019-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:50Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_SNPP",
+  "tahun": 2019,
+  "last_modified": "Tue, 24 Jun 2025 17:53:25 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2020/viirs-snpp_2020_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 7235719,
+  "sha256": "39079f13921efeca4659e285515a2e3fb32d213a256a8d5499745c23a4bb67d0",
+  "baris_total": 91536,
+  "baris_kotak": 1371,
+  "tanggal_min": "2020-01-01",
+  "tanggal_max": "2020-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:51Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_SNPP",
+  "tahun": 2020,
+  "last_modified": "Tue, 24 Jun 2025 17:40:54 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2021/viirs-snpp_2021_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 5401447,
+  "sha256": "6d99f3fb49d154b5bb4eaaaa8a9da4f62ef930fa91ba0c4325835164a9a5a946",
+  "baris_total": 68325,
+  "baris_kotak": 990,
+  "tanggal_min": "2021-01-01",
+  "tanggal_max": "2021-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:52Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_SNPP",
+  "tahun": 2021,
+  "last_modified": "Tue, 24 Jun 2025 17:30:31 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2022/viirs-snpp_2022_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 4521004,
+  "sha256": "06627b2f80bde393725e285e097cbc1bfd592c39bf0e3ef78774db2ac2981804",
+  "baris_total": 57220,
+  "baris_kotak": 955,
+  "tanggal_min": "2022-01-01",
+  "tanggal_max": "2022-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:52Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_SNPP",
+  "tahun": 2022,
+  "last_modified": "Tue, 24 Jun 2025 17:16:44 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2023/viirs-snpp_2023_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 20067598,
+  "sha256": "2dba3b772b5a3a2cc0feed128af74637810021dd41dc34d584cb99b40411665a",
+  "baris_total": 253388,
+  "baris_kotak": 2240,
+  "tanggal_min": "2023-01-01",
+  "tanggal_max": "2023-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:54Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_SNPP",
+  "tahun": 2023,
+  "last_modified": "Tue, 24 Jun 2025 17:07:37 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2024/viirs-snpp_2024_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 8238988,
+  "sha256": "23be16b48fb6ac3a21fd2130e66149d305af71c62bbb39e76a6a0632a9dd69bd",
+  "baris_total": 104186,
+  "baris_kotak": 1561,
+  "tanggal_min": "2024-01-01",
+  "tanggal_max": "2024-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:55Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_SNPP",
+  "tahun": 2024,
+  "last_modified": "Tue, 24 Jun 2025 16:59:24 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2025/viirs-snpp_2025_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 7584099,
+  "sha256": "11abffff52dedfe985a8f03c59b8ebff55a903bd0de07d4897f76d734788d811",
+  "baris_total": 96056,
+  "baris_kotak": 2133,
+  "tanggal_min": "2025-01-01",
+  "tanggal_max": "2025-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:56Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_SNPP",
+  "tahun": 2025,
+  "last_modified": "Sat, 10 Oct 2026 13:22:43 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-jpss1/2018/viirs-jpss1_2018_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 14692256,
+  "sha256": "49ee29685f715227d651e5b2895f0a79c329bab493d2e1163935ad47a151162c",
+  "baris_total": 181069,
+  "baris_kotak": 2514,
+  "tanggal_min": "2018-04-01",
+  "tanggal_max": "2018-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:39:57Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_NOAA20",
+  "tahun": 2018,
+  "last_modified": "Tue, 24 Jun 2025 19:31:56 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-jpss1/2019/viirs-jpss1_2019_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 35526723,
+  "sha256": "4a895f42a8a58e8715691d02c5ec524bdeb85bfac19a54f66ad983c91c3998c5",
+  "baris_total": 437645,
+  "baris_kotak": 2559,
+  "tanggal_min": "2019-01-01",
+  "tanggal_max": "2019-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:40:00Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_NOAA20",
+  "tahun": 2019,
+  "last_modified": "Tue, 24 Jun 2025 19:41:07 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-jpss1/2020/viirs-jpss1_2020_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 7556481,
+  "sha256": "78f2c93862e9b2eb81b88ce0f1e3c6b9ac4dda8bb35057823e3f3224fb3141d6",
+  "baris_total": 93213,
+  "baris_kotak": 1329,
+  "tanggal_min": "2020-01-01",
+  "tanggal_max": "2020-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:40:01Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_NOAA20",
+  "tahun": 2020,
+  "last_modified": "Tue, 24 Jun 2025 19:50:51 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-jpss1/2021/viirs-jpss1_2021_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 5760722,
+  "sha256": "b9ce13a8a47ab46864c1dfbabf2c6e9ab2f3acc1b11f3f5ca63ade05700b87cf",
+  "baris_total": 71063,
+  "baris_kotak": 947,
+  "tanggal_min": "2021-01-01",
+  "tanggal_max": "2021-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:40:01Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_NOAA20",
+  "tahun": 2021,
+  "last_modified": "Tue, 24 Jun 2025 19:59:44 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-jpss1/2022/viirs-jpss1_2022_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 5168954,
+  "sha256": "fdff1fa25cd0a271b9dfe094fbe0134ce9cc364746045663e3069e2447fa975b",
+  "baris_total": 63803,
+  "baris_kotak": 975,
+  "tanggal_min": "2022-01-01",
+  "tanggal_max": "2022-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:40:02Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_NOAA20",
+  "tahun": 2022,
+  "last_modified": "Tue, 24 Jun 2025 20:09:28 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-jpss1/2023/viirs-jpss1_2023_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 20327760,
+  "sha256": "99969d975480ab57a129b02502b4b968ced195dc2c7fcaf947eb693ef7010fd7",
+  "baris_total": 250312,
+  "baris_kotak": 2134,
+  "tanggal_min": "2023-01-01",
+  "tanggal_max": "2023-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:40:04Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_NOAA20",
+  "tahun": 2023,
+  "last_modified": "Tue, 24 Jun 2025 20:17:57 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-jpss1/2024/viirs-jpss1_2024_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 9408241,
+  "sha256": "f978dc06ac3d14c3852ab3a0410422346678a4f221179d8f2f891695caeeaaad",
+  "baris_total": 116040,
+  "baris_kotak": 1860,
+  "tanggal_min": "2024-01-01",
+  "tanggal_max": "2024-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:40:04Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_NOAA20",
+  "tahun": 2024,
+  "last_modified": "Tue, 24 Jun 2025 20:24:42 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002"
+ },
+ {
+  "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-jpss1/2025/viirs-jpss1_2025_Indonesia.csv",
+  "ok": true,
+  "ukuran_byte": 7646219,
+  "sha256": "3034d45ce3b106e9a507be3936f445df0e762d9d6cf4318244bb44b30a794b8e",
+  "baris_total": 94458,
+  "baris_kotak": 2107,
+  "tanggal_min": "2025-01-01",
+  "tanggal_max": "2025-12-31",
+  "versi": [
+   "2"
+  ],
+  "waktu_unduh_utc": "2026-10-22T02:40:05Z",
+  "jenis": "Arsip tahunan",
+  "sensor": "VIIRS_NOAA20",
+  "tahun": 2025,
+  "last_modified": "Sat, 10 Oct 2026 13:26:50 GMT",
+  "doi": "10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002"
+ }
+]

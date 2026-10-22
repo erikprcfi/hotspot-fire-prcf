@@ -6,10 +6,21 @@ Dikelola oleh Yayasan PRCF Indonesia dan LPHD Lauk Bersatu untuk program SCCM Ri
 **Website:** https://erikprcfi.github.io/titik-api-desa-nanga-lauk/
 
 ## Cara kerja
-- GitHub Actions (`.github/workflows/update.yml`) berjalan **setiap 3 jam**, menjalankan `scripts/update_firms.py`.
-- Skrip mengunduh file publik **NASA FIRMS Near Real-Time** 7 hari (Asia Tenggara): VIIRS S-NPP, VIIRS NOAA-20, VIIRS NOAA-21 (375 m) dan MODIS Terra/Aqua (1 km).
-- Titik di sekitar Kapuas Hulu disimpan ke `data/archive/YYYY-MM.csv` dengan kolom asli FIRMS, ditambah zona, jarak ke batas desa (UTM 49N) dan kode petak grid patroli.
-- Setiap unduhan dicatat di `data/provenance/YYYY-MM.jsonl` (URL, waktu UTC, ukuran, SHA-256 file asli) sebagai jejak audit.
+- GitHub Actions (`.github/workflows/update.yml`) menjalankan `scripts/pipeline.py` **setiap 3 jam**.
+- **Arsip final NASA (SP)** 2000–2025 (MODIS sejak Nov 2000, VIIRS S-NPP sejak 2012, VIIRS NOAA-20 sejak 2018) dimuat dari arsip tahunan FIRMS per negara. Sekali sehari pipeline mengecek apakah NASA menerbitkan arsip tahunan baru; bila ada, catatan NRT tahun itu diganti versi final.
+- **Near Real-Time (NRT)**: file publik 7 hari Asia Tenggara (VIIRS S-NPP, NOAA-20, NOAA-21, MODIS).
+- Setiap deteksi diperkaya: zona dan jarak ke batas Desa Nanga Lauk (UTM 49N), petak grid patroli 250 m, kabupaten, fungsi kawasan hutan, tutupan lahan 2026, kedalaman gambut, luas piksel deteksi (scan × track; **bukan luas terbakar**), dan ID kejadian api (deteksi berjarak ≤ 1 km dan ≤ 2 hari).
+- Jejak audit di `data/provenance/` (URL, waktu unduh, ukuran, SHA-256 setiap file asli NASA).
+
+## Isi data
+| Lokasi | Isi |
+|---|---|
+| `data/archive/YYYY.csv` | Basis data induk per tahun (kotak Kapuas Hulu) |
+| `data/export/` | SHP, KML, GeoJSON, CSV: titik panas radius 25 km desa (semua tahun), kejadian api, SHP per tahun Kapuas Hulu |
+| `data/provenance/` | Jejak audit unduhan |
+| `data/geo.json`, `data/context.geojson` | Batas wilayah dan lapisan konteks |
+
+Kolom penting: `status_data` (SP = arsip final NASA, NRT = sementara), `type` (0 dugaan kebakaran vegetasi, 1 gunung api, 2 sumber panas statis, 3 lepas pantai; 1–3 tidak dihitung di statistik), `luas_piksel_ha` (luas piksel satelit, bukan luas terbakar).
 
 ## Sumber data dan sitasi
 | Produk | DOI |
