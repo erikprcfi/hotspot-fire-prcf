@@ -488,6 +488,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 30px;justify-content:space-bet
 </div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="assets/nasa_layers.js"></script>
 <script>
 (async function(){
 const G=await (await fetch('data/geo.json',{cache:'no-cache'})).json(); G.img={url:'assets/s2_20260810.jpg',bounds:G.img_bounds};
@@ -567,6 +568,7 @@ lg.onAdd=()=>{const d=L.DomUtil.create('div','lgd');d.innerHTML=`<div><i style="
 lg.addTo(map);
 L.control.scale({imperial:false,position:'bottomright'}).addTo(map);
 L.control.layers({'Citra satelit (Esri)':esri,'OpenStreetMap':osm},{'Sentinel-2 10 Agu 2026':s2},{position:'topright'}).addTo(map);
+const NASA=FHNasa.create(map); FHNasa.control(map,NASA,'topleft');
 const ptsL=L.layerGroup().addTo(map);
 
 /* ---------- state ---------- */

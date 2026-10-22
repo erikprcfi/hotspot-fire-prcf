@@ -216,6 +216,13 @@ svg{display:block}
 .petak-lbl{color:#fff;font:700 9px var(--f);text-shadow:0 0 3px #000;text-align:center}
 .focuslbl{position:absolute;z-index:500;left:50%;top:50%;transform:translate(-50%,-50%);padding:8px 14px;font-size:13px;font-weight:700;pointer-events:none;opacity:0;transition:opacity .25s}
 .focuslbl.on{opacity:1}
+.nasabar{position:absolute;z-index:520;left:10px;right:76px;bottom:178px;padding:8px 10px}
+.nb-t{display:flex;align-items:center;gap:8px;font-size:12.5px}.nb-t b{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nb-x{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:12px}
+.nb-d{display:grid;grid-template-columns:34px 1fr 34px;gap:6px;margin-top:6px}
+.nb-d button{height:32px;border-radius:10px;background:rgba(255,255,255,.14);color:#fff;font-size:20px;line-height:1}
+.nb-d input{height:32px;border-radius:10px;border:0;background:rgba(255,255,255,.92);color:#14201a;padding:0 8px;font:600 13px var(--f)}
+#nbLg{width:100%;margin-top:6px;background:#fff;border-radius:6px;padding:2px}
 .offline{position:absolute;z-index:600;left:50%;transform:translateX(-50%);top:8px;font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;background:#2b2b2b;color:#fff;display:none;white-space:nowrap}
 body.is-off .offline{display:block}
 
@@ -400,6 +407,9 @@ body.is-off .offline{display:block}
     </div>
   </div>
   <div class="focuslbl glass" id="focusLbl"></div>
+  <div class="glass nasabar" id="nasaBar" hidden><div class="nb-t"><b id="nbName"></b><button class="nb-x tap" id="nbX" aria-label="Tutup lapisan NASA">✕</button></div>
+    <div class="nb-d"><button class="tap" id="nbPrev" aria-label="Hari sebelumnya">‹</button><input type="date" id="nbDate"><button class="tap" id="nbNext" aria-label="Hari berikutnya">›</button></div>
+    <img id="nbLg" alt="" hidden></div>
   <div class="fabs">
     <button class="fab tap" id="fabList" aria-label="Daftar titik panas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 4V2.8h6V4M8.5 10l1.5 1.5 2.5-2.5M8.5 16l1.5 1.5 2.5-2.5M14.5 10.5H16M14.5 16.5H16"/></svg></button>
     <button class="fab tap" id="fabSat" aria-label="Filter satelit dan periode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 7l4 4M11.5 8.5l4 4-3 3-4-4z"/><path d="M8.5 11.5L5 8l3-3 3.5 3.5M15.5 12.5L19 16l-3 3-3.5-3.5"/><path d="M4 16a4 4 0 0 0 4 4M3 13a8 8 0 0 0 8 8"/></svg></button>
@@ -520,6 +530,7 @@ body.is-off .offline{display:block}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="assets/nasa_layers.js"></script>
 <script>
 (function(){
 'use strict';
@@ -639,7 +650,12 @@ function initMap(){
   MAP.on('zoomend',()=>{const z=MAP.getZoom();z>=13?gridL.addTo(MAP):MAP.removeLayer(gridL);z>=15?lbl.addTo(MAP):MAP.removeLayer(lbl);});
   B.kh=L.geoJSON(kh).getBounds();B.all=L.latLngBounds(SITES.map(x=>L.geoJSON(x.buf5).getBounds()).reduce((a,b)=>a.extend(b)));
   ptsL=L.layerGroup().addTo(MAP);
+  NASA=FHNasa.create(MAP);NASA.onChange(nasaUI);
+  $('#nbX').onclick=()=>NASA.set(null);$('#nbPrev').onclick=()=>NASA.step(-1);$('#nbNext').onclick=()=>NASA.step(1);$('#nbDate').onchange=e=>e.target.value&&NASA.setDate(e.target.value);
 }
+let NASA=null;
+function nasaUI(){const L0=NASA.layer,bar=$('#nasaBar');bar.hidden=!L0;if(!L0){nasaUI._on=0;return;}$('#nbName').textContent='NASA · '+NASA.label;if(!nasaUI._on){nasaUI._on=1;$('#topcards').classList.add('cards-off');$('#eyeX').style.display='none';}const i=$('#nbDate');i.value=NASA.date;i.max=NASA.maxDate();i.min=L0.since;
+  const lg=$('#nbLg');if(L0.legend){lg.src=L0.legend;lg.hidden=false;}else lg.hidden=true;}
 const FOCI=[['r25','Radius 25 km'],['desa','Desa'],['hd','Hutan Desa'],['all','Semua lokasi'],['kh','Kapuas Hulu']];let FI=0;
 $('#fabFocus').onclick=()=>{FI=(FI+1)%FOCI.length;const [k,n0]=FOCI[FI];const n=k==='desa'?'Desa '+dNm():k==='hd'?SITE.hd_nama:n0;MAP.flyToBounds(B[k],{...PADV,duration:.8});const l=$('#focusLbl');l.textContent='Fokus: '+n;l.classList.add('on');clearTimeout(l._t);l._t=setTimeout(()=>l.classList.remove('on'),1300);};
 $('#eye').onclick=()=>{const off=$('#topcards').classList.toggle('cards-off');$('#eyeX').style.display=off?'none':'';store.set('cards',!off);};
@@ -734,6 +750,8 @@ $('#fabSat').onclick=filterSheet;$('#spPer').onclick=filterSheet;
 $('#fabLayer').onclick=()=>{const cur=store.get('base','esri');
   openSheet(`<h3>Lapisan peta</h3><p class="sub">Peta dasar dan citra</p><div class="opts" id="lyB">${[['esri','Citra satelit','Esri World Imagery'],['topo','Topografi','Esri World Topo'],['osm','Jalan & pemukiman','OpenStreetMap']].map(([k,t,s])=>`<button class="optc" data-b="${k}" aria-pressed="${cur===k}"><span class="rd"></span><span><b>${t}</b><small>${s}</small></span></button>`).join('')}</div>
   <div class="lbl">Tambahan</div><div class="opts"><button class="optc" id="lyS2" aria-pressed="${MAP.hasLayer(base.s2)}"><span class="rd"></span><span><b>Citra Sentinel-2 10 Agustus 2026</b><small>Komposit warna asli, bebas awan, area desa</small></span></button></div>
+  <div class="lbl">Satelit NASA harian (asap &amp; kebakaran)</div><div class="opts" id="lyN"><button class="optc" data-n="" aria-pressed="${!NASA.id}"><span class="rd"></span><span><b>Tidak ditampilkan</b></span></button>${FHNasa.LAYERS.map(l=>`<button class="optc" data-n="${l.id}" aria-pressed="${NASA.id===l.id}"><span class="rd"></span><span><b>${l.nm}</b><small>${l.desc}</small></span></button>`).join('')}</div>
+  <p class="small muted" style="margin:6px 2px 0">Sumber: NASA GIBS. Tanggal dapat digeser hari per hari di panel peta (data CO tersedia sejak 2002).</p>
   <div class="lbl">Legenda</div><div class="small" style="display:grid;gap:6px">
    <div><i style="display:inline-block;width:22px;border-top:2.5px solid #FF3B30;vertical-align:middle;margin-right:8px"></i>Batas Hutan Desa</div>
    <div><i style="display:inline-block;width:22px;border-top:2.5px solid #FFE14D;vertical-align:middle;margin-right:8px"></i>Batas desa</div>
@@ -742,6 +760,7 @@ $('#fabLayer').onclick=()=>{const cur=store.get('base','esri');
    <div><i style="display:inline-block;width:22px;border-top:2.5px solid #5AA9E6;vertical-align:middle;margin-right:8px"></i>Sungai utama</div>
    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px">${SENS.map(s=>`<span style="display:inline-flex;gap:6px;align-items:center">${shapeSVG(s.shape,'#8A968F',14)}${s.nm}</span>`).join('')}</div></div>`);
   $$('#lyB .optc').forEach(b=>b.onclick=()=>{['esri','topo','osm'].forEach(k=>MAP.removeLayer(base[k]));base[b.dataset.b].addTo(MAP);store.set('base',b.dataset.b);$$('#lyB .optc').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});
+  $$('#lyN .optc').forEach(b=>b.onclick=()=>{NASA.set(b.dataset.n||null);$$('#lyN .optc').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));if(b.dataset.n&&['co','aod','ai'].includes(b.dataset.n))MAP.flyTo([0.6,112.8],6,{duration:.8});});
   $('#lyS2').onclick=e=>{const on=!MAP.hasLayer(base.s2);on?base.s2.addTo(MAP):MAP.removeLayer(base.s2);store.set('s2',on);e.currentTarget.setAttribute('aria-pressed',String(on));if(on)MAP.flyToBounds(B.desa,{padding:[20,20],duration:.6});};
 };
 
