@@ -215,6 +215,46 @@ def bmkg_noon(jam):
         out[j["t"][:10]] = [j["suhu"], j["rh"], j["angin"], sum(x["hujan"] or 0 for x in prev)]
     return out
 
+# ------------------------------------------------------------------ kualitas udara (Copernicus CAMS)
+ISPU = [(15.5, "Baik"), (55.4, "Sedang"), (150.4, "Tidak Sehat"), (250.4, "Sangat Tidak Sehat"), (1e9, "Berbahaya")]  # PM2.5 µg/m³, kategori BMKG
+def ispu(v):
+    for i, (lim, nm) in enumerate(ISPU):
+        if v <= lim:
+            return i
+    return 4
+
+def udara(site, prov):
+    la, lo = site["pusat_wilayah"]
+    url = (f"https://air-quality-api.open-meteo.com/v1/air-quality?latitude={la:.3f}&longitude={lo:.3f}"
+           f"&hourly=pm2_5,pm10,carbon_monoxide,aerosol_optical_depth&past_days=7&forecast_days=5&timezone={TZ}&domains=cams_global")
+    try:
+        d, sha = get(url)
+    except Exception as e:
+        prov.append({"jenis": "Kualitas udara: CAMS", "lokasi": site["id"], "url": url, "ok": False, "galat": str(e)[:200]}); return None
+    h = d["hourly"]; now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))).strftime("%Y-%m-%dT%H:00")
+    by = {}
+    for i, t in enumerate(h["time"]):
+        if h["pm2_5"][i] is None:
+            continue
+        o = by.setdefault(t[:10], {"pm": [], "pm10": [], "co": [], "aod": []})
+        o["pm"].append(h["pm2_5"][i]); o["pm10"].append(h["pm10"][i] or 0); o["co"].append(h["carbon_monoxide"][i] or 0); o["aod"].append(h["aerosol_optical_depth"][i] or 0)
+    harian = []
+    for k, o in sorted(by.items()):
+        if len(o["pm"]) < 18:
+            continue
+        m = sum(o["pm"]) / len(o["pm"])
+        harian.append({"tanggal": k, "pm25": round(m, 1), "pm25_maks": round(max(o["pm"]), 1), "pm10": round(sum(o["pm10"]) / len(o["pm10"]), 1),
+                       "co": round(sum(o["co"]) / len(o["co"])), "aod": round(max(o["aod"]), 2), "kategori": ispu(m)})
+    i_now = max([i for i, t in enumerate(h["time"]) if t <= now] or [0])
+    jam = [{"t": h["time"][i], "pm25": h["pm2_5"][i]} for i in range(max(0, i_now - 48), len(h["time"])) if h["pm2_5"][i] is not None]
+    prov.append({"jenis": "Kualitas udara: CAMS", "lokasi": site["id"], "url": url, "ok": True, "sha256": sha})
+    return {"sumber": "Copernicus Atmosphere Monitoring Service (CAMS) global, ECMWF – via Open-Meteo Air Quality API",
+            "kategori_nama": [n for _, n in ISPU], "kategori_batas": "PM2.5 (dihitung dari rata-rata 24 jam), µg/m³: Baik 0–15,5; Sedang 15,6–55,4; Tidak Sehat 55,5–150,4; Sangat Tidak Sehat 150,5–250,4; Berbahaya >250,5 (rentang kategori BMKG)",
+            "sekarang": {"t": h["time"][i_now], "pm25": h["pm2_5"][i_now], "pm10": h["pm10"][i_now], "co": h["carbon_monoxide"][i_now], "aod": h["aerosol_optical_depth"][i_now],
+                         "pm25_24j": round(sum(v for v in h["pm2_5"][max(0, i_now - 23):i_now + 1] if v is not None) / max(1, len([v for v in h["pm2_5"][max(0, i_now - 23):i_now + 1] if v is not None])), 1),
+                         "kategori": ispu(sum(v for v in h["pm2_5"][max(0, i_now - 23):i_now + 1] if v is not None) / max(1, len([v for v in h["pm2_5"][max(0, i_now - 23):i_now + 1] if v is not None])))},
+            "harian": harian, "jam": jam}
+
 # ------------------------------------------------------------------ utama
 def update(sites, prov):
     os.makedirs(PDIR, exist_ok=True)
@@ -279,7 +319,10 @@ def update(sites, prov):
                        "dc": [r["dc"] for r in riwayat], "isi": [r["isi"] for r in riwayat], "fwi": [r["fwi"] for r in riwayat],
                        "level": [r["level"] for r in riwayat], "sumber": [r["sumber"] for r in riwayat]},
                       open(os.path.join(PDIR, f'fdrs_{s["id"]}.json'), "w"), separators=(",", ":"))
-            out["lokasi"][s["id"]] = {"hari": hari[:14], "riwayat": riwayat[-45:], "bmkg": bm,
+            ud = udara(s, prov)
+            if not ud:
+                ud = (OLD.get("lokasi", {}).get(s["id"]) or {}).get("udara")
+            out["lokasi"][s["id"]] = {"udara": ud, "hari": hari[:14], "riwayat": riwayat[-45:], "bmkg": bm,
                                       "titik": [round(la, 4), round(lo, 4)], "hari_riwayat": len(riwayat)}
         except Exception as e:
             prov.append({"jenis": "Prakiraan", "lokasi": s["id"], "ok": False, "galat": str(e)[:200]})

@@ -104,7 +104,7 @@ svg{display:block}
 .allsite{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
 .allsite:last-child{border-bottom:0}
 .allsite .m{flex:1;min-width:0}.allsite .m b{display:block;font-size:14px}.allsite .m small{color:var(--muted);font-size:12px}
-.risk7{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;font-weight:600}
+.risk7{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-top:8px;font-size:12.5px;font-weight:600}
 .risk7 .lvp{margin:0}
 .legend-l{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 
@@ -815,7 +815,7 @@ $('#abT').onclick=()=>{if(!$('#appbar').classList.contains('stack')&&SITES.lengt
 
 /* ---------- prakiraan & peringatan dini ---------- */
 const LVN=['Rendah','Sedang','Tinggi','Ekstrem'];const HARI=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];const HARIP=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-const ADV=['Kondisi lembap, peluang api menyala kecil. Patroli rutin.','Bahan bakar mulai kering di tempat terbuka. Awasi pembakaran ladang dan jaga api tetap terkendali.','Rumput dan serasah mudah terbakar. Tingkatkan patroli, tunda pembakaran lahan, siapkan alat pemadam.','Sangat mudah menyala dan sulit dipadamkan. Siagakan regu, larang pembakaran, waspada asap di lahan gambut.'];
+const FFM=['Peluang api mulai menyala rendah.','Peluang api mulai menyala sedang di tempat yang mengering.','Rumput kering mulai mudah tersulut.','Rumput kering sangat mudah terbakar; peluang api menyala sangat tinggi.'];const DCM=['Kondisi musim hujan; kabut asap parah kecil kemungkinannya.','Kondisi kemarau normal; pembakaran perlu diatur dan dipantau.','Puncak kemarau; pembakaran di lahan gambut perlu dibatasi.','Kekeringan mendekati bencana; kabut asap parah sangat mungkin, larangan pembakaran total perlu diberlakukan.'];
 const dName=d=>{const x=new Date(d+'T00:00:00Z');return {s:HARI[x.getUTCDay()],l:HARIP[x.getUTCDay()],t:`${x.getUTCDate()} ${BULAN[x.getUTCMonth()]}`};};
 function fcDays(L){const bm={};if(L.bmkg&&L.bmkg.fdrs)for(const x of L.bmkg.fdrs)bm[x.tanggal]=x;const bh={};if(L.bmkg)for(const x of L.bmkg.harian||[])bh[x.tanggal]=x;
   return (L.hari||[]).map(h=>{const b=bm[h.tanggal];return {...h,lvE:h.level,lvB:b?b.level:null,lv:Math.max(h.level,b?b.level:0),bmD:bh[h.tanggal]||null,bmI:b||null};});}
@@ -834,7 +834,8 @@ function renderFC(){
   if(!SITE)return;const L=fcSite(SITE.id);const box=$('#fcBody');
   // ringkasan di beranda
   const rk=riskOf(SITE.id),el=$('#stRisk');
-  if(rk){const dn=dName(rk.day.tanggal);el.hidden=false;el.innerHTML=`<span>Bahaya kebakaran 7 hari:</span>${lvp(rk.lv)}<span style="opacity:.85">${rk.lv?`puncak ${dn.l} ${dn.t}`:''} ›</span>`;el.onclick=e=>{e.stopPropagation();go('fc');};}else el.hidden=true;
+  const UD=L&&L.udara&&L.udara.sekarang;
+  if(rk){const dn=dName(rk.day.tanggal);el.hidden=false;el.innerHTML=`<span>Bahaya kebakaran 7 hari:</span>${lvp(rk.lv)}<span style="opacity:.85">${rk.lv?`puncak ${dn.l} ${dn.t}`:''}</span>${UD&&window.FHUdara?`<span style="flex-basis:100%;height:0"></span><span>Kualitas udara:</span><span class="lvp" style="margin:0;background:${FHUdara.COL[UD.kategori]}">${FHUdara.KAT[UD.kategori]}</span><span style="opacity:.85">PM2.5 ${Math.round(UD.pm25_24j??UD.pm25)} µg/m³ ›</span>`:''}`;el.onclick=e=>{e.stopPropagation();go('fc');};}else el.hidden=true;
   if(!L){box.innerHTML='<div class="empty">Prakiraan untuk lokasi ini belum tersedia. Akan muncul setelah pembaruan otomatis berikutnya.</div>';return;}
   const DA=fcDays(L),D=DA.slice(0,7);const mx=Math.max(...D.map(d=>d.lv));const pk=D.find(d=>d.lv===mx);const pn=dName(pk.tanggal);
   const upd=new Date(FC.diperbarui_utc);
@@ -851,11 +852,12 @@ function renderFC(){
   box.innerHTML=`
   <div class="fc-hero" style="background:${grad}"><div class="ey">Peringatan dini bahaya kebakaran · 7 hari</div><div class="lv">${LVN[mx].toUpperCase()}</div>
    <div style="font-size:13px;font-weight:600;opacity:.95">${esc(SITE.hd_nama)} · tingkat tertinggi ${mx?`pada ${pn.l}, ${pn.t}`:'sepanjang minggu'}</div>
-   <p>${ADV[mx]}</p>
+   <p>${FFM[Math.max(...D.map(d=>Math.max(d.k_ffmc,d.bmI?d.bmI.k_ffmc:0)))]} ${DCM[Math.max(...D.map(d=>Math.max(d.k_dc,d.bmI?d.bmI.k_dc:0)))]}</p><p style="font-size:11px;opacity:.8;margin-top:4px">Arti kelas menurut FDRS Indonesia (de Groot dkk. 2006).</p>
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;position:relative;z-index:1">
     <div style="background:rgba(0,0,0,.16);border-radius:12px;padding:8px 10px"><div style="font-size:11px;opacity:.85">Penyulutan permukaan (FFMC)</div><b>${LVN[Math.max(...D.map(d=>Math.max(d.k_ffmc,d.bmI?d.bmI.k_ffmc:0)))]}</b></div>
     <div style="background:rgba(0,0,0,.16);border-radius:12px;padding:8px 10px"><div style="font-size:11px;opacity:.85">Kekeringan dalam / gambut (DC)</div><b>${LVN[Math.max(...D.map(d=>Math.max(d.k_dc,d.bmI?d.bmI.k_dc:0)))]}</b></div></div>
    <span class="pk">Diperbarui ${hhmm(upd)} WIB · BMKG + ECMWF</span></div>
+  <div class="h2">Kualitas udara &amp; asap</div><div class="card">${window.FHUdara?FHUdara.html(L.udara):''}</div>
   <div class="h2">${DA.length} hari ke depan</div>
   <div class="fc-days">${DA.map((d,i)=>{const dn=dName(d.tanggal);return `${i===7?`<div class="fc-sep"><b>Hari 8–${DA.length}</b>kecenderungan<br>keyakinan lebih rendah</div>`:''}<div class="fc-day${i>=7?' far':''}" style="border-top-color:${lvCol(d.lv)}"><div class="dn">${d.tanggal===D[0].tanggal?'Hari ini':dn.s}</div><div class="dd">${dn.t}</div>
     <div class="ic">${wxIcon(d.kode_cuaca,d.hujan)}</div><div class="tt">${Math.round(d.tmaks)}°<span> / ${Math.round(d.tmin)}°</span></div><div class="rr">${N1(d.hujan)} mm</div>
@@ -978,16 +980,16 @@ const PAGES={
    const s7=C.hujan.slice(n-7).reduce((a,b)=>a+(b||0),0),s30=L30.reduce((a,i)=>a+(C.hujan[i]||0),0);
    const t7=C.tmaks.slice(n-7).reduce((a,b)=>a+(b||0),0)/7,rh7=C.rh.slice(n-7).reduce((a,b)=>a+(b||0),0)/7;
    const dry=C.hujan.slice(0).reverse().findIndex(v=>(v||0)>=1);
-   const risk=s7<10?['crit','Kering','Risiko kebakaran meningkat. Tingkatkan patroli dan hindari pembakaran lahan.']:s7<50?['warn','Sedang','Hujan ada tetapi belum merata. Tetap waspada.']:['ok','Basah','Curah hujan tinggi, risiko kebakaran rendah.'];
+   const FL=fcSite(SITE.id),FD=FL?fcDays(FL)[0]:null;
    const mon=[...Array(12)].map((_,m)=>{const ys=new Set();let s=0;C.t.forEach((t,i)=>{if(t>='2001'&&t<'2026'&&+t.slice(5,7)===m+1){s+=C.hujan[i]||0;ys.add(t.slice(0,4));}});return Math.round(s/Math.max(1,ys.size));});
    const hm=[...Array(12)].fill(0);if(STATS){/* pola bulanan dari kejadian ≤25 km */for(const e of EVENTS)if(evZ(e)<=3)hm[+e.mulai_wib.slice(5,7)-1]+=e.jumlah_deteksi;}
    REDRAW=draw;
-   $('#pageBody').innerHTML=`<div class="risk" style="background:var(--${risk[0]}-soft)"><span class="ico-sq" style="background:var(--${risk[0]})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c1 4.5 7 6.5 7 13a7 7 0 0 1-14 0c0-3.6 2.3-5.6 3.5-6.8 0 2.2 1.1 3.5 2.4 3.5 0-3.6.1-6.7 1.1-9.7z"/></svg></span><div><b>Kondisi ${risk[1]}</b><div class="small">${risk[2]}</div></div></div>
-   <p class="small muted" style="margin:6px 4px 0">Indikasi sederhana dari total hujan 7 hari (bukan indeks resmi FDRS/BMKG).</p>
+   $('#pageBody').innerHTML=`${FD?`<div class="risk" style="background:${lvCol(FD.lv)}22"><span class="ico-sq" style="background:${lvCol(FD.lv)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c1 4.5 7 6.5 7 13a7 7 0 0 1-14 0c0-3.6 2.3-5.6 3.5-6.8 0 2.2 1.1 3.5 2.4 3.5 0-3.6.1-6.7 1.1-9.7z"/></svg></span><div><b>Bahaya kebakaran hari ini: ${LVN[FD.lv]}</b><div class="small">${FFM[FD.k_ffmc]} ${DCM[FD.k_dc]}</div></div></div>
+   <p class="small muted" style="margin:6px 4px 0">Indeks FDRS (Fire Weather Index) dari prakiraan BMKG & ECMWF; arti kelas menurut de Groot dkk. (2006). Rincian di menu Prakiraan.</p>`:''}
    <div class="stat3" style="margin-top:12px"><div class="card"><b>${N1(s7)}</b><span>mm hujan 7 hari</span></div><div class="card"><b>${N1(t7)}°</b><span>suhu maks rata-rata</span></div><div class="card"><b>${Math.round(rh7)}%</b><span>kelembapan rata-rata</span></div></div>
    <div class="h2">Hujan harian 30 hari</div><div class="card chart">${barChart(L30.map(i=>+C.t[i].slice(8)),[{c:'#3B6FD1',v:L30.map(i=>Math.round((C.hujan[i]||0)*10)/10)}],{h:170,every:5})}<p class="small muted" style="margin:6px 0 0">Total ${N1(s30)} mm · data s.d. ${C.t[last]}${dry>0?` · ${dry} hari terakhir tanpa hujan berarti`:''}</p></div>
    <div class="h2">Musim kebakaran</div><div class="card chart">${barChart(BULAN,[{c:css('--accent'),v:hm}],{h:190,line:{c:'#3B6FD1',v:mon}})}<div class="legend"><span><i style="background:${css('--accent')}"></i>Deteksi ≤ 25 km (2001–kini)</span><span><i style="background:#3B6FD1"></i>Hujan normal (mm/bulan)</span></div>
-   <p class="small" style="margin:10px 0 0">Titik panas paling banyak muncul saat bulan kering (Juli–September) ketika curah hujan turun; pada bulan basah titik panas hampir tidak ada.</p></div>
+   <p class="small" style="margin:10px 0 0">${(()=>{const tot=hm.reduce((a,b)=>a+b,0);if(!tot)return 'Belum ada deteksi ≤ 25 km untuk menghitung pola bulanan.';const top=hm.map((v,k)=>[v,k]).sort((a,b)=>b[0]-a[0]).slice(0,3).filter(x=>x[0]);const dryM=mon.map((v,k)=>[v,k]).sort((a,b)=>a[0]-b[0]).slice(0,3);return `Berdasarkan data lokasi ini: deteksi terbanyak pada bulan ${top.map(x=>BULAN[x[1]]+' ('+N(x[0])+')').join(', ')}; bulan dengan hujan normal terendah ${dryM.map(x=>BULAN[x[1]]+' ('+N(x[0])+' mm)').join(', ')}.`;})()}</p></div>
    <p class="small muted" style="margin:12px 4px">Sumber: ${esc(C.sumber)} · lokasi ${esc(C.lokasi)}.</p>`;};
   openPage('Cuaca &amp; Musim Api','Curah hujan ERA5 · Desa '+dNm(),'',draw);
  },
@@ -1070,5 +1072,6 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(
 </script>
 <script src="assets/laporan.js"></script>
 <script src="assets/riwayat_cuaca.js"></script>
+<script src="assets/udara.js"></script>
 </body>
 </html>
