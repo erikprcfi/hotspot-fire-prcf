@@ -6,6 +6,8 @@
 'use strict';
 const BASE = 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/';
 const LAYERS = [
+  { id: 'fire', nm: 'Titik api satelit NASA (VIIRS & MODIS)', short: 'Titik api NASA FIRMS', wms: 'VIIRS_NOAA20_Thermal_Anomalies_375m_All,VIIRS_NOAA21_Thermal_Anomalies_375m_All,VIIRS_SNPP_Thermal_Anomalies_375m_All,MODIS_Combined_Thermal_Anomalies_All', op: 1, days: 2, today: true,
+    desc: 'Deteksi titik api/titik panas resmi NASA FIRMS dari semua satelit VIIRS dan MODIS, untuk seluruh dunia (hari terpilih dan hari sebelumnya). Berguna untuk lokasi di luar Kapuas Hulu.', since: '2025-10-01', legend: null },
   { id: 'true', nm: 'Citra satelit harian (warna asli)', short: 'Citra harian VIIRS', gibs: 'VIIRS_NOAA20_CorrectedReflectance_TrueColor', m: 'GoogleMapsCompatible_Level9', ext: 'jpg', z: 9, op: 1,
     desc: 'Foto satelit hari itu (VIIRS NOAA-20; sebelum 2018: MODIS Terra): asap, awan, dan bekas terbakar besar terlihat langsung. Resolusi ±250–375 m.', since: '2000-02-24', legend: null,
     pick: d => d < '2018-01-01' ? { gibs: 'MODIS_Terra_CorrectedReflectance_TrueColor', short: 'Citra harian MODIS Terra' } : null },
@@ -35,16 +37,17 @@ function create(map, opt = {}) {
     const days = L0.days || 1; layer = L.layerGroup();
     for (let k = days - 1; k >= 0; k--) {  // hari paling baru digambar paling atas
       const d = addDay(date, -k);
-      L.tileLayer(`${BASE}${id}/default/${d}/${L0.m}/{z}/{y}/{x}.${L0.ext}`, { pane: 'nasa', maxNativeZoom: L0.z, maxZoom: 18, tileSize: 256,
-        attribution: k === 0 ? `NASA GIBS · ${(alt && alt.short) || L0.short} · ${days > 1 ? addDay(date, 1 - days) + ' s.d. ' : ''}${date}` : '' }).addTo(layer);
+      const att = k === 0 ? `NASA GIBS · ${(alt && alt.short) || L0.short} · ${days > 1 ? addDay(date, 1 - days) + ' s.d. ' : ''}${date}` : '';
+      if (L0.wms) L.tileLayer.wms('https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi', { layers: L0.wms, format: 'image/png', transparent: true, version: '1.3.0', time: d, pane: 'nasa', attribution: att }).addTo(layer);
+      else L.tileLayer(`${BASE}${id}/default/${d}/${L0.m}/{z}/{y}/{x}.${L0.ext}`, { pane: 'nasa', maxNativeZoom: L0.z, maxZoom: 18, tileSize: 256, attribution: att }).addTo(layer);
     }
     layer.addTo(map); fire();
   }
   const api = {
     LAYERS, get id() { return cur; }, get date() { return date; }, get layer() { return LAYERS.find(l => l.id === cur) || null; }, get label() { const L0 = LAYERS.find(l => l.id === cur); if (!L0) return ''; const alt = L0.pick ? L0.pick(date) : null; return (alt && alt.short) || L0.short; },
-    set(id) { cur = id || null; const L0 = LAYERS.find(l => l.id === cur); if (L0 && date < L0.since) date = L0.since; try { localStorage.setItem('fh_nasa', JSON.stringify({ id: cur })); } catch (e) { } draw(); },
-    setDate(d) { const max = yesterdayWIB(); const L0 = LAYERS.find(l => l.id === cur); if (d > max) d = max; if (L0 && d < L0.since) d = L0.since; date = d; draw(); },
-    step(n) { api.setDate(addDay(date, n)); }, maxDate: yesterdayWIB, onChange(f) { subs.push(f); }
+    set(id) { cur = id || null; const L0 = LAYERS.find(l => l.id === cur); if (L0 && L0.today && date === yesterdayWIB()) date = iso(new Date(Date.now() + 7 * 36e5)); if (L0 && !L0.today && date > yesterdayWIB()) date = yesterdayWIB(); if (L0 && date < L0.since) date = L0.since; try { localStorage.setItem('fh_nasa', JSON.stringify({ id: cur })); } catch (e) { } draw(); },
+    setDate(d) { const L0 = LAYERS.find(l => l.id === cur); const max = L0 && L0.today ? iso(new Date(Date.now() + 7 * 36e5)) : yesterdayWIB(); if (d > max) d = max; if (L0 && d < L0.since) d = L0.since; date = d; draw(); },
+    step(n) { api.setDate(addDay(date, n)); }, maxDate: () => { const L0 = LAYERS.find(l => l.id === cur); return L0 && L0.today ? iso(new Date(Date.now() + 7 * 36e5)) : yesterdayWIB(); }, onChange(f) { subs.push(f); }
   };
   return api;
 }

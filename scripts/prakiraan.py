@@ -255,6 +255,52 @@ def udara(site, prov):
                          "kategori": ispu(sum(v for v in h["pm2_5"][max(0, i_now - 23):i_now + 1] if v is not None) / max(1, len([v for v in h["pm2_5"][max(0, i_now - 23):i_now + 1] if v is not None])))},
             "harian": harian, "jam": jam}
 
+# ------------------------------------------------------------------ prakiraan musiman (ECMWF SEAS5)
+def musiman(site, prov, old):
+    """Curah hujan bulanan 3 bulan ke depan dari 51 anggota ensemble ECMWF SEAS5, dibandingkan dengan
+    normal ERA5 2001–2025 di titik yang sama. Diperbarui sekali sehari."""
+    today = datetime.date.today().isoformat()
+    if old and old.get("diambil", "")[:10] == today:
+        return old
+    la, lo = site["pusat_wilayah"]
+    url = f"https://seasonal-api.open-meteo.com/v1/seasonal?latitude={la:.3f}&longitude={lo:.3f}&daily=precipitation_sum&forecast_days=183&models=ecmwf_seas5&timezone={TZ}"
+    try:
+        d, sha = get(url, timeout=120)
+    except Exception as e:
+        prov.append({"jenis": "Musiman: ECMWF SEAS5", "lokasi": site["id"], "url": url, "ok": False, "galat": str(e)[:200]}); return old
+    D = d["daily"]; mem = [k for k in D if k.startswith("precipitation_sum_member")]
+    cf = os.path.join(DATA, "cuaca.json" if site["id"] == "nangalauk" else f'cuaca_{site["id"]}.json')
+    C = json.load(open(cf))
+    def norm(m):  # total hujan bulan m per tahun 2001–2025 (ERA5)
+        tot = {}
+        for t, r in zip(C["t"], C["hujan"]):
+            if "2001" <= t[:4] <= "2025" and int(t[5:7]) == m and r is not None:
+                tot[t[:4]] = tot.get(t[:4], 0) + r
+        return sorted(tot.values())
+    months = []
+    first = (datetime.date.today().replace(day=1) + datetime.timedelta(days=32)).replace(day=1)
+    for k in range(3):
+        y, m = first.year + (first.month - 1 + k) // 12, (first.month - 1 + k) % 12 + 1
+        key = f"{y}-{m:02d}"; idx = [i for i, t in enumerate(D["time"]) if t.startswith(key)]
+        import calendar
+        if len(idx) < calendar.monthrange(y, m)[1]:
+            break
+        tots = sorted(sum((D[c][i] or 0) for i in idx) for c in mem if all(D[c][i] is not None for i in idx))
+        if len(tots) < 20:
+            break
+        q = lambda a, p: a[min(len(a) - 1, max(0, int(round(p * (len(a) - 1)))))]
+        N = norm(m); t1, t2 = q(N, 1 / 3), q(N, 2 / 3)
+        months.append({"bulan": key, "median": round(q(tots, .5)), "p10": round(q(tots, .1)), "p90": round(q(tots, .9)),
+                       "normal": round(sum(N) / len(N)), "normal_min": round(N[0]), "normal_maks": round(N[-1]), "tersil_bawah": round(t1), "tersil_atas": round(t2),
+                       "peluang_bawah_normal": round(100 * sum(v < t1 for v in tots) / len(tots)),
+                       "peluang_normal": round(100 * sum(t1 <= v <= t2 for v in tots) / len(tots)),
+                       "peluang_atas_normal": round(100 * sum(v > t2 for v in tots) / len(tots)), "anggota": len(tots), "tahun_normal": len(N)})
+    prov.append({"jenis": "Musiman: ECMWF SEAS5", "lokasi": site["id"], "url": url, "ok": True, "sha256": sha})
+    return {"diambil": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "url": url,
+            "sumber": "ECMWF SEAS5 (sistem prakiraan musiman ECMWF/Copernicus C3S), 51 anggota ensemble, via Open-Meteo Seasonal API; normal = ERA5 2001–2025 di titik yang sama",
+            "catatan": "Peluang dihitung dari jumlah anggota ensemble yang jatuh di bawah/di antara/di atas tersil normal ERA5. Belum dikoreksi bias model terhadap ERA5; gunakan sebagai kecenderungan dan bandingkan dengan Prakiraan Hujan Bulanan resmi BMKG.",
+            "bulan": months}
+
 # ------------------------------------------------------------------ utama
 def update(sites, prov):
     os.makedirs(PDIR, exist_ok=True)
@@ -319,10 +365,11 @@ def update(sites, prov):
                        "dc": [r["dc"] for r in riwayat], "isi": [r["isi"] for r in riwayat], "fwi": [r["fwi"] for r in riwayat],
                        "level": [r["level"] for r in riwayat], "sumber": [r["sumber"] for r in riwayat]},
                       open(os.path.join(PDIR, f'fdrs_{s["id"]}.json'), "w"), separators=(",", ":"))
+            ms = musiman(s, prov, (OLD.get("lokasi", {}).get(s["id"]) or {}).get("musiman"))
             ud = udara(s, prov)
             if not ud:
                 ud = (OLD.get("lokasi", {}).get(s["id"]) or {}).get("udara")
-            out["lokasi"][s["id"]] = {"udara": ud, "hari": hari[:14], "riwayat": riwayat[-45:], "bmkg": bm,
+            out["lokasi"][s["id"]] = {"musiman": ms, "udara": ud, "hari": hari[:14], "riwayat": riwayat[-45:], "bmkg": bm,
                                       "titik": [round(la, 4), round(lo, 4)], "hari_riwayat": len(riwayat)}
         except Exception as e:
             prov.append({"jenis": "Prakiraan", "lokasi": s["id"], "ok": False, "galat": str(e)[:200]})
