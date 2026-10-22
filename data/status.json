@@ -1,5 +1,5 @@
 {
- "terakhir_cek_utc": "2026-10-22T03:00:20Z",
+ "terakhir_cek_utc": "2026-10-22T03:38:13Z",
  "titik_baru": 0,
  "arsip_tahunan_diperbarui": 0,
  "jumlah_catatan": 70834,
@@ -91,6 +91,36 @@
    "baris_di_kotak": 10
   }
  ],
+ "cakupan": {
+  "NRT VIIRS S-NPP 375 m": [
+   "2026-10-14",
+   "2026-10-18"
+  ],
+  "NRT VIIRS NOAA-20 375 m": [
+   "2026-10-14",
+   "2026-10-20"
+  ],
+  "NRT VIIRS NOAA-21 375 m": [
+   "2026-10-15",
+   "2026-10-21"
+  ],
+  "NRT MODIS Terra/Aqua 1 km": [
+   "2026-10-15",
+   "2026-10-21"
+  ],
+  "SP MODIS Terra/Aqua 1 km": [
+   "2001-02-25",
+   "2025-12-19"
+  ],
+  "SP VIIRS S-NPP 375 m": [
+   "2012-01-29",
+   "2025-12-11"
+  ],
+  "SP VIIRS NOAA-20 375 m": [
+   "2018-04-01",
+   "2025-12-25"
+  ]
+ },
  "sumber_doi": {
   "VIIRS_SNPP": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002",
   "VIIRS_NOAA20": "10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002",

@@ -427,6 +427,35 @@ def _year_exports(recs, years_changed, pt_geom):
             write_shp_zip(f, f"titik_panas_kapuashulu_{y}", shapefile.POINT, SHP_PT, rows, pt_values, pt_geom, PRJ_WGS)
 
 # ------------------------------------------------------------------ website
+WEB_COLS = ["d", "t", "wib", "lat", "lon", "sen", "sat", "conf", "frp", "bt", "dn", "z", "km", "pt", "kw", "tl", "gb", "st", "ev", "ha", "kab", "uid"]
+def coverage(recs):
+    """Rentang data per jenis: arsip final (SP) per sensor dan NRT."""
+    out = {}
+    for r in recs.values():
+        k = ("SP " if r["status_data"] == "SP" else "NRT ") + r["sensor"]
+        a = out.setdefault(k, [r["acq_date"], r["acq_date"]])
+        a[0] = min(a[0], r["acq_date"]); a[1] = max(a[1], r["acq_date"])
+    return out
+
+def web_years(recs, years):
+    """Data ringkas per tahun untuk pembuat laporan di website (tanpa titik di luar Kapuas Hulu & tipe 1-3)."""
+    wd = os.path.join(DATA, "web"); os.makedirs(wd, exist_ok=True)
+    by = defaultdict(list)
+    for r in recs.values():
+        if r["zona"] == "Luar Kapuas Hulu" or r.get("type") in ("1", "2", "3"):
+            continue
+        by[r["acq_date"][:4]].append(r)
+    for y, rows in by.items():
+        f = os.path.join(wd, f"{y}.json")
+        if y not in years and os.path.exists(f):
+            continue
+        rows.sort(key=lambda r: (r["acq_date"], r["acq_time"]))
+        data = [[r["acq_date"], r["acq_time"], r["waktu_wib"], round(num(r["latitude"]), 5), round(num(r["longitude"]), 5), r["sensor"],
+                 r["satellite"], r["confidence"], num(r["frp"]), num(r["brightness"]), r["daynight"], ZONES.index(r["zona"]),
+                 round(num(r["jarak_desa_km"]), 2), r["petak"], r["fungsi_kawasan"], r["tutupan_2026"], r["gambut"], r["status_data"],
+                 r["id_kejadian"], num(r["luas_piksel_ha"]), r["kabupaten"], r["uid"]] for r in rows]
+        json.dump({"kolom": WEB_COLS, "zona": ZONES, "baris": data}, open(f, "w"), separators=(",", ":"), ensure_ascii=False)
+
 def site_files(recs, events, prov, archive_years, n_new, sp_changed):
     cutoff = (NOW - datetime.timedelta(days=400)).strftime("%Y-%m-%d")
     pts = [{"k": r["uid"], "la": float(r["latitude"]), "lo": float(r["longitude"]), "d": r["acq_date"], "t": r["acq_time"],
@@ -453,6 +482,7 @@ def site_files(recs, events, prov, archive_years, n_new, sp_changed):
               "jumlah_catatan": len(recs), "jumlah_sp": n_sp, "jumlah_nrt": len(recs) - n_sp,
               "rentang": [min(r["acq_date"] for r in recs.values()), max(r["acq_date"] for r in recs.values())],
               "tahun_arsip": archive_years, "sumber": [p for p in prov if p.get("jenis") == "NRT 7 hari"],
+              "cakupan": coverage(recs),
               "sumber_doi": {k: v["doi"] for k, v in SENSORS.items()},
               "ekspor": sorted(os.path.basename(f) for f in glob.glob(os.path.join(EXP, "*")))}
     json.dump(status, open(os.path.join(DATA, "status.json"), "w"), indent=1, ensure_ascii=False)
@@ -479,6 +509,7 @@ def main():
     with open(os.path.join(PROV, NOW.strftime("%Y-%m") + ".jsonl"), "a", encoding="utf-8") as fh:
         fh.write(json.dumps({"waktu_utc": NOW_S, "titik_baru": n_new, "arsip_tahunan_diperbarui": sp_changed, "sumber": prov},
                             ensure_ascii=False) + "\n")
+    web_years(recs, set(years) if (full or sp_changed) else changed_years)
     site_files(recs, events, prov, years, n_new, sp_changed)
     ok = sum(1 for p in prov if p.get("jenis") == "NRT 7 hari" and p.get("ok"))
     print(f"{NOW_S}: {n_new} titik NRT baru, {sp_changed} arsip tahunan diperbarui, {len(recs)} catatan, {len(events)} kejadian, {ok}/4 sumber NRT OK")
