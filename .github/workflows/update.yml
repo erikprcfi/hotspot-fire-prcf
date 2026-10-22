@@ -25,10 +25,15 @@ jobs:
         with:
           python-version: "3.12"
       - name: Pasang pustaka
-        run: pip install shapely==2.0.6 pyproj==3.7.0 pyshp==2.3.1
+        run: pip install shapely==2.0.6 pyproj==3.7.0 pyshp==2.3.1 rasterio==1.4.3 scipy==1.14.1 pillow==11.0.0
       - name: Unduh & olah data NASA FIRMS
         if: github.event_name != 'push'
         run: python scripts/pipeline.py
+      - name: Bekas terbakar dari Sentinel-2 (bertahap, maks. 20 menit per run)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        timeout-minutes: 30
+        run: python scripts/bekas_terbakar.py --menit 20
       - name: Simpan perubahan data
         if: github.event_name != 'push'
         run: |

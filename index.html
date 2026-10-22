@@ -414,6 +414,9 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 30px;justify-content:space-bet
       <button type="button" class="btn" id="histmap" aria-pressed="false">Tampilkan kejadian di peta</button>
     </div>
     <div class="tw" style="max-height:440px;overflow:auto"><table class="t" id="etable"><thead><tr><th>ID kejadian</th><th>Mulai (WIB)</th><th>Deteksi</th><th>Zona</th><th>Petak</th><th>Tutupan 2026</th><th>Gambut</th><th>Kawasan</th><th>Cakupan piksel (ha)</th></tr></thead><tbody></tbody></table></div>
+      <h3 style="margin:22px 0 4px;font-size:16px">Luas bekas terbakar dari citra Sentinel-2 (≤ 5 km, sejak 2023)</h3>
+    <p class="rp-note" style="margin:0 0 8px">Indikasi dari perubahan Normalized Burn Ratio (dNBR ≥ 0,27, Key &amp; Benson 2006) yang disertai kenaikan SWIR, konsisten di ≥ 2 citra, ≤ 1 km dari deteksi NASA FIRMS, petak ≥ 0,5 ha. Perlu verifikasi lapangan. Poligon: lapisan peta "Bekas terbakar" &amp; unduhan SHP.</p>
+    <div id="btBox"><p class="rp-note">Memuat…</p></div>
   </section>
 
   <section class="card sec" id="buat-laporan">
@@ -567,7 +570,10 @@ const lg=L.control({position:'bottomleft'});
 lg.onAdd=()=>{const d=L.DomUtil.create('div','lgd');d.innerHTML=`<div><i style="border-color:#FF3B30"></i>Hutan Desa</div><div><i style="border-color:#FFE14D"></i>Batas desa</div><div><i style="border-color:${css('--z-5')};border-top-style:dashed"></i>Radius 5 km</div><div><i style="border-color:${css('--z-25')};border-top-style:dashed"></i>Radius 25 km</div><div><i style="border-color:#4A90C8"></i>Sungai utama</div>`;return d;};
 lg.addTo(map);
 L.control.scale({imperial:false,position:'bottomright'}).addTo(map);
-L.control.layers({'Citra satelit (Esri)':esri,'OpenStreetMap':osm},{'Sentinel-2 10 Agu 2026':s2},{position:'topright'}).addTo(map);
+const BTL=L.geoJSON(null,{style:f=>({color:{'rendah–sedang':'#FFB000','sedang–tinggi':'#FF6A00','tinggi':'#D7191C'}[f.properties.keparahan]||'#FF6A00',weight:1,fillOpacity:.55}),onEachFeature:(f,l)=>{const p=f.properties;l.bindPopup(`<div class="pop"><h3>Bekas terbakar</h3><table><tr><td>Lokasi</td><td>${esc(p.hd)}</td></tr><tr><td>Luas petak</td><td>${p.luas_ha} ha</td></tr><tr><td>Keparahan</td><td>${esc(p.keparahan)}</td></tr><tr><td>Musim api</td><td>${esc(p.awal_api)} – ${esc(p.akhir_api)}</td></tr></table><p style="font-size:11px;color:var(--muted)">${esc(p.metode)}. Indikasi dari citra; perlu verifikasi lapangan.</p></div>`);}});
+map.on('overlayadd',e=>{if(e.layer===BTL&&!BTL._loaded){BTL._loaded=1;fetch('data/bekas_terbakar/bekas_terbakar.geojson').then(r=>r.json()).then(g=>BTL.addData(g)).catch(()=>{});}});
+const TCL=L.tileLayer('https://tiles.globalforestwatch.org/umd_tree_cover_loss/latest/dynamic/{z}/{x}/{y}.png',{maxNativeZoom:12,maxZoom:18,opacity:.85,attribution:'Hansen/UMD/Google/USGS/NASA · Global Forest Watch'});
+L.control.layers({'Citra satelit (Esri)':esri,'OpenStreetMap':osm},{'Sentinel-2 10 Agu 2026':s2,'Bekas terbakar (Sentinel-2, sejak 2023)':BTL,'Kehilangan tutupan pohon 2001–2025 (GFW/UMD)':TCL},{position:'topright'}).addTo(map);
 const NASA=FHNasa.create(map); FHNasa.control(map,NASA,'topleft');
 const ptsL=L.layerGroup().addTo(map);
 
@@ -578,6 +584,14 @@ for(const b of document.querySelectorAll('#range button'))b.addEventListener('cl
 try{const r=localStorage.getItem('pa_range');if(r!==null){RANGE=+r;for(const b of document.querySelectorAll('#range button'))b.setAttribute('aria-pressed',String(+b.dataset.d===RANGE));}}catch(e){}
 document.getElementById('vNL').onclick=()=>map.fitBounds(desaB,{padding:[10,10]});
 document.getElementById('v25').onclick=()=>map.fitBounds(b25,{padding:[10,10]});
+/* ---------- bekas terbakar ---------- */
+let BTI=null;
+function btTable(){const box=document.getElementById('btBox');if(!box||!SITE)return;
+  const go=()=>{const M=Object.values((BTI&&BTI.musim)||{}).filter(m=>m.lokasi===SITE.id).sort((a,b)=>b.awal.localeCompare(a.awal));
+    const N1=v=>Number(v).toLocaleString('id-ID',{minimumFractionDigits:1,maximumFractionDigits:1});
+    box.innerHTML=M.length?`<div class="tw"><table class="t"><thead><tr><th>Musim api</th><th>Kejadian</th><th>Luas terbakar (ha)</th><th>Rendah–sedang</th><th>Sedang–tinggi</th><th>Tinggi</th><th>Wilayah cerah</th><th>Citra sebelum → sesudah</th></tr></thead><tbody>${M.map(m=>`<tr><td>${esc(m.awal)} – ${esc(m.akhir)}</td><td>${m.n_kejadian}</td>${m.status==='selesai'?`<td><b>${N1(m.luas_ha)}</b></td><td>${N1(m.luas_rendah_sedang_ha)}</td><td>${N1(m.luas_sedang_tinggi_ha)}</td><td>${N1(m.luas_tinggi_ha)}</td><td>${m.cerah_persen}%</td><td style="font-size:11px">${esc(m.tanggal_sebelum.join(', '))} → ${esc(m.tanggal_sesudah.join(', '))}</td>`:`<td colspan="6" style="color:var(--muted)">${esc(m.status)} – dicoba ulang otomatis</td>`}</tr>`).join('')}</tbody></table></div>`:'<p class="rp-note">Belum ada musim api ≤ 5 km sejak 2023 untuk lokasi ini.</p>';};
+  if(BTI)return go();fetch('data/bekas_terbakar/indeks.json?'+Date.now()).then(r=>r.ok?r.json():{musim:{}}).then(j=>{BTI=j;go();}).catch(()=>{BTI={musim:{}};go();});}
+
 /* ---------- prakiraan & peringatan dini ---------- */
 let FCD=null;
 const LVN=['Rendah','Sedang','Tinggi','Ekstrem'],HARIP=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
@@ -640,7 +654,7 @@ function setSite(id,fly){
   document.getElementById('heroEye').textContent=`Desa ${SITE.desa_nama} · Kec. ${SITE.kec} · Kab. Kapuas Hulu · Kalimantan Barat`;
   document.title=`Fire Hotspot · ${SITE.hd_nama}`;
   siteLayers(); if(fly)map.flyToBounds(b25,{padding:[10,10],duration:.8}); else map.fitBounds(desaB,{padding:[10,10]});
-  reclass(); siteBar(); render(); kpis(); histChart(); eventTable(); histLayer(); fillSources(); renderFCw();
+  reclass(); siteBar(); render(); kpis(); histChart(); eventTable(); histLayer(); fillSources(); renderFCw(); btTable();
 }
 document.getElementById('vKH').onclick=()=>map.fitBounds(khB,{padding:[10,10]});
 
@@ -787,10 +801,10 @@ function fillSources(){
   document.getElementById('dbsum').textContent=`${nf(STATUS.jumlah_catatan)} deteksi di kotak Kapuas Hulu (${STATUS.rentang[0]} s.d. ${STATUS.rentang[1]}): ${nf(STATUS.jumlah_sp)} dari arsip final NASA (SP) dan ${nf(STATUS.jumlah_nrt)} Near Real-Time.`;
   const ex=STATUS.ekspor||[];
   const id=SITE?SITE.id:'nangalauk';
-  const kind=f=>f.startsWith('titik_panas_')?['Titik panas · '+(SITE?SITE.hd_nama:''),'Desa & radius 25 km, semua tahun']:f.includes('_cakupan_piksel')?['Kejadian api · poligon cakupan piksel','UTM 49N · bukan luas terbakar']:['Kejadian api · titik pusat','Desa & radius 25 km, semua tahun'];
+  const kind=f=>f.startsWith('bekas_terbakar_')?['Bekas terbakar · poligon Sentinel-2','dNBR, sejak 2023 · UTM 49N']:f.startsWith('titik_panas_')?['Titik panas · '+(SITE?SITE.hd_nama:''),'Desa & radius 25 km, semua tahun']:f.includes('_cakupan_piksel')?['Kejadian api · poligon cakupan piksel','UTM 49N · bukan luas terbakar']:['Kejadian api · titik pusat','Desa & radius 25 km, semua tahun'];
   const fmtOf=f=>f.endsWith('_shp.zip')?'SHP':f.split('.').pop().toUpperCase();
   const order={SHP:0,KML:1,GEOJSON:2,CSV:3};
-  const mine=ex.filter(f=>f.startsWith(`titik_panas_${id}_`)||f.startsWith(`kejadian_api_${id}_`));
+  const mine=ex.filter(f=>f.startsWith(`titik_panas_${id}_`)||f.startsWith(`kejadian_api_${id}_`)||f.startsWith(`bekas_terbakar_${id}_`));
   document.getElementById('dlFocus').innerHTML=mine.sort((x,y)=>(y.startsWith('titik')-x.startsWith('titik'))||(x.includes('cakupan')-y.includes('cakupan'))||order[fmtOf(x)]-order[fmtOf(y)]).map(f=>{const k=fmtOf(f),d=kind(f);return `<a class="file" href="data/export/${f}"><span class="badge b-${k.toLowerCase()}">${k}</span><span><b>${esc(d[0])}</b><small>${esc(d[1])}</small></span></a>`;}).join('');
   document.getElementById('dlYear').innerHTML=ex.filter(f=>f.startsWith('titik_panas_kapuashulu_')).sort().reverse().map(f=>`<a href="data/export/${f}">${esc(f.match(/\d{4}/)[0])}</a>`).join('');
   document.getElementById('dlArch').innerHTML=(STATUS.tahun_arsip||[]).slice().reverse().map(y=>`<a href="data/archive/${y}.csv">${y}.csv</a>`).join('')+`<a href="data/provenance/arsip_tahunan_unduhan_awal.json">Jejak audit arsip</a><a href="https://github.com/erikprcfi/hotspot-fire-prcf/tree/main/data/provenance" target="_blank" rel="noopener">Semua jejak audit ↗</a>`;
