@@ -648,7 +648,7 @@ function openChooser(){const N=v=>Number(v).toLocaleString('id-ID');const g=docu
     return `<button type="button" class="chz-card${k===SI?' last':''}" data-id="${x.id}"><span class="th">${thumb(x)}</span><span style="min-width:0"><b>${esc(x.hd_nama)}</b><small>Desa ${esc(x.desa_nama)} · Kec. ${esc(x.kec)}</small><span class="meta"><span><b>${N(Math.round(x.luas_hd_ha))}</b> ha</span><span><b>${c.filter(v=>v<=25).length}</b> titik ≤ 25 km</span>${c.some(v=>v<=5)?`<span><b>${c.filter(v=>v<=5).length}</b> titik ≤ 5 km</span>`:''}</span></span><span class="chz-badge ${st}">${TXT[st]}</span></button>`;}).join('');
   const box=document.getElementById('chz');box.hidden=false;
   for(const b of g.querySelectorAll('.chz-card'))b.onclick=()=>{box.hidden=true;setSite(b.dataset.id,true);document.getElementById('peta')&&window.scrollTo({top:0,behavior:'smooth'});};
-  document.getElementById('chzClose').onclick=()=>{box.hidden=true;};box.onclick=e=>{if(e.target===box)box.hidden=true;};}
+  box.onclick=null;document.body.style.overflow='hidden';for(const b of g.querySelectorAll('.chz-card'))b.addEventListener('click',()=>{document.body.style.overflow='';});g.querySelector('.chz-card')&&g.querySelector('.chz-card').focus({preventScroll:true});}
 function setSite(id,fly){
   SI=Math.max(0,SITES.findIndex(x=>x.id===id));SITE=SITES[SI];if(!SITE)return;
   try{localStorage.setItem('fh_site',JSON.stringify(SITE.id));}catch(e){}
@@ -859,7 +859,7 @@ setInterval(setStatus,60000);
 <div class="chz" id="chz" hidden role="dialog" aria-labelledby="chzT"><div class="chz-box">
   <div class="chz-head"><img class="org-l" src="assets/logo_prcf.jpg" alt="Yayasan PRCF Indonesia"><div class="eyebrow">Fire Hotspot · Kabupaten Kapuas Hulu</div><h2 id="chzT">Pilih Hutan Desa yang ingin dipantau</h2><p>Status dihitung dari titik panas satelit NASA FIRMS 7 hari terakhir terhadap batas desa dan Hutan Desa masing-masing.</p></div>
   <div class="chz-grid" id="chzGrid"></div>
-  <div class="chz-foot"><span>Lokasi dapat diganti kapan saja melalui tombol lokasi di bagian atas halaman.</span><button type="button" class="btn" id="chzClose">Lanjut dengan lokasi terakhir</button></div>
+  <div class="chz-foot"><span><b style="color:var(--fg)">Pilih salah satu Hutan Desa untuk melanjutkan.</b> Hutan Desa lain tetap terlihat di peta, dan lokasi dapat diganti kapan saja melalui tombol lokasi di bagian atas halaman.</span></div>
 </div></div>
 <div class="scrim" id="instScrim" hidden></div>
 <div class="sheet" id="instSheet" hidden role="dialog" aria-labelledby="instT">
