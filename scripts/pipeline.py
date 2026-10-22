@@ -493,6 +493,38 @@ def update_weather(prov):
     json.dump(out, open(f, "w"), separators=(",", ":"), ensure_ascii=False)
     prov.append({"jenis": "Cuaca", "url": url, "ok": True, "ukuran_byte": len(raw), "sha256": out["sha256_unduhan_terakhir"], "hari_baru": len(d["time"])})
 
+def system_health(recs):
+    """Bukti operasional: riwayat pembaruan otomatis, keterlambatan data, dan kelengkapan basis data."""
+    runs = []
+    for f in sorted(glob.glob(os.path.join(PROV, "*.jsonl")))[-3:]:
+        for line in open(f, encoding="utf-8"):
+            try: j = json.loads(line)
+            except Exception: continue
+            src = [x for x in j.get("sumber", []) if "ok" in x and x.get("jenis") in (None, "NRT 7 hari")]
+            runs.append({"t": j.get("waktu_utc") or j.get("waktu_unduh_utc"), "baru": j.get("titik_baru", 0),
+                         "ok": sum(1 for x in src if x.get("ok")), "n": len(src) or 4})
+    runs = [r for r in runs if r["t"]][-24:]
+    lat = []
+    for r in recs.values():
+        if r["status_data"] != "NRT" or r["diunduh_utc"] < "2026-10-22T05:00:00Z":
+            continue  # hanya titik yang tertangkap saat sistem sudah berjalan rutin (bukan isian awal 7 hari)
+        try:
+            acq = datetime.datetime.strptime(r["acq_date"] + r["acq_time"], "%Y-%m-%d%H%M").replace(tzinfo=datetime.timezone.utc)
+            dl = datetime.datetime.strptime(r["diunduh_utc"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)
+        except Exception:
+            continue
+        h = (dl - acq).total_seconds() / 3600
+        if 0 <= h <= 24:
+            lat.append(h)
+    lat.sort()
+    idx_f = os.path.join(PROV, "arsip_tahunan_index.json")
+    cu = os.path.join(DATA, "cuaca.json")
+    return {"riwayat": runs, "jadwal_cron_utc": "17 */3 * * *",
+            "latensi_median_jam": round(lat[len(lat) // 2], 1) if len(lat) >= 5 else None, "latensi_n": len(lat),
+            "arsip_terverifikasi": len(json.load(open(idx_f))) if os.path.exists(idx_f) else 0,
+            "hari_cuaca": len(json.load(open(cu))["t"]) if os.path.exists(cu) else 0,
+            "jumlah_pembaruan_tercatat": sum(1 for f in glob.glob(os.path.join(PROV, "*.jsonl")) for _ in open(f, encoding="utf-8"))}
+
 def site_files(recs, events, prov, archive_years, n_new, sp_changed):
     cutoff = (NOW - datetime.timedelta(days=400)).strftime("%Y-%m-%d")
     pts = [{"k": r["uid"], "la": float(r["latitude"]), "lo": float(r["longitude"]), "d": r["acq_date"], "t": r["acq_time"],
@@ -519,7 +551,7 @@ def site_files(recs, events, prov, archive_years, n_new, sp_changed):
               "jumlah_catatan": len(recs), "jumlah_sp": n_sp, "jumlah_nrt": len(recs) - n_sp,
               "rentang": [min(r["acq_date"] for r in recs.values()), max(r["acq_date"] for r in recs.values())],
               "tahun_arsip": archive_years, "sumber": [p for p in prov if p.get("jenis") == "NRT 7 hari"],
-              "cakupan": coverage(recs),
+              "cakupan": coverage(recs), "sistem": system_health(recs),
               "sumber_doi": {k: v["doi"] for k, v in SENSORS.items()},
               "ekspor": sorted(os.path.basename(f) for f in glob.glob(os.path.join(EXP, "*")))}
     json.dump(status, open(os.path.join(DATA, "status.json"), "w"), indent=1, ensure_ascii=False)

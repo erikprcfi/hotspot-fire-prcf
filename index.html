@@ -222,6 +222,23 @@ code{font-family:var(--f-data);font-size:12px;white-space:nowrap}
 .src p b{color:var(--fg)}
 .src a{color:var(--accent)}
 
+/* ---- system status ---- */
+.sys{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:1000px){.sys{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.sys{grid-template-columns:1fr}}
+.sys .tile{border:1px solid var(--line);border-radius:var(--r-sm);padding:16px;background:var(--surface-2);min-width:0}
+.sys .k{font-size:12px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:8px}
+.sys .v{font-size:22px;font-weight:800;letter-spacing:-.02em;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.sys .s{font-size:12.5px;color:var(--faint)}
+.tag{font:600 10.5px var(--f-data);letter-spacing:.06em;padding:2px 7px;border-radius:999px;background:var(--ok-soft);color:var(--ok)}
+.runs svg{width:100%;height:auto;display:block}
+.runs text{fill:var(--muted);font:10px var(--f-data)}
+.dbstrip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;margin-top:18px}
+@media (max-width:1000px){.dbstrip{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:520px){.dbstrip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.dbstrip div{padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);margin:0 -1px -1px 0}
+.dbstrip b{display:block;font-size:20px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.dbstrip span{font-size:12px;color:var(--muted)}
 footer{border-top:1px solid var(--line);padding:26px 0 36px;color:var(--muted);font-size:12.5px}
 footer .wrap{display:flex;flex-wrap:wrap;gap:10px 30px;justify-content:space-between}
 </style>
@@ -232,8 +249,8 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 30px;justify-content:space-bet
     <span class="brand-mark" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4.5 7 6.5 7 13a7 7 0 0 1-14 0c0-3.6 2.3-5.6 3.5-6.8 0 2.2 1.1 3.5 2.4 3.5 0-3.6.1-6.7 1.1-9.7z" fill="#F2683C"/></svg></span>
     <span><b>Pantau Api Nanga Lauk</b><small>Sistem Pemantauan Titik Panas Hutan Desa</small></span>
   </a>
-  <nav class="nav" aria-label="Navigasi"><a href="#peta">Peta</a><a href="#riwayat">Riwayat</a><a href="#buat-laporan">Laporan</a><a href="#unduh">Data</a><a href="#sumber">Metodologi</a></nav>
-  <span class="live" id="livechip"><i></i><span>Memuat…</span></span>
+  <nav class="nav" aria-label="Navigasi"><a href="#peta">Peta</a><a href="#status-sistem">Status</a><a href="#riwayat">Riwayat</a><a href="#buat-laporan">Laporan</a><a href="#unduh">Data</a><a href="#sumber">Metodologi</a></nav>
+  <span class="live" id="livechip" title="Diperbarui otomatis setiap 3 jam mengikuti lintasan satelit NASA"><i></i><span>Near Real-Time</span></span>
 </div></div>
 
 <section class="hero">
@@ -279,6 +296,19 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 30px;justify-content:space-bet
       <div class="rail-sec chart"><h4><span>Harian · 30 hari</span></h4><div id="chart"></div></div>
       <div class="list-wrap"><h4><span>Daftar titik</span><span class="num" id="cnt">0</span></h4><div class="list" id="list"></div></div>
     </aside>
+  </section>
+
+  <section class="card sec" id="status-sistem">
+    <div class="sec-h"><div><div class="kick">Status sistem</div><h2>Pembaruan otomatis &amp; kesehatan data</h2><p>Sistem bekerja <b>near real-time</b>: satelit melintas beberapa kali sehari, NASA memproses data ±3 jam, dan website mengambil data baru otomatis setiap 3 jam, tanpa campur tangan manusia.</p></div></div>
+    <div class="sys">
+      <div class="tile"><div class="k">Terakhir diperbarui <span class="tag" id="sOk">OK</span></div><div class="v" id="sLast">–</div><div class="s" id="sLastS">–</div></div>
+      <div class="tile"><div class="k">Pembaruan berikutnya</div><div class="v" id="sNext">–</div><div class="s" id="sNextS">–</div></div>
+      <div class="tile"><div class="k">Lintasan satelit berikutnya</div><div class="v" id="sPass">–</div><div class="s" id="sPassS">–</div></div>
+      <div class="tile"><div class="k">Waktu data sampai di website</div><div class="v" id="sLat">–</div><div class="s" id="sLatS">–</div></div>
+    </div>
+    <h3 class="sub">Riwayat pembaruan otomatis terakhir</h3>
+    <div class="runs" id="sRuns"></div>
+    <div class="dbstrip" id="sDb"></div>
   </section>
 
   <section class="card sec" id="riwayat">
@@ -527,6 +557,46 @@ function kpis(){
   if(STATS){let hd=0;for(const y of Object.values(STATS.tahunan))for(const f of Object.values(y))hd+=f['Hutan Desa']||0;document.getElementById('kHD').textContent=N(hd);
     const lastHD=EVENTS.filter(e=>e.zona_terdekat==='Hutan Desa').map(e=>e.mulai_wib).sort().pop();if(lastHD)document.getElementById('kHDS').textContent=`sejak 2001 · terakhir ${lastHD.slice(0,10)}`;}
 }
+/* ---------- status sistem ---------- */
+const pad2=n=>String(n).padStart(2,'0');
+function hhmmWIB(d){const w=new Date(d.getTime()+7*36e5);return `${pad2(w.getUTCHours())}.${pad2(w.getUTCMinutes())}`;}
+function nextRun(){const n=new Date();const d=new Date(Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate(),n.getUTCHours()-(n.getUTCHours()%3),17));while(d<=n)d.setUTCHours(d.getUTCHours()+3);return d;}
+function passTimes(){ // jam lintasan dari data deteksi 400 hari terakhir (WIB, menit)
+  const g={};for(const p of ALL){const w=new Date(p.when.getTime()+7*36e5);const m=w.getUTCHours()*60+w.getUTCMinutes();const key=(p.ins==='MODIS'?(p.sat==='T'?'MODIS Terra':'MODIS Aqua'):'VIIRS')+'|'+p.dn;(g[key]=g[key]||[]).push(m);}
+  const out=[];for(const [k,v] of Object.entries(g)){if(v.length<2)continue;v.sort((a,b)=>a-b);out.push({nama:k.split('|')[0],m:v[Math.floor(v.length/2)],lo:v[Math.floor(v.length*.1)],hi:v[Math.floor(v.length*.9)],n:v.length});}
+  if(!out.length)out.push({nama:'VIIRS',m:13*60+15,lo:12*60+30,hi:14*60+30,n:0},{nama:'VIIRS',m:60+15,lo:30,hi:2*60+30,n:0},{nama:'MODIS Terra',m:10*60+15,lo:9*60+45,hi:10*60+45,n:0},{nama:'MODIS Aqua',m:13*60,lo:12*60+30,hi:13*60+30,n:0});
+  return out;}
+function sysPanel(){
+  if(!STATUS)return; const S=STATUS.sistem||{}; const N=v=>Number(v).toLocaleString('id-ID');
+  const last=new Date(STATUS.terakhir_cek_utc); const okN=(STATUS.sumber||[]).filter(s=>s.ok).length, tot=(STATUS.sumber||[]).length;
+  document.getElementById('sLast').textContent=`${hhmmWIB(last)} WIB`;
+  document.getElementById('sLastS').textContent=`${ago(last)} · ${okN}/${tot} sumber NASA berhasil`;
+  const tag=document.getElementById('sOk');tag.textContent=okN===tot?'Normal':'Sebagian gagal';tag.style.background=okN===tot?'var(--ok-soft)':'var(--warn-soft)';tag.style.color=okN===tot?'var(--ok)':'var(--warn)';
+  const L=S.latensi_median_jam; document.getElementById('sLat').textContent=L!=null?`± ${String(L).replace('.',',')} jam`:'3–6 jam';
+  document.getElementById('sLatS').textContent=L!=null?`median ${S.latensi_n} deteksi, sejak satelit melintas`:'perkiraan: proses NASA ±3 jam + jadwal 3 jam';
+  // timeline
+  const R=(S.riwayat||[]).slice(-24); const el=document.getElementById('sRuns');
+  if(R.length){const W=1000,H=120,l=34,b=24,t=12,bw=(W-l)/24,mx=Math.max(3,...R.map(r=>r.baru));
+    let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Riwayat pembaruan otomatis">`;
+    for(let i=0;i<=2;i++){const y=t+(H-b-t)*(1-i/2);s+=`<line x1="${l}" x2="${W}" y1="${y}" y2="${y}" stroke="${css('--line')}"/><text x="${l-6}" y="${y+3}" text-anchor="end">${Math.round(mx*i/2)}</text>`;}
+    R.forEach((r,i)=>{const x=l+(24-R.length+i)*bw+bw*.18,w=bw*.64,h=Math.max(3,(H-b-t)*r.baru/mx),ok=r.ok===r.n,d=new Date(r.t);
+      s+=`<rect x="${x}" y="${H-b-h}" width="${w}" height="${h}" rx="3" fill="${ok?css('--ok'):css('--warn')}"><title>${wib(d)} · ${r.baru} titik baru · ${r.ok}/${r.n} sumber OK</title></rect>`;
+      if(i%2===R.length%2||R.length<12)s+=`<text x="${x+w/2}" y="${H-7}" text-anchor="middle">${hhmmWIB(d)}</text>`;});
+    s+=`</svg><p class="rp-note" style="margin-top:6px">Setiap batang = satu pembaruan otomatis (tinggi = jumlah titik panas baru; hijau = semua sumber NASA berhasil diunduh). Total ${N(S.jumlah_pembaruan_tercatat||R.length)} pembaruan tercatat di jejak audit.</p>`;el.innerHTML=s;}
+  const yrs=STATUS.rentang?`${STATUS.rentang[0].slice(0,4)}–${STATUS.rentang[1].slice(0,4)}`:'';
+  document.getElementById('sDb').innerHTML=[[N(STATUS.jumlah_catatan),'deteksi titik panas tersimpan'],[yrs,'rentang data (arsip NASA)'],['4','sensor satelit (VIIRS ×3, MODIS)'],[N(S.arsip_terverifikasi||0),'arsip tahunan NASA, sidik SHA-256'],[N(S.hari_cuaca||0),'hari data cuaca harian'],['8×','pembaruan otomatis per hari']].map(([b,t])=>`<div><b>${b}</b><span>${t}</span></div>`).join('');
+  tick();
+}
+function tick(){
+  if(!STATUS)return; const nr=nextRun(); const ms=nr-Date.now(); const h=Math.floor(ms/36e5),m=Math.floor(ms%36e5/6e4),sec=Math.floor(ms%6e4/1e3);
+  document.getElementById('sNext').textContent=`${h?h+' j ':''}${pad2(m)} m ${pad2(sec)} d`;
+  document.getElementById('sNextS').textContent=`terjadwal ± ${hhmmWIB(nr)} WIB (GitHub dapat terlambat 5–30 menit)`;
+  const now=new Date(Date.now()+7*36e5),cur=now.getUTCHours()*60+now.getUTCMinutes(); const P=passTimes().map(p=>({...p,dt:(p.lo-cur+1440)%1440})).sort((a,b)=>a.dt-b.dt)[0];
+  const f=mm=>`${pad2(Math.floor(mm/60)%24)}.${pad2(mm%60)}`;
+  document.getElementById('sPass').textContent=`± ${f(P.m)} WIB`;
+  document.getElementById('sPassS').textContent=`${P.nama} · rentang ${f(P.lo)}–${f(P.hi)} WIB${P.n?` (dari ${P.n} deteksi terakhir)`:''}`;
+}
+setInterval(tick,1000);
 function setStatus(){
   const el=document.getElementById('status');
   if(!STATUS){el.innerHTML=`<span class="pill"><span class="dot off"></span>Belum ada data di tampilan ini</span>`;return;}
@@ -534,7 +604,7 @@ function setStatus(){
   const latest=ALL.length?ALL.reduce((a,b)=>a.when>b.when?a:b):null;
   const okSrc=(STATUS.sumber||[]).filter(s=>s.ok).length;
   el.innerHTML=`<span class="pill"><span class="dot ${h>7?'stale':''}"></span>Diperbarui ${ago(last)}</span><span class="pill">${okSrc}/${(STATUS.sumber||[]).length} sumber NASA aktif</span>${latest?`<span class="pill">Deteksi terbaru ${ago(latest.when)}</span>`:''}`;
-  const lc=document.getElementById('livechip'); if(lc) lc.querySelector('span').textContent=`Langsung · ${wib(last).split(', ')[1]}`;
+  const lc=document.getElementById('livechip'); if(lc) lc.querySelector('span').textContent=`Near Real-Time · ${hhmmWIB(last)} WIB`;
 }
 
 /* ---------- data ---------- */
@@ -544,7 +614,7 @@ async function load(){
   try{
     const [h,s]=await Promise.all([fetch('data/hotspots.json?'+Date.now()).then(r=>r.json()),fetch('data/status.json?'+Date.now()).then(r=>r.json())]);
     ALL=h.titik.map(p=>{const q={...p};q.when=utcDate(q);q.c2={zone:ZMAP[q.z]||'out',dist:q.km,petak:q.pt||null};return q;});
-    STATUS=s; setStatus(); render(); fillSources(); kpis();
+    STATUS=s; setStatus(); render(); fillSources(); kpis(); sysPanel();
   }catch(e){document.getElementById('alertTitle').textContent='Data gagal dimuat';document.getElementById('alertText').textContent='Periksa koneksi internet, lalu muat ulang halaman.';}
 }
 function fillSources(){
