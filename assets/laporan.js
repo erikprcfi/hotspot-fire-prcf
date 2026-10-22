@@ -17,7 +17,7 @@ const WIL = {
   kh: { nama: 'Seluruh Kabupaten Kapuas Hulu', zmax: 4, ext: 'kh' },
 };
 const CAP_DETAIL = 220, CAP_EVENTS = 40;
-let G = null, G0 = null, STATUS = null, EVENTS = null, CUACA = null, IMG = null, IMG0 = null, SI = 0, SITE = null; const YEARS = {}, CUACAS = {};
+let LOGO = null, G = null, G0 = null, STATUS = null, EVENTS = null, CUACA = null, IMG = null, IMG0 = null, SI = 0, SITE = null; const YEARS = {}, CUACAS = {};
 let LAST = null;
 
 /* ---------------- util ---------------- */
@@ -40,6 +40,7 @@ async function base() {
   [G0, STATUS, EVENTS, CUACA] = await Promise.all([j('data/geo.json'), j('data/status.json'), j('data/kejadian.json'), j('data/cuaca.json')]); G = G0; CUACAS.nangalauk = CUACA;
   if (!Array.isArray(EVENTS)) EVENTS = EVENTS.baris.map(r => Object.fromEntries(EVENTS.kolom.map((k, i) => [k, r[i]])));
   IMG0 = await new Promise(ok => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = 'assets/s2_20260810.jpg'; });
+  LOGO = await new Promise(ok => { const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight; c.getContext('2d').drawImage(im, 0, 0); ok({ c, url: c.toDataURL('image/jpeg', 0.95), r: im.naturalHeight / im.naturalWidth }); }; im.onerror = () => ok(null); im.src = 'assets/logo_prcf.jpg'; });
   await setSite(window.FH_SITE);
 }
 /* ---------------- lokasi Hutan Desa yang dipilih ---------------- */
@@ -146,7 +147,7 @@ function summary(M) {
   const s = []; const z = M.zc;
   s.push(`Periode ${M.periodeTxt} (${fmt(M.len)} hari), wilayah ${M.W.nama}, sensor ${M.sensor === 'semua' ? 'VIIRS & MODIS' : M.sensor.toUpperCase()}: ${fmt(M.rows.length)} deteksi titik panas.`);
   const hd = M.rows.filter(r => r.z === 0);
-  s.push(`Di dalam Hutan Desa: ${z[0]} deteksi` + (hd.length ? ' (' + hd.slice(0, 6).map(r => `${r.wib} WIB, petak ${r.pt || '-'}`).join('; ') + (hd.length > 6 ? '; …' : '') + ').' : '.'));
+  s.push(`Di dalam Hutan Desa: ${z[0]} deteksi` + (hd.length ? ' (' + hd.slice(0, 6).map(r => `${r.wib} WIB${r.pt ? ', petak ' + r.pt : ''}`).join('; ') + (hd.length > 6 ? '; …' : '') + ').' : '.'));
   s.push(`Di dalam ${ZONES[1]} (di luar Hutan Desa): ${z[1]}; radius 0–5 km dari batas desa: ${z[2]}` + (M.W.zmax >= 3 ? `; radius 5–25 km: ${fmt(z[3])}` : '') + (M.W.zmax >= 4 ? `; bagian lain Kapuas Hulu: ${fmt(z[4])}` : '') + '.');
   s.push(`Kejadian api (deteksi berjarak ≤ 1 km dan ≤ 2 hari) di desa dan radius 5 km: ${M.events.length}.`);
   if (M.trend) {
@@ -182,12 +183,12 @@ function weatherText(M) {
   } else {
     const pct = M.rn ? rs.sum / M.rn * 100 : null;
     const kond = pct === null ? null : pct < 60 ? 'jauh lebih kering dari normal' : pct < 85 ? 'lebih kering dari normal' : pct <= 115 ? 'normal' : pct <= 150 ? 'lebih basah dari normal' : 'jauh lebih basah dari normal';
-    out.push(`Curah hujan total ${fmt1(rs.sum)} mm dalam ${rs.n} hari (${rs.wet} hari hujan ≥ 1 mm)` + (M.rn ? `; rata-rata periode yang sama 2001–2025: ${fmt1(M.rn)} mm (${Math.round(pct)}% dari normal, kondisi ${kond}).` : '.') +
+    out.push(`Curah hujan total ${fmt1(rs.sum)} mm dalam ${rs.n} hari (${rs.wet} hari hujan ≥ 1 mm)` + (M.rn ? `; sebagai pembanding, rata-rata jangka panjang untuk tanggal yang sama tahun 2001–2025 adalah ${fmt1(M.rn)} mm (${Math.round(pct)}% dari normal, kondisi ${kond}).` : '.') +
       ` Periode kering terpanjang (hujan < 1 mm/hari berturut-turut): ${rs.maxDry} hari${rs.maxDry ? ' (berakhir ' + tglID(rs.dryEnd) + ')' : ''}. Kelembapan rata-rata ${fmt1(rs.rhMean)}%, suhu maksimum ${fmt1(rs.tMax)} °C.`);
     if (M.len > 62 && M.rows.length) {
       const ymC = {}; for (const r of M.rows) { const k = r.d.slice(0, 7); ymC[k] = (ymC[k] || 0) + 1; }
       const [pk, pn] = Object.entries(ymC).sort((x, y) => y[1] - x[1])[0]; const st = monthStats(pk), nm = monthNormal(+pk.slice(5, 7));
-      if (st) out.push(`Bulan dengan titik panas terbanyak: ${BULAN_P[+pk.slice(5, 7) - 1]} ${pk.slice(0, 4)} (${pn} deteksi). Curah hujan bulan itu ${fmt1(st.sum)} mm` + (nm ? ` (${Math.round(st.sum / nm * 100)}% dari normal ${BULAN_P[+pk.slice(5, 7) - 1]} ${fmt1(nm)} mm)` : '') + `, ${st.wet} hari hujan, kering beruntun terpanjang ${st.maxDry} hari.`);
+      if (st) out.push(`Bulan dengan titik panas terbanyak: ${BULAN_P[+pk.slice(5, 7) - 1]} ${pk.slice(0, 4)} (${pn} deteksi). Curah hujan bulan itu ${fmt1(st.sum)} mm` + (nm ? ` (${Math.round(st.sum / nm * 100)}% dari rata-rata jangka panjang ${BULAN_P[+pk.slice(5, 7) - 1]} 2001–2025, ${fmt1(nm)} mm)` : '') + `, ${st.wet} hari hujan, kering beruntun terpanjang ${st.maxDry} hari.`);
       const quiet = Object.keys(Object.fromEntries(M.per.map(p => [p.k, 1]))).filter(k => !ymC[k] && k.length === 7);
       if (quiet.length && quiet.length <= 12) { const qr = quiet.map(k => { const st2 = monthStats(k), nm2 = monthNormal(+k.slice(5, 7)); return st2 && nm2 ? st2.sum / nm2 : null; }).filter(v => v !== null); if (qr.length) out.push(`Bulan tanpa titik panas (${quiet.map(k => BULAN[+k.slice(5, 7) - 1]).join(', ')}) rata-rata menerima ${Math.round(qr.reduce((p, c) => p + c, 0) / qr.length * 100)}% curah hujan normalnya.`); }
     }
@@ -232,7 +233,7 @@ function drawMap(M, which) {
   for (let zi = M.W.zmax; zi >= 0; zi--) for (const r of pts) if (r.z === zi) { const [px, py] = P(r.lon, r.lat); g.beginPath(); g.arc(px, py, zi <= 1 ? 9 : zi === 2 ? 7 : 5, 0, 7); g.fillStyle = ZCOL[zi]; g.fill(); g.lineWidth = 1.4; g.strokeStyle = which === 'zoom' ? '#fff' : '#000'; g.stroke(); }
   g.restore();
   g.strokeStyle = MUTED; g.lineWidth = 1.5; g.strokeRect(ox, oy, sc * (bb[2] - bb[0]), sc * (bb[3] - bb[1]));
-  g.fillStyle = INK; g.font = 'bold 30px Arial'; g.fillText(which === 'zoom' ? `Titik panas di desa & radius 5 km (latar Sentinel-2, 10 Agu 2026)` : `Peta titik panas – ${M.W.nama}`, pad, 44);
+  g.fillStyle = INK; g.font = 'bold 30px Arial'; g.fillText(which === 'zoom' ? (IMG ? `Titik panas di desa & radius 5 km (latar Sentinel-2, 10 Agu 2026)` : `Titik panas di Hutan Desa, ${ZONES[1]} & radius 5 km`) : `Peta titik panas – ${M.W.nama}`, pad, 44);
   // grid koordinat
   g.font = '20px Arial'; g.fillStyle = MUTED; const step = (bb[2] - bb[0]) > 1 ? 0.5 : (bb[2] - bb[0]) > 0.3 ? 0.1 : 0.05;
   for (let x = Math.ceil(bb[0] / step) * step; x < bb[2]; x += step) { const [px] = P(x, bb[1]); g.fillText(x.toFixed(2) + '°BT', px - 40, oy + sc * (bb[3] - bb[1]) + 26); }
@@ -316,10 +317,13 @@ function figures(M) {
   }
   if (M.len > 120) {
     const cm = Array.from({ length: 12 }, (_, m) => M.rows.filter(r => +r.d.slice(5, 7) === m + 1).length);
-    const rnorm = Array.from({ length: 12 }, (_, m) => { let s = 0, n = 0; const yrs = new Set(); CUACA.t.forEach((t, i) => { if (t >= '2001' && t < '2026' && +t.slice(5, 7) === m + 1) { s += CUACA.hujan[i] ?? 0; yrs.add(t.slice(0, 4)); } }); return Math.round(s / Math.max(1, yrs.size)); });
-    F.season = drawChart('Pola musim: titik panas per bulan (periode ini) vs curah hujan normal bulanan 2001–2025', BULAN, [{ name: 'Titik panas', color: '#C9B21E', values: cm }, { name: 'Hujan normal (mm/bulan)', color: '#2F6FB0', type: 'line', values: rnorm }], { right: true, rlab: 'Hujan normal (mm)' });
+    // rata-rata hujan bulanan HANYA dari bulan-bulan di dalam periode yang dipilih (bulan penuh)
+    const rnorm = Array.from({ length: 12 }, (_, m) => { const per = {}; CUACA.t.forEach((t, i) => { if (t >= M.a && t <= M.b && +t.slice(5, 7) === m + 1) { const k = t.slice(0, 7); (per[k] = per[k] || [0, 0]); per[k][0] += CUACA.hujan[i] ?? 0; per[k][1]++; } });
+      const full = Object.entries(per).filter(([k, v]) => v[1] >= new Date(Date.UTC(+k.slice(0, 4), +k.slice(5, 7), 0)).getUTCDate()); return full.length ? Math.round(full.reduce((p, [, v]) => p + v[0], 0) / full.length) : 0; });
+    const y0 = M.a.slice(0, 4), y1 = M.b.slice(0, 4), yl = y0 === y1 ? y0 : `${y0}–${y1}`;
+    F.season = drawChart(`Pola musim ${yl}: titik panas per bulan vs rata-rata curah hujan bulanan ${yl}`, BULAN, [{ name: `Titik panas ${yl}`, color: '#C9B21E', values: cm }, { name: `Rata-rata hujan ${yl} (mm/bulan)`, color: '#2F6FB0', type: 'line', values: rnorm }], { right: true, rlab: `Hujan rata-rata ${yl} (mm)` });
   }
-  if (M.near.length) F.ctx = drawContext(M);
+  if (M.near.length && (!SITE || SITE.id === 'nangalauk')) F.ctx = drawContext(M);  // data kawasan/tutupan/gambut hanya tersedia untuk Nanga Lauk
   return F;
 }
 
@@ -327,7 +331,7 @@ function figures(M) {
 function htmlTable(t, max) { const rows = max ? t.slice(0, max + 1) : t; return `<div class="tw"><table><thead><tr>${rows[0].map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.slice(1).map(r => `<tr>${r.map(v => `<td>${esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>` + (max && t.length - 1 > max ? `<p class="rp-note">… ${t.length - 1 - max} baris lainnya ada di file PDF/Word/CSV.</p>` : ''); }
 function preview(M, F, T) {
   const img = c => `<img src="${c.toDataURL('image/png')}" alt="" style="width:100%;max-width:900px;border:1px solid var(--line);margin:6px 0">`;
-  $('#rpPreview').innerHTML = `<div class="rp-doc"><h3>${esc(M.title)}</h3><p class="rp-note">Periode ${esc(M.periodeTxt)} · dibuat ${new Date().toLocaleString('id-ID')} · sumber NASA FIRMS & ERA5</p>
+  $('#rpPreview').innerHTML = `<div class="rp-doc">${LOGO ? `<div style="display:flex;align-items:center;gap:12px;border-bottom:2px solid #22382B;padding-bottom:10px;margin-bottom:14px"><img src="${LOGO.url}" alt="PRCF Indonesia" style="height:46px;width:auto;border-radius:4px"><div><b style="font-size:15px">Yayasan PRCF Indonesia</b><div class="rp-note" style="margin:0">Fire Hotspot · Sistem Pemantauan Titik Panas Hutan Desa</div></div></div>` : ''}<h3>${esc(M.title)}</h3><p class="rp-note">Periode ${esc(M.periodeTxt)} · dibuat ${new Date().toLocaleString('id-ID')} · sumber NASA FIRMS & ERA5</p>
   <h4>1. Ringkasan</h4><ul>${M.summary.map(s => `<li>${esc(s)}</li>`).join('')}</ul>
   <h4>2. Cuaca dan kaitannya dengan titik panas</h4>${M.weatherTxt.map(s => `<p>${esc(s)}</p>`).join('')}
   <h4>3. Peta</h4>${img(F.map)}${img(F.zoom)}
@@ -349,6 +353,9 @@ async function exportPDF(M, F, T) {
   const P = (t, size = 9.5, col = INK, style = 'normal') => { doc.setFont('helvetica', style); doc.setFontSize(size); doc.setTextColor(col); const lines = doc.splitTextToSize(pdfTxt(t), CW); for (const l of lines) { need(5); doc.text(l, ML, y); y += size * 0.46; } y += 1.5; };
   const IMGp = (c, wmm) => { const h = wmm * c.height / c.width; need(h + 2); doc.addImage(c.toDataURL('image/jpeg', 0.9), 'JPEG', ML + (CW - wmm) / 2, y, wmm, h); y += h + 3; };
   const TAB = (t, fs = 7.5, opts = {}) => { doc.autoTable({ startY: y, head: [t[0].map(pdfTxt)], body: t.slice(1).map(r => r.map(pdfTxt)), margin: { left: ML, right: ML }, styles: { fontSize: fs, cellPadding: 1.2, textColor: INK, lineColor: LINE, lineWidth: 0.1 }, headStyles: { fillColor: HEAD, textColor: 255 }, alternateRowStyles: { fillColor: [241, 244, 241] }, ...opts }); y = doc.lastAutoTable.finalY + 5; };
+  if (LOGO) { const lw = 26, lh = lw * LOGO.r; doc.addImage(LOGO.url, 'JPEG', ML, 10, lw, lh); doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.setTextColor(HEAD); doc.text('Yayasan PRCF Indonesia', ML + lw + 5, 17);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(MUTED); doc.text('Fire Hotspot - Sistem Pemantauan Titik Panas Hutan Desa, Kabupaten Kapuas Hulu', ML + lw + 5, 22.5);
+    doc.setDrawColor(HEAD); doc.setLineWidth(0.6); doc.line(ML, 10 + lh + 3, PW - ML, 10 + lh + 3); y = 10 + lh + 13; }
   doc.setFont('helvetica', 'bold'); doc.setFontSize(17); doc.setTextColor(HEAD); doc.splitTextToSize(pdfTxt(M.title), CW).forEach(l => { doc.text(l, ML, y); y += 7.5; });
   P(`Periode: ${M.periodeTxt}  |  Dibuat: ${new Date().toLocaleString('id-ID')}  |  Sumber: NASA FIRMS, ERA5 (Open-Meteo)`, 8.5, MUTED);
   H1('1. Ringkasan'); M.summary.forEach(s => P('• ' + s));
@@ -368,7 +375,7 @@ async function exportPDF(M, F, T) {
   doc.addPage('a4', 'portrait'); y = 18;
   H1('Lampiran B. Kamus data'); TAB(T.kamus, 8, { columnStyles: { 0: { cellWidth: 35 } } });
   H1('Lampiran C. Sumber data, metode & jejak audit'); sources(M).forEach(([k, v]) => P(`${k}. ${v}`, 8.8));
-  const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++) { doc.setPage(i); const w = doc.internal.pageSize.getWidth(), h = doc.internal.pageSize.getHeight(); doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(MUTED); doc.text(pdfTxt(`${M.title} | ${M.periodeTxt}`), 12, h - 8); doc.text(`Halaman ${i} dari ${n}`, w - 12, h - 8, { align: 'right' }); }
+  const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++) { doc.setPage(i); const w = doc.internal.pageSize.getWidth(), h = doc.internal.pageSize.getHeight(); if (LOGO && i > 1) doc.addImage(LOGO.url, 'JPEG', w - 12 - 13, 4.5, 13, 13 * LOGO.r); doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(MUTED); doc.text(pdfTxt(`${M.title} | ${M.periodeTxt}`), 12, h - 8); doc.text(`Halaman ${i} dari ${n}`, w - 12, h - 8, { align: 'right' }); }
   doc.save(fname(M, 'pdf')); return n;
 }
 
@@ -380,7 +387,11 @@ async function exportDOCX(M, F, T) {
   const H = (t, lvl = 1) => new d.Paragraph({ children: [run(t, { bold: true, size: lvl === 0 ? 34 : 25, color: '22382B' })], spacing: { before: 220, after: 120 } });
   const img = async (c, wcm) => { const blob = await new Promise(ok => c.toBlob(ok, 'image/png')); const buf = await blob.arrayBuffer(); const wpx = wcm * 37.8; return new d.Paragraph({ alignment: d.AlignmentType.CENTER, children: [new d.ImageRun({ data: buf, transformation: { width: wpx, height: wpx * c.height / c.width } })] }); };
   const TB = (t, size = 15) => new d.Table({ width: { size: 100, type: d.WidthType.PERCENTAGE }, rows: t.map((r, i) => new d.TableRow({ tableHeader: i === 0, children: r.map(v => new d.TableCell({ shading: i === 0 ? { fill: '22382B', type: d.ShadingType.CLEAR, color: 'auto' } : i % 2 === 0 ? { fill: 'F1F4F1', type: d.ShadingType.CLEAR, color: 'auto' } : undefined, margins: { top: 30, bottom: 30, left: 60, right: 60 }, children: [new d.Paragraph({ children: [run(v, { size, bold: i === 0, color: i === 0 ? 'FFFFFF' : undefined })] })] })) })) });
-  const main = [H(M.title, 0), P(`Periode: ${M.periodeTxt} · Dibuat: ${new Date().toLocaleString('id-ID')} · Sumber: NASA FIRMS, ERA5 (Open-Meteo)`, { size: 17, color: '5B6A61' }),
+  let logoBuf = null; if (LOGO) { const bl = await new Promise(ok => LOGO.c.toBlob(ok, 'image/jpeg', 0.95)); logoBuf = await bl.arrayBuffer(); }
+  const head = () => logoBuf ? { default: new d.Header({ children: [new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [new d.ImageRun({ data: logoBuf, transformation: { width: 48, height: Math.round(48 * LOGO.r) } })] })] }) } : undefined;
+  const cover = logoBuf ? [new d.Paragraph({ children: [new d.ImageRun({ data: logoBuf, transformation: { width: 110, height: Math.round(110 * LOGO.r) } })] }),
+    new d.Paragraph({ children: [run('Yayasan PRCF Indonesia', { bold: true, size: 24, color: '22382B' })] }), new d.Paragraph({ children: [run('Fire Hotspot · Sistem Pemantauan Titik Panas Hutan Desa, Kabupaten Kapuas Hulu', { size: 17, color: '5B6A61' })], border: { bottom: { style: d.BorderStyle.SINGLE, size: 12, color: '22382B', space: 6 } }, spacing: { after: 200 } })] : [];
+  const main = [...cover, H(M.title, 0), P(`Periode: ${M.periodeTxt} · Dibuat: ${new Date().toLocaleString('id-ID')} · Sumber: NASA FIRMS, ERA5 (Open-Meteo)`, { size: 17, color: '5B6A61' }),
     H('1. Ringkasan'), ...M.summary.map(s => P(s, { bullet: true })), H('2. Cuaca dan kaitannya dengan titik panas'), ...M.weatherTxt.map(s => P(s)),
     H('3. Peta'), await img(F.map, 15), await img(F.zoom, 15), H('4. Grafik'), await img(F.time, 16.5)];
   if (F.sensor) main.push(await img(F.sensor, 16.5)); if (F.season) main.push(await img(F.season, 16.5)); if (F.ctx) main.push(await img(F.ctx, 16.5));
@@ -392,7 +403,7 @@ async function exportDOCX(M, F, T) {
   app.push(T.detail.length > 1 ? TB(T.detail, 13) : P('Tidak ada deteksi pada periode ini.'));
   const end = [H('Lampiran B. Kamus data'), TB(T.kamus, 16), H('Lampiran C. Sumber data, metode & jejak audit'), ...sources(M).map(([k, v]) => new d.Paragraph({ spacing: { after: 100 }, children: [run(k + '. ', { bold: true, size: 18 }), run(v, { size: 18 })] }))];
   const pg = { margin: { top: 1000, bottom: 1000, left: 1000, right: 1000 } };
-  const docx = new d.Document({ creator: 'Fire Hotspot Nanga Lauk', title: M.title, sections: [{ properties: { page: pg }, children: main }, { properties: { page: { ...pg, size: { orientation: d.PageOrientation.LANDSCAPE } } }, children: app }, { properties: { page: pg }, children: end }] });
+  const docx = new d.Document({ creator: 'Yayasan PRCF Indonesia – Fire Hotspot', title: M.title, sections: [{ properties: { page: pg, titlePage: true }, headers: logoBuf ? { default: head().default, first: new d.Header({ children: [new d.Paragraph('')] }) } : undefined, children: main }, { properties: { page: { ...pg, size: { orientation: d.PageOrientation.LANDSCAPE } } }, headers: head(), children: app }, { properties: { page: pg }, headers: head(), children: end }] });
   const blob = await d.Packer.toBlob(docx); dl(blob, fname(M, 'docx'));
 }
 
