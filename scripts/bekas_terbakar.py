@@ -195,6 +195,9 @@ def main():
                 continue
             if old and old.get("dicoba_utc", "")[:10] == datetime.date.today().isoformat():
                 continue
+            if old and old.get("status") in ("tertutup awan", "belum ada citra") and old.get("akhir") == w["akhir"] and \
+               (datetime.date.today() - datetime.date.fromisoformat(w["akhir"])).days > POST_DAYS + 15:
+                continue  # jendela citra sesudah api sudah lewat: tidak akan ada citra baru
             if time.time() - t0 > budget:
                 print("batas waktu tercapai; dilanjutkan pada run berikutnya"); break
             print(wid, w["awal"], "–", w["akhir"], len(w["ev"]), "kejadian")

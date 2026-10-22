@@ -140,6 +140,7 @@ async function buildModel(a, b, wilKey, sensor) {
   M.title = `Laporan Titik Panas ${W.nama}`;
   M.periodeTxt = `${tglID(a)} – ${tglID(b)}`;
   M.summary = summary(M); M.weatherTxt = weatherText(M);
+  M.ex = await extras(M); M.summary.push(...extraSummary(M)); M.checks = verify(M); M.dibuat = new Date().toLocaleString('id-ID');
   return M;
 }
 
@@ -290,6 +291,8 @@ function tables(M) {
   T.detailNote = M.near.length > CAP_DETAIL ? `Ditampilkan ${det.length} dari ${M.near.length} deteksi (semua di Hutan Desa dan desa, serta deteksi radius 5 km terbaru). Daftar lengkap ada di tombol "Unduh data CSV".` : '';
   T.detail = [['No', 'Waktu (WIB)', 'Sensor', 'Lat', 'Lon', 'Keyakinan', 'FRP', 'Zona', 'Jarak (km)', 'Petak', 'Kawasan', 'Tutupan 2026', 'Gambut', 'Status']].concat(det.map((r, i) => [String(i + 1), r.wib, famOf(r.sen), r.lat.toFixed(5), r.lon.toFixed(5), confTxt(r), fmt1(r.frp), ZONES[r.z], r.km.toFixed(2), r.pt, (r.kw || '').split(' (')[0], r.tl, (r.gb || '').split(' (')[0], r.st]));
   T.kamus = [['Istilah', 'Keterangan'], ['Titik panas', 'Pusat piksel satelit yang terdeteksi jauh lebih panas dari sekitarnya (anomali panas), bukan konfirmasi kebakaran'], ['Waktu (WIB)', 'Waktu lintasan satelit (UTC + 7 jam)'], ['Sensor', 'VIIRS 375 m (S-NPP, NOAA-20, NOAA-21) dan MODIS 1 km (Terra, Aqua)'], ['Keyakinan', 'VIIRS: rendah/nominal/tinggi; MODIS: 0–100%'], ['FRP', 'Fire Radiative Power (MW), kekuatan radiasi panas'], ['Zona & jarak', 'Posisi terhadap Hutan Desa/desa dan jarak ke batas desa (km, UTM 49N)'], ['Petak', 'Kode grid patroli 250 m Hutan Desa'], ['Kejadian api', 'Kumpulan deteksi berjarak ≤ 1 km dan ≤ 2 hari'], ['Cakupan piksel', 'Gabungan luas piksel satelit (scan × track), BUKAN luas terbakar'], ['Status', 'SP = arsip final NASA; NRT = Near Real-Time (sementara)']];
+  T.kamus.push(['dNBR', 'Selisih Normalized Burn Ratio sebelum–sesudah kebakaran dari citra Sentinel-2; makin besar makin parah (Key & Benson 2006)'], ['FFMC / DC', 'Kode kelembapan bahan bakar halus / kekeringan lapisan dalam pada Canadian Fire Weather Index System'], ['Tingkat FDRS', 'Rendah, Sedang, Tinggi, Ekstrem menurut Fire Danger Rating System Indonesia (de Groot dkk. 2006)'], ['Kehilangan tutupan pohon', 'Hilangnya tajuk pohon (tutupan 2000 ≥ 30%) pada piksel 30 m menurut Hansen/UMD GFC; tidak selalu berarti deforestasi permanen']);
+  T.cek = [['Pemeriksaan', 'Hasil', 'Status']].concat(M.checks);
   return T;
 }
 function sources(M) {
@@ -300,6 +303,9 @@ function sources(M) {
       : `${SITE.hd_nama} (${SITE.lphd || 'LPHD'}), Desa ${SITE.desa_nama}, Kec. ${SITE.kec}; ${SITE.sk ? 'Nomor SK ' + SITE.sk + (SITE.sk_tgl ? ' tanggal ' + tglID(SITE.sk_tgl) : '') : 'nomor SK belum tercantum pada data batas'}; luas areal ${fmt1(SITE.luas_hd_ha)} ha (dihitung dari poligon). Batas desa dari peta batas desa Kabupaten Kapuas Hulu; batas kabupaten BIG 2021. Petak patroli, fungsi kawasan, tutupan lahan dan gambut belum tersedia untuk lokasi ini.`],
     ['Pengolahan', 'Nilai asli FIRMS tidak diubah. Deteksi tipe gunung api, sumber panas statis (industri), dan lepas pantai tidak dihitung. Tren antar-tahun dibandingkan dalam sensor yang sama (VIIRS lebih peka dari MODIS).'],
     ['Jejak audit', `Setiap unduhan sumber dicatat (URL, waktu, SHA-256) di https://github.com/erikprcfi/hotspot-fire-prcf/tree/main/data/provenance. Basis data diperbarui ${STATUS.terakhir_cek_utc} (UTC). Setiap titik dapat dicek silang di https://firms.modaps.eosdis.nasa.gov/map.`],
+    ['Bekas terbakar', 'Sentinel-2 L2A (ESA Copernicus, Earth Search AWS Open Data); indeks dNBR menurut Key & Benson (2006), FIREMON. Hasil berupa indikasi yang perlu verifikasi lapangan.'],
+    ['Tutupan hutan', 'Hansen, M.C. dkk. (2013) High-Resolution Global Maps of 21st-Century Forest Cover Change. Science 342:850–853; Global Forest Change v1.13 (2000–2025), CC BY 4.0.'],
+    ['Bahaya kebakaran', 'Van Wagner, C.E. (1987) Development and Structure of the Canadian Forest Fire Weather Index System; de Groot dkk. (2006) Fire Danger Rating System Indonesia (dipakai BMKG). Input cuaca ERA5 (Copernicus C3S) dan analisis ECMWF.'],
     ['Keterbatasan', 'Satelit mendeteksi panas saat melintas (beberapa kali sehari); api kecil, singkat, atau di bawah tajuk dan saat tertutup awan dapat tidak terdeteksi. Luas terbakar perlu diukur dengan analisa citra (burn scar) atau lapangan.'],
     ['Sitasi', "We acknowledge the use of data and imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Earth Science Data and Information System (ESDIS)."],
   ];
@@ -327,83 +333,265 @@ function figures(M) {
   return F;
 }
 
+/* ---------------- data pelengkap (bekas terbakar, tutupan hutan, FDRS) & verifikasi ---------------- */
+const JS = {};
+async function getJ(u) { if (u in JS) return JS[u]; try { const r = await fetch(u + '?' + Date.now()); JS[u] = r.ok ? await r.json() : null; } catch (e) { JS[u] = null; } return JS[u]; }
+const LVN = ['Rendah', 'Sedang', 'Tinggi', 'Ekstrem'];
+async function extras(M) {
+  const id = SITE ? SITE.id : 'nangalauk', ex = { id };
+  const [bt, hk, fd] = await Promise.all([getJ('data/bekas_terbakar/indeks.json'), getJ('data/hutan/kehilangan.json'), getJ(`data/prakiraan/fdrs_${id}.json`)]);
+  ex.burnOk = !!(bt && bt.musim);
+  if (ex.burnOk) ex.burn = Object.values(bt.musim).filter(m => m.lokasi === id && m.awal <= M.b && m.akhir >= M.a).sort((x, y) => x.awal.localeCompare(y.awal));
+  const y0 = Math.max(2001, +M.a.slice(0, 4)), y1 = Math.min(2025, +M.b.slice(0, 4));
+  if (hk && hk.lokasi && hk.lokasi[id] && y0 <= y1) {
+    const L = hk.lokasi[id];
+    ex.loss = { y0, y1, partial: (+M.a.slice(0, 4) >= 2001 && M.a.slice(5) !== '01-01') || (+M.b.slice(0, 4) <= 2025 && M.b.slice(5) !== '12-31'), after: +M.b.slice(0, 4) > 2025, sumber: hk.sumber, definisi: hk.definisi,
+      zones: [['hutan_desa', 'Hutan Desa'], ['desa_di_luar_hd', 'Desa di luar Hutan Desa'], ['radius_0_5km', 'Radius 0–5 km di luar desa']].map(([k, n]) => {
+        const z = L[k]; const per = {}; for (let y = y0; y <= y1; y++) per[y] = z.kehilangan_per_tahun_ha[String(y)] || 0;
+        const tot = Object.values(per).reduce((p, c) => p + c, 0); return { k, n, luas: z.luas_wilayah_ha, hutan2000: z.hutan_2000_ha, per, tot };
+      }) };
+  }
+  if (fd && fd.t) {
+    const idx = []; fd.t.forEach((t, i) => { if (t >= M.a && t <= M.b && fd.level[i] != null) idx.push(i); });
+    if (idx.length) {
+      const c = [0, 0, 0, 0]; idx.forEach(i => c[fd.level[i]]++);
+      ex.fdrs = { n: idx.length, t0: fd.t[idx[0]], t1: fd.t[idx[idx.length - 1]], c, first: fd.t[0], days: idx.map(i => ({ t: fd.t[i], h: fd.hujan[i], ffmc: fd.ffmc[i], dc: fd.dc[i], isi: fd.isi[i], fwi: fd.fwi[i], lv: fd.level[i], src: fd.sumber[i] })) };
+    } else ex.fdrsFirst = fd.t[0];
+  }
+  return ex;
+}
+function extraSummary(M) {
+  const s = [], ex = M.ex;
+  const done = (ex.burn || []).filter(m => m.status === 'selesai');
+  if (done.length) s.push(`Indikasi bekas terbakar (Sentinel-2, musim kebakaran yang beririsan dengan periode): ${fmt1(done.reduce((p, m) => p + m.luas_ha, 0))} ha dari ${done.length} musim yang dapat dianalisis` + ((ex.burn.length - done.length) ? `; ${ex.burn.length - done.length} musim lain tidak dapat diukur karena tertutup awan/citra kurang.` : '.'));
+  if (ex.loss) { const hd = ex.loss.zones[0]; s.push(`Kehilangan tutupan pohon (Hansen GFC) ${ex.loss.y0 === ex.loss.y1 ? 'tahun ' + ex.loss.y0 : ex.loss.y0 + '–' + ex.loss.y1}: ${fmt1(hd.tot)} ha di Hutan Desa, ${fmt1(ex.loss.zones[1].tot)} ha di desa di luar Hutan Desa, ${fmt1(ex.loss.zones[2].tot)} ha di radius 0–5 km.`); }
+  if (ex.fdrs) s.push(`Indeks bahaya kebakaran (FDRS) tersedia untuk ${ex.fdrs.n} hari dalam periode: Rendah ${ex.fdrs.c[0]}, Sedang ${ex.fdrs.c[1]}, Tinggi ${ex.fdrs.c[2]}, Ekstrem ${ex.fdrs.c[3]} hari.`);
+  return s;
+}
+function verify(M) {
+  const C = [], add = (n, h, ok) => C.push([n, h, ok ? 'Sesuai' : 'Perlu perhatian']);
+  const N = M.rows.length;
+  const out = M.rows.filter(r => r.d < M.a || r.d > M.b).length;
+  add('Semua deteksi berada di dalam periode yang dipilih', `${fmt(N)} deteksi; ${out} di luar ${M.a} s.d. ${M.b}`, out === 0);
+  const oz = M.rows.filter(r => r.z > M.W.zmax).length;
+  add('Semua deteksi berada di dalam wilayah laporan', `${oz} deteksi di luar wilayah "${M.W.nama}"`, oz === 0);
+  const sx = M.sensor === 'semua' ? 0 : M.rows.filter(r => M.sensor === 'viirs' ? r.sen.startsWith('MODIS') : !r.sen.startsWith('MODIS')).length;
+  add('Filter sensor sesuai pilihan', `pilihan: ${M.sensor === 'semua' ? 'VIIRS & MODIS' : M.sensor.toUpperCase()}; ${sx} deteksi sensor lain`, sx === 0);
+  const ns = SITE ? M.rows.filter(r => !r.ls || r.ls.length <= SI).length : 0;
+  add('Zona dihitung terhadap batas lokasi yang dipilih', `${SITE ? SITE.hd_nama + ', Desa ' + SITE.desa_nama : 'Nanga Lauk'}; ${ns} deteksi tanpa kode zona lokasi`, ns === 0);
+  const zs = M.zc.reduce((p, c) => p + c, 0); add('Jumlah per zona (Tabel 1) = total', `${fmt(zs)} = ${fmt(N)}`, zs === N);
+  const fs = M.fams.map(f => M.rows.filter(r => famOf(r.sen) === f).length).reduce((p, c) => p + c, 0); add('Jumlah per sensor (Tabel 1) = total', `${fmt(fs)} = ${fmt(N)}`, fs === N);
+  const ps = M.per.reduce((p, c) => p + c.n, 0); add(`Jumlah per ${M.unit} (Tabel 2) = total`, `${fmt(ps)} = ${fmt(N)}`, ps === N);
+  const u = new Set(M.rows.map(r => r.uid)).size; add('Tidak ada deteksi ganda', `${fmt(u)} ID unik dari ${fmt(N)} baris`, u === N);
+  const en = M.events.reduce((p, e) => p + e.n, 0), nn = M.near.filter(r => r.ev).length; add('Deteksi dalam tabel kejadian = deteksi berkode kejadian di desa & 5 km', `${fmt(en)} = ${fmt(nn)}`, en === nn);
+  const cd = CUACA.t.filter(t => t >= M.a && t <= M.b).length; add('Cakupan data cuaca harian', `${fmt(cd)} dari ${fmt(M.len)} hari (data s.d. ${tglID(CUACA.t[CUACA.t.length - 1])})`, cd === M.len);
+  add('Kelengkapan arsip titik panas NASA FIRMS', M.gap ? `belum ada data ${tglID(M.gap[0])} – ${tglID(M.gap[1])} (menunggu arsip NASA)` : `lengkap untuk periode (basis data diperbarui ${STATUS.terakhir_cek_utc.replace('T', ' ').slice(0, 16)} UTC)`, !M.gap);
+  if (M.ex.burn) { const bad = M.ex.burn.filter(m => m.lokasi !== M.ex.id || m.awal > M.b || m.akhir < M.a).length; add('Musim bekas terbakar sesuai lokasi & periode', `${M.ex.burn.length} musim beririsan; ${bad} tidak sesuai`, bad === 0); }
+  if (M.ex.fdrs) { const bad = M.ex.fdrs.days.filter(d => d.t < M.a || d.t > M.b).length; add('Indeks FDRS hanya hari di dalam periode', `${M.ex.fdrs.n} hari; ${bad} di luar periode`, bad === 0); }
+  return C;
+}
+/* blok bagian tambahan, dipakai PDF, Word & pratinjau: {h, p:[...], t:[{cap, rows, note}]} */
+function extraBlocks(M) {
+  const ex = M.ex, B = [];
+  // FDRS
+  { const b = { h: 'Indeks bahaya kebakaran harian (FDRS)', p: [], t: [] };
+    if (ex.fdrs) {
+      const f = ex.fdrs; b.p.push(`Tingkat bahaya kebakaran harian dihitung dengan Canadian Fire Weather Index System (Van Wagner 1987) dari data cuaca analisis ERA5/ECMWF di pusat lokasi, dengan kelas Fire Danger Rating System Indonesia (de Groot dkk. 2006; dipakai BMKG): tingkat harian = kelas tertinggi dari FFMC (bahan bakar halus) dan DC (kekeringan lapisan dalam). Data tersedia ${tglID(f.t0)} – ${tglID(f.t1)} (${f.n} hari dari ${fmt(M.len)} hari periode).`);
+      b.t.push({ cap: 'Jumlah hari menurut tingkat bahaya kebakaran', rows: [['Tingkat', 'Jumlah hari', 'Persen'], ...LVN.map((n, i) => [n, String(f.c[i]), fmt1(100 * f.c[i] / f.n) + '%'])] });
+      const hi = f.days.filter(d => d.lv >= 2);
+      if (hi.length) b.t.push({ cap: `Hari dengan tingkat Tinggi/Ekstrem (${hi.length})`, rows: [['Tanggal', 'Hujan (mm)', 'FFMC', 'DC', 'ISI', 'FWI', 'Tingkat'], ...hi.slice(0, 60).map(d => [tglID(d.t), fmt1(d.h), fmt1(d.ffmc), fmt(Math.round(d.dc)), fmt1(d.isi), fmt1(d.fwi), LVN[d.lv]])], note: hi.length > 60 ? `Ditampilkan 60 dari ${hi.length} hari.` : '' });
+      else b.p.push('Tidak ada hari dengan tingkat Tinggi atau Ekstrem pada periode ini.');
+    } else b.p.push(`Riwayat indeks bahaya kebakaran harian (FDRS) di sistem ini dimulai ${ex.fdrsFirst ? tglID(ex.fdrsFirst) : 'sejak sistem prakiraan aktif'}; periode yang dipilih tidak memiliki data FDRS. Kondisi cuaca periode ini tetap dilaporkan di bagian Cuaca (ERA5).`);
+    B.push(b); }
+  // Bekas terbakar
+  { const b = { h: 'Indikasi luas bekas terbakar (Sentinel-2)', p: [], t: [] };
+    b.p.push('Metode: citra Sentinel-2 L2A (ESA Copernicus) sebelum dan sesudah setiap musim kebakaran yang memiliki kejadian api di desa & radius 5 km; piksel dianggap terbakar bila dNBR ≥ 0,27 (Key & Benson 2006), reflektansi SWIR2 naik ≥ 0,02, NBR sesudah ≤ 0,20 di ≥ 2 citra cerah, petak ≥ 0,5 ha dan ≤ 1 km dari titik panas. Hasil adalah INDIKASI dari citra 20 m dan perlu verifikasi lapangan. Analisis dimulai musim 2023.');
+    if (!ex.burnOk) b.p.push('Data analisis bekas terbakar belum tersedia di basis data.');
+    else if (!ex.burn.length) b.p.push(`Tidak ada musim kebakaran yang dianalisis untuk ${SITE ? SITE.hd_nama : 'lokasi ini'} pada periode ${M.periodeTxt}.`);
+    else {
+      b.t.push({ cap: 'Musim kebakaran yang beririsan dengan periode laporan', rows: [['Musim (awal – akhir kejadian)', 'Kejadian', 'Deteksi', 'Status', 'Luas indikasi (ha)', 'dNBR tinggi (ha)', 'Citra cerah', 'Citra sebelum', 'Citra sesudah'],
+        ...ex.burn.map(m => [`${tglID(m.awal)} – ${tglID(m.akhir)}`, String(m.n_kejadian), String(m.n_deteksi), m.status === 'selesai' ? 'Terukur' : m.status === 'tertutup awan' ? 'Tertutup awan' : m.status, m.status === 'selesai' ? fmt1(m.luas_ha) : '–', m.status === 'selesai' ? fmt1(m.luas_tinggi_ha) : '–', m.cerah_persen != null ? m.cerah_persen + '%' : '–', (m.tanggal_sebelum || []).join(', ') || '–', (m.tanggal_sesudah || []).join(', ') || '–'])] });
+      if (ex.burn.some(m => m.awal < M.a || m.akhir > M.b)) b.p.push('Catatan: satu musim dianalisis utuh; musim yang sebagian berada di luar periode laporan tetap ditampilkan utuh.');
+      b.p.push(`Poligon bekas terbakar (SHP, UTM 49N) dapat diunduh: data/export/bekas_terbakar_${ex.id}_UTM49N_shp.zip.`);
+    }
+    B.push(b); }
+  // Hansen
+  { const b = { h: 'Kehilangan tutupan pohon tahunan (Hansen/UMD GFC)', p: [], t: [] };
+    if (ex.loss) {
+      const L = ex.loss, ys = []; for (let y = L.y0; y <= L.y1; y++) ys.push(y);
+      b.p.push(`${L.definisi} Sumber: ${L.sumber}.`);
+      b.t.push({ cap: 'Ringkasan per zona', rows: [['Zona', 'Luas wilayah (ha)', 'Hutan tahun 2000 (ha)', `Kehilangan ${L.y0 === L.y1 ? L.y0 : L.y0 + '–' + L.y1} (ha)`, '% dari hutan 2000'], ...L.zones.map(z => [z.n, fmt1(z.luas), fmt1(z.hutan2000), fmt1(z.tot), z.hutan2000 ? fmt1(100 * z.tot / z.hutan2000) + '%' : '–'])] });
+      b.t.push({ cap: 'Kehilangan per tahun (ha)', rows: [['Tahun', ...L.zones.map(z => z.n), 'Jumlah'], ...ys.map(y => [String(y), ...L.zones.map(z => fmt1(z.per[y])), fmt1(L.zones.reduce((p, z) => p + z.per[y], 0))]), ['Jumlah', ...L.zones.map(z => fmt1(z.tot)), fmt1(L.zones.reduce((p, z) => p + z.tot, 0))]] });
+      if (L.partial) b.p.push('Catatan: data Hansen bersifat tahunan; tahun yang hanya sebagian masuk periode laporan dihitung untuk satu tahun penuh.');
+      if (L.after) b.p.push('Catatan: data Hansen GFC v1.13 tersedia sampai tahun 2025; perubahan setelah 2025 dipantau dengan peringatan perubahan tutupan Sentinel-2 di aplikasi.');
+    } else b.p.push('Periode yang dipilih berada di luar cakupan data tahunan Hansen GFC (2001–2025). Perubahan tutupan terbaru dipantau melalui peringatan perubahan tutupan Sentinel-2 di aplikasi.');
+    B.push(b); }
+  return B;
+}
+function kpis(M) {
+  const z = M.zc, ex = M.ex, done = (ex.burn || []).filter(m => m.status === 'selesai');
+  const K = [['Total deteksi', fmt(M.rows.length)], ['Di Hutan Desa', fmt(z[0])], ['Di desa (luar HD)', fmt(z[1])], ['Radius 0–5 km', fmt(z[2])], ['Kejadian api (desa & 5 km)', fmt(M.events.length)],
+    ['Curah hujan (mm)', M.rs ? fmt(Math.round(M.rs.sum)) + (M.rn ? ` (${Math.round(100 * M.rs.sum / M.rn)}% normal)` : '') : '–']];
+  K.push(['Indikasi bekas terbakar (ha)', done.length ? fmt1(done.reduce((p, m) => p + m.luas_ha, 0)) : '–']);
+  K.push(['Kehilangan pohon di HD (ha)', ex.loss ? fmt1(ex.loss.zones[0].tot) : '–']);
+  return K;
+}
+
 /* ---------------- pratinjau ---------------- */
 function htmlTable(t, max) { const rows = max ? t.slice(0, max + 1) : t; return `<div class="tw"><table><thead><tr>${rows[0].map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.slice(1).map(r => `<tr>${r.map(v => `<td>${esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>` + (max && t.length - 1 > max ? `<p class="rp-note">… ${t.length - 1 - max} baris lainnya ada di file PDF/Word/CSV.</p>` : ''); }
+function params(M) {
+  return [['Lokasi', SITE ? `${SITE.hd_nama} (${SITE.lphd || 'LPHD'}), Desa ${SITE.desa_nama}, Kec. ${SITE.kec}, Kab. Kapuas Hulu` : 'Hutan Desa Nanga Lauk'],
+    ['Dasar hukum', SITE && SITE.sk ? `${SITE.sk}${SITE.sk_tgl ? ', tanggal ' + tglID(SITE.sk_tgl) : ''}` : '–'],
+    ['Wilayah laporan', M.W.nama], ['Periode', `${M.periodeTxt} (${fmt(M.len)} hari)`], ['Sensor', M.sensor === 'semua' ? 'VIIRS & MODIS' : M.sensor.toUpperCase()],
+    ['Basis data diperbarui', STATUS.terakhir_cek_utc.replace('T', ' ').slice(0, 16) + ' UTC'], ['Laporan dibuat', M.dibuat]];
+}
 function preview(M, F, T) {
   const img = c => `<img src="${c.toDataURL('image/png')}" alt="" style="width:100%;max-width:900px;border:1px solid var(--line);margin:6px 0">`;
-  $('#rpPreview').innerHTML = `<div class="rp-doc">${LOGO ? `<div style="display:flex;align-items:center;gap:12px;border-bottom:2px solid #22382B;padding-bottom:10px;margin-bottom:14px"><img src="${LOGO.url}" alt="PRCF Indonesia" style="height:46px;width:auto;border-radius:4px"><div><b style="font-size:15px">Yayasan PRCF Indonesia</b><div class="rp-note" style="margin:0">Fire Hotspot · Sistem Pemantauan Titik Panas Hutan Desa</div></div></div>` : ''}<h3>${esc(M.title)}</h3><p class="rp-note">Periode ${esc(M.periodeTxt)} · dibuat ${new Date().toLocaleString('id-ID')} · sumber NASA FIRMS & ERA5</p>
-  <h4>1. Ringkasan</h4><ul>${M.summary.map(s => `<li>${esc(s)}</li>`).join('')}</ul>
-  <h4>2. Cuaca dan kaitannya dengan titik panas</h4>${M.weatherTxt.map(s => `<p>${esc(s)}</p>`).join('')}
-  <h4>3. Peta</h4>${img(F.map)}${img(F.zoom)}
-  <h4>4. Grafik</h4>${img(F.time)}${F.sensor ? img(F.sensor) : ''}${F.season ? img(F.season) : ''}${F.ctx ? img(F.ctx) : ''}
-  <h4>5. Rekapitulasi</h4><p class="rp-note">Tabel 1. Deteksi per zona dan sensor</p>${htmlTable(T.zona)}<p class="rp-note">Tabel 2. Deteksi dan curah hujan per ${M.unit}</p>${htmlTable(T.periode, 40)}${T.petak.length > 1 ? `<p class="rp-note">Tabel 3. Petak patroli dengan titik panas</p>${htmlTable(T.petak)}` : ''}
-  <h4>6. Kejadian api di desa & radius 5 km (${M.events.length})</h4>${T.ev.length > 1 ? htmlTable(T.ev, 15) : '<p>Tidak ada kejadian.</p>'}
+  const XB = extraBlocks(M); let n = 0; const h = t => `<h4>${++n}. ${esc(t)}</h4>`;
+  const blk = b => h(b.h) + b.p.map(x => `<p>${esc(x)}</p>`).join('') + b.t.map(t => `<p class="rp-note">${esc(t.cap)}</p>${htmlTable(t.rows, 30)}${t.note ? `<p class="rp-note">${esc(t.note)}</p>` : ''}`).join('');
+  const bad = M.checks.filter(c => c[2] !== 'Sesuai').length;
+  $('#rpPreview').innerHTML = `<div class="rp-doc">${LOGO ? `<div style="display:flex;align-items:center;gap:12px;border-bottom:2px solid #22382B;padding-bottom:10px;margin-bottom:14px"><img src="${LOGO.url}" alt="PRCF Indonesia" style="height:46px;width:auto;border-radius:4px"><div><b style="font-size:15px">Yayasan PRCF Indonesia</b><div class="rp-note" style="margin:0">Fire Hotspot · Sistem Pemantauan Titik Panas Hutan Desa</div></div></div>` : ''}<h3>${esc(M.title)}</h3>
+  <div class="tw"><table><tbody>${params(M).map(([k, v]) => `<tr><th style="text-align:left;width:34%">${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</tbody></table></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:12px 0">${kpis(M).map(([k, v]) => `<div style="border:1px solid var(--line);border-radius:10px;padding:8px 10px"><div style="font:700 18px var(--f-data,monospace)">${esc(v)}</div><div class="rp-note" style="margin:0">${esc(k)}</div></div>`).join('')}</div>
+  <p class="rp-note" style="color:${bad ? '#B3261E' : '#2E7D4F'}">Verifikasi otomatis: ${M.checks.length - bad} dari ${M.checks.length} pemeriksaan sesuai${bad ? ' — lihat Lampiran B' : ''}.</p>
+  ${h('Ringkasan eksekutif')}<ul>${M.summary.map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+  ${h('Cuaca dan kaitannya dengan titik panas')}${M.weatherTxt.map(s => `<p>${esc(s)}</p>`).join('')}
+  ${blk(XB[0])}
+  ${h('Peta')}${img(F.map)}${img(F.zoom)}
+  ${h('Grafik')}${img(F.time)}${F.sensor ? img(F.sensor) : ''}${F.season ? img(F.season) : ''}${F.ctx ? img(F.ctx) : ''}
+  ${h('Rekapitulasi')}<p class="rp-note">Tabel 1. Deteksi per zona dan sensor</p>${htmlTable(T.zona)}<p class="rp-note">Tabel 2. Deteksi dan curah hujan per ${M.unit}</p>${htmlTable(T.periode, 40)}${T.petak.length > 1 ? `<p class="rp-note">Tabel 3. Petak patroli dengan titik panas</p>${htmlTable(T.petak)}` : ''}
+  ${h(`Kejadian api di desa & radius 5 km (${M.events.length})`)}${T.ev.length > 1 ? htmlTable(T.ev, 15) : '<p>Tidak ada kejadian.</p>'}
+  ${blk(XB[1])}${blk(XB[2])}
   <h4>Lampiran A. Detail deteksi di desa & radius 5 km (${M.near.length})</h4>${T.detail.length > 1 ? htmlTable(T.detail, 30) : '<p>Tidak ada deteksi.</p>'}
-  <h4>Lampiran B–C. Kamus data, sumber data & jejak audit</h4><p class="rp-note">Lihat file PDF/Word.</p></div>`;
+  <h4>Lampiran B. Verifikasi data</h4>${htmlTable(T.cek)}
+  <h4>Lampiran C–D. Kamus data, sumber data & jejak audit</h4><p class="rp-note">Lihat file PDF/Word.</p></div>`;
 }
 
 /* ---------------- PDF ---------------- */
-const pdfTxt = s => String(s ?? '').replace(/≤/g, '<=').replace(/≥/g, '>=').replace(/…/g, '...').replace(/[‘’]/g, "'").replace(/[“”]/g, '"');
+const pdfTxt = s => String(s ?? '').replace(/≤/g, '<=').replace(/≥/g, '>=').replace(/…/g, '...').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/µ/g, 'u').replace(/·/g, '-');
 async function exportPDF(M, F, T) {
   await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
   await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');
-  const { jsPDF } = window.jspdf; const doc = new jsPDF({ unit: 'mm', format: 'a4' }); const PW = 210, ML = 16, CW = PW - 2 * ML; let y = 18;
-  const need = h => { if (y + h > 280) { doc.addPage(); y = 18; } };
-  const H1 = t => { need(14); doc.setFont('helvetica', 'bold'); doc.setFontSize(12.5); doc.setTextColor(HEAD); doc.text(pdfTxt(t), ML, y); y += 7; };
+  const { jsPDF } = window.jspdf; const doc = new jsPDF({ unit: 'mm', format: 'a4' }); const PW = 210, ML = 16, CW = PW - 2 * ML; let y = 24;
+  const TOC = []; let sec = 0;
+  const need = h => { if (y + h > 280) { doc.addPage('a4', 'portrait'); y = 24; } };
+  const H1 = (t, num = true, keep = 16) => { need(keep); const tt = num ? `${++sec}. ${t}` : t; TOC.push([tt, doc.getNumberOfPages()]); doc.setFillColor(HEAD); doc.rect(ML, y - 4.6, 1.6, 6.2, 'F'); doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(HEAD); doc.text(pdfTxt(tt), ML + 4, y); y += 8; };
   const P = (t, size = 9.5, col = INK, style = 'normal') => { doc.setFont('helvetica', style); doc.setFontSize(size); doc.setTextColor(col); const lines = doc.splitTextToSize(pdfTxt(t), CW); for (const l of lines) { need(5); doc.text(l, ML, y); y += size * 0.46; } y += 1.5; };
+  const CAP = t => P(t, 8.5, MUTED, 'bold');
   const IMGp = (c, wmm) => { const h = wmm * c.height / c.width; need(h + 2); doc.addImage(c.toDataURL('image/jpeg', 0.9), 'JPEG', ML + (CW - wmm) / 2, y, wmm, h); y += h + 3; };
-  const TAB = (t, fs = 7.5, opts = {}) => { doc.autoTable({ startY: y, head: [t[0].map(pdfTxt)], body: t.slice(1).map(r => r.map(pdfTxt)), margin: { left: ML, right: ML }, styles: { fontSize: fs, cellPadding: 1.2, textColor: INK, lineColor: LINE, lineWidth: 0.1 }, headStyles: { fillColor: HEAD, textColor: 255 }, alternateRowStyles: { fillColor: [241, 244, 241] }, ...opts }); y = doc.lastAutoTable.finalY + 5; };
-  if (LOGO) { const lw = 26, lh = lw * LOGO.r; doc.addImage(LOGO.url, 'JPEG', ML, 10, lw, lh); doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.setTextColor(HEAD); doc.text('Yayasan PRCF Indonesia', ML + lw + 5, 17);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(MUTED); doc.text('Fire Hotspot - Sistem Pemantauan Titik Panas Hutan Desa, Kabupaten Kapuas Hulu', ML + lw + 5, 22.5);
-    doc.setDrawColor(HEAD); doc.setLineWidth(0.6); doc.line(ML, 10 + lh + 3, PW - ML, 10 + lh + 3); y = 10 + lh + 13; }
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(17); doc.setTextColor(HEAD); doc.splitTextToSize(pdfTxt(M.title), CW).forEach(l => { doc.text(l, ML, y); y += 7.5; });
-  P(`Periode: ${M.periodeTxt}  |  Dibuat: ${new Date().toLocaleString('id-ID')}  |  Sumber: NASA FIRMS, ERA5 (Open-Meteo)`, 8.5, MUTED);
-  H1('1. Ringkasan'); M.summary.forEach(s => P('• ' + s));
-  H1('2. Cuaca dan kaitannya dengan titik panas'); M.weatherTxt.forEach(s => P(s));
-  H1('3. Peta'); IMGp(F.map, 150); IMGp(F.zoom, 150);
-  H1('4. Grafik'); IMGp(F.time, CW); if (F.sensor) IMGp(F.sensor, CW); if (F.season) IMGp(F.season, CW); if (F.ctx) IMGp(F.ctx, CW);
-  H1('5. Rekapitulasi'); P('Tabel 1. Deteksi per zona dan sensor', 8.5, MUTED); TAB(T.zona, 8);
-  P(`Tabel 2. Deteksi dan curah hujan per ${M.unit}`, 8.5, MUTED); TAB(T.periode, 7.5);
-  if (T.petak.length > 1) { P('Tabel 3. Petak patroli dengan titik panas', 8.5, MUTED); TAB(T.petak, 7.5, { columnStyles: { 2: { cellWidth: 120 } } }); }
-  H1(`6. Kejadian api di desa & radius 5 km (${M.events.length})`);
+  const TAB = (t, fs = 7.5, opts = {}) => { doc.autoTable({ startY: y, head: [t[0].map(pdfTxt)], body: t.slice(1).map(r => r.map(pdfTxt)), margin: { left: ML, right: ML, top: 22 }, styles: { fontSize: fs, cellPadding: 1.2, textColor: INK, lineColor: LINE, lineWidth: 0.1 }, headStyles: { fillColor: HEAD, textColor: 255 }, alternateRowStyles: { fillColor: [241, 244, 241] }, ...opts }); y = doc.lastAutoTable.finalY + 5; };
+  const BLK = b => { H1(b.h); b.p.forEach(x => P(x)); b.t.forEach(t => { CAP(t.cap); TAB(t.rows, t.rows[0].length > 7 ? 6.6 : 7.8); if (t.note) P(t.note, 8, MUTED); }); };
+  /* ---- sampul ---- */
+  doc.setFillColor(HEAD); doc.rect(0, 0, PW, 112, 'F');
+  if (LOGO) { const lw = 30, lh = lw * LOGO.r; doc.setFillColor(255, 255, 255); doc.roundedRect(ML - 2, 14, lw + 4, lh + 4, 2, 2, 'F'); doc.addImage(LOGO.url, 'JPEG', ML, 16, lw, lh); }
+  doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.text('Yayasan PRCF Indonesia', ML + 38, 24);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.text('Fire Hotspot - Sistem Pemantauan Titik Panas Hutan Desa, Kabupaten Kapuas Hulu', ML + 38, 29.5);
+  doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(214, 228, 218); doc.text('LAPORAN PEMANTAUAN TITIK PANAS & KEBAKARAN', ML, 62);
+  doc.setTextColor(255, 255, 255); doc.setFontSize(20); let cy = 71; doc.splitTextToSize(pdfTxt(SITE ? SITE.hd_nama : M.title), CW).forEach(l => { doc.text(l, ML, cy); cy += 8.5; });
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.text(pdfTxt(`Periode ${M.periodeTxt}`), ML, cy + 1); cy += 7;
+  doc.setFontSize(9); doc.setTextColor(214, 228, 218); doc.splitTextToSize(pdfTxt(M.W.nama), CW).forEach(l => { doc.text(l, ML, cy); cy += 4.5; });
+  y = 122; doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(HEAD); doc.text('Parameter laporan (sesuai pilihan pengguna)', ML, y); y += 2;
+  doc.autoTable({ startY: y, body: params(M).map(r => r.map(pdfTxt)), margin: { left: ML, right: ML }, theme: 'plain', styles: { fontSize: 8.5, cellPadding: 1.3, textColor: INK }, columnStyles: { 0: { cellWidth: 42, fontStyle: 'bold', textColor: MUTED } } });
+  y = doc.lastAutoTable.finalY + 6;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(HEAD); doc.text('Angka kunci periode ini', ML, y); y += 3;
+  const K = kpis(M), bw = (CW - 3 * 4) / 4, bh = 21;
+  K.forEach(([k, v], i) => { const x = ML + (i % 4) * (bw + 4), yy = y + Math.floor(i / 4) * (bh + 4); doc.setDrawColor(LINE); doc.setFillColor(246, 248, 246); doc.roundedRect(x, yy, bw, bh, 2, 2, 'FD');
+    doc.setFillColor(i === 1 ? '#C21D1D' : i === 2 ? '#E2621B' : i === 3 ? '#E8A317' : HEAD); doc.rect(x, yy + 2, 1.2, bh - 4, 'F');
+    const [big, small] = pdfTxt(v).split(' (');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(INK); doc.text(big, x + 4, yy + 9);
+    if (small) { doc.setFontSize(7); doc.setTextColor(MUTED); doc.text('(' + small, x + 4, yy + 13); }
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.3); doc.setTextColor(MUTED); doc.splitTextToSize(pdfTxt(k), bw - 6).forEach((l, j) => doc.text(l, x + 4, yy + 17 + j * 3)); });
+  y += 2 * (bh + 4) + 4;
+  const bad = M.checks.filter(c => c[2] !== 'Sesuai').length;
+  doc.setFillColor(bad ? '#FCEDEA' : '#E8F3EC'); doc.roundedRect(ML, y, CW, 11, 2, 2, 'F'); doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(bad ? '#B3261E' : '#1E6B3E');
+  doc.text(pdfTxt(`Verifikasi otomatis: ${M.checks.length - bad} dari ${M.checks.length} pemeriksaan konsistensi data sesuai${bad ? ' - lihat Lampiran B' : ''}.`), ML + 4, y + 6.8); y += 16;
+  P('Sumber data resmi: NASA FIRMS (titik panas), Copernicus ERA5 & ECMWF (cuaca), ESA Copernicus Sentinel-2 (bekas terbakar), Hansen/UMD Global Forest Change (tutupan pohon). Nilai asli sumber tidak diubah; metode dan jejak audit di Lampiran D.', 7.8, MUTED);
+  /* ---- daftar isi (diisi di akhir) ---- */
+  doc.addPage('a4', 'portrait'); const tocPage = doc.getNumberOfPages();
+  doc.addPage('a4', 'portrait'); y = 24;
+  H1('Ringkasan eksekutif'); M.summary.forEach(s => P('• ' + s));
+  H1('Cuaca dan kaitannya dengan titik panas'); M.weatherTxt.forEach(s => P(s));
+  const XB = extraBlocks(M); BLK(XB[0]);
+  H1('Peta', true, 120); IMGp(F.map, 150); IMGp(F.zoom, 150);
+  H1('Grafik', true, 20 + CW * F.time.height / F.time.width); IMGp(F.time, CW); if (F.sensor) IMGp(F.sensor, CW); if (F.season) IMGp(F.season, CW); if (F.ctx) IMGp(F.ctx, CW);
+  H1('Rekapitulasi'); CAP('Tabel 1. Deteksi per zona dan sensor'); TAB(T.zona, 8);
+  CAP(`Tabel 2. Deteksi dan curah hujan per ${M.unit}`); TAB(T.periode, 7.5);
+  if (T.petak.length > 1) { CAP('Tabel 3. Petak patroli dengan titik panas'); TAB(T.petak, 7.5, { columnStyles: { 2: { cellWidth: 120 } } }); }
+  H1(`Kejadian api di desa & radius 5 km (${M.events.length})`);
   if (T.ev.length > 1) { if (M.events.length > CAP_EVENTS) P(`Ditampilkan ${CAP_EVENTS} kejadian (diurutkan dari zona terdekat). Seluruh kejadian ada di file CSV.`, 8.5, MUTED); TAB(T.ev, 7); } else P('Tidak ada kejadian pada periode ini.');
-  doc.addPage('a4', 'landscape'); y = 16; const ML2 = 12;
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(12.5); doc.setTextColor(HEAD); doc.text(pdfTxt(`Lampiran A. Detail deteksi di Hutan Desa, desa & radius 5 km (${M.near.length})`), ML2, y); y += 5;
+  BLK(XB[1]); BLK(XB[2]);
+  doc.addPage('a4', 'landscape'); y = 24; const ML2 = 12;
+  TOC.push([`Lampiran A. Detail deteksi di Hutan Desa, desa & radius 5 km (${M.near.length})`, doc.getNumberOfPages()]);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(12.5); doc.setTextColor(HEAD); doc.text(pdfTxt(TOC[TOC.length - 1][0]), ML2, y); y += 5;
   if (T.detailNote) { doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(MUTED); doc.text(pdfTxt(T.detailNote), ML2, y + 2); y += 6; }
-  if (T.detail.length > 1) { doc.autoTable({ startY: y + 2, head: [T.detail[0].map(pdfTxt)], body: T.detail.slice(1).map(r => r.map(pdfTxt)), margin: { left: ML2, right: ML2 }, styles: { fontSize: 6.8, cellPadding: 1, textColor: INK, lineColor: LINE, lineWidth: 0.1 }, headStyles: { fillColor: HEAD, textColor: 255 }, alternateRowStyles: { fillColor: [241, 244, 241] } }); y = doc.lastAutoTable.finalY + 6; }
+  if (T.detail.length > 1) { doc.autoTable({ startY: y + 2, head: [T.detail[0].map(pdfTxt)], body: T.detail.slice(1).map(r => r.map(pdfTxt)), margin: { left: ML2, right: ML2, top: 22 }, styles: { fontSize: 6.8, cellPadding: 1, textColor: INK, lineColor: LINE, lineWidth: 0.1 }, headStyles: { fillColor: HEAD, textColor: 255 }, alternateRowStyles: { fillColor: [241, 244, 241] } }); y = doc.lastAutoTable.finalY + 6; }
   else { doc.setFontSize(9.5); doc.text('Tidak ada deteksi pada periode ini.', ML2, y + 6); y += 12; }
-  doc.addPage('a4', 'portrait'); y = 18;
-  H1('Lampiran B. Kamus data'); TAB(T.kamus, 8, { columnStyles: { 0: { cellWidth: 35 } } });
-  H1('Lampiran C. Sumber data, metode & jejak audit'); sources(M).forEach(([k, v]) => P(`${k}. ${v}`, 8.8));
-  const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++) { doc.setPage(i); const w = doc.internal.pageSize.getWidth(), h = doc.internal.pageSize.getHeight(); if (LOGO && i > 1) doc.addImage(LOGO.url, 'JPEG', w - 12 - 13, 4.5, 13, 13 * LOGO.r); doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(MUTED); doc.text(pdfTxt(`${M.title} | ${M.periodeTxt}`), 12, h - 8); doc.text(`Halaman ${i} dari ${n}`, w - 12, h - 8, { align: 'right' }); }
+  doc.addPage('a4', 'portrait'); y = 24;
+  H1('Lampiran B. Verifikasi data', false); P('Pemeriksaan konsistensi otomatis atas data yang masuk ke laporan ini, dijalankan saat laporan dibuat.', 8.8, MUTED);
+  TAB(T.cek, 8, { columnStyles: { 0: { cellWidth: 70 }, 2: { cellWidth: 26, fontStyle: 'bold' } }, didParseCell: c => { if (c.section === 'body' && c.column.index === 2) c.cell.styles.textColor = c.cell.raw === 'Sesuai' ? [30, 107, 62] : [179, 38, 30]; } });
+  H1('Lampiran C. Kamus data', false); TAB(T.kamus, 8, { columnStyles: { 0: { cellWidth: 35 } } });
+  H1('Lampiran D. Sumber data, metode & jejak audit', false); sources(M).forEach(([k, v]) => P(`${k}. ${v}`, 8.8));
+  /* ---- isi daftar isi ---- */
+  doc.setPage(tocPage); let ty = 30; doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(HEAD); doc.text('Daftar isi', ML, ty); ty += 10;
+  TOC.forEach(([t, pg]) => { doc.setFont('helvetica', /^\d/.test(t) ? 'normal' : 'italic'); doc.setFontSize(10); doc.setTextColor(INK); const tt = pdfTxt(t).slice(0, 95); doc.text(tt, ML, ty); const w = doc.getTextWidth(tt);
+    doc.setTextColor(MUTED); doc.text('.'.repeat(Math.max(2, Math.floor((CW - w - 12) / doc.getTextWidth('.')))), ML + w + 2, ty); doc.setTextColor(INK); doc.text(String(pg), PW - ML, ty, { align: 'right' }); ty += 7.5; });
+  const n = doc.getNumberOfPages();
+  for (let i = 2; i <= n; i++) { doc.setPage(i); const w = doc.internal.pageSize.getWidth(), h = doc.internal.pageSize.getHeight();
+    if (LOGO) doc.addImage(LOGO.url, 'JPEG', 12, 6, 9, 9 * LOGO.r); doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(HEAD); doc.text('Yayasan PRCF Indonesia - Fire Hotspot', 24, 10.5);
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(MUTED); doc.text(pdfTxt(`${SITE ? SITE.hd_nama : ''} | ${M.periodeTxt}`), w - 12, 10.5, { align: 'right' }); doc.setDrawColor(LINE); doc.setLineWidth(0.3); doc.line(12, 15.5, w - 12, 15.5);
+    doc.setFontSize(7.5); doc.text(pdfTxt(`${M.title} | ${M.periodeTxt}`).slice(0, 150), 12, h - 8); doc.text(`Halaman ${i} dari ${n}`, w - 12, h - 8, { align: 'right' }); }
   doc.save(fname(M, 'pdf')); return n;
 }
 
 /* ---------------- Word ---------------- */
 async function exportDOCX(M, F, T) {
   await loadScript('https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js');
-  const d = window.docx; const run = (t, o = {}) => new d.TextRun({ text: String(t ?? ''), font: 'Arial', size: o.size || 20, bold: o.bold, color: o.color });
+  const d = window.docx; const run = (t, o = {}) => new d.TextRun({ text: String(t ?? ''), font: 'Arial', size: o.size || 20, bold: o.bold, italics: o.it, color: o.color });
   const P = (t, o = {}) => new d.Paragraph({ children: [run(t, o)], spacing: { after: 100 }, bullet: o.bullet ? { level: 0 } : undefined });
-  const H = (t, lvl = 1) => new d.Paragraph({ children: [run(t, { bold: true, size: lvl === 0 ? 34 : 25, color: '22382B' })], spacing: { before: 220, after: 120 } });
+  let sec = 0; const H = (t, num = true) => new d.Paragraph({ heading: d.HeadingLevel.HEADING_1, children: [run(num ? `${++sec}. ${t}` : t, { bold: true, size: 26, color: '22382B' })], spacing: { before: 240, after: 120 }, border: { left: { style: d.BorderStyle.SINGLE, size: 18, color: '22382B', space: 6 } } });
+  const CAPd = t => P(t, { size: 17, color: '5B6A61', bold: true });
   const img = async (c, wcm) => { const blob = await new Promise(ok => c.toBlob(ok, 'image/png')); const buf = await blob.arrayBuffer(); const wpx = wcm * 37.8; return new d.Paragraph({ alignment: d.AlignmentType.CENTER, children: [new d.ImageRun({ data: buf, transformation: { width: wpx, height: wpx * c.height / c.width } })] }); };
-  const TB = (t, size = 15) => new d.Table({ width: { size: 100, type: d.WidthType.PERCENTAGE }, rows: t.map((r, i) => new d.TableRow({ tableHeader: i === 0, children: r.map(v => new d.TableCell({ shading: i === 0 ? { fill: '22382B', type: d.ShadingType.CLEAR, color: 'auto' } : i % 2 === 0 ? { fill: 'F1F4F1', type: d.ShadingType.CLEAR, color: 'auto' } : undefined, margins: { top: 30, bottom: 30, left: 60, right: 60 }, children: [new d.Paragraph({ children: [run(v, { size, bold: i === 0, color: i === 0 ? 'FFFFFF' : undefined })] })] })) })) });
+  const cell = (v, o = {}) => new d.TableCell({ shading: o.fill ? { fill: o.fill, type: d.ShadingType.CLEAR, color: 'auto' } : undefined, width: o.w ? { size: o.w, type: d.WidthType.PERCENTAGE } : undefined, margins: { top: 40, bottom: 40, left: 80, right: 80 }, children: (Array.isArray(v) ? v : [v]).map(x => x instanceof d.Paragraph ? x : new d.Paragraph({ children: [run(x, o)] })) });
+  const TB = (t, size = 15, stat) => new d.Table({ width: { size: 100, type: d.WidthType.PERCENTAGE }, rows: t.map((r, i) => new d.TableRow({ tableHeader: i === 0, children: r.map((v, j) => cell(v, { size, bold: i === 0 || (stat && j === 2), color: i === 0 ? 'FFFFFF' : stat && j === 2 ? (v === 'Sesuai' ? '1E6B3E' : 'B3261E') : undefined, fill: i === 0 ? '22382B' : i % 2 === 0 ? 'F1F4F1' : undefined })) })) });
+  const BLKd = b => [H(b.h), ...b.p.map(x => P(x)), ...b.t.flatMap(t => [CAPd(t.cap), TB(t.rows, t.rows[0].length > 7 ? 13 : 15), ...(t.note ? [P(t.note, { size: 16, color: '5B6A61' })] : []), P('')])];
   let logoBuf = null; if (LOGO) { const bl = await new Promise(ok => LOGO.c.toBlob(ok, 'image/jpeg', 0.95)); logoBuf = await bl.arrayBuffer(); }
-  const head = () => logoBuf ? { default: new d.Header({ children: [new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [new d.ImageRun({ data: logoBuf, transformation: { width: 48, height: Math.round(48 * LOGO.r) } })] })] }) } : undefined;
-  const cover = logoBuf ? [new d.Paragraph({ children: [new d.ImageRun({ data: logoBuf, transformation: { width: 110, height: Math.round(110 * LOGO.r) } })] }),
-    new d.Paragraph({ children: [run('Yayasan PRCF Indonesia', { bold: true, size: 24, color: '22382B' })] }), new d.Paragraph({ children: [run('Fire Hotspot · Sistem Pemantauan Titik Panas Hutan Desa, Kabupaten Kapuas Hulu', { size: 17, color: '5B6A61' })], border: { bottom: { style: d.BorderStyle.SINGLE, size: 12, color: '22382B', space: 6 } }, spacing: { after: 200 } })] : [];
-  const main = [...cover, H(M.title, 0), P(`Periode: ${M.periodeTxt} · Dibuat: ${new Date().toLocaleString('id-ID')} · Sumber: NASA FIRMS, ERA5 (Open-Meteo)`, { size: 17, color: '5B6A61' }),
-    H('1. Ringkasan'), ...M.summary.map(s => P(s, { bullet: true })), H('2. Cuaca dan kaitannya dengan titik panas'), ...M.weatherTxt.map(s => P(s)),
-    H('3. Peta'), await img(F.map, 15), await img(F.zoom, 15), H('4. Grafik'), await img(F.time, 16.5)];
+  const head = () => new d.Header({ children: [new d.Paragraph({ border: { bottom: { style: d.BorderStyle.SINGLE, size: 4, color: 'D3DBD5', space: 4 } }, tabStops: [{ type: d.TabStopType.RIGHT, position: 9900 }], children: [...(logoBuf ? [new d.ImageRun({ data: logoBuf, transformation: { width: 30, height: Math.round(30 * LOGO.r) } }), run('  ')] : []), run('Yayasan PRCF Indonesia – Fire Hotspot', { size: 15, bold: true, color: '22382B' }), run(`\t${SITE ? SITE.hd_nama + ' | ' : ''}${M.periodeTxt}`, { size: 15, color: '5B6A61' })] })] });
+  const foot = () => new d.Footer({ children: [new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [run(`${M.title} | Halaman `, { size: 15, color: '5B6A61' }), new d.TextRun({ children: [d.PageNumber.CURRENT], font: 'Arial', size: 15, color: '5B6A61' })] })] });
+  const K = kpis(M), bad = M.checks.filter(c => c[2] !== 'Sesuai').length;
+  const kpiT = new d.Table({ width: { size: 100, type: d.WidthType.PERCENTAGE }, rows: [0, 1].map(r => new d.TableRow({ children: K.slice(r * 4, r * 4 + 4).map(([k, v]) => cell([new d.Paragraph({ children: [run(v, { size: 28, bold: true, color: '1D2A22' })] }), new d.Paragraph({ children: [run(k, { size: 15, color: '5B6A61' })] })], { fill: 'F6F8F6', w: 25 })) })) });
+  const cover = [
+    ...(logoBuf ? [new d.Paragraph({ children: [new d.ImageRun({ data: logoBuf, transformation: { width: 120, height: Math.round(120 * LOGO.r) } })] })] : []),
+    new d.Paragraph({ children: [run('Yayasan PRCF Indonesia', { bold: true, size: 26, color: '22382B' })] }),
+    new d.Paragraph({ children: [run('Fire Hotspot · Sistem Pemantauan Titik Panas Hutan Desa, Kabupaten Kapuas Hulu', { size: 17, color: '5B6A61' })], border: { bottom: { style: d.BorderStyle.SINGLE, size: 12, color: '22382B', space: 6 } }, spacing: { after: 600 } }),
+    new d.Paragraph({ children: [run('LAPORAN PEMANTAUAN TITIK PANAS & KEBAKARAN', { bold: true, size: 18, color: '5B6A61' })] }),
+    new d.Paragraph({ children: [run(SITE ? SITE.hd_nama : M.title, { bold: true, size: 44, color: '22382B' })], spacing: { after: 80 } }),
+    new d.Paragraph({ children: [run(`Periode ${M.periodeTxt}`, { size: 24 })], spacing: { after: 300 } }),
+    CAPd('Parameter laporan (sesuai pilihan pengguna)'),
+    new d.Table({ width: { size: 100, type: d.WidthType.PERCENTAGE }, rows: params(M).map(([k, v]) => new d.TableRow({ children: [cell(k, { size: 17, bold: true, color: '5B6A61', w: 28 }), cell(v, { size: 17, w: 72 })] })) }),
+    P(''), CAPd('Angka kunci periode ini'), kpiT, P(''),
+    P(`Verifikasi otomatis: ${M.checks.length - bad} dari ${M.checks.length} pemeriksaan konsistensi data sesuai${bad ? ' – lihat Lampiran B' : ''}.`, { size: 17, bold: true, color: bad ? 'B3261E' : '1E6B3E' }),
+    P('Sumber data resmi: NASA FIRMS (titik panas), Copernicus ERA5 & ECMWF (cuaca), ESA Copernicus Sentinel-2 (bekas terbakar), Hansen/UMD Global Forest Change (tutupan pohon). Nilai asli sumber tidak diubah; metode dan jejak audit di Lampiran D.', { size: 15, color: '5B6A61' })];
+  const toc = [new d.Paragraph({ children: [run('Daftar isi', { bold: true, size: 30, color: '22382B' })], spacing: { after: 200 } }), new d.TableOfContents('Daftar isi', { hyperlink: true, headingStyleRange: '1-1' }),
+    P('(Jika daftar isi kosong, klik kanan lalu pilih "Update Field" di Microsoft Word.)', { size: 15, color: '5B6A61', it: true })];
+  const XB = extraBlocks(M);
+  const main = [H('Ringkasan eksekutif'), ...M.summary.map(s => P(s, { bullet: true })), H('Cuaca dan kaitannya dengan titik panas'), ...M.weatherTxt.map(s => P(s)), ...BLKd(XB[0]),
+    H('Peta'), await img(F.map, 15), await img(F.zoom, 15), H('Grafik'), await img(F.time, 16.5)];
   if (F.sensor) main.push(await img(F.sensor, 16.5)); if (F.season) main.push(await img(F.season, 16.5)); if (F.ctx) main.push(await img(F.ctx, 16.5));
-  main.push(H('5. Rekapitulasi'), P('Tabel 1. Deteksi per zona dan sensor', { size: 17, color: '5B6A61' }), TB(T.zona), P(''), P(`Tabel 2. Deteksi dan curah hujan per ${M.unit}`, { size: 17, color: '5B6A61' }), TB(T.periode));
-  if (T.petak.length > 1) main.push(P(''), P('Tabel 3. Petak patroli dengan titik panas', { size: 17, color: '5B6A61' }), TB(T.petak));
-  main.push(H(`6. Kejadian api di desa & radius 5 km (${M.events.length})`));
+  main.push(H('Rekapitulasi'), CAPd('Tabel 1. Deteksi per zona dan sensor'), TB(T.zona), P(''), CAPd(`Tabel 2. Deteksi dan curah hujan per ${M.unit}`), TB(T.periode));
+  if (T.petak.length > 1) main.push(P(''), CAPd('Tabel 3. Petak patroli dengan titik panas'), TB(T.petak));
+  main.push(H(`Kejadian api di desa & radius 5 km (${M.events.length})`));
   if (T.ev.length > 1) { if (M.events.length > CAP_EVENTS) main.push(P(`Ditampilkan ${CAP_EVENTS} kejadian (zona terdekat lebih dulu). Seluruh kejadian ada di file CSV.`, { size: 17, color: '5B6A61' })); main.push(TB(T.ev, 14)); } else main.push(P('Tidak ada kejadian pada periode ini.'));
-  const app = [H(`Lampiran A. Detail deteksi di Hutan Desa, desa & radius 5 km (${M.near.length})`)]; if (T.detailNote) app.push(P(T.detailNote, { size: 17, color: '5B6A61' }));
+  main.push(...BLKd(XB[1]), ...BLKd(XB[2]));
+  const app = [H(`Lampiran A. Detail deteksi di Hutan Desa, desa & radius 5 km (${M.near.length})`, false)]; if (T.detailNote) app.push(P(T.detailNote, { size: 17, color: '5B6A61' }));
   app.push(T.detail.length > 1 ? TB(T.detail, 13) : P('Tidak ada deteksi pada periode ini.'));
-  const end = [H('Lampiran B. Kamus data'), TB(T.kamus, 16), H('Lampiran C. Sumber data, metode & jejak audit'), ...sources(M).map(([k, v]) => new d.Paragraph({ spacing: { after: 100 }, children: [run(k + '. ', { bold: true, size: 18 }), run(v, { size: 18 })] }))];
-  const pg = { margin: { top: 1000, bottom: 1000, left: 1000, right: 1000 } };
-  const docx = new d.Document({ creator: 'Yayasan PRCF Indonesia – Fire Hotspot', title: M.title, sections: [{ properties: { page: pg, titlePage: true }, headers: logoBuf ? { default: head().default, first: new d.Header({ children: [new d.Paragraph('')] }) } : undefined, children: main }, { properties: { page: { ...pg, size: { orientation: d.PageOrientation.LANDSCAPE } } }, headers: head(), children: app }, { properties: { page: pg }, headers: head(), children: end }] });
+  const end = [H('Lampiran B. Verifikasi data', false), P('Pemeriksaan konsistensi otomatis atas data yang masuk ke laporan ini, dijalankan saat laporan dibuat.', { size: 17, color: '5B6A61' }), TB(T.cek, 16, true),
+    H('Lampiran C. Kamus data', false), TB(T.kamus, 16), H('Lampiran D. Sumber data, metode & jejak audit', false), ...sources(M).map(([k, v]) => new d.Paragraph({ spacing: { after: 100 }, children: [run(k + '. ', { bold: true, size: 18 }), run(v, { size: 18 })] }))];
+  const pg = { margin: { top: 1100, bottom: 1000, left: 1000, right: 1000 } };
+  const docx = new d.Document({ creator: 'Yayasan PRCF Indonesia – Fire Hotspot', title: M.title, features: { updateFields: true }, styles: { paragraphStyles: [{ id: 'Heading1', name: 'Heading 1', basedOn: 'Normal', next: 'Normal', quickFormat: true, run: { font: 'Arial', size: 26, bold: true, color: '22382B' }, paragraph: { outlineLevel: 0, spacing: { before: 240, after: 120 } } }] },
+    sections: [{ properties: { page: pg }, children: cover }, { properties: { page: pg }, headers: { default: head() }, footers: { default: foot() }, children: toc },
+      { properties: { page: pg }, headers: { default: head() }, footers: { default: foot() }, children: main },
+      { properties: { page: { ...pg, size: { orientation: d.PageOrientation.LANDSCAPE } } }, headers: { default: head() }, footers: { default: foot() }, children: app },
+      { properties: { page: pg }, headers: { default: head() }, footers: { default: foot() }, children: end }] });
   const blob = await d.Packer.toBlob(docx); dl(blob, fname(M, 'docx'));
 }
 

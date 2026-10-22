@@ -1,0 +1,270 @@
+{
+ "lokasi": {
+  "nangalauk": {
+   "lokasi": "nangalauk",
+   "hd_nama": "Hutan Desa Nanga Lauk",
+   "desa": "Nanga Lauk",
+   "periode_terkini": [
+    "2026-07-24",
+    "2026-10-22"
+   ],
+   "periode_acuan": [
+    "2025-07-24",
+    "2025-10-22"
+   ],
+   "hutan_acuan_ha": 16828.6,
+   "dicek_utc": "2026-10-22T15:04:42Z",
+   "cerah_persen": 59,
+   "citra_terkini": [
+    "S2C_49NFA_20260830_1_L2A",
+    "S2C_49NFA_20260810_0_L2A",
+    "S2C_49NFB_20260810_0_L2A",
+    "S2C_49NFB_20260830_0_L2A"
+   ],
+   "citra_acuan": [
+    "S2C_49NFB_20250924_0_L2A",
+    "S2C_49NFA_20250924_0_L2A",
+    "S2B_49NFA_20250810_0_L2A",
+    "S2A_49NFB_20250807_0_L2A"
+   ],
+   "tanggal_terkini": [
+    "2026-08-10",
+    "2026-08-10",
+    "2026-08-30",
+    "2026-08-30"
+   ],
+   "tanggal_acuan": [
+    "2025-08-07",
+    "2025-08-10",
+    "2025-09-24",
+    "2025-09-24"
+   ],
+   "status": "selesai",
+   "luas_berubah_ha": 0.88,
+   "luas_berubah_di_hd_ha": 0,
+   "jumlah_petak": 1
+  },
+  "batangtau": {
+   "lokasi": "batangtau",
+   "hd_nama": "Hutan Desa Batang Tau",
+   "desa": "Sri Wangi",
+   "periode_terkini": [
+    "2026-07-24",
+    "2026-10-22"
+   ],
+   "periode_acuan": [
+    "2025-07-24",
+    "2025-10-22"
+   ],
+   "hutan_acuan_ha": 5421.4,
+   "dicek_utc": "2026-10-22T15:04:59Z",
+   "cerah_persen": 83,
+   "citra_terkini": [
+    "S2C_49NFA_20260830_0_L2A",
+    "S2C_49NFA_20260830_1_L2A",
+    "S2C_49NFA_20260810_0_L2A",
+    "S2C_49NFA_20260731_0_L2A"
+   ],
+   "citra_acuan": [
+    "S2C_49NFA_20250924_0_L2A",
+    "S2B_49NFA_20250810_0_L2A",
+    "S2A_49NFA_20250827_0_L2A",
+    "S2B_49NFA_20250919_0_L2A"
+   ],
+   "tanggal_terkini": [
+    "2026-07-31",
+    "2026-08-10",
+    "2026-08-30",
+    "2026-08-30"
+   ],
+   "tanggal_acuan": [
+    "2025-08-10",
+    "2025-08-27",
+    "2025-09-19",
+    "2025-09-24"
+   ],
+   "status": "selesai",
+   "luas_berubah_ha": 14.4,
+   "luas_berubah_di_hd_ha": 0,
+   "jumlah_petak": 11
+  },
+  "nyuai": {
+   "lokasi": "nyuai",
+   "hd_nama": "Hutan Desa Nyuai Peningun",
+   "desa": "Nanga Jemah",
+   "periode_terkini": [
+    "2026-07-24",
+    "2026-10-22"
+   ],
+   "periode_acuan": [
+    "2025-07-24",
+    "2025-10-22"
+   ],
+   "hutan_acuan_ha": 37763.4,
+   "dicek_utc": "2026-10-22T15:05:17Z",
+   "cerah_persen": 89,
+   "citra_terkini": [
+    "S2C_49NFA_20260830_0_L2A",
+    "S2C_49NFA_20260830_1_L2A",
+    "S2C_49NFA_20260810_0_L2A",
+    "S2C_49NFA_20260731_0_L2A"
+   ],
+   "citra_acuan": [
+    "S2C_49NFA_20250924_0_L2A",
+    "S2B_49NFA_20250810_0_L2A",
+    "S2A_49NFA_20250827_0_L2A",
+    "S2B_49NFA_20250919_0_L2A"
+   ],
+   "tanggal_terkini": [
+    "2026-07-31",
+    "2026-08-10",
+    "2026-08-30",
+    "2026-08-30"
+   ],
+   "tanggal_acuan": [
+    "2025-08-10",
+    "2025-08-27",
+    "2025-09-19",
+    "2025-09-24"
+   ],
+   "status": "selesai",
+   "luas_berubah_ha": 13.28,
+   "luas_berubah_di_hd_ha": 0.52,
+   "jumlah_petak": 13
+  },
+  "pundjung": {
+   "lokasi": "pundjung",
+   "hd_nama": "Hutan Desa Pundjung Batara",
+   "desa": "Nanga Betung",
+   "periode_terkini": [
+    "2026-07-24",
+    "2026-10-22"
+   ],
+   "periode_acuan": [
+    "2025-07-24",
+    "2025-10-22"
+   ],
+   "hutan_acuan_ha": 5945.3,
+   "dicek_utc": "2026-10-22T15:05:44Z",
+   "cerah_persen": 94,
+   "citra_terkini": [
+    "S2C_49NFA_20260830_0_L2A",
+    "S2C_49NFA_20260830_1_L2A",
+    "S2C_49NFA_20260810_0_L2A",
+    "S2C_49NFA_20260731_0_L2A"
+   ],
+   "citra_acuan": [
+    "S2C_49NFA_20250924_0_L2A",
+    "S2B_49NFA_20250810_0_L2A",
+    "S2A_49NFA_20250827_0_L2A",
+    "S2B_49NFA_20250919_0_L2A"
+   ],
+   "tanggal_terkini": [
+    "2026-07-31",
+    "2026-08-10",
+    "2026-08-30",
+    "2026-08-30"
+   ],
+   "tanggal_acuan": [
+    "2025-08-10",
+    "2025-08-27",
+    "2025-09-19",
+    "2025-09-24"
+   ],
+   "status": "selesai",
+   "luas_berubah_ha": 13.52,
+   "luas_berubah_di_hd_ha": 0,
+   "jumlah_petak": 7
+  },
+  "bumilestari": {
+   "lokasi": "bumilestari",
+   "hd_nama": "Hutan Desa Bumi Lestari",
+   "desa": "Penepian Raya",
+   "periode_terkini": [
+    "2026-07-24",
+    "2026-10-22"
+   ],
+   "periode_acuan": [
+    "2025-07-24",
+    "2025-10-22"
+   ],
+   "hutan_acuan_ha": 8545.9,
+   "dicek_utc": "2026-10-22T15:05:54Z",
+   "cerah_persen": 89,
+   "citra_terkini": [
+    "S2C_49NFA_20260830_1_L2A",
+    "S2C_49NFA_20260810_0_L2A",
+    "S2C_49NFA_20260731_0_L2A",
+    "S2B_49NFA_20260726_0_L2A"
+   ],
+   "citra_acuan": [
+    "S2C_49NFA_20250924_0_L2A",
+    "S2B_49NFA_20250810_0_L2A",
+    "S2A_49NFA_20250827_0_L2A",
+    "S2B_49NFA_20250919_0_L2A"
+   ],
+   "tanggal_terkini": [
+    "2026-07-26",
+    "2026-07-31",
+    "2026-08-10",
+    "2026-08-30"
+   ],
+   "tanggal_acuan": [
+    "2025-08-10",
+    "2025-08-27",
+    "2025-09-19",
+    "2025-09-24"
+   ],
+   "status": "selesai",
+   "luas_berubah_ha": 5.52,
+   "luas_berubah_di_hd_ha": 1.52,
+   "jumlah_petak": 6
+  },
+  "bukitbelang": {
+   "lokasi": "bukitbelang",
+   "hd_nama": "Hutan Desa Bukit Belang",
+   "desa": "Tanjung",
+   "periode_terkini": [
+    "2026-07-24",
+    "2026-10-22"
+   ],
+   "periode_acuan": [
+    "2025-07-24",
+    "2025-10-22"
+   ],
+   "hutan_acuan_ha": 28791.7,
+   "dicek_utc": "2026-10-22T15:06:07Z",
+   "cerah_persen": 95,
+   "citra_terkini": [
+    "S2C_49NGA_20260830_0_L2A",
+    "S2C_49NGA_20260830_1_L2A",
+    "S2C_49NGA_20260810_0_L2A",
+    "S2B_49NGA_20260726_0_L2A"
+   ],
+   "citra_acuan": [
+    "S2C_49NGA_20250924_0_L2A",
+    "S2C_49NGA_20250805_0_L2A",
+    "S2B_49NGA_20251009_0_L2A",
+    "S2B_49NGA_20250731_0_L2A"
+   ],
+   "tanggal_terkini": [
+    "2026-07-26",
+    "2026-08-10",
+    "2026-08-30",
+    "2026-08-30"
+   ],
+   "tanggal_acuan": [
+    "2025-07-31",
+    "2025-08-05",
+    "2025-09-24",
+    "2025-10-09"
+   ],
+   "status": "selesai",
+   "luas_berubah_ha": 3.2,
+   "luas_berubah_di_hd_ha": 0,
+   "jumlah_petak": 5
+  }
+ },
+ "metode": "Peringatan kehilangan tutupan hutan terbaru (Sentinel-2) – Fire Hotspot PRCF\n============================================================================\nUntuk setiap lokasi (Hutan Desa + desa + radius 1 km), sebulan sekali:\n  * Hutan acuan = tutupan tajuk 2000 >= 30% dan BELUM hilang s.d. 2025 (Hansen/UMD GFC v1.13).\n  * Citra Sentinel-2 L2A (ESA Copernicus, Earth Search AWS): TERKINI = 90 hari terakhir,\n    ACUAN = 90 hari yang sama tahun lalu (musim sama, mengurangi efek musiman).\n  * Piksel berubah bila, di >= 2 citra terkini (atau 1 bila hanya 1 yang cerah):\n      NBR turun >= 0,27 dan SWIR2 naik >= 0,02 (pembukaan/kerusakan tajuk; bayangan & air tidak lolos),\n    serta NBR terkini <= 0,30 (tajuk benar-benar terbuka). Petak >= 0,5 ha.\n  * Wilayah cerah < 50% → ditandai \"tertutup awan\".\nHasil adalah INDIKASI perubahan tutupan dari citra 20 m (pembukaan lahan, tebangan, kebakaran,\nlongsor, dll.) dan memerlukan verifikasi lapangan.\nKeluaran: data/hutan/peringatan.json, data/hutan/peringatan.geojson",
+ "diperbarui_utc": "2026-10-22T15:06:27Z"
+}
