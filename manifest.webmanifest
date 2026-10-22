@@ -1,0 +1,24 @@
+{
+  "name": "Pantau Api Nanga Lauk",
+  "short_name": "Pantau Api",
+  "description": "Pemantauan titik panas satelit NASA FIRMS untuk Desa dan Hutan Desa Nanga Lauk, Kapuas Hulu.",
+  "id": "./",
+  "start_url": "./?sumber=aplikasi",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0B3B2C",
+  "theme_color": "#0B3B2C",
+  "lang": "id",
+  "categories": ["utilities", "weather", "productivity"],
+  "icons": [
+    {"src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "assets/icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable"},
+    {"src": "assets/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ],
+  "shortcuts": [
+    {"name": "Buat laporan", "url": "./#buat-laporan", "icons": [{"src": "assets/icons/icon-192.png", "sizes": "192x192"}]},
+    {"name": "Status sistem", "url": "./#status-sistem", "icons": [{"src": "assets/icons/icon-192.png", "sizes": "192x192"}]}
+  ]
+}
