@@ -359,8 +359,11 @@ def write_kml(path, title, items, is_event=False):
             z = it["zona"]; lat, lon = it["latitude"], it["longitude"]
             name = f'{it["waktu_wib"]} WIB'
             desc = "".join(f"<b>{k}</b>: {esc(it[k])}<br/>" for k in FIELDS if it.get(k, "") != "")
+        kv = ([(k, v) for k, v in it.items() if not k.startswith("_")] if is_event else [(k, it.get(k, "")) for k in FIELDS])
+        ext = "".join(f'<Data name="{k}"><value>{esc(v)}</value></Data>' for k, v in kv)
         out.append(f'<Placemark><name>{esc(name)}</name><styleUrl>#z{ZONES.index(z)}</styleUrl>'
-                   f'<description><![CDATA[{desc}]]></description><Point><coordinates>{lon},{lat},0</coordinates></Point></Placemark>')
+                   f'<description><![CDATA[{desc}]]></description><ExtendedData>{ext}</ExtendedData>'
+                   f'<Point><coordinates>{lon},{lat},0</coordinates></Point></Placemark>')
     out.append("</Document></kml>")
     with open(path, "w", encoding="utf-8") as fh:
         fh.write("\n".join(out))

@@ -1,5 +1,5 @@
 {
- "terakhir_cek_utc": "2026-10-22T02:48:40Z",
+ "terakhir_cek_utc": "2026-10-22T03:00:20Z",
  "titik_baru": 0,
  "arsip_tahunan_diperbarui": 0,
  "jumlah_catatan": 70834,
@@ -45,7 +45,7 @@
    "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Thu, 22 Oct 2026 01:51:02 GMT",
+   "last_modified": "Thu, 22 Oct 2026 02:51:32 GMT",
    "ukuran_byte": 6930678,
    "sha256": "e8014441355ac7ef675c787d98f3f519b74b6ed524322b2c957f826c7ba2692f",
    "baris_total": 84602,
