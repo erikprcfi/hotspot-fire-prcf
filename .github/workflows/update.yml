@@ -26,6 +26,10 @@ jobs:
           python-version: "3.12"
       - name: Pasang pustaka
         run: pip install shapely==2.0.6 pyproj==3.7.0 pyshp==2.3.1 rasterio==1.4.3 scipy==1.14.1 pillow==11.0.0
+      - name: Elemen orbit satelit (TLE CelesTrak) untuk lintasan berikutnya
+        continue-on-error: true
+        timeout-minutes: 5
+        run: python scripts/tle.py
       - name: Unduh & olah data NASA FIRMS
         if: github.event_name != 'push'
         run: python scripts/pipeline.py
