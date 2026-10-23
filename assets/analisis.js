@@ -129,10 +129,13 @@ function viewer(el, R, back) {
   el.innerHTML = `<div class="fan">${back ? `<button class="fan-btn alt" data-back style="width:auto">← Kembali</button>` : ''}
    <div class="fan-hero"><h2>${esc(R.nama)}</h2><p>${esc(R.jenis || '')} · ${N(luas, 1)} ha · dihitung ${esc((R.dibuat_utc || '').slice(0, 10))}</p>
     ${R.wilayah && R.wilayah.length ? `<p>${esc([...new Set(R.wilayah.map(w => `${w.kab.replace('Kabupaten ', 'Kab. ')}, ${w.prov}`))].slice(0, 3).join(' · '))}</p>` : ''}</div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="fan-btn" data-pdf>Unduh laporan PDF</button><button class="fan-btn alt" data-csv>Unduh tabel CSV (Excel)</button></div>
    <div class="fan-map" id="fanMap"></div>
    <div class="fan-tabs">${['Ringkasan', 'Tutupan lahan', 'Perubahan hutan', 'Karbon & iklim', 'Titik panas', 'Wilayah & sumber'].map((t, i) => `<button data-t="${i}" aria-pressed="${!i}">${t}</button>`).join('')}</div>
    <div id="fanBody"></div></div>`;
   if (back) el.querySelector('[data-back]').onclick = back;
+  el.querySelector('[data-pdf]').onclick = async e => { const b = e.currentTarget, t = b.textContent; b.disabled = true; b.textContent = 'Menyusun PDF…'; try { const n = await pdfHasil(R); b.textContent = `PDF ${n} halaman diunduh ✓`; } catch (x) { b.textContent = 'Gagal: ' + x.message; } setTimeout(() => { b.disabled = false; b.textContent = t; }, 3000); };
+  el.querySelector('[data-csv]').onclick = () => { if (!window.FHUnduh || !FHUnduh.analisisCSV) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + FHUnduh.analisisCSV([R])], { type: 'text/csv;charset=utf-8' })); a.download = `analisis_${(R.nama || 'area').replace(/\W+/g, '_')}.csv`; a.click(); };
   if (window.L) setTimeout(() => { const m = L.map(el.querySelector('#fanMap'), { zoomControl: true, attributionControl: true, scrollWheelZoom: false });
     L.tileLayer('https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2025_3857/default/g/{z}/{y}/{x}.jpg', { maxNativeZoom: 14, maxZoom: 17, attribution: 'Sentinel-2 cloudless 2025 · EOX (CC BY-NC-SA 4.0)' }).addTo(m);
     const g = L.geoJSON(R.geometri, { style: { color: '#FFD84D', weight: 2.2, fillOpacity: 0 } }).addTo(m); m.fitBounds(g.getBounds(), { padding: [16, 16] }); }, 30);
@@ -181,6 +184,82 @@ function viewer(el, R, back) {
   el.querySelectorAll('.fan-tabs button').forEach(b => b.onclick = () => show(+b.dataset.t)); show(0);
 }
 
+
+/* ---------------- ekspor PDF & CSV hasil analisis (area dampingan maupun SHP unggahan) ---------------- */
+const fmtI = v => v == null || isNaN(v) ? '-' : Number(v).toLocaleString('id-ID', { maximumFractionDigits: 0 });
+const fmt1 = v => v == null || isNaN(v) ? '-' : Number(v).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const asc = t => String(t ?? '').replace(/[–—]/g, '-').replace(/[₂]/g, '2').replace(/[→]/g, '->').replace(/[≥]/g, '>=').replace(/[÷]/g, '/').replace(/[“”]/g, '"').replace(/[‘’]/g, "'").replace(/[^\x20-\x7E -ÿ\n]/g, '');
+function cekKonsistensi(R) {
+  const C = R.karbon, out = [], add = (n, h, ok) => out.push([n, h, ok ? 'Sesuai' : 'Perlu perhatian']);
+  add('Emisi bruto - serapan bruto = fluks bersih', `${fmtI(C.emisi_bruto_total_tCO2e - C.serapan_bruto_total_tCO2)} vs ${fmtI(C.fluks_bersih_total_tCO2e)} tCO2e`, Math.abs((C.emisi_bruto_total_tCO2e - C.serapan_bruto_total_tCO2) - C.fluks_bersih_total_tCO2e) <= Math.max(2, Math.abs(C.fluks_bersih_total_tCO2e) * 0.001));
+  const lc = Object.values(R.tutupan_lahan_ha['2020']).reduce((p, c) => p + c, 0); add('Jumlah kelas tutupan lahan 2020 = luas area', `${fmt1(lc)} vs ${fmt1(R.luas_ha)} ha`, Math.abs(lc - R.luas_ha) <= Math.max(0.5, R.luas_ha * 0.002));
+  const ls = Object.values(R.hutan.kehilangan_per_tahun_ha).reduce((p, c) => p + c, 0); add('Jumlah kehilangan per tahun = total', `${fmt1(ls)} vs ${fmt1(R.hutan.kehilangan_total_ha)} ha`, Math.abs(ls - R.hutan.kehilangan_total_ha) <= 0.2);
+  add('Kehilangan hutan <= hutan tahun 2000', `${fmt1(R.hutan.kehilangan_total_ha)} <= ${fmt1(R.hutan.hutan_2000_ha)} ha`, R.hutan.kehilangan_total_ha <= R.hutan.hutan_2000_ha + 0.1);
+  const em = Object.values(R.karbon.emisi_per_tahun_kehilangan_tCO2e).reduce((p, c) => p + c, 0); add('Emisi per tahun kehilangan <= emisi bruto total', `${fmtI(em)} <= ${fmtI(C.emisi_bruto_total_tCO2e)} tCO2e`, em <= C.emisi_bruto_total_tCO2e + 2);
+  if (R.titik_panas) { const t = Object.values(R.titik_panas.per_tahun).reduce((p, o) => p + Object.values(o).reduce((a, b) => a + b, 0), 0); add('Jumlah titik panas per tahun = total', `${fmtI(t)} = ${fmtI(R.titik_panas.total)}`, t === R.titik_panas.total); }
+  if (R.luas_geodesik_ha) add('Luas piksel vs luas poligon geodesik', `${fmt1(R.luas_ha)} vs ${fmt1(R.luas_geodesik_ha)} ha (selisih karena aturan pusat piksel 30 m)`, Math.abs(R.luas_ha - R.luas_geodesik_ha) <= Math.max(1, R.luas_geodesik_ha * 0.03));
+  return out;
+}
+function petaCanvas(R) {   // sketsa batas area (tanpa citra) dengan skala & koordinat
+  const c = document.createElement('canvas'); c.width = 900; c.height = 560; const g = c.getContext('2d'); g.fillStyle = '#F4F7F5'; g.fillRect(0, 0, 900, 560);
+  const P = R.geometri.type === 'Polygon' ? [R.geometri.coordinates] : R.geometri.coordinates, pts = P.flat(2);
+  const x0 = Math.min(...pts.map(p => p[0])), x1 = Math.max(...pts.map(p => p[0])), y0 = Math.min(...pts.map(p => p[1])), y1 = Math.max(...pts.map(p => p[1]));
+  const kx = Math.cos((y0 + y1) / 2 * Math.PI / 180), s = Math.min(820 / ((x1 - x0) * kx || 1e-9), 480 / ((y1 - y0) || 1e-9)), ox = 450 - (x0 + x1) / 2 * kx * s, oy = 280 + (y0 + y1) / 2 * s;
+  const X = x => ox + x * kx * s, Y = y => oy - y * s;
+  g.fillStyle = 'rgba(30,122,88,.18)'; g.strokeStyle = '#14563F'; g.lineWidth = 2.5;
+  P.forEach(poly => { g.beginPath(); poly.forEach(r => r.forEach((p, i) => i ? g.lineTo(X(p[0]), Y(p[1])) : g.moveTo(X(p[0]), Y(p[1])))); g.fill('evenodd'); g.stroke(); });
+  g.fillStyle = '#333'; g.font = '16px Arial'; g.fillText(`${y1.toFixed(4)}°, ${x0.toFixed(4)}°`, 12, 22); g.textAlign = 'right'; g.fillText(`${y0.toFixed(4)}°, ${x1.toFixed(4)}°`, 888, 548);
+  const km = (x1 - x0) * 111.32 * kx, nice = [0.5, 1, 2, 5, 10, 20, 50, 100].find(v => v >= km / 5) || 100, px = nice / 111.32 * s;
+  g.textAlign = 'left'; g.fillStyle = '#333'; g.fillRect(20, 530, px, 5); g.fillText(`${nice} km`, 26 + px, 538); g.font = 'bold 22px Arial'; g.fillText('U ↑', 860 - 30, 50);
+  return c;
+}
+function barCanvas(title, labels, vals, color, unit) {
+  const c = document.createElement('canvas'); c.width = 1200; c.height = 420; const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, 1200, 420);
+  const L = 80, T = 50, W = 1090, H = 300, mx = Math.max(1e-9, ...vals), bw = W / vals.length;
+  g.fillStyle = '#1d2a22'; g.font = 'bold 22px Arial'; g.fillText(title, 16, 30); g.font = '15px Arial';
+  for (let i = 0; i <= 4; i++) { const y = T + H * (1 - i / 4); g.strokeStyle = '#e3e8e4'; g.beginPath(); g.moveTo(L, y); g.lineTo(L + W, y); g.stroke(); g.fillStyle = '#6b766f'; g.textAlign = 'right'; g.fillText(fmt1(mx * i / 4), L - 8, y + 5); }
+  vals.forEach((v, i) => { const h = H * v / mx; g.fillStyle = color; g.fillRect(L + i * bw + bw * .12, T + H - h, bw * .76, h); g.fillStyle = '#6b766f'; g.textAlign = 'center'; if (vals.length <= 26) g.fillText(labels[i], L + i * bw + bw / 2, T + H + 20); });
+  g.textAlign = 'left'; g.fillText(unit, L, T + H + 50); return c;
+}
+async function pdfHasil(R) {
+  await loadJS('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', 'jspdf');
+  if (!(window.jspdf && window.jspdf.jsPDF && window.jspdf.jsPDF.API.autoTable)) await new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js'; s.onload = ok; s.onerror = () => no(new Error('Pustaka PDF gagal dimuat')); document.head.appendChild(s); });
+  const { jsPDF } = window.jspdf, doc = new jsPDF({ unit: 'mm', format: 'a4' }), ML = 16, CW = 178, HEAD = [20, 86, 63]; let y = 0, sec = 0;
+  const need = h => { if (y + h > 282) { doc.addPage(); y = 20; } };
+  const H1 = t => { need(18); doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...HEAD); doc.text(asc(`${++sec}. ${t}`), ML, y); y += 7; };
+  const P = (t, sz = 9.3, col = [40, 52, 45]) => { doc.setFont('helvetica', 'normal'); doc.setFontSize(sz); doc.setTextColor(...col); doc.splitTextToSize(asc(t), CW).forEach(l => { need(5); doc.text(l, ML, y); y += sz * .45; }); y += 1.5; };
+  const TAB = (rows, fs = 8) => { doc.autoTable({ startY: y, head: [rows[0].map(asc)], body: rows.slice(1).map(r => r.map(asc)), margin: { left: ML, right: ML, top: 18 }, styles: { fontSize: fs, cellPadding: 1.2 }, headStyles: { fillColor: HEAD }, alternateRowStyles: { fillColor: [241, 245, 242] } }); y = doc.lastAutoTable.finalY + 5; };
+  const IMG = (c, w) => { const h = w * c.height / c.width; need(h + 3); doc.addImage(c.toDataURL('image/jpeg', .9), 'JPEG', ML + (CW - w) / 2, y, w, h); y += h + 4; };
+  const K = R.kelas, kn = k => (K.find(x => x.kode === k) || {}).nama || k, Yr = R.tahun_tutupan.map(String), C = R.karbon, Hh = R.hutan, T = R.titik_panas;
+  doc.setFillColor(...HEAD); doc.rect(0, 0, 210, 58, 'F'); doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.text('Yayasan PRCF Indonesia - Fire Hotspot', ML, 14);
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.text('LAPORAN ANALISIS LAHAN, HUTAN, KARBON & TITIK PANAS', ML, 24);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.splitTextToSize(asc(R.nama), CW).slice(0, 2).forEach((l, i) => doc.text(l, ML, 35 + i * 8));
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.text(asc(`${R.jenis || ''} | ${fmt1(R.luas_ha)} ha | dihitung ${String(R.dibuat_utc || '').slice(0, 10)} | dicetak ${new Date().toLocaleDateString('id-ID')}`), ML, 52);
+  y = 66; IMG(petaCanvas(R), 120);
+  const ck = cekKonsistensi(R), bad = ck.filter(c => c[2] !== 'Sesuai').length;
+  H1('Ringkasan'); TAB([['Indikator', 'Nilai'], ['Luas area', fmt1(R.luas_ha) + ' ha'], ['Hutan tahun 2000 (tajuk >= 30%)', fmt1(Hh.hutan_2000_ha) + ' ha'], ['Kehilangan tutupan pohon 2001-2025', `${fmt1(Hh.kehilangan_total_ha)} ha (${fmt1(Hh.persen_hilang)}%)`],
+    ['Tutupan pohon 2020 (GLAD)', fmt1((R.tutupan_lahan_ha['2020'].pohon || 0) + (R.tutupan_lahan_ha['2020'].basah_pohon || 0)) + ' ha'], ['Emisi bruto rata-rata', fmtI(C.emisi_bruto_per_tahun_tCO2e) + ' tCO2e/tahun'], ['Serapan bruto rata-rata', fmtI(C.serapan_bruto_per_tahun_tCO2) + ' tCO2/tahun'],
+    ['Fluks bersih rata-rata', `${fmtI(C.fluks_bersih_per_tahun_tCO2e)} tCO2e/tahun (${C.fluks_bersih_total_tCO2e < 0 ? 'penyerap karbon bersih' : 'sumber emisi bersih'})`], ['Stok karbon total tahun 2000', fmtI(C.stok_karbon_total_2000_tC) + ' tC'], ...(T ? [[`Titik panas ${T.periode}`, fmtI(T.total) + ' deteksi']] : []),
+    ['Verifikasi otomatis', `${ck.length - bad} dari ${ck.length} pemeriksaan sesuai`]]);
+  H1('Tutupan & penggunaan lahan 2000-2020'); P(R.sumber.tutupan_lahan, 8.3, [90, 100, 95]);
+  const used = K.filter(k => Yr.some(yy => (R.tutupan_lahan_ha[yy][k.kode] || 0) >= 0.05));
+  TAB([['Kelas', ...Yr, 'Perubahan'], ...used.map(k => [k.nama, ...Yr.map(yy => fmt1(R.tutupan_lahan_ha[yy][k.kode] || 0)), (v => (v >= 0 ? '+' : '') + fmt1(v))((R.tutupan_lahan_ha['2020'][k.kode] || 0) - (R.tutupan_lahan_ha['2000'][k.kode] || 0))])], 7.6);
+  const tr = Object.entries(R.perubahan_2000_2020_ha || {}).slice(0, 10); if (tr.length) TAB([['Perubahan 2000 -> 2020', 'Luas (ha)'], ...tr.map(([k, v]) => { const [a, b] = k.split('>'); return [`${kn(a)} -> ${kn(b)}`, fmt1(v)]; })]);
+  H1('Perubahan hutan 2001-2025'); P(R.sumber.kehilangan_pohon, 8.3, [90, 100, 95]);
+  const ys = Object.keys(Hh.kehilangan_per_tahun_ha); IMG(barCanvas('Kehilangan tutupan pohon per tahun (ha)', ys.map(v => v.slice(2)), ys.map(v => Hh.kehilangan_per_tahun_ha[v]), '#D9480F', 'ha'), CW);
+  TAB([['Tahun', 'Kehilangan (ha)', 'Emisi bruto (tCO2e)'], ...ys.map(v => [v, fmt1(Hh.kehilangan_per_tahun_ha[v]), fmtI(C.emisi_per_tahun_kehilangan_tCO2e[v])]), ['Jumlah', fmt1(Hh.kehilangan_total_ha), fmtI(Object.values(C.emisi_per_tahun_kehilangan_tCO2e).reduce((p, c) => p + c, 0))]], 7.6);
+  H1('Karbon hutan & gas rumah kaca'); P(`${R.sumber.fluks_karbon}. ${R.sumber.stok_karbon}. Fluks bersih = emisi bruto - serapan bruto (negatif = penyerap). Nilai per tahun = total 25 tahun / 25 (cara Global Forest Watch). Hasil model global dengan ketidakpastian; bukan pengganti MRV/inventarisasi karbon lapangan.`, 8.3, [90, 100, 95]);
+  TAB([['Indikator', 'Total 2001-2025', 'Per tahun'], ['Emisi bruto (tCO2e)', fmtI(C.emisi_bruto_total_tCO2e), fmtI(C.emisi_bruto_per_tahun_tCO2e)], ['Serapan bruto (tCO2)', fmtI(C.serapan_bruto_total_tCO2), fmtI(C.serapan_bruto_per_tahun_tCO2)], ['Fluks bersih (tCO2e)', fmtI(C.fluks_bersih_total_tCO2e), fmtI(C.fluks_bersih_per_tahun_tCO2e)]]);
+  TAB([['Stok karbon tahun 2000', 'Nilai'], ['Karbon di atas tanah (tC)', fmtI(C.stok_karbon_atas_tanah_2000_tC)], ['Karbon total, semua pool (tC)', fmtI(C.stok_karbon_total_2000_tC)], ['Rerata karbon total hutan (tC/ha)', fmt1(C.rerata_karbon_total_hutan_2000_tC_ha)], ['Rerata karbon atas tanah hutan (tC/ha)', fmt1(C.rerata_karbon_atas_tanah_hutan_2000_tC_ha)]]);
+  if (T) { H1(`Titik panas ${T.periode}`); P(`${T.catatan} Sumber: ${R.sumber.titik_panas}.`, 8.3, [90, 100, 95]); const ty = Object.keys(T.per_tahun), S = Object.keys(T.per_tahun[ty[0]]);
+    TAB([['Tahun', ...S, 'Jumlah'], ...ty.map(v => [v, ...S.map(s => fmtI(T.per_tahun[v][s])), fmtI(S.reduce((p, s) => p + T.per_tahun[v][s], 0))])], 7.8);
+    if (T.terbaru.length) TAB([['Tanggal (UTC)', 'Jam', 'Satelit', 'Lat', 'Lon', 'Keyakinan', 'FRP (MW)'], ...T.terbaru.slice(0, 25).map(r => [r[0], String(r[1]).padStart(4, '0'), r[2], r[3], r[4], r[5], fmt1(r[6])])], 7.4); }
+  if (R.wilayah && R.wilayah.length) { H1('Wilayah administrasi tercakup'); TAB([['Desa/Kelurahan', 'Kecamatan', 'Kab/Kota', 'Provinsi', '% desa'], ...R.wilayah.slice(0, 40).map(w => [w.desa, w.kec, w.kab, w.prov, fmt1(w.persen_desa_tercakup)])], 7.6); }
+  H1('Verifikasi data'); TAB([['Pemeriksaan', 'Hasil', 'Status'], ...ck], 8);
+  H1('Sumber data & metode'); Object.values(R.sumber).forEach(s => P('- ' + s, 8.6)); P('Metode: raster dibaca pada grid asli 0,00025 derajat (~30 m) tanpa resampling; piksel dihitung bila pusatnya di dalam batas; luas piksel geodesik. Analisis area dampingan dan SHP unggahan memakai kode yang sama: scripts/analisis_inti.py (github.com/erikprcfi/hotspot-fire-prcf).', 8.6);
+  const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFontSize(7.5); doc.setTextColor(120); doc.text(asc(`Fire Hotspot - Yayasan PRCF Indonesia | ${R.nama} | Halaman ${i}/${n}`), ML, 292); }
+  doc.save(`analisis_${(R.nama || 'area').replace(/\W+/g, '_')}.pdf`); return n;
+}
 /* ---------------- sesi website (masuk dengan email terverifikasi) ---------------- */
 const WS = { get() { try { return JSON.parse(localStorage.getItem('fh_web_akun')); } catch (e) { return null; } }, set(v) { try { v ? localStorage.setItem('fh_web_akun', JSON.stringify(v)) : localStorage.removeItem('fh_web_akun'); } catch (e) { } } };
 function webLogin(box, done) {
@@ -251,5 +330,5 @@ function mount(el, o = {}) {
   }
   upload(); myList();
 }
-window.FHAnalisis = { mount, viewer, bacaZip };
+window.FHAnalisis = { mount, viewer, bacaZip, pdfHasil, cekKonsistensi };
 })();

@@ -35,6 +35,8 @@ const DATA = {
     ket: 'Poligon Hutan Desa (sesuai SK), batas desa, dan cincin radius 5 km & 25 km dari batas desa yang dipakai untuk menghitung zona.' },
   kh: { nm: 'Titik panas seluruh Kapuas Hulu', fmt: ['shp', 'kml', 'geojson', 'csv'], wil: false, tahun: 'tahun', geom: 'Point',
     ket: 'Semua deteksi di Kabupaten Kapuas Hulu untuk tahun terpilih, dengan atribut lengkap.' },
+  analisis: { nm: 'Analisis lahan, hutan & karbon (setara GFW/GNW)', fmt: ['csv', 'shp', 'geojson', 'kml'], wil: false, tahun: 'tetap', tetap: 'Data tahunan resmi: lahan 2000–2020, hutan & karbon 2001–2025, titik panas 2016–2025', geom: 'Polygon',
+    ket: 'CSV: tabel lengkap per indikator (tutupan lahan per kelas & tahun, kehilangan hutan & emisi per tahun, serapan, fluks bersih, stok karbon, titik panas per tahun & sensor, wilayah) untuk Hutan Desa dan wilayah desa. SHP/GeoJSON/KML: poligon Hutan Desa & desa dengan atribut ringkasan. Sumber: GLAD GLCLUC, Hansen GFC v1.13, Harris/Gibbs (versi GFW 20260327), NASA FIRMS.' },
   arsip: { nm: 'Arsip asli NASA FIRMS (tanpa olahan)', fmt: ['csv'], wil: false, tahun: 'tahun', geom: null,
     ket: 'File CSV asli NASA FIRMS per tahun untuk kotak Kapuas Hulu, persis seperti diunduh (sidik SHA-256 tercatat di jejak audit).' },
 };
@@ -65,6 +67,12 @@ async function build(sel, ctx) {
       out.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [o.lon, o.lat] }, properties: p }); }
     return out.sort((a, b) => a.properties.mulai_wib.localeCompare(b.properties.mulai_wib));
   }
+  if (sel.data === 'analisis') {
+    const A = await Promise.all(['hd', 'desa'].map(k => getJ(`data/analisis/${ctx.id}_${k}.json`)));
+    return A.map((a, i) => ({ type: 'Feature', geometry: a.geometri, properties: { area: i ? 'Wilayah desa' : 'Hutan Desa', nama: a.nama, luas_ha: a.luas_ha, hutan00_ha: a.hutan.hutan_2000_ha, hilang_ha: a.hutan.kehilangan_total_ha, hilang_pct: a.hutan.persen_hilang,
+      emisi_th: a.karbon.emisi_bruto_per_tahun_tCO2e, serap_th: a.karbon.serapan_bruto_per_tahun_tCO2, bersih_th: a.karbon.fluks_bersih_per_tahun_tCO2e, stok_tc: a.karbon.stok_karbon_total_2000_tC, agc_tc: a.karbon.stok_karbon_atas_tanah_2000_tC,
+      pohon20_ha: Math.round(((a.tutupan_lahan_ha['2020'].pohon || 0) + (a.tutupan_lahan_ha['2020'].basah_pohon || 0)) * 10) / 10, tpanas1625: a.titik_panas.total, dihitung: a.dibuat_utc.slice(0, 10) }, _src: a }));
+  }
   if (sel.data === 'bekas') {
     const g = await getJ('data/bekas_terbakar/bekas_terbakar.geojson');
     return g.features.filter(f => f.properties.lokasi === ctx.id && (yr === 'semua' || f.properties.awal_api.slice(0, 4) === String(yr))).map(f => ({ type: 'Feature', geometry: f.geometry,
@@ -84,6 +92,23 @@ async function build(sel, ctx) {
 }
 
 /* ---------- penulis format ---------- */
+function analisisCSV(L) {   // format panjang: satu baris per area × kategori × indikator × tahun
+  const q = v => { const s = String(v ?? ''); return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }, R = [['area', 'kategori', 'indikator', 'tahun', 'nilai', 'satuan', 'sumber']];
+  for (const a of L) { const S = a.sumber, nm = a.nama, kn = k => (a.kelas.find(x => x.kode === k) || {}).nama || k;
+    R.push([nm, 'Area', 'Luas (piksel 30 m di dalam batas)', '', a.luas_ha, 'ha', 'perhitungan']);
+    for (const y of a.tahun_tutupan) for (const k of Object.keys(a.tutupan_lahan_ha[y])) if (a.tutupan_lahan_ha[y][k]) R.push([nm, 'Tutupan lahan', kn(k), y, a.tutupan_lahan_ha[y][k], 'ha', S.tutupan_lahan]);
+    for (const [k, v] of Object.entries(a.perubahan_2000_2020_ha || {})) { const [x, y] = k.split('>'); R.push([nm, 'Perubahan lahan 2000-2020', `${kn(x)} -> ${kn(y)}`, '2000-2020', v, 'ha', S.tutupan_lahan]); }
+    R.push([nm, 'Hutan', 'Hutan tahun 2000 (tajuk >= 30%)', '2000', a.hutan.hutan_2000_ha, 'ha', S.kehilangan_pohon]);
+    for (const [y, v] of Object.entries(a.hutan.kehilangan_per_tahun_ha)) R.push([nm, 'Hutan', 'Kehilangan tutupan pohon', y, v, 'ha', S.kehilangan_pohon]);
+    R.push([nm, 'Hutan', 'Kehilangan tutupan pohon total', '2001-2025', a.hutan.kehilangan_total_ha, 'ha', S.kehilangan_pohon]);
+    for (const [y, v] of Object.entries(a.karbon.emisi_per_tahun_kehilangan_tCO2e)) R.push([nm, 'Karbon', 'Emisi bruto (menurut tahun kehilangan)', y, v, 'tCO2e', S.fluks_karbon]);
+    [['Emisi bruto total', 'emisi_bruto_total_tCO2e', 'tCO2e'], ['Serapan bruto total', 'serapan_bruto_total_tCO2', 'tCO2'], ['Fluks bersih total', 'fluks_bersih_total_tCO2e', 'tCO2e'], ['Emisi bruto per tahun', 'emisi_bruto_per_tahun_tCO2e', 'tCO2e/tahun'], ['Serapan bruto per tahun', 'serapan_bruto_per_tahun_tCO2', 'tCO2/tahun'], ['Fluks bersih per tahun', 'fluks_bersih_per_tahun_tCO2e', 'tCO2e/tahun']].forEach(([n, k, u]) => R.push([nm, 'Karbon', n, '2001-2025', a.karbon[k], u, S.fluks_karbon]));
+    [['Stok karbon atas tanah', 'stok_karbon_atas_tanah_2000_tC', 'tC'], ['Stok karbon total (semua pool)', 'stok_karbon_total_2000_tC', 'tC'], ['Rerata karbon total hutan', 'rerata_karbon_total_hutan_2000_tC_ha', 'tC/ha'], ['Rerata karbon atas tanah hutan', 'rerata_karbon_atas_tanah_hutan_2000_tC_ha', 'tC/ha']].forEach(([n, k, u]) => R.push([nm, 'Karbon', n, '2000', a.karbon[k], u, S.stok_karbon]));
+    for (const [y, o] of Object.entries(a.titik_panas.per_tahun)) for (const [sen, v] of Object.entries(o)) R.push([nm, 'Titik panas', 'Deteksi ' + sen, y, v, 'titik', S.titik_panas]);
+    for (const w of a.wilayah || []) R.push([nm, 'Wilayah', `${w.desa}, Kec. ${w.kec}, ${w.kab}, ${w.prov}`, '', w.persen_desa_tercakup, '% desa tercakup', 'BPS/BIG (COD-AB 2020), Kepmendagri 2025']);
+  }
+  return R.map(r => r.map(q).join(',')).join('\n');
+}
 function toCSV(F) {
   if (!F.length) return '';
   const cols = Object.keys(F[0].properties); const q = v => { const s = v === null || v === undefined ? '' : String(v); return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
@@ -174,11 +199,11 @@ function mount(el, opt) {
   const ctx = () => { const S = opt.site(), STATUS = opt.status() || {}; const ys = (STATUS.tahun_arsip || []).map(Number).filter(Boolean); const years = ys.length ? ys : Array.from({ length: thisYear - 2000 }, (_, i) => 2001 + i);
     return { site: S, id: S.id, si: opt.si(), desa: S.desa_nama, nl: S.id === 'nangalauk', years, ekspor: STATUS.ekspor || [] }; };
   const fname = (c) => { const D = DATA[st.data], w = { 0: 'desa', 5: 'radius5km', 25: 'radius25km' }[st.wil], t = st.tahun === 'semua' ? 'semua_tahun' : st.tahun, ext = st.fmt === 'shp' ? 'zip' : st.fmt;
-    const b = { titik: `titik_panas_${c.id}_${w}_${t}`, kejadian: `kejadian_api_${c.id}_${w}_${t}`, bekas: `bekas_terbakar_${c.id}_${st.tahun === 'semua' ? 'semua_musim' : 'musim_' + st.tahun}`, hutan: `peringatan_hutan_${c.id}_90hari`, batas: `batas_wilayah_${c.id}`, kh: `titik_panas_kapuashulu_${t}`, arsip: `firms_arsip_${t}` }[st.data];
+    const b = { titik: `titik_panas_${c.id}_${w}_${t}`, kejadian: `kejadian_api_${c.id}_${w}_${t}`, bekas: `bekas_terbakar_${c.id}_${st.tahun === 'semua' ? 'semua_musim' : 'musim_' + st.tahun}`, hutan: `peringatan_hutan_${c.id}_90hari`, batas: `batas_wilayah_${c.id}`, kh: `titik_panas_kapuashulu_${t}`, arsip: `firms_arsip_${t}`, analisis: `analisis_lahan_karbon_${c.id}` }[st.data];
     return { base: b, name: `${b}${st.fmt === 'shp' ? '_shp' : ''}.${ext}` }; };
   const prebuilt = c => { // file siap pakai di server bila cocok persis
     if (st.data === 'kejadian_poligon') return `kejadian_api_${c.id}_radius25km_cakupan_piksel_UTM49N_shp.zip`;
-    if (st.data === 'arsip') return null;
+    if (st.data === 'arsip' || st.data === 'analisis') return null;
     if (st.data === 'kh' && st.fmt === 'shp') { const f = `titik_panas_kapuashulu_${st.tahun}_shp.zip`; return c.ekspor.includes(f) ? f : null; }
     if (st.tahun !== 'semua' || st.wil !== '25') return null;
     const f = st.data === 'titik' ? `titik_panas_${c.id}_radius25km_semua_tahun${st.fmt === 'shp' ? '_shp.zip' : '.' + st.fmt}` : st.data === 'kejadian' ? `kejadian_api_${c.id}_radius25km${st.fmt === 'shp' ? '_titik_shp.zip' : '.' + st.fmt}` : null;
@@ -208,8 +233,9 @@ function mount(el, opt) {
       const F = await build(st, c); const { base, name } = fname(c);
       if (!F.length) { msg.textContent = 'Tidak ada data untuk pilihan ini (0 fitur). Coba wilayah atau tahun lain.'; return; }
       let blob;
-      if (st.fmt === 'csv') blob = new Blob([toCSV(F)], { type: 'text/csv;charset=utf-8' });
-      else if (st.fmt === 'geojson') blob = new Blob([JSON.stringify({ type: 'FeatureCollection', name: base, crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' } }, features: F })], { type: 'application/geo+json' });
+      if (st.fmt === 'csv' && st.data === 'analisis') blob = new Blob(['\ufeff' + analisisCSV(F.map(f => f._src))], { type: 'text/csv;charset=utf-8' });
+      else if (st.fmt === 'csv') blob = new Blob([toCSV(F)], { type: 'text/csv;charset=utf-8' });
+      else if (st.fmt === 'geojson') blob = new Blob([JSON.stringify({ type: 'FeatureCollection', name: base, crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' } }, features: F.map(({ _src, ...f }) => f) })], { type: 'application/geo+json' });
       else if (st.fmt === 'kml') blob = new Blob([toKML(F, base)], { type: 'application/vnd.google-earth.kml+xml' });
       else blob = await toSHPzip(F, base, DATA[st.data].geom === 'Point' ? 1 : 5);
       save(blob, name); msg.textContent = `Selesai: ${N(F.length)} fitur · ${name}`;
@@ -219,5 +245,5 @@ function mount(el, opt) {
   refresh();
   return { refresh };
 }
-window.FHUnduh = { mount, _test: { build, shpParts, toKML, toCSV } };
+window.FHUnduh = { mount, analisisCSV, _test: { build, shpParts, toKML, toCSV, analisisCSV } };
 })();

@@ -305,6 +305,9 @@ function sources(M) {
     ['Jejak audit', `Setiap unduhan sumber dicatat (URL, waktu, SHA-256) di https://github.com/erikprcfi/hotspot-fire-prcf/tree/main/data/provenance. Basis data diperbarui ${STATUS.terakhir_cek_utc} (UTC). Setiap titik dapat dicek silang di https://firms.modaps.eosdis.nasa.gov/map.`],
     ['Bekas terbakar', 'Sentinel-2 L2A (ESA Copernicus, Earth Search AWS Open Data); indeks dNBR menurut Key & Benson (2006), FIREMON. Hasil berupa indikasi yang perlu verifikasi lapangan.'],
     ['Tutupan hutan', 'Hansen, M.C. dkk. (2013) High-Resolution Global Maps of 21st-Century Forest Cover Change. Science 342:850–853; Global Forest Change v1.13 (2000–2025), CC BY 4.0.'],
+    ['Tutupan & penggunaan lahan', 'Potapov, P. dkk. (2022) The Global 2000–2020 Land Cover and Land Use Change Dataset Derived From the Landsat Archive. Frontiers in Remote Sensing 3:856903; GLAD GLCLUC v2, 30 m, CC BY 4.0.'],
+    ['Karbon hutan', 'Harris, N.L. dkk. (2021) Global maps of twenty-first century forest carbon fluxes. Nature Climate Change 11:234–240; Gibbs, D.A. dkk. (2025) ESSD 17:1217–1243. Emisi bruto, serapan bruto & fluks bersih 2001–2025 versi 20260327 (sama dengan Global Forest Watch/Global Nature Watch); stok karbon 2000 versi 20230222. Data publik WRI/GFW (gfw2-data), CC BY 4.0.'],
+    ['Metode analisis area', 'Semua raster dibaca pada grid asli 0,00025° tanpa resampling; piksel masuk bila pusatnya di dalam batas; luas piksel geodesik. Kode: scripts/analisis_inti.py di https://github.com/erikprcfi/hotspot-fire-prcf (sama untuk area dampingan dan SHP unggahan).'],
     ['Bahaya kebakaran', 'Van Wagner, C.E. (1987) Development and Structure of the Canadian Forest Fire Weather Index System; de Groot dkk. (2006) Fire Danger Rating System Indonesia (dipakai BMKG). Input cuaca ERA5 (Copernicus C3S) dan analisis ECMWF.'],
     ['Keterbatasan', 'Satelit mendeteksi panas saat melintas (beberapa kali sehari); api kecil, singkat, atau di bawah tajuk dan saat tertutup awan dapat tidak terdeteksi. Luas terbakar perlu diukur dengan analisa citra (burn scar) atau lapangan.'],
     ['Sitasi', "We acknowledge the use of data and imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Earth Science Data and Information System (ESDIS)."],
@@ -329,7 +332,11 @@ function figures(M) {
     const y0 = M.a.slice(0, 4), y1 = M.b.slice(0, 4), yl = y0 === y1 ? y0 : `${y0}–${y1}`;
     F.season = drawChart(`Pola musim ${yl}: titik panas per bulan vs rata-rata curah hujan bulanan ${yl}`, BULAN, [{ name: `Titik panas ${yl}`, color: '#C9B21E', values: cm }, { name: `Rata-rata hujan ${yl} (mm/bulan)`, color: '#2F6FB0', type: 'line', values: rnorm }], { right: true, rlab: `Hujan rata-rata ${yl} (mm)` });
   }
-  if (M.near.length && (!SITE || SITE.id === 'nangalauk')) F.ctx = drawContext(M);  // data kawasan/tutupan/gambut hanya tersedia untuk Nanga Lauk
+  if (M.near.length && (!SITE || SITE.id === 'nangalauk')) F.ctx = drawContext(M);
+  if (M.ex && M.ex.an) { const A = M.ex.an.hd, Y = A.tahun_tutupan.map(String), K = A.kelas.filter(k => Y.some(y => (A.tutupan_lahan_ha[y][k.kode] || 0) >= 0.05));
+    F.lc = drawChart(`Tutupan lahan ${A.nama} 2000–2020 (GLAD), ha`, Y, K.map(k => ({ name: k.nama.split(' (')[0], color: k.warna === '#FFFFFF' ? '#DDDDDD' : k.warna, values: Y.map(y => Math.round(A.tutupan_lahan_ha[y][k.kode] || 0)) })), { ylab: 'Luas (ha)' });
+    const ys = Object.keys(A.karbon.emisi_per_tahun_kehilangan_tCO2e);
+    F.em = drawChart(`Emisi bruto (tCO2e) & kehilangan tutupan pohon (ha) per tahun – ${A.nama}`, ys, [{ name: 'Emisi bruto (tCO2e)', color: '#8E2A1E', values: ys.map(y => Math.round(A.karbon.emisi_per_tahun_kehilangan_tCO2e[y])) }, { name: 'Kehilangan pohon (ha)', color: '#E2621B', type: 'line', values: ys.map(y => A.hutan.kehilangan_per_tahun_ha[y]) }], { right: true, rlab: 'Kehilangan (ha)', ylab: 'Emisi (tCO2e)' }); }  // data kawasan/tutupan/gambut hanya tersedia untuk Nanga Lauk
   return F;
 }
 
@@ -339,7 +346,8 @@ async function getJ(u) { if (u in JS) return JS[u]; try { const r = await fetch(
 const LVN = ['Rendah', 'Sedang', 'Tinggi', 'Ekstrem'];
 async function extras(M) {
   const id = SITE ? SITE.id : 'nangalauk', ex = { id };
-  const [bt, hk, fd] = await Promise.all([getJ('data/bekas_terbakar/indeks.json'), getJ('data/hutan/kehilangan.json'), getJ(`data/prakiraan/fdrs_${id}.json`)]);
+  const [bt, hk, fd, aHD, aDS] = await Promise.all([getJ('data/bekas_terbakar/indeks.json'), getJ('data/hutan/kehilangan.json'), getJ(`data/prakiraan/fdrs_${id}.json`), getJ(`data/analisis/${id}_hd.json`), getJ(`data/analisis/${id}_desa.json`)]);
+  if (aHD && aDS) ex.an = { hd: aHD, desa: aDS, hk: hk && hk.lokasi && hk.lokasi[id] };
   ex.burnOk = !!(bt && bt.musim);
   if (ex.burnOk) ex.burn = Object.values(bt.musim).filter(m => m.lokasi === id && m.awal <= M.b && m.akhir >= M.a).sort((x, y) => x.awal.localeCompare(y.awal));
   const y0 = Math.max(2001, +M.a.slice(0, 4)), y1 = Math.min(2025, +M.b.slice(0, 4));
@@ -365,6 +373,8 @@ function extraSummary(M) {
   const done = (ex.burn || []).filter(m => m.status === 'selesai');
   if (done.length) s.push(`Indikasi bekas terbakar (Sentinel-2, musim kebakaran yang beririsan dengan periode): ${fmt1(done.reduce((p, m) => p + m.luas_ha, 0))} ha dari ${done.length} musim yang dapat dianalisis` + ((ex.burn.length - done.length) ? `; ${ex.burn.length - done.length} musim lain tidak dapat diukur karena tertutup awan/citra kurang.` : '.'));
   if (ex.loss) { const hd = ex.loss.zones[0]; s.push(`Kehilangan tutupan pohon (Hansen GFC) ${ex.loss.y0 === ex.loss.y1 ? 'tahun ' + ex.loss.y0 : ex.loss.y0 + '–' + ex.loss.y1}: ${fmt1(hd.tot)} ha di Hutan Desa, ${fmt1(ex.loss.zones[1].tot)} ha di desa di luar Hutan Desa, ${fmt1(ex.loss.zones[2].tot)} ha di radius 0–5 km.`); }
+  if (ex.an) { const H = ex.an.hd, C = H.karbon, sink = C.fluks_bersih_per_tahun_tCO2e < 0;
+    s.push(`Analisis lahan & karbon ${H.nama} (data tahunan resmi, tidak bergantung periode laporan): hutan tahun 2000 ${fmt1(H.hutan.hutan_2000_ha)} ha, kehilangan tutupan pohon 2001–2025 ${fmt1(H.hutan.kehilangan_total_ha)} ha (${fmt1(H.hutan.persen_hilang)}%); emisi bruto ${fmt(C.emisi_bruto_per_tahun_tCO2e)} tCO2e/tahun, serapan ${fmt(C.serapan_bruto_per_tahun_tCO2)} tCO2/tahun, fluks bersih ${fmt(C.fluks_bersih_per_tahun_tCO2e)} tCO2e/tahun (${sink ? 'penyerap karbon bersih' : 'sumber emisi bersih'}); stok karbon total tahun 2000 ${fmt(C.stok_karbon_total_2000_tC)} tC.`); }
   if (ex.fdrs) s.push(`Indeks bahaya kebakaran (FDRS) tersedia untuk ${ex.fdrs.n} hari dalam periode: Rendah ${ex.fdrs.c[0]}, Sedang ${ex.fdrs.c[1]}, Tinggi ${ex.fdrs.c[2]}, Ekstrem ${ex.fdrs.c[3]} hari.`);
   return s;
 }
@@ -388,6 +398,14 @@ function verify(M) {
   add('Kelengkapan arsip titik panas NASA FIRMS', M.gap ? `belum ada data ${tglID(M.gap[0])} – ${tglID(M.gap[1])} (menunggu arsip NASA)` : `lengkap untuk periode (basis data diperbarui ${STATUS.terakhir_cek_utc.replace('T', ' ').slice(0, 16)} UTC)`, !M.gap);
   if (M.ex.burn) { const bad = M.ex.burn.filter(m => m.lokasi !== M.ex.id || m.awal > M.b || m.akhir < M.a).length; add('Musim bekas terbakar sesuai lokasi & periode', `${M.ex.burn.length} musim beririsan; ${bad} tidak sesuai`, bad === 0); }
   if (M.ex.fdrs) { const bad = M.ex.fdrs.days.filter(d => d.t < M.a || d.t > M.b).length; add('Indeks FDRS hanya hari di dalam periode', `${M.ex.fdrs.n} hari; ${bad} di luar periode`, bad === 0); }
+  if (M.ex.an) for (const [nm, A] of [['Hutan Desa', M.ex.an.hd], ['Desa', M.ex.an.desa]]) {
+    const C = A.karbon, d = (C.emisi_bruto_total_tCO2e - C.serapan_bruto_total_tCO2) - C.fluks_bersih_total_tCO2e;
+    add(`Karbon ${nm}: emisi bruto - serapan bruto = fluks bersih`, `${fmt(C.emisi_bruto_total_tCO2e)} - ${fmt(C.serapan_bruto_total_tCO2)} = ${fmt(C.emisi_bruto_total_tCO2e - C.serapan_bruto_total_tCO2)}; data: ${fmt(C.fluks_bersih_total_tCO2e)}`, Math.abs(d) <= Math.max(2, Math.abs(C.fluks_bersih_total_tCO2e) * 0.001));
+    const lc = Object.values(A.tutupan_lahan_ha['2020']).reduce((p, c) => p + c, 0); add(`Tutupan lahan 2020 ${nm}: jumlah kelas = luas area`, `${fmt1(lc)} ha vs ${fmt1(A.luas_ha)} ha`, Math.abs(lc - A.luas_ha) <= Math.max(0.5, A.luas_ha * 0.002));
+    const ls = Object.values(A.hutan.kehilangan_per_tahun_ha).reduce((p, c) => p + c, 0); add(`Kehilangan hutan ${nm}: jumlah per tahun = total`, `${fmt1(ls)} = ${fmt1(A.hutan.kehilangan_total_ha)} ha`, Math.abs(ls - A.hutan.kehilangan_total_ha) <= 0.2);
+    const tp = Object.values(A.titik_panas.per_tahun).reduce((p, o) => p + Object.values(o).reduce((a, b) => a + b, 0), 0); add(`Titik panas jangka panjang ${nm}: jumlah per tahun = total`, `${fmt(tp)} = ${fmt(A.titik_panas.total)}`, tp === A.titik_panas.total);
+  }
+  if (M.ex.an && M.ex.an.hk) { const a = M.ex.an.hd.hutan.kehilangan_total_ha, b = M.ex.an.hk.hutan_desa.kehilangan_total_ha; add('Kehilangan hutan HD: analisis area = bab Hansen (dua perhitungan terpisah)', `${fmt1(a)} ha vs ${fmt1(b)} ha`, Math.abs(a - b) <= Math.max(0.5, b * 0.01)); }
   return C;
 }
 /* blok bagian tambahan, dipakai PDF, Word & pratinjau: {h, p:[...], t:[{cap, rows, note}]} */
@@ -426,6 +444,41 @@ function extraBlocks(M) {
       if (L.after) b.p.push('Catatan: data Hansen GFC v1.13 tersedia sampai tahun 2025; perubahan setelah 2025 dipantau dengan peringatan perubahan tutupan Sentinel-2 di aplikasi.');
     } else b.p.push('Periode yang dipilih berada di luar cakupan data tahunan Hansen GFC (2001–2025). Perubahan tutupan terbaru dipantau melalui peringatan perubahan tutupan Sentinel-2 di aplikasi.');
     B.push(b); }
+  // Analisis lahan & karbon (setara GFW/GNW) – data tahunan, cakupan tetap
+  const AN = ex.an, Z = AN ? [['Hutan Desa', AN.hd], ['Wilayah desa', AN.desa]] : [];
+  { const b = { h: 'Tutupan & penggunaan lahan 2000–2020 (GLAD)', p: [], t: [] };
+    if (AN) {
+      const K = AN.hd.kelas, Y = AN.hd.tahun_tutupan, used = K.filter(k => Z.some(([, A]) => Y.some(y => (A.tutupan_lahan_ha[String(y)][k.kode] || 0) >= 0.05)));
+      b.p.push(`Bagian ini bersifat jangka panjang (2000–2020) dan tidak mengikuti periode laporan. Sumber: ${AN.hd.sumber.tutupan_lahan}. Kelas dikelompokkan dari legenda resmi GLAD; "lahan basah" = lahan yang tergenang musiman/permanen (rawa, gambut, tepian danau/sungai). Piksel dihitung bila pusatnya berada di dalam batas; luas piksel geodesik.`);
+      for (const [nm, A] of Z) b.t.push({ cap: `${nm} – ${A.nama} (${fmt1(A.luas_ha)} ha): luas per kelas (ha)`, rows: [['Kelas', ...Y.map(String), 'Perubahan 2000–2020'], ...used.map(k => [k.nama, ...Y.map(y => fmt1(A.tutupan_lahan_ha[String(y)][k.kode] || 0)), (v => (v >= 0 ? '+' : '') + fmt1(v))((A.tutupan_lahan_ha['2020'][k.kode] || 0) - (A.tutupan_lahan_ha['2000'][k.kode] || 0))])] });
+      for (const [nm, A] of Z) { const tr = Object.entries(A.perubahan_2000_2020_ha || {}).slice(0, 8); if (tr.length) b.t.push({ cap: `${nm}: perubahan kelas terbesar 2000 → 2020`, rows: [['Dari', 'Menjadi', 'Luas (ha)'], ...tr.map(([k, v]) => { const [x, y] = k.split('>'); return [(K.find(q => q.kode === x) || {}).nama || x, (K.find(q => q.kode === y) || {}).nama || y, fmt1(v)]; })] }); }
+    } else b.p.push('Data analisis lahan untuk lokasi ini belum tersedia.');
+    B.push(b); }
+  { const b = { h: 'Karbon hutan & emisi gas rumah kaca 2001–2025', p: [], t: [] };
+    if (AN) {
+      b.p.push(`Sumber: ${AN.hd.sumber.fluks_karbon}; ${AN.hd.sumber.stok_karbon}. Emisi bruto mencakup CO2, CH4 dan N2O dari biomassa dan tanah (termasuk gambut) akibat hilangnya tutupan pohon; serapan bruto = penyerapan CO2 oleh hutan yang tetap/tumbuh; fluks bersih = emisi - serapan (negatif = penyerap karbon bersih). Nilai per tahun = total 25 tahun ÷ 25, sama dengan cara Global Forest Watch. Ini hasil model global dengan ketidakpastian; bukan pengganti inventarisasi karbon/MRV lapangan.`);
+      b.t.push({ cap: 'Ringkasan karbon', rows: [['Indikator', ...Z.map(([n]) => n)],
+        ['Luas area (ha)', ...Z.map(([, A]) => fmt1(A.luas_ha))], ['Hutan tahun 2000, tajuk ≥30% (ha)', ...Z.map(([, A]) => fmt1(A.hutan.hutan_2000_ha))], ['Kehilangan tutupan pohon 2001–2025 (ha)', ...Z.map(([, A]) => fmt1(A.hutan.kehilangan_total_ha))],
+        ['Emisi bruto total (tCO2e)', ...Z.map(([, A]) => fmt(A.karbon.emisi_bruto_total_tCO2e))], ['Serapan bruto total (tCO2)', ...Z.map(([, A]) => fmt(A.karbon.serapan_bruto_total_tCO2))], ['Fluks bersih total (tCO2e)', ...Z.map(([, A]) => fmt(A.karbon.fluks_bersih_total_tCO2e))],
+        ['Emisi bruto per tahun (tCO2e/th)', ...Z.map(([, A]) => fmt(A.karbon.emisi_bruto_per_tahun_tCO2e))], ['Serapan bruto per tahun (tCO2/th)', ...Z.map(([, A]) => fmt(A.karbon.serapan_bruto_per_tahun_tCO2))], ['Fluks bersih per tahun (tCO2e/th)', ...Z.map(([, A]) => fmt(A.karbon.fluks_bersih_per_tahun_tCO2e))],
+        ['Status karbon bersih', ...Z.map(([, A]) => A.karbon.fluks_bersih_total_tCO2e < 0 ? 'Penyerap' : 'Sumber emisi')],
+        ['Stok karbon atas tanah 2000 (tC)', ...Z.map(([, A]) => fmt(A.karbon.stok_karbon_atas_tanah_2000_tC))], ['Stok karbon total 2000, semua pool (tC)', ...Z.map(([, A]) => fmt(A.karbon.stok_karbon_total_2000_tC))],
+        ['Rerata karbon total hutan (tC/ha)', ...Z.map(([, A]) => fmt1(A.karbon.rerata_karbon_total_hutan_2000_tC_ha))], ['Rerata karbon atas tanah hutan (tC/ha)', ...Z.map(([, A]) => fmt1(A.karbon.rerata_karbon_atas_tanah_hutan_2000_tC_ha))]] });
+      const ys = Object.keys(AN.hd.karbon.emisi_per_tahun_kehilangan_tCO2e);
+      b.t.push({ cap: 'Kehilangan tutupan pohon (ha) dan emisi bruto (tCO2e) menurut tahun', rows: [['Tahun', ...Z.flatMap(([n]) => [`${n}: hilang (ha)`, `${n}: emisi (tCO2e)`])], ...ys.map(y => [y, ...Z.flatMap(([, A]) => [fmt1(A.hutan.kehilangan_per_tahun_ha[y] || 0), fmt(A.karbon.emisi_per_tahun_kehilangan_tCO2e[y] || 0)])])] });
+    } else b.p.push('Data karbon untuk lokasi ini belum tersedia.');
+    B.push(b); }
+  { const b = { h: 'Titik panas jangka panjang 2016–2025 (arsip tahunan NASA)', p: [], t: [] };
+    if (AN) {
+      const T0 = AN.hd.titik_panas, ys = Object.keys(T0.per_tahun), S = Object.keys(T0.per_tahun[ys[0]]);
+      b.p.push(`Jumlah deteksi titik panas tipe vegetasi dari arsip tahunan final NASA FIRMS di dalam batas Hutan Desa dan wilayah desa (VIIRS S-NPP, VIIRS NOAA-20, MODIS). ${T0.catatan}`);
+      b.t.push({ cap: 'Deteksi per tahun dan sensor', rows: [['Tahun', ...Z.flatMap(([n]) => S.map(s => `${n}: ${s}`))], ...ys.map(y => [y, ...Z.flatMap(([, A]) => S.map(s => fmt(A.titik_panas.per_tahun[y][s])))]), ['Jumlah', ...Z.flatMap(([, A]) => S.map(s => fmt(ys.reduce((p, y) => p + A.titik_panas.per_tahun[y][s], 0))))]] });
+    } else b.p.push('Data titik panas jangka panjang belum tersedia.');
+    B.push(b); }
+  { const b = { h: 'Wilayah administrasi yang tercakup', p: [], t: [] };
+    if (AN) { b.p.push(`Desa/kelurahan yang beririsan dengan batas (batas BPS/BIG, OCHA COD-AB 2020; nama Kepmendagri No. 300.2.2-2430 Tahun 2025).`);
+      for (const [nm, A] of Z) if (A.wilayah && A.wilayah.length) b.t.push({ cap: nm, rows: [['Desa/Kelurahan', 'Kecamatan', 'Kabupaten/Kota', 'Provinsi', '% desa tercakup'], ...A.wilayah.slice(0, 15).map(w => [w.desa, w.kec, w.kab, w.prov, fmt1(w.persen_desa_tercakup)])] }); }
+    B.push(b); }
   return B;
 }
 function kpis(M) {
@@ -462,13 +515,14 @@ function preview(M, F, T) {
   ${h('Rekapitulasi')}<p class="rp-note">Tabel 1. Deteksi per zona dan sensor</p>${htmlTable(T.zona)}<p class="rp-note">Tabel 2. Deteksi dan curah hujan per ${M.unit}</p>${htmlTable(T.periode, 40)}${T.petak.length > 1 ? `<p class="rp-note">Tabel 3. Petak patroli dengan titik panas</p>${htmlTable(T.petak)}` : ''}
   ${h(`Kejadian api di desa & radius 5 km (${M.events.length})`)}${T.ev.length > 1 ? htmlTable(T.ev, 15) : '<p>Tidak ada kejadian.</p>'}
   ${blk(XB[1])}${blk(XB[2])}
+  ${XB[3] ? blk(XB[3]) + (F.lc ? img(F.lc) : '') + blk(XB[4]) + (F.em ? img(F.em) : '') + blk(XB[5]) + blk(XB[6]) : ''}
   <h4>Lampiran A. Detail deteksi di desa & radius 5 km (${M.near.length})</h4>${T.detail.length > 1 ? htmlTable(T.detail, 30) : '<p>Tidak ada deteksi.</p>'}
   <h4>Lampiran B. Verifikasi data</h4>${htmlTable(T.cek)}
   <h4>Lampiran C–D. Kamus data, sumber data & jejak audit</h4><p class="rp-note">Lihat file PDF/Word.</p></div>`;
 }
 
 /* ---------------- PDF ---------------- */
-const pdfTxt = s => String(s ?? '').replace(/≤/g, '<=').replace(/≥/g, '>=').replace(/…/g, '...').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/µ/g, 'u').replace(/·/g, '-');
+const pdfTxt = s => String(s ?? '').replace(/≤/g, '<=').replace(/≥/g, '>=').replace(/…/g, '...').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/µ/g, 'u').replace(/·/g, '-').replace(/→/g, '->').replace(/−/g, '-').replace(/₂/g, '2');
 async function exportPDF(M, F, T) {
   await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
   await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');
@@ -520,6 +574,7 @@ async function exportPDF(M, F, T) {
   H1(`Kejadian api di desa & radius 5 km (${M.events.length})`);
   if (T.ev.length > 1) { if (M.events.length > CAP_EVENTS) P(`Ditampilkan ${CAP_EVENTS} kejadian (diurutkan dari zona terdekat). Seluruh kejadian ada di file CSV.`, 8.5, MUTED); TAB(T.ev, 7); } else P('Tidak ada kejadian pada periode ini.');
   BLK(XB[1]); BLK(XB[2]);
+  if (XB[3]) { BLK(XB[3]); if (F.lc) IMGp(F.lc, CW); BLK(XB[4]); if (F.em) IMGp(F.em, CW); BLK(XB[5]); BLK(XB[6]); }
   doc.addPage('a4', 'landscape'); y = 24; const ML2 = 12;
   TOC.push([`Lampiran A. Detail deteksi di Hutan Desa, desa & radius 5 km (${M.near.length})`, doc.getNumberOfPages()]);
   doc.setFont('helvetica', 'bold'); doc.setFontSize(12.5); doc.setTextColor(HEAD); doc.text(pdfTxt(TOC[TOC.length - 1][0]), ML2, y); y += 5;
@@ -582,6 +637,7 @@ async function exportDOCX(M, F, T) {
   main.push(H(`Kejadian api di desa & radius 5 km (${M.events.length})`));
   if (T.ev.length > 1) { if (M.events.length > CAP_EVENTS) main.push(P(`Ditampilkan ${CAP_EVENTS} kejadian (zona terdekat lebih dulu). Seluruh kejadian ada di file CSV.`, { size: 17, color: '5B6A61' })); main.push(TB(T.ev, 14)); } else main.push(P('Tidak ada kejadian pada periode ini.'));
   main.push(...BLKd(XB[1]), ...BLKd(XB[2]));
+  if (XB[3]) { main.push(...BLKd(XB[3])); if (F.lc) main.push(await img(F.lc, 16.5)); main.push(...BLKd(XB[4])); if (F.em) main.push(await img(F.em, 16.5)); main.push(...BLKd(XB[5]), ...BLKd(XB[6])); }
   const app = [H(`Lampiran A. Detail deteksi di Hutan Desa, desa & radius 5 km (${M.near.length})`, false)]; if (T.detailNote) app.push(P(T.detailNote, { size: 17, color: '5B6A61' }));
   app.push(T.detail.length > 1 ? TB(T.detail, 13) : P('Tidak ada deteksi pada periode ini.'));
   const end = [H('Lampiran B. Verifikasi data', false), P('Pemeriksaan konsistensi otomatis atas data yang masuk ke laporan ini, dijalankan saat laporan dibuat.', { size: 17, color: '5B6A61' }), TB(T.cek, 16, true),
