@@ -29,7 +29,9 @@ function create(map, opt = {}) {
   const pane = map.getPane('nasa') || map.createPane('nasa'); pane.style.zIndex = 355;
   let cur = null, date = yesterdayWIB(), layer = null; const subs = [];
   const fire = () => subs.forEach(f => f(api));
+  let anim = null;
   function draw() {
+    stopAnim(true);
     if (layer) { map.removeLayer(layer); layer = null; }
     const L0 = LAYERS.find(l => l.id === cur); if (!L0) return fire();
     const alt = L0.pick ? L0.pick(date) : null, id = (alt && alt.gibs) || L0.gibs;
@@ -43,11 +45,33 @@ function create(map, opt = {}) {
     }
     layer.addTo(map); fire();
   }
+  /* Animasi pergerakan asap/awan: memutar citra harian NASA beberapa hari terakhir (data asli per hari, bukan efek buatan) */
+  function stopAnim(silent) { if (!anim) return; clearInterval(anim.t); anim.frames.forEach(g => map.removeLayer(g)); const d = anim.end; anim = null; if (!silent) { date = d; draw(); } }
+  function play(n = 7, ms = 1100) {
+    const L0 = LAYERS.find(l => l.id === cur); if (!L0) return; if (anim) return stopAnim();
+    if (layer) { map.removeLayer(layer); layer = null; }
+    pane.style.opacity = L0.op; const end = date, alt0 = L0.pick ? L0.pick(end) : null, id = (alt0 && alt0.gibs) || L0.gibs, win = L0.days || 1;
+    const frames = [], dates = [];
+    for (let k = n - 1; k >= 0; k--) {
+      const fd = addDay(end, -k); if (fd < L0.since) continue; dates.push(fd); const g = L.layerGroup();
+      for (let j = win - 1; j >= 0; j--) { const d = addDay(fd, -j);
+        const tl = L0.wms ? L.tileLayer.wms('https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi', { layers: L0.wms, format: 'image/png', transparent: true, version: '1.3.0', time: d, pane: 'nasa', tileSize: 512, opacity: 0, className: 'fh-anim' })
+          : L.tileLayer(`${BASE}${id}/default/${d}/${L0.m}/{z}/{y}/{x}.${L0.ext}`, { pane: 'nasa', maxNativeZoom: L0.z, maxZoom: 18, tileSize: 256, opacity: 0, className: 'fh-anim' });
+        tl.addTo(g); }
+      g.addTo(map); frames.push(g);
+    }
+    if (!frames.length) return;
+    anim = { frames, dates, i: frames.length - 1, end, t: 0 };
+    const showF = i => { frames.forEach((g, k) => g.eachLayer(t => t.setOpacity(k === i ? 1 : 0))); date = dates[i]; fire(); };
+    showF(0); anim.i = 0;
+    anim.t = setInterval(() => { if (!anim) return; anim.i = (anim.i + 1) % frames.length; showF(anim.i); }, ms);
+    fire();
+  }
   const api = {
     LAYERS, get id() { return cur; }, get date() { return date; }, get layer() { return LAYERS.find(l => l.id === cur) || null; }, get label() { const L0 = LAYERS.find(l => l.id === cur); if (!L0) return ''; const alt = L0.pick ? L0.pick(date) : null; return (alt && alt.short) || L0.short; },
-    set(id) { cur = id || null; const L0 = LAYERS.find(l => l.id === cur); if (L0 && L0.today && date === yesterdayWIB()) date = iso(new Date(Date.now() + 7 * 36e5)); if (L0 && !L0.today && date > yesterdayWIB()) date = yesterdayWIB(); if (L0 && date < L0.since) date = L0.since; try { localStorage.setItem('fh_nasa', JSON.stringify({ id: cur })); } catch (e) { } draw(); },
+    set(id) { if (anim) stopAnim(true); cur = id || null; const L0 = LAYERS.find(l => l.id === cur); if (L0 && L0.today && date === yesterdayWIB()) date = iso(new Date(Date.now() + 7 * 36e5)); if (L0 && !L0.today && date > yesterdayWIB()) date = yesterdayWIB(); if (L0 && date < L0.since) date = L0.since; try { localStorage.setItem('fh_nasa', JSON.stringify({ id: cur })); } catch (e) { } draw(); },
     setDate(d) { const L0 = LAYERS.find(l => l.id === cur); const max = L0 && L0.today ? iso(new Date(Date.now() + 7 * 36e5)) : yesterdayWIB(); if (d > max) d = max; if (L0 && d < L0.since) d = L0.since; date = d; draw(); },
-    step(n) { api.setDate(addDay(date, n)); }, maxDate: () => { const L0 = LAYERS.find(l => l.id === cur); return L0 && L0.today ? iso(new Date(Date.now() + 7 * 36e5)) : yesterdayWIB(); }, onChange(f) { subs.push(f); }
+    step(n) { if (anim) stopAnim(true); api.setDate(addDay(date, n)); }, play, stop: () => stopAnim(), get playing() { return !!anim; }, get animInfo() { return anim ? { i: anim.i, n: anim.frames.length, from: anim.dates[0], to: anim.dates[anim.dates.length - 1] } : null; }, maxDate: () => { const L0 = LAYERS.find(l => l.id === cur); return L0 && L0.today ? iso(new Date(Date.now() + 7 * 36e5)) : yesterdayWIB(); }, onChange(f) { subs.push(f); }
   };
   return api;
 }
@@ -60,13 +84,14 @@ function control(map, api, position = 'topleft') {
     d.innerHTML = `<div class="nasa-h"><img src="https://gibs.earthdata.nasa.gov/favicon.ico" alt="" onerror="this.remove()"><b>Satelit NASA harian</b></div>
       <select class="nasa-sel"><option value="">— tidak ditampilkan —</option>${LAYERS.map(l => `<option value="${l.id}">${l.nm}</option>`).join('')}</select>
       <div class="nasa-date"><button type="button" data-s="-1" title="Hari sebelumnya">◀</button><input type="date"><button type="button" data-s="1" title="Hari berikutnya">▶</button></div>
-      <div class="nasa-info"></div>`;
+      <button type="button" class="nasa-play">▶ Putar pergerakan 7 hari</button><div class="nasa-info"></div>`;
     L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
     const sel = d.querySelector('select'), inp = d.querySelector('input'), info = d.querySelector('.nasa-info');
-    const sync = () => { sel.value = api.id || ''; inp.value = api.date; inp.max = api.maxDate(); const L0 = api.layer; d.classList.toggle('on', !!L0);
+    const sync = () => { pb.textContent = api.playing ? `⏸ Hentikan · ${api.date}` : '▶ Putar pergerakan 7 hari'; sel.value = api.id || ''; inp.value = api.date; inp.max = api.maxDate(); const L0 = api.layer; d.classList.toggle('on', !!L0);
       info.innerHTML = L0 ? `${L0.legend ? `<img class="nasa-lg" src="${L0.legend}" alt="Legenda ${L0.short}">` : ''}<p>${L0.desc}</p>` : ''; };
     sel.onchange = () => api.set(sel.value); inp.onchange = () => inp.value && api.setDate(inp.value);
     d.querySelectorAll('[data-s]').forEach(b => b.onclick = () => api.step(+b.dataset.s));
+    const pb = d.querySelector('.nasa-play'); pb.onclick = () => api.playing ? api.stop() : api.play(7);
     api.onChange(sync); sync(); return d;
   };
   C.addTo(map); return C;
@@ -79,7 +104,7 @@ if (!document.getElementById('nasa-css')) {
   .nasa-sel,.nasa-date input{width:100%;height:32px;border:1px solid #cfd8d2;border-radius:8px;padding:0 6px;font:inherit;background:#fff;color:#14201a}
   .nasa-date{display:none;grid-template-columns:30px 1fr 30px;gap:4px;margin-top:6px}.nasa-ctl.on .nasa-date{display:grid}
   .nasa-date button{height:32px;border:1px solid #cfd8d2;border-radius:8px;background:#f4f6f4;cursor:pointer}
-  .nasa-info p{margin:6px 0 0;color:#4d5b53;font-size:11.5px}.nasa-lg{width:100%;margin-top:6px;background:#fff;border-radius:4px}`;
+  .nasa-info p{margin:6px 0 0;color:#4d5b53;font-size:11.5px}.fh-anim{transition:opacity .7s ease}.nasa-play{margin-top:6px;width:100%;height:32px;border:0;border-radius:8px;background:#0B3B2C;color:#fff;font:700 12px system-ui;cursor:pointer;display:none}.nasa-ctl.on .nasa-play{display:block}.nasa-lg{width:100%;margin-top:6px;background:#fff;border-radius:4px}`;
   document.head.appendChild(st);
 }
 window.FHNasa = { create, control, LAYERS };

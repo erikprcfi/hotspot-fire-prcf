@@ -522,6 +522,7 @@ html:not([data-v="beranda"]) .hero-head{margin-bottom:14px}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="assets/nasa_layers.js"></script>
+<script src="assets/citra.js"></script>
 <script src="assets/peta3d.js"></script>
 <script src="assets/unduh.js"></script>
 <script>
@@ -572,9 +573,11 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 
 /* ---------- map ---------- */
 const map=L.map('map',{zoomSnap:.25,preferCanvas:true}); window.FHMAP=map;
-const esri=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Citra: Esri, Maxar, Earthstar Geographics'});
+const IMGC=L.control({position:'bottomright'});IMGC.onAdd=()=>{const d=L.DomUtil.create('div','imgc');d.style.cssText='background:rgba(10,20,15,.72);color:#fff;font:600 11px system-ui;padding:4px 9px;border-radius:999px;margin-bottom:4px';return d;};IMGC.addTo(map);
+let IMGT=0;const imgInfo=()=>{clearTimeout(IMGT);IMGT=setTimeout(async()=>{const k=[['s2026',s2026],['eox',eox],['esri',esri]].find(([,l])=>map.hasLayer(l));const el=IMGC.getContainer();if(!k){el.style.display='none';return;}const c=map.getCenter();el.textContent='🛰 '+await FHCitra.info(k[0],c.lat,c.lng);el.style.display='';},400);};map.on('moveend baselayerchange',imgInfo);
+const CIT=FHCitra.leaflet(L),esri=CIT.esri,s2026=CIT.s2026,eox=CIT.eox;
 const osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'});
-esri.addTo(map);
+s2026.addTo(map);
 map.createPane('base').style.zIndex=350;map.createPane('img').style.zIndex=360;
 const s2=L.imageOverlay(G.img.url,G.img.bounds,{opacity:.95,pane:'img',attribution:'Sentinel-2 10 Agu 2026: Copernicus/ESA'});
 const st=(c,w,o)=>({color:c,weight:w,fill:false,opacity:o??1});
@@ -607,7 +610,7 @@ map.on('overlayadd',e=>{if(e.layer===BTL&&!BTL._loaded){BTL._loaded=1;fetch('dat
 const TCL=L.tileLayer('https://tiles.globalforestwatch.org/umd_tree_cover_loss/latest/dynamic/{z}/{x}/{y}.png',{maxNativeZoom:12,maxZoom:18,opacity:.85,attribution:'Hansen/UMD/Google/USGS/NASA · Global Forest Watch'});
 const PHL=L.geoJSON(null,{style:{color:'#FF2EBD',weight:1.5,fillOpacity:.5},onEachFeature:(f,l)=>{const p=f.properties;l.bindPopup(`<div class="pop"><h3>Indikasi perubahan hutan</h3><table><tr><td>Lokasi</td><td>${esc(p.hd)}${p.di_hutan_desa?' (di dalam HD)':''}</td></tr><tr><td>Luas</td><td>${p.luas_ha} ha</td></tr><tr><td>Periode</td><td>${esc(p.periode)}</td></tr><tr><td>Dibanding</td><td>${esc(p.dibanding)}</td></tr></table><p style="font-size:11px;color:var(--muted)">${esc(p.metode)}. Perlu verifikasi lapangan.</p></div>`);}});
 map.on('overlayadd',e=>{if(e.layer===PHL&&!PHL._loaded){PHL._loaded=1;fetch('data/hutan/peringatan.geojson').then(r=>r.json()).then(g=>PHL.addData(g)).catch(()=>{});}});
-L.control.layers({'Citra satelit (Esri)':esri,'OpenStreetMap':osm},{'Sentinel-2 10 Agu 2026':s2,'Bekas terbakar (Sentinel-2, sejak 2023)':BTL,'Kehilangan tutupan pohon 2001–2025 (GFW/UMD)':TCL,'Peringatan perubahan hutan 90 hari (Sentinel-2)':PHL},{position:'topright'}).addTo(map);
+L.control.layers({['Citra satelit terbaru '+new Date().getFullYear()+' (Sentinel-2, '+FHCitra.periodeTxt()+')']:s2026,'Citra resolusi tinggi (Esri, tanggal rekam bervariasi)':esri,'Sentinel-2 bebas awan 2025 (EOX)':eox,'OpenStreetMap':osm},{'Sentinel-2 10 Agu 2026':s2,'Bekas terbakar (Sentinel-2, sejak 2023)':BTL,'Kehilangan tutupan pohon 2001–2025 (GFW/UMD)':TCL,'Peringatan perubahan hutan 90 hari (Sentinel-2)':PHL},{position:'topright'}).addTo(map);
 const NASA=FHNasa.create(map); FHNasa.control(map,NASA,'topleft');
 {const C3=L.Control.extend({onAdd(){const b=L.DomUtil.create('button','leaflet-bar');b.type='button';b.title='Peta 3D & globe';b.textContent='3D';b.style.cssText='width:34px;height:34px;background:#fff;font:800 12px system-ui;color:#22382B;cursor:pointer';L.DomEvent.disableClickPropagation(b);b.onclick=()=>window.FH3D&&FH3D.open({sites:SITES,site:SITE,points:ALL});return b;}});new C3({position:'topleft'}).addTo(map);}
 const ptsL=L.layerGroup().addTo(map);
@@ -650,6 +653,7 @@ function renderFCw(){
    <p style="font-size:12px;opacity:.85">Diperbarui ${hhmmWIB(new Date(FCD.diperbarui_utc))} WIB</p></div>
    <div style="min-width:0"><div class="fcw-days">${DA.map((d,i)=>{const n=dNm(d.tanggal);return `${i===7?`<div class="fcw-sep"><b>Hari 8–${DA.length}</b>kecenderungan, keyakinan lebih rendah</div>`:''}<div class="fcw-d${i>=7?' far':''}" style="border-top-color:${col(d.lv)}"><div class="dn">${i?n.s:'Hari ini'}</div><div class="dd">${n.t}</div><div class="t">${Math.round(d.tmaks)}° / ${Math.round(d.tmin)}°</div><div class="r">${N1(d.hujan)} mm</div><div class="ds">${esc(d.bmD?d.bmD.cuaca:d.cuaca)}</div>${lvp(d.lv)}<div class="src">${d.lvB!==null?`BMKG ${LVN[d.lvB]} · ECMWF ${LVN[d.lvE]}`:'ECMWF'}${i>=3?` · keyakinan ${d.keyakinan||(i<7?'sedang':'rendah')}`:''}</div></div>`;}).join('')}</div>
    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center">${[0,1,2,3].map(lvp).join('')}<span class="rp-note" style="margin:0 0 0 4px">kelas FDRS Indonesia (de Groot dkk. 2006)</span></div></div></div>
+  <div class="fcw-box" style="margin-top:16px"><h3>Meteogram ensemble ECMWF · 15 hari · Desa ${esc(SITE.desa_nama)}</h3><div id="mgWeb"></div></div>
   <div class="fcw-box" style="margin-top:16px"><h3>Kualitas udara &amp; asap · Desa ${esc(SITE.desa_nama)}</h3>${window.FHUdara?FHUdara.html(L.udara):''}</div>
   <div class="fcw-grid2">
    ${bm?`<div class="fcw-box"><h3>Prakiraan resmi BMKG · Desa ${esc(bm.desa||SITE.desa_nama)}</h3>${(bm.harian||[]).map(h=>{const n=dNm(h.tanggal);const ic=(bm.jam.find(j=>j.t.startsWith(h.tanggal)&&j.t.slice(11,13)==='13')||bm.jam.find(j=>j.t.startsWith(h.tanggal))||{}).ikon;return `<div class="bmw">${ic?`<img src="${encodeURI(ic)}" alt="">`:''}<div class="m"><b>${n.l}, ${n.t}</b><small>${esc(h.cuaca)} · RH ${h.rh??'–'}%</small></div><div style="text-align:right;font-family:var(--f-data);font-size:13px">${h.tmaks}° / ${h.tmin}°<div style="color:#2F7FD1;font-weight:700">${N1(h.hujan)} mm</div></div></div>`;}).join('')}<p class="rp-note">Sumber: BMKG (Badan Meteorologi, Klimatologi, dan Geofisika), kode wilayah ${esc(bm.adm4)}.</p></div>`:''}
@@ -661,6 +665,7 @@ function renderFCw(){
   ${all.length>1?`<div class="fcw-box" style="margin-top:16px"><h3>Semua lokasi · tingkat tertinggi 7 hari</h3><table class="fcw-tab"><tbody>${all.map(o=>{const n=dNm(o.d.tanggal);return `<tr><td><b>${esc(o.z.hd_nama)}</b> <span style="color:var(--muted)">· Desa ${esc(o.z.desa_nama)}</span></td><td>${o.m?`${n.l} ${n.t}`:'–'}</td><td>${lvp(o.m)}</td></tr>`;}).join('')}</tbody></table></div>`:''}
   <p class="rp-note">Hari 1–3: BMKG + ECMWF (keyakinan tinggi) · hari 4–7: ECMWF (sedang) · hari 8–14: ECMWF, kecenderungan (rendah). Prakiraan dapat meleset; peringatan ini alat bantu kewaspadaan, bukan pengganti informasi resmi BMKG/Manggala Agni. Metode: Fire Weather Index (Van Wagner 1987) dari cuaca pukul 12.00 &amp; hujan 24 jam, riwayat ERA5 Copernicus ${L.hari_riwayat||''} hari; ECMWF IFS 0,25° (CC BY 4.0).</p>`;
   if(window.FHRiwayat)FHRiwayat.render(document.getElementById('rcWeb'),{site:SITE,hotspots:ALL,si:SI});
+  if(window.FHMeteogram){const c=SITE.pusat_wilayah||SITE.pusat;FHMeteogram.mount(document.getElementById('mgWeb'),c[0],c[1]);}
 }
 
 /* ---------- lokasi Hutan Desa ---------- */
@@ -935,6 +940,7 @@ setInterval(setStatus,60000);
 <script src="assets/laporan.js"></script>
 <script src="assets/riwayat_cuaca.js"></script>
 <script src="assets/udara.js"></script>
+<script src="assets/meteogram.js"></script>
 <script src="assets/musiman.js"></script>
 <div class="chz" id="chz" hidden role="dialog" aria-labelledby="chzT"><div class="chz-box">
   <div class="chz-head"><img class="org-l" src="assets/logo_prcf.jpg" alt="Yayasan PRCF Indonesia"><div class="eyebrow">Fire Hotspot · Kabupaten Kapuas Hulu</div><h2 id="chzT">Pilih Hutan Desa yang ingin dipantau</h2><p>Status dihitung dari titik panas satelit NASA FIRMS 7 hari terakhir terhadap batas desa dan Hutan Desa masing-masing.</p></div>

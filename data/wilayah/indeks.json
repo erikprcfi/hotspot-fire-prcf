@@ -1,0 +1,415 @@
+{
+ "sumber_geometri": "OCHA COD-AB Indonesia (BPS/BIG, 2020) – data.humdata.org/dataset/cod-ab-idn",
+ "sumber_nama": "Kepmendagri No. 300.2.2-2430 Tahun 2025 (kode & nama wilayah)",
+ "toleransi_derajat": 0.0003,
+ "provinsi": [
+  {
+   "kode": "11",
+   "nama": "Aceh",
+   "file": "11.json",
+   "bbox": [
+    95.011,
+    2.004,
+    98.287,
+    6.077
+   ],
+   "n": 6576
+  },
+  {
+   "kode": "12",
+   "nama": "Sumatera Utara",
+   "file": "12.json",
+   "bbox": [
+    97.059,
+    -0.639,
+    100.426,
+    4.301
+   ],
+   "n": 6122
+  },
+  {
+   "kode": "13",
+   "nama": "Sumatera Barat",
+   "file": "13.json",
+   "bbox": [
+    98.597,
+    -4.016,
+    101.893,
+    0.907
+   ],
+   "n": 1165
+  },
+  {
+   "kode": "14",
+   "nama": "Riau",
+   "file": "14.json",
+   "bbox": [
+    100.025,
+    -1.122,
+    103.815,
+    2.919
+   ],
+   "n": 1876
+  },
+  {
+   "kode": "15",
+   "nama": "Jambi",
+   "file": "15.json",
+   "bbox": [
+    101.129,
+    -2.77,
+    104.498,
+    -0.733
+   ],
+   "n": 1565
+  },
+  {
+   "kode": "16",
+   "nama": "Sumatera Selatan",
+   "file": "16.json",
+   "bbox": [
+    102.067,
+    -4.925,
+    106.189,
+    -1.625
+   ],
+   "n": 3264
+  },
+  {
+   "kode": "17",
+   "nama": "Bengkulu",
+   "file": "17.json",
+   "bbox": [
+    101.022,
+    -5.515,
+    103.763,
+    -2.277
+   ],
+   "n": 1518
+  },
+  {
+   "kode": "18",
+   "nama": "Lampung",
+   "file": "18.json",
+   "bbox": [
+    103.571,
+    -6.169,
+    106.211,
+    -3.724
+   ],
+   "n": 2676
+  },
+  {
+   "kode": "19",
+   "nama": "Kepulauan Bangka Belitung",
+   "file": "19.json",
+   "bbox": [
+    105.108,
+    -3.417,
+    108.848,
+    -1.502
+   ],
+   "n": 391
+  },
+  {
+   "kode": "21",
+   "nama": "Kepulauan Riau",
+   "file": "21.json",
+   "bbox": [
+    103.285,
+    -1.298,
+    109.164,
+    4.798
+   ],
+   "n": 418
+  },
+  {
+   "kode": "31",
+   "nama": "Daerah Khusus Ibukota Jakarta",
+   "file": "31.json",
+   "bbox": [
+    106.383,
+    -6.371,
+    106.973,
+    -5.184
+   ],
+   "n": 270
+  },
+  {
+   "kode": "32",
+   "nama": "Jawa Barat",
+   "file": "32.json",
+   "bbox": [
+    106.37,
+    -7.821,
+    108.847,
+    -5.918
+   ],
+   "n": 5973
+  },
+  {
+   "kode": "33",
+   "nama": "Jawa Tengah",
+   "file": "33.json",
+   "bbox": [
+    108.556,
+    -8.212,
+    111.691,
+    -5.726
+   ],
+   "n": 8569
+  },
+  {
+   "kode": "34",
+   "nama": "Daerah Istimewa Yogyakarta",
+   "file": "34.json",
+   "bbox": [
+    110.003,
+    -8.204,
+    110.835,
+    -7.542
+   ],
+   "n": 438
+  },
+  {
+   "kode": "35",
+   "nama": "Jawa Timur",
+   "file": "35.json",
+   "bbox": [
+    110.899,
+    -8.78,
+    116.27,
+    -5.049
+   ],
+   "n": 8575
+  },
+  {
+   "kode": "36",
+   "nama": "Banten",
+   "file": "36.json",
+   "bbox": [
+    105.1,
+    -7.017,
+    106.78,
+    -5.807
+   ],
+   "n": 1552
+  },
+  {
+   "kode": "51",
+   "nama": "Bali",
+   "file": "51.json",
+   "bbox": [
+    114.432,
+    -8.849,
+    115.712,
+    -8.061
+   ],
+   "n": 716
+  },
+  {
+   "kode": "52",
+   "nama": "Nusa Tenggara Barat",
+   "file": "52.json",
+   "bbox": [
+    115.821,
+    -9.11,
+    119.336,
+    -8.08
+   ],
+   "n": 1144
+  },
+  {
+   "kode": "53",
+   "nama": "Nusa Tenggara Timur",
+   "file": "53.json",
+   "bbox": [
+    118.927,
+    -11.008,
+    125.193,
+    -8.063
+   ],
+   "n": 3323
+  },
+  {
+   "kode": "61",
+   "nama": "Kalimantan Barat",
+   "file": "61.json",
+   "bbox": [
+    108.678,
+    -3.068,
+    114.223,
+    2.081
+   ],
+   "n": 2132
+  },
+  {
+   "kode": "62",
+   "nama": "Kalimantan Tengah",
+   "file": "62.json",
+   "bbox": [
+    110.734,
+    -3.544,
+    115.847,
+    0.778
+   ],
+   "n": 1574
+  },
+  {
+   "kode": "63",
+   "nama": "Kalimantan Selatan",
+   "file": "63.json",
+   "bbox": [
+    114.347,
+    -4.745,
+    116.559,
+    -1.315
+   ],
+   "n": 2008
+  },
+  {
+   "kode": "64",
+   "nama": "Kalimantan Timur",
+   "file": "64.json",
+   "bbox": [
+    113.836,
+    -2.405,
+    118.989,
+    2.626
+   ],
+   "n": 1032
+  },
+  {
+   "kode": "65",
+   "nama": "Kalimantan Utara",
+   "file": "65.json",
+   "bbox": [
+    114.59,
+    1.044,
+    117.986,
+    4.408
+   ],
+   "n": 482
+  },
+  {
+   "kode": "71",
+   "nama": "Sulawesi Utara",
+   "file": "71.json",
+   "bbox": [
+    123.111,
+    0.292,
+    127.164,
+    5.566
+   ],
+   "n": 1839
+  },
+  {
+   "kode": "72",
+   "nama": "Sulawesi Tengah",
+   "file": "72.json",
+   "bbox": [
+    119.447,
+    -3.641,
+    124.182,
+    1.375
+   ],
+   "n": 2025
+  },
+  {
+   "kode": "73",
+   "nama": "Sulawesi Selatan",
+   "file": "73.json",
+   "bbox": [
+    117.038,
+    -7.759,
+    121.84,
+    -1.895
+   ],
+   "n": 3058
+  },
+  {
+   "kode": "74",
+   "nama": "Sulawesi Tenggara",
+   "file": "74.json",
+   "bbox": [
+    120.865,
+    -6.213,
+    124.612,
+    -2.779
+   ],
+   "n": 2340
+  },
+  {
+   "kode": "75",
+   "nama": "Gorontalo",
+   "file": "75.json",
+   "bbox": [
+    121.161,
+    0.306,
+    123.552,
+    1.041
+   ],
+   "n": 736
+  },
+  {
+   "kode": "76",
+   "nama": "Sulawesi Barat",
+   "file": "76.json",
+   "bbox": [
+    117.069,
+    -3.57,
+    119.875,
+    -0.847
+   ],
+   "n": 650
+  },
+  {
+   "kode": "81",
+   "nama": "Maluku",
+   "file": "81.json",
+   "bbox": [
+    125.722,
+    -8.347,
+    134.909,
+    -1.379
+   ],
+   "n": 1243
+  },
+  {
+   "kode": "82",
+   "nama": "Maluku Utara",
+   "file": "82.json",
+   "bbox": [
+    124.283,
+    -2.477,
+    129.657,
+    2.646
+   ],
+   "n": 1230
+  },
+  {
+   "kode": "91",
+   "nama": "Papua Barat",
+   "file": "91.json",
+   "bbox": [
+    129.308,
+    -4.257,
+    135.258,
+    0.582
+   ],
+   "n": 1595
+  },
+  {
+   "kode": "94",
+   "nama": "Papua",
+   "file": "94.json",
+   "bbox": [
+    134.296,
+    -9.12,
+    141.019,
+    0.938
+   ],
+   "n": 3837
+  }
+ ]
+}

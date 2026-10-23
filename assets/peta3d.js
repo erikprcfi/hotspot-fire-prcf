@@ -112,9 +112,9 @@ async function open(opt) {
    <div class="side"><div class="grp"><button id="p3zi" aria-label="Perbesar"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span class="lb">Perbesar</span></button><button id="p3zo" aria-label="Perkecil"><svg viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span class="lb">Perkecil</span></button><button id="p3c" aria-label="Arah utara"><svg viewBox="0 0 24 24"><path d="M12 3l4 9h-8z" fill="#E2421B"/><path d="M12 21l-4-9h8z" fill="currentColor" opacity=".55"/><circle cx="12" cy="12" r="1.6" fill="#fff"/></svg><span class="lb">Arah utara</span></button></div><div class="grp"><button id="p3p" aria-label="Tampilan 3D / datar"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M4 7.5L12 12l8-4.5M12 12v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="lb">Tampilan 3D / datar</span></button><button id="p3g" aria-label="Mode globe"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span class="lb">Mode globe</span></button><button id="p3s" aria-label="Putar otomatis"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lb">Putar otomatis</span></button><button id="p3h" aria-label="Kembali ke lokasi"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="lb">Kembali ke lokasi</span></button></div></div><div class="scale" id="p3sc"></div>
    <div class="bot"><div class="kpi" id="p3k"></div>
     <div class="chips">${[[1, '24 jam'], [3, '3 hari'], [7, '7 hari'], [30, '30 hari'], [0, 'Semua']].map(([d, n]) => `<button data-d="${d}">${n}</button>`).join('')}<span style="width:8px;flex:none"></span>
-     ${[['none', 'Citra dasar'], ['true', 'Citra NASA kemarin'], ['co', 'Asap CO'], ['aod', 'Kabut asap AOD']].map(([k, n]) => `<button data-n="${k}">${n}</button>`).join('')}</div>
+     ${[['s2026', 'Citra ' + new Date().getFullYear()], ['esri', 'Resolusi tinggi']].map(([k, n]) => `<button data-b="${k}">${n}</button>`).join('')}<span style="width:8px;flex:none"></span>${[['none', 'Tanpa lapisan'], ['true', 'Citra NASA kemarin'], ['co', 'Asap CO'], ['aod', 'Kabut asap AOD']].map(([k, n]) => `<button data-n="${k}">${n}</button>`).join('')}</div>
     <div class="lg">${AGE.map(a => `<span><i style="background:${a[1]}"></i>${a[2]}</span>`).join('')}<span>· tinggi kolom = FRP (MW)</span><span><i style="background:#FF4D4D"></i>Hutan Desa</span><span><i style="background:#FFA24A"></i>Desa</span></div>
-    <div class="src">Titik panas: NASA FIRMS (nilai asli). Relief: AWS Terrain Tiles (SRTM). Citra: Esri World Imagery; lapisan harian NASA GIBS. Batas: SK Hutan Desa & peta batas desa. Tinggi relief diperbesar 1,6×.</div></div>`;
+    <div class="src">Titik panas: NASA FIRMS (nilai asli). Relief: AWS Terrain Tiles (SRTM). Citra: Sentinel-2 komposit terbaru (ESA Copernicus · Microsoft Planetary Computer) atau Esri World Imagery; lapisan harian NASA GIBS. Batas: SK Hutan Desa & peta batas desa. Tinggi relief diperbesar 1,6×.</div></div>`;
   document.body.appendChild(root); document.body.style.overflow = 'hidden';
   root.querySelector('#p3x').onclick = close;
   try { await load(); } catch (e) { root.querySelector('#p3load').textContent = 'Mode 3D memerlukan koneksi internet.'; return; }
@@ -128,7 +128,10 @@ async function open(opt) {
         dem2: { type: 'raster-dem', tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'], tileSize: 256, encoding: 'terrarium', maxzoom: 13 } },
       layers: [{ id: 'esri', type: 'raster', source: 'esri', paint: { 'raster-saturation': -.15, 'raster-contrast': .08 } },
         { id: 'shade', type: 'hillshade', source: 'dem2', paint: { 'hillshade-exaggeration': .35, 'hillshade-shadow-color': '#0a1410' } }] } });
-  map.on('load', () => {
+  const setBase = k => { if (!map || !map.getLayer('s2026')) k = 'esri'; if (map.getLayer('s2026')) map.setLayoutProperty('s2026', 'visibility', k === 's2026' ? 'visible' : 'none'); root.querySelectorAll('[data-b]').forEach(b => b.classList.toggle('on', b.dataset.b === k)); };
+  map.on('load', async () => {
+    if (window.FHCitra) { try { const S = await FHCitra.maplibreSources(); if (S.s2026 && map) { map.addSource('s2026', S.s2026); map.addLayer({ id: 's2026', type: 'raster', source: 's2026', paint: { 'raster-fade-duration': 200 } }, 'shade'); } } catch (e) { } }
+    if (!map) return; setBase('s2026');
     root.querySelector('#p3load').remove();
     map.setTerrain({ source: 'dem', exaggeration: 1.6 });
     const fc = k => ({ type: 'FeatureCollection', features: sites.flatMap(s => (s[k] && s[k].features) || []) });
@@ -149,6 +152,7 @@ async function open(opt) {
   });
   map.on('dragstart', () => state.drag = true); map.on('dragend', () => state.drag = false);
   root.querySelectorAll('[data-d]').forEach(b => b.onclick = () => map && map.getSource('hs') && setDays(+b.dataset.d));
+  root.querySelectorAll('[data-b]').forEach(b => b.onclick = () => map && map.isStyleLoaded() && setBase(b.dataset.b));
   root.querySelectorAll('[data-n]').forEach(b => b.onclick = () => map && map.isStyleLoaded() && setNasa(b.dataset.n));
   const g = root.querySelector('#p3g'); g.classList.add('on');
   g.onclick = () => { const on = !g.classList.contains('on'); g.classList.toggle('on', on); map.setProjection({ type: on ? 'globe' : 'mercator' }); };

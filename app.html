@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
+.src-tag{display:inline-block;vertical-align:middle;margin-left:8px;font:800 9.5px var(--f-data,monospace);letter-spacing:.06em;color:#fff;padding:3px 7px;border-radius:6px;text-transform:none}
 :root{
   --bg:#F2F4F2; --surface:#FFFFFF; --surface-2:#F6F8F6; --fg:#0E1A14; --muted:#5E6B64; --faint:#8A968F; --line:#E3E8E4;
   --brand:#0B3B2C; --brand-2:#14563F; --brand-3:#1E7A58; --ink:#E9F2ED; --accent:#E4572E; --accent-soft:#FCE9E2;
@@ -225,10 +226,13 @@ svg{display:block}
 .petak-lbl{color:#fff;font:700 9px var(--f);text-shadow:0 0 3px #000;text-align:center}
 .focuslbl{position:absolute;z-index:500;left:50%;top:50%;transform:translate(-50%,-50%);padding:8px 14px;font-size:13px;font-weight:700;pointer-events:none;opacity:0;transition:opacity .25s}
 .focuslbl.on{opacity:1}
+.imgchip{position:absolute;z-index:450;left:10px;bottom:178px;max-width:calc(100% - 96px);padding:5px 10px;border-radius:999px;font-size:11px;font-weight:600;color:#E9F2ED;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.nb-play{min-width:40px;border-radius:10px;background:#E4572E!important;color:#fff!important;font-weight:800}.nb-play.on{background:#fff!important;color:#E4572E!important}
+.nb-anim{position:relative;margin-top:6px;height:18px;border-radius:9px;background:rgba(255,255,255,.12);overflow:hidden;font-size:10.5px;font-weight:700;text-align:center;line-height:18px}.nb-anim i{position:absolute;left:0;top:0;bottom:0;background:rgba(228,87,46,.55);transition:width .9s ease}.nb-anim span{position:relative;z-index:1}
 .nasabar{position:absolute;z-index:520;left:10px;right:76px;bottom:178px;padding:8px 10px}
 .nb-t{display:flex;align-items:center;gap:8px;font-size:12.5px}.nb-t b{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nb-x{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:12px}
-.nb-d{display:grid;grid-template-columns:34px 1fr 34px;gap:6px;margin-top:6px}
+.nb-d{display:grid;grid-template-columns:34px 1fr 34px 44px;gap:6px;margin-top:6px}
 .nb-d button{height:32px;border-radius:10px;background:rgba(255,255,255,.14);color:#fff;font-size:20px;line-height:1}
 .nb-d input{height:32px;border-radius:10px;border:0;background:rgba(255,255,255,.92);color:#14201a;padding:0 8px;font:600 13px var(--f)}
 #nbLg{width:100%;margin-top:6px;background:#fff;border-radius:6px;padding:2px}
@@ -411,6 +415,7 @@ body.is-off .offline{display:block}
 <!-- ================= BERANDA (PETA) ================= -->
 <section class="view" id="v-home" data-title="Fire Hotspot" data-sub="Hutan Desa Nanga Lauk">
   <div id="map"></div>
+  <div class="imgchip glass" id="imgChip" hidden></div>
   <div class="offline">Offline · menampilkan data terakhir</div>
   <div class="topcards" id="topcards">
     <button class="eye tap" id="eye" aria-label="Sembunyikan kartu info"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path id="eyeX" d="M3 3l18 18"/></svg></button>
@@ -428,7 +433,8 @@ body.is-off .offline{display:block}
   </div>
   <div class="focuslbl glass" id="focusLbl"></div>
   <div class="glass nasabar" id="nasaBar" hidden><div class="nb-t"><b id="nbName"></b><button class="nb-x tap" id="nbX" aria-label="Tutup lapisan NASA">✕</button></div>
-    <div class="nb-d"><button class="tap" id="nbPrev" aria-label="Hari sebelumnya">‹</button><input type="date" id="nbDate"><button class="tap" id="nbNext" aria-label="Hari berikutnya">›</button></div>
+    <div class="nb-d"><button class="tap" id="nbPrev" aria-label="Hari sebelumnya">‹</button><input type="date" id="nbDate"><button class="tap" id="nbNext" aria-label="Hari berikutnya">›</button><button class="tap nb-play" id="nbPlay" aria-label="Putar pergerakan 7 hari">▶</button></div>
+    <div class="nb-anim" id="nbAnim" hidden></div>
     <img id="nbLg" alt="" hidden></div>
   <div class="fabs">
     <button class="fab tap" id="fabList" aria-label="Daftar titik panas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 4V2.8h6V4M8.5 10l1.5 1.5 2.5-2.5M8.5 16l1.5 1.5 2.5-2.5M14.5 10.5H16M14.5 16.5H16"/></svg></button>
@@ -553,6 +559,7 @@ body.is-off .offline{display:block}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="assets/nasa_layers.js"></script>
+<script src="assets/citra.js"></script>
 <script src="assets/akun.js"></script>
 <script>
 (function(){
@@ -656,14 +663,16 @@ function siteLayers(){if(!MAP||!SITE)return;ACT.clearLayers();
   L.geoJSON(SITE.desa,{style:{color:'#FFE14D',weight:2.6,fill:false},interactive:false}).addTo(ACT);
   L.geoJSON(SITE.hd,{style:{color:'#FF3B30',weight:3,fill:false},interactive:false}).addTo(ACT);
   B.desa=L.geoJSON(SITE.desa).getBounds().extend(L.geoJSON(SITE.hd).getBounds());B.r25=L.geoJSON(SITE.buf25).getBounds();B.hd=L.geoJSON(SITE.hd).getBounds();}
+let IMGT=0;function imgInfo(){clearTimeout(IMGT);IMGT=setTimeout(async()=>{const k=['s2026','eox','esri'].find(x=>MAP.hasLayer(base[x]));const c=$('#imgChip');const nb=$('#nasaBar');if(!k||(nb&&!nb.hidden)){c.hidden=true;return;}const m=MAP.getCenter();const t=await FHCitra.info(k,m.lat,m.lng);c.textContent='🛰 '+t;c.hidden=false;},400);}
 function initMap(){
   MAP=L.map('map',{zoomControl:false,preferCanvas:true,attributionControl:true,zoomSnap:.25});
-  base.esri=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Esri, Maxar',updateWhenZooming:false,keepBuffer:3});
+  {const C=FHCitra.leaflet(L);base.s2026=C.s2026;base.eox=C.eox;base.esri=C.esri;base.s2026.on('tileerror',()=>{if(MAP.hasLayer(base.s2026)&&!base._fb){base._fb=1;}});}
   base.osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap',updateWhenZooming:false,keepBuffer:3});
   base.topo=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Esri',updateWhenZooming:false,keepBuffer:3});
   MAP.createPane('img').style.zIndex=360;
   base.s2=L.imageOverlay('assets/s2_20260810.jpg',G.img_bounds,{opacity:.95,pane:'img',attribution:'Sentinel-2 10 Agu 2026 (ESA)'});
-  const bm=store.get('base','esri');(base[bm]||base.esri).addTo(MAP);if(store.get('s2',false))base.s2.addTo(MAP);
+  if(!store.get('base2026',false)){store.set('base2026',true);if(['esri',null].includes(store.get('base',null)))store.set('base','s2026');}
+  const bm=store.get('base','s2026');(base[bm]||base.s2026).addTo(MAP);MAP.on('moveend',imgInfo);setTimeout(imgInfo,600);if(store.get('s2',false))base.s2.addTo(MAP);
   const kh=G.kab.features.find(f=>f.properties.WADMKK==='Kapuas Hulu');
   L.geoJSON(G.kab,{style:f=>({color:'#fff',weight:f.properties.WADMKK==='Kapuas Hulu'?1.6:.6,opacity:.85,fill:false,dashArray:f.properties.WADMKK==='Kapuas Hulu'?null:'3 3'}),interactive:false}).addTo(MAP);
   L.geoJSON(G.river,{style:{color:'#5AA9E6',weight:1.1,opacity:.85},interactive:false}).addTo(MAP);
@@ -677,10 +686,10 @@ function initMap(){
   B.kh=L.geoJSON(kh).getBounds();B.all=L.latLngBounds(SITES.map(x=>L.geoJSON(x.buf5).getBounds()).reduce((a,b)=>a.extend(b)));
   ptsL=L.layerGroup().addTo(MAP);
   NASA=FHNasa.create(MAP);NASA.onChange(nasaUI);
-  $('#nbX').onclick=()=>NASA.set(null);$('#nbPrev').onclick=()=>NASA.step(-1);$('#nbNext').onclick=()=>NASA.step(1);$('#nbDate').onchange=e=>e.target.value&&NASA.setDate(e.target.value);
+  $('#nbX').onclick=()=>NASA.set(null);$('#nbPrev').onclick=()=>NASA.step(-1);$('#nbNext').onclick=()=>NASA.step(1);$('#nbDate').onchange=e=>e.target.value&&NASA.setDate(e.target.value);$('#nbPlay').onclick=()=>NASA.playing?NASA.stop():NASA.play(7);
 }
 let NASA=null, BTL=null, TCL=null, PHL=null;
-function nasaUI(){const L0=NASA.layer,bar=$('#nasaBar');bar.hidden=!L0;if(!L0){nasaUI._on=0;return;}$('#nbName').textContent='NASA · '+NASA.label;if(!nasaUI._on){nasaUI._on=1;$('#topcards').classList.add('cards-off');$('#eyeX').style.display='none';}const i=$('#nbDate');i.value=NASA.date;i.max=NASA.maxDate();i.min=L0.since;
+function nasaUI(){imgInfo();const L0=NASA.layer,bar=$('#nasaBar');bar.hidden=!L0;if(!L0){nasaUI._on=0;return;}$('#nbName').textContent='NASA · '+NASA.label;if(!nasaUI._on){nasaUI._on=1;$('#topcards').classList.add('cards-off');$('#eyeX').style.display='none';}const pl=$('#nbPlay');pl.textContent=NASA.playing?'⏸':'▶';pl.classList.toggle('on',NASA.playing);const an=$('#nbAnim'),ai=NASA.animInfo;an.hidden=!ai;if(ai)an.innerHTML=`<span>Pergerakan ${ai.from} → ${ai.to}</span><i style="width:${(ai.i+1)/ai.n*100}%"></i>`;const i=$('#nbDate');i.value=NASA.date;i.max=NASA.maxDate();i.min=L0.since;
   const lg=$('#nbLg');if(L0.legend){lg.src=L0.legend;lg.hidden=false;}else lg.hidden=true;}
 const FOCI=[['r25','Radius 25 km'],['desa','Desa'],['hd','Hutan Desa'],['all','Semua lokasi'],['kh','Kapuas Hulu']];let FI=0;
 $('#fab3d').onclick=()=>{if(!window.FH3D)return;let viaBack=false;pushLayer(()=>{viaBack=true;FH3D.close();});FH3D.open({sites:SITES,site:SITE,points:ALL,onClose:()=>{if(!viaBack)back();}});};
@@ -774,8 +783,8 @@ function filterSheet(){
   $$('#fCol .chip').forEach(b=>b.onclick=()=>{CMODE=b.dataset.m;store.set('cmode',CMODE);$$('#fCol .chip').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));renderMap();});
 }
 $('#fabSat').onclick=filterSheet;$('#spPer').onclick=filterSheet;
-$('#fabLayer').onclick=()=>{const cur=store.get('base','esri');
-  openSheet(`<h3>Lapisan peta</h3><p class="sub">Peta dasar dan citra</p><div class="opts" id="lyB">${[['esri','Citra satelit','Esri World Imagery'],['topo','Topografi','Esri World Topo'],['osm','Jalan & pemukiman','OpenStreetMap']].map(([k,t,s])=>`<button class="optc" data-b="${k}" aria-pressed="${cur===k}"><span class="rd"></span><span><b>${t}</b><small>${s}</small></span></button>`).join('')}</div>
+$('#fabLayer').onclick=()=>{const cur=store.get('base','s2026');
+  openSheet(`<h3>Lapisan peta</h3><p class="sub">Peta dasar dan citra</p><div class="opts" id="lyB">${[['s2026','Citra satelit terbaru '+new Date().getFullYear(),'Sentinel-2 10 m, komposit bebas awan '+FHCitra.periodeTxt()],['esri','Citra resolusi tinggi','Esri 30–60 cm · tanggal rekam beda tiap lokasi'],['eox','Sentinel-2 bebas awan 2025','Mosaik tahunan EOX 10 m'],['topo','Topografi','Esri World Topo'],['osm','Jalan & pemukiman','OpenStreetMap']].map(([k,t,s])=>`<button class="optc" data-b="${k}" aria-pressed="${cur===k}"><span class="rd"></span><span><b>${t}</b><small>${s}</small></span></button>`).join('')}</div>
   <div class="lbl">Tambahan</div><div class="opts"><button class="optc" id="lyS2" aria-pressed="${MAP.hasLayer(base.s2)}"><span class="rd"></span><span><b>Citra Sentinel-2 10 Agustus 2026</b><small>Komposit warna asli, bebas awan, area desa</small></span></button></div>
   <div class="lbl">Hasil analisa</div><div class="opts"><button class="optc" id="lyTCL" aria-pressed="${!!(TCL&&MAP.hasLayer(TCL))}"><span class="rd"></span><span><b>Kehilangan tutupan pohon 2001–2025</b><small>Hansen/UMD via Global Forest Watch (merah)</small></span></button><button class="optc" id="lyPH" aria-pressed="${!!(PHL&&MAP.hasLayer(PHL))}"><span class="rd"></span><span><b>Peringatan perubahan hutan (90 hari)</b><small>Indikasi pembukaan/kerusakan tajuk dari Sentinel-2</small></span></button><button class="optc" id="lyBT" aria-pressed="${!!(BTL&&MAP.hasLayer(BTL))}"><span class="rd"></span><span><b>Bekas terbakar (Sentinel-2)</b><small>Poligon indikasi bekas terbakar ≤ 5 km dari desa, sejak 2023</small></span></button></div>
   <div class="lbl">Satelit NASA harian (asap &amp; kebakaran)</div><div class="opts" id="lyN"><button class="optc" data-n="" aria-pressed="${!NASA.id}"><span class="rd"></span><span><b>Tidak ditampilkan</b></span></button>${FHNasa.LAYERS.map(l=>`<button class="optc" data-n="${l.id}" aria-pressed="${NASA.id===l.id}"><span class="rd"></span><span><b>${l.nm}</b><small>${l.desc}</small></span></button>`).join('')}</div>
@@ -787,7 +796,7 @@ $('#fabLayer').onclick=()=>{const cur=store.get('base','esri');
    <div><i style="display:inline-block;width:22px;border-top:2.5px dashed #C9B21E;vertical-align:middle;margin-right:8px"></i>Radius 25 km</div>
    <div><i style="display:inline-block;width:22px;border-top:2.5px solid #5AA9E6;vertical-align:middle;margin-right:8px"></i>Sungai utama</div>
    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px">${SENS.map(s=>`<span style="display:inline-flex;gap:6px;align-items:center">${shapeSVG(s.shape,'#8A968F',14)}${s.nm}</span>`).join('')}</div></div>`);
-  $$('#lyB .optc').forEach(b=>b.onclick=()=>{['esri','topo','osm'].forEach(k=>MAP.removeLayer(base[k]));base[b.dataset.b].addTo(MAP);store.set('base',b.dataset.b);$$('#lyB .optc').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});
+  $$('#lyB .optc').forEach(b=>b.onclick=()=>{['s2026','eox','esri','topo','osm'].forEach(k=>MAP.removeLayer(base[k]));base[b.dataset.b].addTo(MAP);store.set('base',b.dataset.b);imgInfo();$$('#lyB .optc').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});
   $('#lyTCL').onclick=e=>{if(!TCL)TCL=L.tileLayer('https://tiles.globalforestwatch.org/umd_tree_cover_loss/latest/dynamic/{z}/{x}/{y}.png',{maxNativeZoom:12,maxZoom:18,opacity:.85,attribution:'Hansen/UMD/Google/USGS/NASA · Global Forest Watch'});const on=!MAP.hasLayer(TCL);on?TCL.addTo(MAP):MAP.removeLayer(TCL);e.currentTarget.setAttribute('aria-pressed',String(on));};
   $('#lyPH').onclick=async e=>{const b=e.currentTarget;if(PHL&&MAP.hasLayer(PHL)){MAP.removeLayer(PHL);b.setAttribute('aria-pressed','false');return;}
     if(!PHL){try{const g=await J('data/hutan/peringatan.geojson');PHL=L.geoJSON(g,{style:{color:'#FF2EBD',weight:1.5,fillColor:'#FF2EBD',fillOpacity:.5},onEachFeature:(f,l)=>l.on('click',()=>{const p=f.properties;openSheet(`<h3>Indikasi perubahan hutan</h3><p class="sub">${esc(p.hd)} · Desa ${esc(p.desa)}${p.di_hutan_desa?' · di dalam Hutan Desa':''}</p><dl class="kv"><dt>Luas petak</dt><dd>${N1(p.luas_ha)} ha</dd><dt>Periode</dt><dd>${esc(p.periode)}</dd><dt>Dibanding</dt><dd>${esc(p.dibanding)}</dd><dt>Metode</dt><dd style="font-weight:500;font-size:12.5px">${esc(p.metode)}</dd></dl><a class="btn pri full tap" style="width:100%" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${l.getBounds().getCenter().lat},${l.getBounds().getCenter().lng}">Rute untuk cek lapangan</a>`);})});}catch(x){return;}}
@@ -894,22 +903,23 @@ function renderFC(){
     <div style="background:rgba(0,0,0,.16);border-radius:12px;padding:8px 10px"><div style="font-size:11px;opacity:.85">Penyulutan permukaan (FFMC)</div><b>${LVN[Math.max(...D.map(d=>Math.max(d.k_ffmc,d.bmI?d.bmI.k_ffmc:0)))]}</b></div>
     <div style="background:rgba(0,0,0,.16);border-radius:12px;padding:8px 10px"><div style="font-size:11px;opacity:.85">Kekeringan dalam / gambut (DC)</div><b>${LVN[Math.max(...D.map(d=>Math.max(d.k_dc,d.bmI?d.bmI.k_dc:0)))]}</b></div></div>
    <span class="pk">Diperbarui ${hhmm(upd)} WIB · BMKG + ECMWF</span></div>
-  <div class="h2">Kualitas udara &amp; asap</div><div class="card">${window.FHUdara?FHUdara.html(L.udara):''}</div>
-  <div class="h2">${DA.length} hari ke depan</div>
+  <div class="h2">Kualitas udara &amp; asap<span class="src-tag" style="background:#5B3FA0">CAMS</span></div><div class="card">${window.FHUdara?FHUdara.html(L.udara):''}</div>
+  <div class="h2">${DA.length} hari ke depan<span class="src-tag" style="background:#0D7C66">BMKG</span><span class="src-tag" style="background:#0B3B6F">ECMWF</span></div>
   <div class="fc-days">${DA.map((d,i)=>{const dn=dName(d.tanggal);return `${i===7?`<div class="fc-sep"><b>Hari 8–${DA.length}</b>kecenderungan<br>keyakinan lebih rendah</div>`:''}<div class="fc-day${i>=7?' far':''}" style="border-top-color:${lvCol(d.lv)}"><div class="dn">${d.tanggal===D[0].tanggal?'Hari ini':dn.s}</div><div class="dd">${dn.t}</div>
     <div class="ic">${wxIcon(d.kode_cuaca,d.hujan)}</div><div class="tt">${Math.round(d.tmaks)}°<span> / ${Math.round(d.tmin)}°</span></div><div class="rr">${N1(d.hujan)} mm</div>
     <div class="ds">${esc(d.bmD?d.bmD.cuaca:d.cuaca)}</div>${lvp(d.lv)}<div class="src">${d.lvB!==null?`BMKG: ${LVN[d.lvB]}<br>ECMWF: ${LVN[d.lvE]}`:'ECMWF'}${i>=3?`<br>keyakinan ${d.keyakinan||(i<7?'sedang':'rendah')}`:''}</div></div>`;}).join('')}</div>
   <div class="legend-l">${[0,1,2,3].map(lvp).join('')}<span class="small muted" style="align-self:center">kelas FDRS Indonesia</span></div>
+  <div class="h2">Meteogram ensemble · 15 hari<span class="src-tag" style="background:#0B3B6F">ECMWF ENS</span></div><div class="card" id="mgBox"></div>
   ${bm?`<div class="h2">Prakiraan resmi BMKG · Desa ${esc(bm.desa||SITE.desa_nama)}</div>
   <div class="card">${(bm.harian||[]).map(h=>{const dn=dName(h.tanggal);const ic=(bm.jam.find(j=>j.t.startsWith(h.tanggal)&&j.t.slice(11,13)==='13')||bm.jam.find(j=>j.t.startsWith(h.tanggal))||{}).ikon;return `<div class="bm-row">${ic?`<img src="${encodeURI(ic)}" alt="" loading="lazy">`:''}<span class="m"><b>${dn.l}, ${dn.t}</b><small>${esc(h.cuaca)} · RH ${h.rh??'–'}%</small></span><span class="r">${h.tmaks}° / ${h.tmin}°<small>${N1(h.hujan)} mm</small></span></div>`;}).join('')}
    <div class="bm-hours">${bm.jam.map(j=>`<div class="bm-h">${j.t.slice(11,16)}${j.ikon?`<img src="${encodeURI(j.ikon)}" alt="" loading="lazy">`:''}<b>${j.suhu}°</b><div style="color:#2F7FD1">${N1(j.hujan||0)}</div></div>`).join('')}</div>
    <p class="small muted" style="margin:8px 0 0">Sumber: BMKG (Badan Meteorologi, Klimatologi, dan Geofisika), prakiraan per 3 jam untuk kode wilayah ${esc(bm.adm4)}. Hujan dalam mm.</p></div>`:''}
-  <div class="h2">Indeks bahaya kebakaran (FDRS)</div>
+  <div class="h2">Indeks bahaya kebakaran<span class="src-tag" style="background:#B3261E">FWI · FDRS</span></div>
   <div class="card"><table class="ix"><thead><tr><th>Hari</th><th>FFMC<br>penyulutan</th><th>ISI<br>penjalaran</th><th>DC<br>kekeringan</th><th>FWI</th></tr></thead><tbody>
    ${DA.map((d,i)=>{const dn=dName(d.tanggal);const c=k=>`<i style="background:${lvCol(k)}"></i>`;return `<tr${i>=7?' style="opacity:.6"':''}><td>${dn.s} ${dn.t}</td><td>${c(d.k_ffmc)}${N1(d.ffmc)}</td><td>${c(d.k_isi)}${N1(d.isi)}</td><td>${c(d.k_dc)}${N(Math.round(d.dc))}</td><td>${N1(d.fwi)}</td></tr>`;}).join('')}</tbody></table>
    <p class="small muted" style="margin:8px 0 0">Nilai dari prakiraan ECMWF; baris pudar = hari 8–14 (keyakinan rendah). <b>FFMC</b>: kekeringan serasah & rumput, mudahnya api menyala. <b>ISI</b>: kecepatan menjalar dengan angin. <b>DC</b>: kekeringan lapisan dalam & gambut, potensi asap. <b>FWI</b>: intensitas api secara umum.</p></div>
-  <div class="h2">Prakiraan musiman · 3 bulan ke depan</div><div class="card">${window.FHMusiman?FHMusiman.html(L.musiman):''}</div>
-  <div class="h2">Riwayat cuaca · Desa ${esc(SITE.desa_nama)}</div>
+  <div class="h2">Prakiraan musiman · 3 bulan<span class="src-tag" style="background:#0B3B6F">SEAS5</span></div><div class="card">${window.FHMusiman?FHMusiman.html(L.musiman):''}</div>
+  <div class="h2">Riwayat cuaca · Desa ${esc(SITE.desa_nama)}<span class="src-tag" style="background:#2F6FB0">ERA5</span></div>
   <div class="card" id="rcBox"></div>
   <div class="h2">Kekeringan bahan bakar (FFMC) · 3 minggu + prakiraan</div>
   <div class="card chart">${ch}<p class="small muted" style="margin:6px 0 0">Garis = FFMC harian; latar warna = kelas Rendah/Sedang/Tinggi/Ekstrem. DC hari ini ${N(Math.round(D[0].dc))} (${LVN[D[0].k_dc]}).</p></div>
@@ -918,6 +928,7 @@ function renderFC(){
   <div class="card prose small"><p><b>Cuaca 1–3 hari:</b> prakiraan resmi BMKG per desa (API Prakiraan Cuaca Publik BMKG).</p><p><b>Cuaca 7 hari:</b> model ECMWF IFS 0,25° (European Centre for Medium-Range Weather Forecasts), juga dipakai sistem bahaya kebakaran global Copernicus.</p><p><b>Indeks:</b> Fire Weather Index (Van Wagner 1987) dari cuaca pukul 12.00 dan hujan 24 jam, dengan riwayat cuaca ERA5 ${L.hari_riwayat||''} hari terakhir. Kelas mengikuti FDRS Indonesia/Malaysia (de Groot dkk. 2006), dasar sistem FDRS BMKG.</p><p><b>Tingkat harian</b> = kelas tertinggi antara FFMC dan DC. Bila BMKG dan ECMWF berbeda, dipakai yang lebih tinggi (prinsip kehati-hatian).</p><p class="muted">Prakiraan dapat meleset. Peringatan ini alat bantu kewaspadaan, bukan pengganti informasi resmi BMKG/Manggala Agni.</p></div>`;
   $$('#fcBody .allsite').forEach(b=>b.onclick=()=>applySite(b.dataset.id,false));
   if(window.FHRiwayat)FHRiwayat.render($('#rcBox'),{site:SITE,hotspots:ALL,si:SI});
+  if(window.FHMeteogram){const c=SITE.pusat_wilayah||SITE.pusat;FHMeteogram.mount($('#mgBox'),c[0],c[1]);}
 }
 /* ---------- mode prakiraan: desa dampingan / lokasi saya ---------- */
 let FCMODE='desa',LXINIT=false;
@@ -1162,6 +1173,8 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(
 <script src="assets/riwayat_cuaca.js"></script>
 <script src="assets/udara.js"></script>
 <script src="assets/musiman.js"></script>
+<script src="assets/wilayah.js"></script>
+<script src="assets/meteogram.js"></script>
 <script src="assets/lokasi_saya.js"></script>
 <script src="assets/peta3d.js"></script>
 <script src="assets/unduh.js"></script>
