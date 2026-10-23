@@ -47,6 +47,8 @@ h1{text-align:center;font-size:28px;letter-spacing:-.02em;margin:18px 0 4px}
 body.pad .w{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 80px)}
 @keyframes bo{50%{transform:translate(-50%,6px)}}
 .hide{display:none!important}
+.spin{width:64px;height:64px;margin:6px auto 0;border-radius:50%;border:6px solid rgba(255,255,255,.18);border-top-color:#FF8A3D;animation:sp 0.9s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+.bar{height:8px;border-radius:6px;background:rgba(255,255,255,.12);overflow:hidden;margin:14px 6px 0}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#FF8A3D,#E4572E);border-radius:6px;animation:pr 45s cubic-bezier(.1,.6,.3,1) forwards}@keyframes pr{to{width:95%}}
 .copy{display:flex;gap:8px;margin-top:10px}.copy input{flex:1;min-width:0;background:rgba(0,0,0,.25);border:1px solid var(--line);color:#fff;border-radius:12px;padding:10px;font:inherit;font-size:13px}.copy button{border:0;border-radius:12px;padding:0 14px;font:inherit;font-weight:800;background:#fff;color:#0B3B2C}
 </style>
 </head>
@@ -91,6 +93,9 @@ body.pad .w{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 80px)}
     <a class="btn ghost" href="index.html?web=1">Buka versi website</a>
   </div>
 
+  <!-- Sedang memasang -->
+  <div class="ok" id="vWait"><div class="spin"></div><h2 style="margin:14px 0 4px">Sedang memasang…</h2><p class="sub" style="margin-bottom:6px">Android sedang menyiapkan aplikasi. Biasanya <b>10–60 detik</b>; jangan tutup halaman ini.</p><div class="bar"><i></i></div><p class="note" style="margin-top:10px">Ikon akan muncul di layar utama atau di daftar aplikasi (laci aplikasi).</p></div>
+
   <!-- Berhasil -->
   <div class="ok" id="vOk"><div class="big">✅</div><h2 style="margin:6px 0">Fire Hotspot terpasang!</h2><p class="sub" style="margin-bottom:16px">Buka dari ikon <b>Fire Hotspot</b> di layar utama HP Anda, lalu daftar akun sekali.</p>
     <a class="btn" href="app.html">Buka aplikasi</a></div>
@@ -115,11 +120,13 @@ body.pad .w{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 80px)}
   const iosSafari=ios&&/Safari\//.test(ua)&&!/CriOS|FxiOS|EdgiOS|OPiOS|GSA\/|FBAN|FBAV|Instagram|Line\//.test(ua);
   let deferred=null;
   if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
-  const done=()=>{['vAndroid','vInApp','vIOS','vDesk','bOpen'].forEach(i=>$(i).classList.add('hide'));$('vOk').style.display='block';$('iosArrow').style.display='none';};
+  let tmo=null;const hideAll=()=>{['vAndroid','vInApp','vIOS','vDesk','bOpen'].forEach(i=>$(i).classList.add('hide'));$('iosArrow').style.display='none';};
+  const done=()=>{clearTimeout(tmo);hideAll();$('vWait').style.display='none';$('vOk').style.display='block';};
+  const waiting=()=>{hideAll();$('vWait').style.display='block';tmo=setTimeout(done,75000);};
   window.addEventListener('appinstalled',done);
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;
     const b=$('bInstall');b.disabled=false;b.onclick=install;$('bTxt').textContent='Pasang aplikasi';$('manualA').classList.add('hide');$('bInstallD').classList.remove('hide');});
-  async function install(){if(!deferred)return;deferred.prompt();const r=await deferred.userChoice;deferred=null;if(r&&r.outcome==='accepted')done();}
+  async function install(){if(!deferred)return;deferred.prompt();const r=await deferred.userChoice;deferred=null;if(r&&r.outcome==='accepted')waiting();}
   $('bInstall').onclick=install;$('bInstallD').onclick=install;
   if(ios){show('vIOS');if(iosSafari){$('iosArrow').style.display='flex';document.body.classList.add('pad');}else{$('iosSafari').classList.add('hide');show('iosOther');}
     $('bCopy').onclick=()=>{const i=$('lnk');i.select();try{navigator.clipboard.writeText(i.value);}catch(e){document.execCommand('copy');}$('bCopy').textContent='Tersalin ✓';};}
