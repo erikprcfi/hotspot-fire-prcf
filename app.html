@@ -666,10 +666,10 @@ function siteLayers(){if(!MAP||!SITE)return;ACT.clearLayers();
   B.desa=L.geoJSON(SITE.desa).getBounds().extend(L.geoJSON(SITE.hd).getBounds());B.r25=L.geoJSON(SITE.buf25).getBounds();B.hd=L.geoJSON(SITE.hd).getBounds();}
 let IMGT=0;function imgInfo(){clearTimeout(IMGT);IMGT=setTimeout(async()=>{const k=['terbaik','s2026','eox','esri'].find(x=>MAP.hasLayer(base[x]));const c=$('#imgChip');const nb=$('#nasaBar');if(!k||(nb&&!nb.hidden)){c.hidden=true;return;}const m=MAP.getCenter();const t=await FHCitra.info(k,m.lat,m.lng,MAP.getZoom());c.textContent='🛰 '+t;c.hidden=false;},400);}
 function initMap(){
-  MAP=L.map('map',{zoomControl:false,preferCanvas:true,attributionControl:true,zoomSnap:.25});
+  MAP=L.map('map',{zoomControl:false,preferCanvas:true,attributionControl:true,zoomSnap:.25});window.FHMAPA=MAP;
   {const C=FHCitra.leaflet(L);base.terbaik=C.terbaik;base.s2026=C.s2026;base.eox=C.eox;base.esri=C.esri;base.s2026.on('tileerror',()=>{if(MAP.hasLayer(base.s2026)&&!base._fb){base._fb=1;}});}
-  base.osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap',updateWhenZooming:false,keepBuffer:3});
-  base.topo=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Esri',updateWhenZooming:false,keepBuffer:3});
+  base.osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,maxNativeZoom:18,attribution:'© OpenStreetMap',updateWhenZooming:false,keepBuffer:3});
+  base.topo=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,maxNativeZoom:18,attribution:'Esri',updateWhenZooming:false,keepBuffer:3});
   MAP.createPane('img').style.zIndex=360;
   base.s2=L.imageOverlay('assets/s2_20260810.jpg',G.img_bounds,{opacity:.95,pane:'img',attribution:'Sentinel-2 10 Agu 2026 (ESA)'});
   if(!store.get('baseTerbaik',false)){store.set('baseTerbaik',true);if(['esri','s2026',null].includes(store.get('base',null)))store.set('base','terbaik');}

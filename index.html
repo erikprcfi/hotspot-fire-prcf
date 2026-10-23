@@ -586,7 +586,7 @@ const map=L.map('map',{zoomSnap:.25,preferCanvas:true}); window.FHMAP=map;
 const IMGC=L.control({position:'bottomright'});IMGC.onAdd=()=>{const d=L.DomUtil.create('div','imgc');d.style.cssText='background:rgba(10,20,15,.72);color:#fff;font:600 11px system-ui;padding:4px 9px;border-radius:999px;margin-bottom:4px';return d;};IMGC.addTo(map);
 let IMGT=0;const imgInfo=()=>{clearTimeout(IMGT);IMGT=setTimeout(async()=>{const k=[['terbaik',terbaik],['s2026',s2026],['eox',eox],['esri',esri]].find(([,l])=>map.hasLayer(l));const el=IMGC.getContainer();if(!k){el.style.display='none';return;}const c=map.getCenter();el.textContent='🛰 '+await FHCitra.info(k[0],c.lat,c.lng,map.getZoom());el.style.display='';},400);};map.on('moveend baselayerchange',imgInfo);
 const CIT=FHCitra.leaflet(L),esri=CIT.esri,s2026=CIT.s2026,eox=CIT.eox,terbaik=CIT.terbaik;map.options.maxZoom=19;
-const osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'});
+const osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,maxNativeZoom:18,attribution:'&copy; OpenStreetMap contributors'});
 terbaik.addTo(map);
 map.createPane('base').style.zIndex=350;map.createPane('img').style.zIndex=360;
 const s2=L.imageOverlay(G.img.url,G.img.bounds,{opacity:.95,pane:'img',attribution:'Sentinel-2 10 Agu 2026: Copernicus/ESA'});
