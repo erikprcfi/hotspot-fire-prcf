@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pasang Fire Hotspot</title>
+<meta name="description" content="Pasang aplikasi Fire Hotspot – pemantauan titik panas, cuaca dan bahaya kebakaran – Yayasan PRCF Indonesia.">
+<meta name="theme-color" content="#0B3B2C">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/logo_fh.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Fire Hotspot">
+<meta property="og:title" content="Pasang aplikasi Fire Hotspot">
+<meta property="og:description" content="Titik panas satelit NASA, cuaca & bahaya kebakaran untuk Hutan Desa dan lokasi Anda. Yayasan PRCF Indonesia.">
+<meta property="og:image" content="https://erikprcfi.github.io/hotspot-fire-prcf/assets/icons/icon-512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+<script>
+/* Sudah terpasang & dibuka sebagai aplikasi → langsung ke aplikasi */
+if ((window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone) location.replace('app.html');
+</script>
+<style>
+:root{--bg:#06231A;--ink:#E9F2ED;--muted:rgba(233,242,237,.72);--card:rgba(255,255,255,.07);--line:rgba(255,255,255,.14);--accent:#F2683C}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}
+body{background:radial-gradient(120% 80% at 0% 0%,#1E7A58 0%,#0B3B2C 45%,#06231A 100%) fixed;color:var(--ink);font:15px/1.5 "Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.w{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 34px) 20px calc(env(safe-area-inset-bottom,0px) + 28px);min-height:100vh;display:flex;flex-direction:column}
+.logo{width:112px;height:112px;margin:8px auto 0;filter:drop-shadow(0 16px 30px rgba(0,0,0,.45));animation:fl 4s ease-in-out infinite}
+@keyframes fl{50%{transform:translateY(-6px)}}
+h1{text-align:center;font-size:28px;letter-spacing:-.02em;margin:18px 0 4px}
+.sub{text-align:center;color:var(--muted);margin:0 0 22px}
+.org{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12.5px;color:var(--muted);margin-bottom:22px}.org img{height:26px;border-radius:4px}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:58px;border:0;border-radius:18px;font-family:inherit;font-weight:800;font-size:17px;color:#fff;background:linear-gradient(150deg,#FF8A3D,#E4572E);box-shadow:0 14px 30px -10px rgba(228,87,46,.75);cursor:pointer;text-decoration:none}
+.btn:active{transform:scale(.98)}.btn[disabled]{opacity:.6}
+.btn.ghost{background:rgba(255,255,255,.1);box-shadow:none;border:1px solid var(--line);font-size:15px;height:50px;margin-top:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin-top:16px}
+.card h2{font-size:15px;margin:0 0 10px}
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:12px;counter-reset:s}
+.steps li{display:flex;gap:12px;align-items:flex-start;counter-increment:s}
+.steps li::before{content:counter(s);flex:none;width:28px;height:28px;border-radius:50%;background:#fff;color:#0B3B2C;font-weight:800;display:grid;place-items:center;font-size:14px}
+.steps b{color:#fff}.ico{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:7px;background:#fff;color:#0A84FF;vertical-align:-7px;margin:0 2px}
+.feat{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.feat div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:12.5px;color:var(--muted)}.feat b{display:block;color:#fff;font-size:13.5px}
+.ok{display:none;text-align:center}.ok .big{font-size:46px}
+.note{font-size:12px;color:var(--muted);text-align:center;margin-top:18px}
+.arrow{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);transform:translateX(-50%);display:none;align-items:center;gap:6px;font-weight:800;font-size:13px;color:#0B3B2C;background:#fff;padding:8px 14px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:bo 1.2s ease-in-out infinite;white-space:nowrap;z-index:5}
+body.pad .w{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 80px)}
+@keyframes bo{50%{transform:translate(-50%,6px)}}
+.hide{display:none!important}
+.copy{display:flex;gap:8px;margin-top:10px}.copy input{flex:1;min-width:0;background:rgba(0,0,0,.25);border:1px solid var(--line);color:#fff;border-radius:12px;padding:10px;font:inherit;font-size:13px}.copy button{border:0;border-radius:12px;padding:0 14px;font:inherit;font-weight:800;background:#fff;color:#0B3B2C}
+</style>
+</head>
+<body>
+<div class="w">
+  <img class="logo" src="assets/logo_fh.svg" alt="Fire Hotspot">
+  <h1>Fire Hotspot</h1>
+  <p class="sub">Titik panas satelit NASA, cuaca &amp; bahaya kebakaran: untuk Hutan Desa dan di lokasi Anda.</p>
+  <div class="org"><img src="assets/logo_prcf.jpg" alt="">Yayasan PRCF Indonesia</div>
+
+  <!-- Android / Chrome: tombol pasang otomatis -->
+  <div id="vAndroid" class="hide">
+    <button class="btn" id="bInstall" disabled><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16"/></svg><span id="bTxt">Menyiapkan…</span></button>
+    <div class="card hide" id="manualA"><h2>Pasang secara manual</h2><ol class="steps">
+      <li><span>Ketuk menu <b>⋮</b> di pojok kanan atas Chrome.</span></li>
+      <li><span>Pilih <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</span></li>
+      <li><span>Ketuk <b>Instal</b>. Ikon Fire Hotspot muncul di layar utama.</span></li></ol></div>
+  </div>
+
+  <!-- Dibuka di dalam WhatsApp / Facebook / Instagram -->
+  <div id="vInApp" class="hide">
+    <a class="btn" id="bChrome" href="#">Buka di Chrome untuk memasang</a>
+    <div class="card"><h2>Anda membuka dari dalam aplikasi lain</h2><ol class="steps">
+      <li><span>Ketuk tombol oranye di atas, <b>atau</b> ketuk menu <b>⋮</b> lalu pilih <b>Buka di Chrome</b> / <b>Buka di browser</b>.</span></li>
+      <li><span>Di Chrome, ketuk <b>Pasang aplikasi</b>.</span></li></ol></div>
+  </div>
+
+  <!-- iPhone / iPad -->
+  <div id="vIOS" class="hide">
+    <div class="card" id="iosSafari"><h2>Pasang di iPhone (3 langkah)</h2><ol class="steps">
+      <li><span>Ketuk tombol <b>Bagikan</b> <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 15V3m0 0L8 7m4-4 4 4M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></span> di bagian bawah layar.</span></li>
+      <li><span>Gulir ke bawah, pilih <b>Tambah ke Layar Utama</b> <span class="ico" style="color:#333"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg></span>.</span></li>
+      <li><span>Ketuk <b>Tambah</b> di kanan atas. Selesai, buka Fire Hotspot dari layar utama.</span></li></ol></div>
+    <div class="card hide" id="iosOther"><h2>Buka halaman ini di Safari</h2><p style="margin:0;color:var(--muted)">Di iPhone, aplikasi hanya bisa dipasang lewat <b style="color:#fff">Safari</b>. Salin link di bawah, buka Safari, lalu tempel di kolom alamat.</p>
+      <div class="copy"><input id="lnk" readonly value="https://erikprcfi.github.io/hotspot-fire-prcf/pasang.html"><button id="bCopy">Salin</button></div></div>
+  </div>
+
+  <!-- Komputer -->
+  <div id="vDesk" class="hide">
+    <button class="btn hide" id="bInstallD">Pasang di komputer ini</button>
+    <div class="card"><h2>Pasang di HP</h2><p style="margin:0;color:var(--muted)">Buka halaman ini di HP: <b style="color:#fff">erikprcfi.github.io/hotspot-fire-prcf/pasang.html</b>, atau gunakan versi website di komputer.</p></div>
+    <a class="btn ghost" href="index.html?web=1">Buka versi website</a>
+  </div>
+
+  <!-- Berhasil -->
+  <div class="ok" id="vOk"><div class="big">✅</div><h2 style="margin:6px 0">Fire Hotspot terpasang!</h2><p class="sub" style="margin-bottom:16px">Buka dari ikon <b>Fire Hotspot</b> di layar utama HP Anda, lalu daftar akun sekali.</p>
+    <a class="btn" href="app.html">Buka aplikasi</a></div>
+
+  <a class="btn ghost" id="bOpen" href="app.html">Lanjut tanpa memasang</a>
+
+  <div class="feat">
+    <div><b>🛰️ Titik api NASA</b>diperbarui tiap 3 jam</div>
+    <div><b>🔥 Bahaya kebakaran</b>prakiraan 14 hari</div>
+    <div><b>📍 Cuaca di lokasi Anda</b>kini, per jam &amp; 14 hari</div>
+    <div><b>😷 Kualitas udara</b>asap PM2.5</div>
+  </div>
+  <p class="note">Gratis · ringan (tanpa Play Store) · data resmi NASA FIRMS, BMKG, ECMWF, Copernicus, ESA Sentinel-2</p>
+</div>
+<div class="arrow" id="iosArrow">Ketuk Bagikan di bawah<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B3B2C" stroke-width="3" stroke-linecap="round"><path d="M12 4v15m0 0-6-6m6 6 6-6"/></svg></div>
+<script>
+(function(){
+  const ua=navigator.userAgent, $=id=>document.getElementById(id), show=id=>$(id).classList.remove('hide');
+  const ios=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const android=/Android/.test(ua);
+  const inApp=/FBAN|FBAV|Instagram|Line\/|WhatsApp|Twitter|TikTok|Snapchat|; wv\)/.test(ua);
+  const iosSafari=ios&&/Safari\//.test(ua)&&!/CriOS|FxiOS|EdgiOS|OPiOS|GSA\/|FBAN|FBAV|Instagram|Line\//.test(ua);
+  let deferred=null;
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+  const done=()=>{['vAndroid','vInApp','vIOS','vDesk','bOpen'].forEach(i=>$(i).classList.add('hide'));$('vOk').style.display='block';$('iosArrow').style.display='none';};
+  window.addEventListener('appinstalled',done);
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;
+    const b=$('bInstall');b.disabled=false;b.onclick=install;$('bTxt').textContent='Pasang aplikasi';$('manualA').classList.add('hide');$('bInstallD').classList.remove('hide');});
+  async function install(){if(!deferred)return;deferred.prompt();const r=await deferred.userChoice;deferred=null;if(r&&r.outcome==='accepted')done();}
+  $('bInstall').onclick=install;$('bInstallD').onclick=install;
+  if(ios){show('vIOS');if(iosSafari){$('iosArrow').style.display='flex';document.body.classList.add('pad');}else{$('iosSafari').classList.add('hide');show('iosOther');}
+    $('bCopy').onclick=()=>{const i=$('lnk');i.select();try{navigator.clipboard.writeText(i.value);}catch(e){document.execCommand('copy');}$('bCopy').textContent='Tersalin ✓';};}
+  else if(android&&inApp){show('vInApp');const url='intent://'+location.host+location.pathname+'#Intent;scheme=https;package=com.android.chrome;end';$('bChrome').href=url;
+    setTimeout(()=>{location.href=url;},600);}   // coba buka Chrome otomatis
+  else if(android){show('vAndroid');
+    setTimeout(()=>{if(!deferred){$('bTxt').textContent='Pasang aplikasi';$('bInstall').disabled=false;$('bInstall').onclick=()=>show('manualA');show('manualA');$('bOpen').textContent='Sudah terpasang? Buka aplikasi';}},3500);}
+  else show('vDesk');
+})();
+</script>
+</body>
+</html>
