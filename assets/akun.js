@@ -10,8 +10,12 @@
 'use strict';
 const DBN = 'fh-akun', ST = 'kv', ITER = 210000;
 // URL aplikasi web Google Apps Script (database pengguna PRCF). Kosong = belum aktif, data tetap di HP.
-const ENDPOINT = window.FH_AKUN_URL || 'https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec';
-const KUNCI = 'fh-prcf-2026-akun', VERSI = '2026.10';
+const UJI = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && !/[?&]ujiakun=1/.test(location.search);   // pengujian lokal tidak menulis ke database asli
+const ENDPOINT = UJI ? '' : (window.FH_AKUN_URL || 'https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec');
+const KUNCI = 'fh-prcf-2026-akun', VERSI = '2026.10b', SKEMA = 2;   // SKEMA 2: email wajib terverifikasi; akun lama direset
+async function api(body, ms = 30000) { const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), ms);
+  try { const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ kunci: KUNCI }, body)), signal: ctl.signal }); return await r.json(); }
+  finally { clearTimeout(tm); } }
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const BLN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 const tglID = s => { if (!s) return ''; const [y, m, d] = s.split('-').map(Number); return `${d} ${BLN[m - 1]} ${y}`; };
@@ -36,34 +40,43 @@ let syncing = false;
 const dev = () => { const ua = navigator.userAgent; const m = /Android [\d.]+/.exec(ua) || /iPhone OS [\d_]+/.exec(ua) || /iPad; CPU OS [\d_]+/.exec(ua) || /Windows NT [\d.]+/.exec(ua) || /Mac OS X [\d_]+/.exec(ua); return (m ? m[0].replace(/_/g, '.') : 'Perangkat lain') + (/wv|standalone/.test(ua) || (window.matchMedia && matchMedia('(display-mode: standalone)').matches) ? ' · aplikasi terpasang' : ' · browser'); };
 async function mark(kind) { if (!U) return; if (!U.id) U.id = crypto.randomUUID(); if (kind === 'profil') U.kirimProfil = true; if (kind === 'foto') { U.kirimFoto = true; U.kirimProfil = true; } await put('akun', U); return flush(false); }
 async function flush(ping) {
-  if (!ENDPOINT || syncing || !U || !U.setuju || (navigator.onLine === false)) return;
+  if (!ENDPOINT || syncing || !U || !U.setuju || !U.token || (navigator.onLine === false)) return;
   if (!U.id) { U.id = crypto.randomUUID(); await put('akun', U); }
   const first = !U.terkirim, doPing = ping && Date.now() - (U.pingT || 0) > 3 * 36e5;
   if (!first && !doPing && !U.kirimProfil && !U.kirimFoto) return;
   syncing = true;
   try {
-    const p = { kunci: KUNCI, aksi: first ? 'daftar' : doPing ? 'aktif' : 'ubah', id: U.id, lokasi: OPT.lokasi ? OPT.lokasi() : '', perangkat: dev(), versi: VERSI };
+    const p = { aksi: first ? 'daftar' : doPing ? 'aktif' : 'ubah', id: U.id, token: U.token, lokasi: OPT.lokasi ? OPT.lokasi() : '', perangkat: dev(), versi: VERSI };
     if (first || U.kirimProfil) p.profil = { nama: U.nama, lahir: U.lahir, alamat: U.alamat, email: U.email, hp: U.hp ? '+62 ' + fmtHP(U.hp).slice(1) : '', dibuat: U.dibuat, diubah: U.diubah };
     if (first || U.kirimFoto) p.foto = U.foto ? U.foto.split(',')[1] : '';
-    const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 30000);
-    const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(p), signal: ctl.signal }); clearTimeout(tm);
-    const j = await r.json();
+    const j = await api(p);
+    if (j.diblokir || j.daftar_ulang) { syncing = false; return reset(j.diblokir ? 'blokir' : 'ulang', j.galat); }
     if (j.ok) { U.terkirim = true; U.kirimProfil = false; U.kirimFoto = false; if (first || doPing) U.pingT = Date.now(); U.sinkronT = new Date().toISOString(); await put('akun', U); notify(); }
     else console.warn('Database pengguna menolak:', j.galat);
   } catch (e) { console.warn('Sinkron akun tertunda:', e.message); } finally { syncing = false; }
 }
-async function sendDelete() { if (!ENDPOINT || !U || !U.terkirim || !U.id) return; try { const ctl = new AbortController(); setTimeout(() => ctl.abort(), 8000); await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ kunci: KUNCI, aksi: 'hapus', id: U.id }), signal: ctl.signal }); } catch (e) { } }
+async function sendDelete() { if (!ENDPOINT || !U || !U.terkirim || !U.id) return; try { await api({ aksi: 'hapus', id: U.id, token: U.token }, 8000); } catch (e) { } }
+let NEXT = () => { };
+async function reset(why, msg) {   // akun dihapus dari HP: diblokir admin, tidak ada di database, atau sistem akun diperbarui
+  try { await del('akun'); await del('sesi'); } catch (e) { } U = null; notify(); document.querySelectorAll('.ak').forEach(x => x.remove());
+  if (why === 'blokir') { screen(hero('Akun diblokir', esc(msg || 'Akun ini diblokir oleh admin Yayasan PRCF Indonesia.')) + `<div class="ak-card"><p class="mut" style="font-size:14px">Hubungi Yayasan PRCF Indonesia bila menurut Anda ini keliru. Anda dapat mendaftar lagi dengan data yang benar.</p><button class="ak-btn" id="akRe">Daftar dengan data yang benar</button></div>`).querySelector('#akRe').onclick = e => { e.target.closest('.ak').remove(); registerScreen(NEXT); }; return; }
+  registerScreen(NEXT, why === 'skema' ? 'Sistem akun diperbarui demi keamanan data. Semua pengguna diminta mendaftar ulang dan memverifikasi email. Data pemantauan tidak terpengaruh.' : why === 'ulang' ? 'Akun Anda tidak ditemukan di database PRCF. Silakan daftar ulang.' : '');
+}
 window.addEventListener('online', () => flush(false));
 
 /* ---------- validasi ---------- */
+const SEKALI = ['mailinator.com', 'yopmail.com', 'guerrillamail.com', 'sharklasers.com', '10minutemail.com', 'tempmail.com', 'temp-mail.org', 'trashmail.com', 'getnada.com', 'maildrop.cc', 'dispostable.com', 'throwawaymail.com', 'fakeinbox.com', 'mintemail.com', 'mohmal.com', 'emailondeck.com', 'tempmail.plus', 'mytemp.email', 'tmpmail.org', 'moakt.com', 'example.com', 'test.com', 'u.id'];
+const SALAH_KETIK = { 'gmial.com': 'gmail.com', 'gmai.com': 'gmail.com', 'gmail.co': 'gmail.com', 'gmail.con': 'gmail.com', 'gamil.com': 'gmail.com', 'gnail.com': 'gmail.com', 'yahoo.co': 'yahoo.com', 'yaho.com': 'yahoo.com', 'yahoo.con': 'yahoo.com', 'hotmail.co': 'hotmail.com', 'outlook.co': 'outlook.com' };
 const V = {
-  nama: v => v.trim().length >= 3 ? '' : 'Isi nama lengkap (minimal 3 huruf).',
-  email: v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()) ? '' : 'Format email belum benar, contoh: nama@gmail.com.',
-  hp: v => /^(\+62|62|0)8\d{7,12}$/.test(v.replace(/[\s-]/g, '')) ? '' : 'Nomor HP Indonesia, contoh: 0812 3456 7890.',
-  lahir: v => !v ? 'Pilih tanggal lahir.' : (v > new Date().toISOString().slice(0, 10) ? 'Tanggal lahir tidak boleh di masa depan.' : (v < '1900-01-01' ? 'Tanggal lahir tidak valid.' : '')),
-  alamat: v => v.trim().length >= 5 ? '' : 'Isi alamat (desa/kelurahan, kecamatan, kabupaten).',
-  pw: v => v.length >= 8 && /[A-Za-z]/.test(v) && /\d/.test(v) ? '' : 'Minimal 8 karakter, berisi huruf dan angka.',
+  nama: v => { v = v.trim(); if (v.length < 3) return 'Isi nama lengkap sesuai KTP (minimal 3 huruf).'; if (/[0-9_@#$%^&*=+<>{}\[\]\\/|~`!?]/.test(v)) return 'Nama hanya boleh berisi huruf.'; if (!/[aiueo]/i.test(v) || /(.)\1\1/i.test(v.replace(/\s/g, ''))) return 'Nama tidak valid. Isi nama asli Anda.'; if (/\b(uji|coba|test|tes|testing|asdf|qwerty|admin|user|dummy|anonim|xxx|abc|aaa)\b/i.test(v)) return 'Gunakan nama asli, bukan nama uji coba.'; return ''; },
+  email: v => { v = v.trim().toLowerCase(); if (!/^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/.test(v)) return 'Format email belum benar, contoh: nama@gmail.com.'; const dm = v.split('@')[1]; if (SALAH_KETIK[dm]) return `Mungkin maksud Anda …@${SALAH_KETIK[dm]}?`; if (SEKALI.includes(dm)) return 'Email sementara/contoh tidak diterima. Gunakan email pribadi yang aktif.'; return ''; },
+  hp: v => { const s = normHP(v); if (!/^08\d{8,11}$/.test(s)) return 'Nomor HP Indonesia 10–13 angka, contoh: 0812 3456 7890.'; if (!/^08(1[1-9]|2[1-3]|3[1-8]|5[1-9]|7[7-8]|8[1-9]|9[5-9])/.test(s)) return 'Awalan nomor tidak dikenal operator seluler Indonesia.'; const t = s.slice(4); if (/(\d)\1{5}/.test(t) || '0123456789012345678'.includes(t.slice(0, 7)) || '9876543210987654321'.includes(t.slice(0, 7))) return 'Nomor HP tidak valid. Isi nomor yang aktif.'; return ''; },
+  lahir: v => { if (!v) return 'Pilih tanggal lahir.'; const a = umur(v); if (v > new Date().toISOString().slice(0, 10) || a > 100) return 'Tanggal lahir tidak valid.'; if (a < 17) return 'Pengguna minimal berusia 17 tahun.'; return ''; },
+  alamat: v => { v = v.trim(); if (v.length < 15 || v.split(/\s+/).length < 3) return 'Isi alamat lengkap: jalan/dusun, desa/kelurahan, kecamatan, kabupaten.'; if (!/[aiueo]/i.test(v) || /(.)\1\1\1/.test(v.replace(/\s/g, ''))) return 'Alamat tidak valid.'; return ''; },
+  pw: v => v.length >= 8 && /[A-Za-z]/.test(v) && /\d/.test(v) && !/^(12345678|password1|qwerty12|abcd1234)/i.test(v) ? '' : 'Minimal 8 karakter, berisi huruf dan angka, bukan kata sandi umum.',
 };
+async function mxAda(email) {   // cek domain email benar-benar punya server email (DNS MX, Google Public DNS)
+  try { const dm = email.split('@')[1], r = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(dm)}&type=MX`); const j = await r.json(); return j.Status === 0 && (j.Answer || []).some(a => a.type === 15); } catch (e) { return true; } }
 const normHP = v => { let s = v.replace(/[\s-]/g, ''); if (s.startsWith('+62')) s = '0' + s.slice(3); else if (s.startsWith('62')) s = '0' + s.slice(2); return s; };
 const fmtHP = s => s ? s.replace(/^(\d{4})(\d{4})(\d+)$/, '$1 $2 $3') : '';
 const umur = s => { if (!s) return ''; const d = new Date(s), n = new Date(); let a = n.getFullYear() - d.getFullYear(); if (n.getMonth() < d.getMonth() || (n.getMonth() === d.getMonth() && n.getDate() < d.getDate())) a--; return a; };
@@ -212,25 +225,54 @@ const hero = (h, p, cls = '') => `<div class="ak-hero ${cls}"><div class="lg"><i
 const privacy = `<div class="ak-note">${svg('shield', 18)}<span>Biodata dan foto disimpan di HP ini dan dikirim ke <b>database pengguna Yayasan PRCF Indonesia</b> untuk administrasi pengguna aplikasi. Data tidak dibagikan ke pihak lain. <b>Kata sandi tidak pernah dikirim</b>; di HP disimpan terenkripsi satu arah.</span></div>`;
 const SETUJU = 'Saya menyetujui biodata dan foto saya disimpan dan diolah oleh Yayasan PRCF Indonesia untuk administrasi pengguna aplikasi Fire Hotspot, sesuai UU No. 27 Tahun 2022 tentang Pelindungan Data Pribadi. Saya dapat mengubah atau menghapus akun kapan saja.';
 
-function registerScreen(onDone) {
-  let foto = null;
-  const d = screen(hero('Buat akun Anda', 'Daftar sekali saja. Setelah itu aplikasi langsung terbuka tanpa perlu login lagi.') +
-    `<div class="ak-card"><div class="ak-step"><i class="on"></i><i></i></div>
-     <div data-s="1"><h2>Biodata</h2><p class="mut">Lengkapi data diri Anda.</p>
+/* ---------- verifikasi email: kode 6 angka dikirim server ke email ---------- */
+function otpBox(root, email, id, onToken) {
+  root.innerHTML = `<div class="ak-f"><div class="ak-note">${svg('mail', 18)}<span>Kode 6 angka dikirim ke <b>${esc(email)}</b>. Buka email Anda (periksa juga folder <b>Spam/Promosi</b>), lalu masukkan kodenya di sini.</span></div>
+    <label class="ak-l" data-f="kode">Kode verifikasi<span class="w">${svg('shield')}<input id="ak_kode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••" style="letter-spacing:.4em;font-size:20px;font-weight:700"></span><span class="er"></span></label>
+    <button class="ak-btn" data-v>Verifikasi</button><button class="ak-btn alt" data-r disabled>Kirim ulang kode</button></div>`;
+  const inp = root.querySelector('#ak_kode'), rb = root.querySelector('[data-r]'), vb = root.querySelector('[data-v]'); let tm = null;
+  const send = async () => { rb.disabled = true; setErr(root, 'kode', '');
+    if (navigator.onLine === false) { setErr(root, 'kode', 'Perlu koneksi internet untuk verifikasi email.'); rb.disabled = false; return; }
+    try { const j = await api({ aksi: 'kode', email, id }); if (!j.ok) { setErr(root, 'kode', j.galat || 'Gagal mengirim kode.'); rb.disabled = false; return; } toast('Kode dikirim ke email'); }
+    catch (e) { setErr(root, 'kode', 'Gagal mengirim kode. Periksa internet.'); rb.disabled = false; return; }
+    let n = 60; clearInterval(tm); tm = setInterval(() => { rb.textContent = n > 0 ? `Kirim ulang kode (${n--} dtk)` : 'Kirim ulang kode'; if (n < 0) { clearInterval(tm); rb.disabled = false; } }, 1000); };
+  const cek = async () => { const k = inp.value.replace(/\D/g, ''); if (k.length !== 6) { setErr(root, 'kode', 'Masukkan 6 angka.'); return; }
+    vb.disabled = true; vb.textContent = 'Memeriksa…';
+    try { const j = await api({ aksi: 'cek', email, id, kode: k }); if (j.ok && j.token) { clearInterval(tm); onToken(j.token); return; } setErr(root, 'kode', j.galat || 'Kode salah.'); }
+    catch (e) { setErr(root, 'kode', 'Gagal memeriksa. Periksa internet.'); }
+    vb.disabled = false; vb.textContent = 'Verifikasi'; };
+  vb.onclick = cek; rb.onclick = send; inp.oninput = () => { if (inp.value.replace(/\D/g, '').length === 6) cek(); };
+  send(); setTimeout(() => inp.focus(), 300);
+}
+function registerScreen(onDone, notice) {
+  NEXT = onDone; let foto = null, token = null; const id = crypto.randomUUID();
+  if (!ENDPOINT && !UJI) return onDone();
+  const d = screen(hero('Buat akun Anda', 'Daftar sekali saja dengan data asli. Email Anda akan diverifikasi.') +
+    `<div class="ak-card">${notice ? `<div class="ak-note" style="background:#FFF4E5;margin-bottom:12px">${svg('shield', 18)}<span>${esc(notice)}</span></div>` : ''}<div class="ak-step"><i class="on"></i><i></i><i></i></div>
+     <div data-s="1"><h2>Biodata</h2><p class="mut">Isi sesuai identitas asli (KTP). Data palsu akan diblokir admin.</p>
       <div class="ak-av" style="margin-bottom:6px"><div class="ph" id="akPh">${svg('user', 44)}</div><button type="button" id="akFoto" aria-label="Tambah foto profil">${svg('cam', 18)}</button></div>
-      <p class="mut" style="text-align:center;margin:4px 0 14px">Foto profil (opsional)</p>
-      <div class="ak-f">${field('nama', 'Nama lengkap', 'user', 'text', '', 'autocomplete="name" autocapitalize="words"')}${field('lahir', 'Tanggal lahir', 'cal', 'date', '', `max="${new Date().toISOString().slice(0, 10)}" min="1900-01-01"`)}
-       ${field('alamat', 'Alamat', 'pin', 'textarea', '', 'autocomplete="street-address" placeholder="Jalan/dusun, desa, kecamatan, kabupaten"')}
-       ${field('email', 'Email', 'mail', 'email', '', 'autocomplete="email" inputmode="email" autocapitalize="off"')}${field('hp', 'Nomor HP', 'phone', 'tel', '', 'autocomplete="tel" inputmode="tel" placeholder="0812 3456 7890"')}
-       <button class="ak-btn" id="akN1">Lanjut</button></div></div>
-     <div data-s="2" hidden><h2>Keamanan akun</h2><p class="mut">Buat kata sandi untuk melindungi profil Anda.</p>
+      <p class="mut" style="text-align:center;margin:4px 0 14px">Foto profil (opsional, wajah jelas)</p>
+      <div class="ak-f">${field('nama', 'Nama lengkap (sesuai KTP)', 'user', 'text', '', 'autocomplete="name" autocapitalize="words"')}${field('lahir', 'Tanggal lahir', 'cal', 'date', '', `max="${new Date().toISOString().slice(0, 10)}" min="1920-01-01"`)}
+       ${field('alamat', 'Alamat lengkap', 'pin', 'textarea', '', 'autocomplete="street-address" placeholder="Jalan/dusun, desa/kelurahan, kecamatan, kabupaten"')}
+       ${field('email', 'Email aktif (akan diverifikasi)', 'mail', 'email', '', 'autocomplete="email" inputmode="email" autocapitalize="off"')}${field('hp', 'Nomor HP / WhatsApp aktif', 'phone', 'tel', '', 'autocomplete="tel" inputmode="tel" placeholder="0812 3456 7890"')}
+       <button class="ak-btn" id="akN1">Lanjut: verifikasi email</button></div></div>
+     <div data-s="2" hidden><h2>Verifikasi email</h2><p class="mut">Membuktikan email ini benar milik Anda.</p><div id="akOtp"></div><button class="ak-btn alt" id="akB1" style="margin-top:10px">Ubah biodata</button></div>
+     <div data-s="3" hidden><h2>Keamanan akun</h2><p class="mut">Email terverifikasi ✓. Buat kata sandi.</p>
       <div class="ak-f">${field('pw', 'Kata sandi', 'lock', 'password', '', 'autocomplete="new-password"')}${field('pw2', 'Ulangi kata sandi', 'lock', 'password', '', 'autocomplete="new-password"')}
        ${privacy}<label class="ak-chk"><input type="checkbox" id="akOk"><span>${SETUJU}</span></label>
-       <button class="ak-btn" id="akDaftar">Daftar &amp; masuk</button><button class="ak-btn alt" id="akB1">Kembali</button></div></div></div>`);
+       <button class="ak-btn" id="akDaftar">Daftar &amp; masuk</button></div></div></div>`);
   pwMeter(d, 'pw');
   d.querySelector('#akFoto').onclick = async () => { const r = await photoMenu(); if (r === undefined) return; foto = r; d.querySelector('#akPh').innerHTML = foto ? `<img src="${foto}" alt="">` : svg('user', 44); };
   const step = n => { d.querySelectorAll('[data-s]').forEach(x => x.hidden = x.dataset.s !== String(n)); d.querySelectorAll('.ak-step i').forEach((x, k) => x.classList.toggle('on', k < n)); d.scrollTo({ top: 0, behavior: 'smooth' }); };
-  d.querySelector('#akN1').onclick = () => { if (check(d, ['nama', 'lahir', 'alamat', 'email', 'hp'])) step(2); };
+  const v = k => d.querySelector('#ak_' + k).value.trim();
+  d.querySelector('#akN1').onclick = async () => {
+    if (!check(d, ['nama', 'lahir', 'alamat', 'email', 'hp'])) return;
+    if (navigator.onLine === false) { toast('Pendaftaran memerlukan internet untuk verifikasi email'); return; }
+    const b = d.querySelector('#akN1'); b.disabled = true; b.textContent = 'Memeriksa email…';
+    const ok = await mxAda(v('email').toLowerCase()); b.disabled = false; b.textContent = 'Lanjut: verifikasi email';
+    if (!ok) { setErr(d, 'email', 'Domain email ini tidak menerima email. Periksa ejaannya.'); return; }
+    step(2); otpBox(d.querySelector('#akOtp'), v('email').toLowerCase(), id, t => { token = t; step(3); });
+  };
   d.querySelector('#akB1').onclick = () => step(1);
   d.querySelector('#akDaftar').onclick = async () => {
     if (!check(d, ['pw'])) return;
@@ -238,14 +280,18 @@ function registerScreen(onDone) {
     if (!d.querySelector('#akOk').checked) { toast('Centang persetujuan penyimpanan data'); return; }
     const b = d.querySelector('#akDaftar'); b.disabled = true; b.textContent = 'Menyimpan…';
     try {
-      const h = await hashPw(d.querySelector('#ak_pw').value), v = id => d.querySelector('#ak_' + id).value.trim();
-      U = { nama: v('nama'), lahir: v('lahir'), alamat: v('alamat'), email: v('email').toLowerCase(), hp: normHP(v('hp')), foto, dibuat: new Date().toISOString(), diubah: new Date().toISOString(), pw: h, id: crypto.randomUUID(), setuju: true, setujuT: new Date().toISOString() };
+      const h = await hashPw(d.querySelector('#ak_pw').value);
+      U = { skema: SKEMA, nama: v('nama').replace(/\s+/g, ' '), lahir: v('lahir'), alamat: v('alamat'), email: v('email').toLowerCase(), hp: normHP(v('hp')), foto, dibuat: new Date().toISOString(), diubah: new Date().toISOString(), pw: h, id, token, verifikasi: new Date().toISOString(), setuju: true, setujuT: new Date().toISOString() };
+      if (ENDPOINT) { const p = { aksi: 'daftar', id, token, lokasi: OPT.lokasi ? OPT.lokasi() : '', perangkat: dev(), versi: VERSI, profil: { nama: U.nama, lahir: U.lahir, alamat: U.alamat, email: U.email, hp: '+62 ' + fmtHP(U.hp).slice(1), dibuat: U.dibuat, diubah: U.diubah }, foto: foto ? foto.split(',')[1] : '' };
+        const j = await api(p, 45000); if (!j.ok) { b.disabled = false; b.textContent = 'Daftar & masuk'; toast(j.diblokir ? 'Email ini diblokir admin PRCF' : 'Ditolak server: ' + (j.galat || 'periksa biodata')); if (!j.diblokir) step(1); return; }
+        U.terkirim = true; U.pingT = Date.now(); U.sinkronT = new Date().toISOString(); }
       await put('akun', U); await put('sesi', { masuk: true, t: Date.now() }); try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) { }
-      d.remove(); notify(); toast(`Selamat datang, ${U.nama.split(' ')[0]}!`); onDone(); flush(true);
-    } catch (e) { console.error(e); b.disabled = false; b.textContent = 'Daftar & masuk'; toast('Gagal menyimpan: ' + e.message); }
+      d.remove(); notify(); toast(`Selamat datang, ${U.nama.split(' ')[0]}!`); onDone();
+    } catch (e) { console.error(e); b.disabled = false; b.textContent = 'Daftar & masuk'; toast('Gagal mendaftar: periksa internet lalu coba lagi'); }
   };
 }
 function loginScreen(onDone) {
+  NEXT = onDone;
   const d = screen(hero(`Halo, ${esc((U.nama || '').split(' ')[0])}`, 'Masuk kembali dengan kata sandi akun Anda.', 'tall') +
     `<div class="ak-card"><div class="ak-av" style="margin:-70px auto 10px"><div class="ph">${avatarInner(U)}</div></div>
      <div class="ak-f">${field('email', 'Email', 'mail', 'email', U.email, 'autocomplete="username" inputmode="email" autocapitalize="off"')}${field('pw', 'Kata sandi', 'lock', 'password', '', 'autocomplete="current-password"')}
@@ -253,14 +299,27 @@ function loginScreen(onDone) {
   const go = async () => {
     const em = d.querySelector('#ak_email').value.trim().toLowerCase(), pw = d.querySelector('#ak_pw').value, b = d.querySelector('#akIn');
     setErr(d, 'email', ''); setErr(d, 'pw', '');
+    const L = (await get('kunciMasuk').catch(() => null)) || { n: 0, t: 0 };
+    if (L.n >= 5 && Date.now() - L.t < 5 * 6e4) { setErr(d, 'pw', `Terlalu banyak percobaan. Coba lagi ${Math.ceil((5 * 6e4 - (Date.now() - L.t)) / 6e4)} menit lagi, atau pakai "Lupa kata sandi".`); return; }
     if (em !== U.email) { setErr(d, 'email', 'Email tidak terdaftar di perangkat ini.'); return; }
     b.disabled = true; b.textContent = 'Memeriksa…';
     const h = await hashPw(pw, U.pw.salt);
-    if (h.hash !== U.pw.hash) { setErr(d, 'pw', 'Kata sandi salah.'); b.disabled = false; b.textContent = 'Masuk'; return; }
-    await put('sesi', { masuk: true, t: Date.now() }); d.remove(); notify(); onDone(); flush(true);
+    if (h.hash !== U.pw.hash) { const n = (L.n >= 5 ? 0 : L.n) + 1; await put('kunciMasuk', { n, t: Date.now() }); setErr(d, 'pw', n >= 5 ? 'Kata sandi salah 5 kali. Akun dikunci 5 menit.' : `Kata sandi salah. Sisa percobaan: ${5 - n}.`); b.disabled = false; b.textContent = 'Masuk'; return; }
+    await put('kunciMasuk', { n: 0, t: 0 }); await put('sesi', { masuk: true, t: Date.now() }); d.remove(); notify(); onDone(); flush(true);
   };
   d.querySelector('#akIn').onclick = go; d.querySelector('#ak_pw').onkeydown = e => { if (e.key === 'Enter') go(); };
-  d.querySelector('#akLupa').onclick = () => confirmSheet('Atur ulang akun?', 'Akun hanya tersimpan di HP ini, sehingga kata sandi tidak dapat dipulihkan. Anda dapat menghapus akun di perangkat ini lalu mendaftar ulang. Data pemantauan tidak terpengaruh.', 'Hapus & daftar ulang', async () => { await sendDelete(); await del('akun'); await del('sesi'); U = null; d.remove(); notify(); registerScreen(onDone); });
+  d.querySelector('#akLupa').onclick = () => resetPwSheet(() => { d.remove(); notify(); onDone(); flush(true); });
+}
+function resetPwSheet(done) {   // lupa kata sandi: buktikan kepemilikan email dengan kode, lalu buat kata sandi baru
+  const sh = document.createElement('div'); sh.className = 'ak-sheet ak';
+  sh.innerHTML = `<div class="in"><div class="gr"></div><h2>Atur ulang kata sandi</h2><p class="mut">Kode verifikasi dikirim ke email akun Anda.</p><div id="rsBox"></div><button class="ak-btn alt" data-x style="margin-top:10px">Batal</button></div>`;
+  document.body.appendChild(sh); sh.querySelector('[data-x]').onclick = () => sh.remove();
+  otpBox(sh.querySelector('#rsBox'), U.email, U.id, t => {
+    sh.querySelector('#rsBox').innerHTML = `<div class="ak-f">${field('pw', 'Kata sandi baru', 'lock', 'password', '', 'autocomplete="new-password"')}${field('pw2', 'Ulangi kata sandi baru', 'lock', 'password', '', 'autocomplete="new-password"')}<button class="ak-btn" data-ok>Simpan kata sandi</button></div>`;
+    bindEyes(sh); pwMeter(sh, 'pw');
+    sh.querySelector('[data-ok]').onclick = async () => { if (!check(sh, ['pw'])) return; if (sh.querySelector('#ak_pw2').value !== sh.querySelector('#ak_pw').value) { setErr(sh, 'pw2', 'Kata sandi tidak sama.'); return; }
+      U.pw = await hashPw(sh.querySelector('#ak_pw').value); U.pwDiubah = new Date().toISOString(); U.token = t; await put('akun', U); await put('kunciMasuk', { n: 0, t: 0 }); await put('sesi', { masuk: true, t: Date.now() }); sh.remove(); toast('Kata sandi diperbarui'); done(); };
+  });
 }
 function confirmSheet(title, text, okTxt, onOk) {
   const sh = document.createElement('div'); sh.className = 'ak-sheet ak';
@@ -307,6 +366,9 @@ function editSheet(k, after) {
   document.body.appendChild(sh); setTimeout(() => sh.querySelector('#ak_' + k).focus(), 250);
   sh.onclick = e => { if (e.target === sh) sh.remove(); }; sh.querySelector('[data-x]').onclick = () => sh.remove();
   sh.querySelector('[data-ok]').onclick = async () => { if (!check(sh, [k])) return; let v = sh.querySelector('#ak_' + k).value.trim(); if (k === 'hp') v = normHP(v); if (k === 'email') v = v.toLowerCase();
+    if (k === 'email' && v !== U.email) {   // email baru wajib diverifikasi
+      if (!(await mxAda(v))) { setErr(sh, 'email', 'Domain email ini tidak menerima email.'); return; }
+      const box = sh.querySelector('.ak-f'); otpBox(box, v, U.id, async t => { U.email = v; U.token = t; U.diubah = new Date().toISOString(); await put('akun', U); sh.remove(); notify(); after(); toast('Email diperbarui & terverifikasi'); mark('profil'); }); return; }
     U[k] = v; U.diubah = new Date().toISOString(); await put('akun', U); sh.remove(); notify(); after(); toast('Tersimpan'); mark('profil'); };
 }
 function pwSheet(after) {
@@ -333,11 +395,12 @@ function consentSheet(after) {
 async function gate(next) {
   css();
   let sesi = null; try { U = await get('akun'); sesi = await get('sesi'); } catch (e) { console.warn('Penyimpanan akun tidak tersedia', e); return next(); }
+  NEXT = next;
+  if (U && U.skema !== SKEMA) { next(); return reset('skema'); }   // akun lama (tanpa verifikasi email) direset: wajib daftar ulang
   notify();
   if (!U) return registerScreen(next);
   if (!sesi || !sesi.masuk) return loginScreen(next);
-  next();
-  if (ENDPOINT && !U.setuju && Date.now() - (U.tanyaT || 0) > 7 * 864e5) setTimeout(() => consentSheet(), 2500); else flush(true);
+  next(); flush(true);
 }
 function avatar(px = 34) { return `<span class="ak-mini" style="width:${px}px;height:${px}px">${U ? avatarInner(U) : svg('user', Math.round(px * .55))}</span>`; }
 window.FHAkun = { init: o => { OPT = o || {}; css(); }, gate, openProfile, avatar, user: () => U, onChange: f => subs.push(f), firstName: () => U ? U.nama.split(' ')[0] : '' };
