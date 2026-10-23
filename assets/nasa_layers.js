@@ -132,5 +132,5 @@ if (!document.getElementById('nasa-css')) {
   .nasa-info p{margin:6px 0 0;color:#4d5b53;font-size:11.5px}.fh-anim{transition:opacity .7s ease}.nasa-play{margin-top:6px;width:100%;height:32px;border:0;border-radius:8px;background:#0B3B2C;color:#fff;font:700 12px system-ui;cursor:pointer;display:none}.nasa-ctl.on .nasa-play{display:block}.nasa-lg{width:100%;margin-top:6px;background:#fff;border-radius:4px}`;
   document.head.appendChild(st);
 }
-window.FHNasa = { create, control, LAYERS };
+window.FHNasa = { create, control, LAYERS, CamsWMS, CAMS };
 })();

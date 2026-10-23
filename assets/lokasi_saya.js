@@ -176,37 +176,43 @@ function view(el, X, opt) {
   el.innerHTML = `<div class="lx">
    <div class="lx-hero" style="background:${heroBg(C.weather_code, C.is_day)}">
     <div class="lx-place"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M21 3L3 10.5l7.2 2.3L12.5 20z"/></svg>${esc(name)}</div>
-    <div class="lx-sub">${X.lat.toFixed(5)}, ${X.lon.toFixed(5)}${X.acc != null ? ` · GPS ±${X.acc < 1000 ? Math.round(X.acc) + ' m' : N1(X.acc / 1000) + ' km'}` : X.src === 'cari' ? ' · dipilih manual' : ''} · ${C.time.slice(11, 16)} waktu setempat</div>
+    <div class="lx-sub">${X.lat.toFixed(5)}, ${X.lon.toFixed(5)}${X.acc != null ? ` · GPS ±${X.acc < 1000 ? Math.round(X.acc) + ' m' : N1(X.acc / 1000) + ' km'}` : X.src === 'cari' ? ' · lokasi dicari' : ''} · ${C.time.slice(11, 16)} waktu setempat</div>
     ${X.acc != null && X.acc > 500 ? `<div class="lx-warn">Lokasi kurang akurat (±${N1(X.acc / 1000)} km): HP memakai lokasi jaringan, bukan satelit GPS. Aktifkan GPS/“Akurasi lokasi Google” di pengaturan lalu ketuk <b>Perbarui lokasi</b> di luar ruangan.</div>` : ''}
     <div class="lx-main"><div><div class="lx-temp">${Math.round(C.temperature_2m)}<sup>°C</sup></div><div class="lx-desc">${WMO[C.weather_code] || ''}</div><div class="lx-sub">Terasa ${Math.round(C.apparent_temperature)}° · hari ini ${Math.round(D.temperature_2m_min[0])}°–${Math.round(D.temperature_2m_max[0])}°</div></div>${icon(C.weather_code, C.is_day, 110)}</div>
     <div class="lx-stats"><div><b>${Math.round(C.relative_humidity_2m)}%</b><span>kelembapan</span></div><div><b>${N1(C.wind_speed_10m)}</b><span>km/jam dari ${ARAH[dirI]}</span></div><div><b>${N1(D.precipitation_sum[0] || 0)}</b><span>mm hujan hari ini</span></div><div><b>${Math.round(C.cloud_cover)}%</b><span>awan</span></div></div>
     ${sr ? `<div class="lx-sub" style="margin-top:10px">Matahari terbit ${sr} · terbenam ${ss}</div>` : ''}
    </div>
    <div class="lx-card"><h4>Per jam · 36 jam ke depan</h4>${hoursHTML(X.E)}</div>
+   <div class="lx-ec"></div>
    <div class="lx-card"><h4>14 hari ke depan</h4>${daysHTML(X.E)}<p class="lx-note">Hari 8–14 ditampilkan pudar: kecenderungan, keyakinan lebih rendah.</p></div>
    <div class="lx-card"><h4>Meteogram ensemble ECMWF · 15 hari</h4><div class="lx-mg"></div></div>
    <div class="lx-two" style="grid-template-columns:1fr"><div class="lx-card"><h4>Bahaya kebakaran di lokasi Anda</h4>${fireHTML(F)}</div>
    <div class="lx-card"><h4>Kualitas udara & asap</h4>${aqHTML(X.A)}</div></div>
    ${near}
-   <div class="lx-actions"><button class="lx-btn pri" data-a="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/></svg>Titik api NASA di sekitar</button><button class="lx-btn" data-a="gps">Perbarui lokasi</button><button class="lx-btn" data-a="cari">Cari kota lain</button></div>
+   <div class="lx-actions"><button class="lx-btn pri" data-a="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/></svg>Titik api NASA di sekitar</button><button class="lx-btn" data-a="gps">Perbarui lokasi</button><button class="lx-btn" data-a="cari">Cari lokasi lain</button></div>
    <p class="lx-note">Sumber: cuaca saat ini, per jam & 14 hari = model ECMWF IFS 0,25° (European Centre for Medium-Range Weather Forecasts, CC BY 4.0) via Open-Meteo, berupa analisis/prakiraan model (grid ±25 km), bukan alat ukur di tempat Anda. Kualitas udara = Copernicus CAMS; kategori PM2.5 BMKG. Wilayah: batas desa/kelurahan BPS/BIG (OCHA COD-AB) dengan nama & kode Kepmendagri 2025; di luar Indonesia © OpenStreetMap. Lokasi Anda hanya dipakai di HP ini dan tidak disimpan di server.</p></div>`;
   if (window.FHMeteogram) FHMeteogram.mount(el.querySelector('.lx-mg'), X.lat, X.lon);
+  if (window.FHPetaEC) FHPetaEC.mount(el.querySelector('.lx-ec'), { lat: X.lat, lon: X.lon, label: name });
   el.querySelector('[data-a=map]').onclick = () => opt.onMap && opt.onMap(X.lat, X.lon);
   el.querySelector('[data-a=gps]').onclick = () => gps(el, opt, true);
   el.querySelector('[data-a=cari]').onclick = () => search(el, opt);
 }
 function search(el, opt) {
-  el.innerHTML = `<div class="lx"><div class="lx-card"><h4>Cari kota atau kecamatan</h4><div class="lx-search"><input type="search" placeholder="mis. Pontianak, Putussibau" autofocus><button class="lx-btn pri" style="flex:none;min-width:80px">Cari</button></div><div class="lx-res"></div>
-    <button class="lx-btn" style="margin-top:10px;width:100%" data-a="gps">Pakai GPS HP saya</button><p class="lx-note">Pencarian: Open-Meteo Geocoding (data GeoNames).</p></div></div>`;
+  if (opt.searchEl && window.FHCari) { opt.searchEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); const i = opt.searchEl.querySelector('input'); if (i) setTimeout(() => i.focus(), 300); return; }
+  el.innerHTML = `<div class="lx"><div class="lx-card"><h4>Cari lokasi</h4><div class="lx-sbox"></div><div class="lx-search" style="display:none"><input type="search"><button></button></div><div class="lx-res"></div>
+    <button class="lx-btn" style="margin-top:10px;width:100%" data-a="gps">Pakai GPS HP saya</button><p class="lx-note">Indonesia: seluruh desa/kelurahan, kecamatan & kab/kota (Kepmendagri 2025). Luar negeri: Open-Meteo Geocoding (GeoNames).</p></div></div>`;
+  el.querySelector('[data-a=gps]').onclick = () => gps(el, opt, true);
+  if (window.FHCari) { FHCari.box(el.querySelector('.lx-sbox'), { onPick: loc => at(el, opt, loc) }).focus(); return; }
+  const sb = el.querySelector('.lx-search'); sb.style.display = ''; el.querySelector('.lx-search button').textContent = 'Cari';
   const inp = el.querySelector('input'), res = el.querySelector('.lx-res');
   const go = async () => { const q = inp.value.trim(); if (q.length < 2) return; res.innerHTML = '<p class="lx-note">Mencari…</p>';
     try { const r = await J(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=8&language=id&format=json`, 2); const L0 = (r.results || []);
       res.innerHTML = L0.length ? L0.map((x, i) => `<button data-i="${i}"><b>${esc(x.name)}</b> <span class="lx-note">${esc([x.admin2, x.admin1, x.country].filter(Boolean).join(', '))}</span></button>`).join('') : '<p class="lx-note">Tidak ditemukan.</p>';
-      res.querySelectorAll('button').forEach(b => b.onclick = () => { const x = L0[+b.dataset.i]; const loc = { lat: x.latitude, lon: x.longitude, label: '', src: 'cari' }; store.set('lokasi', loc); show(el, opt, loc); }); }
+      res.querySelectorAll('button').forEach(b => b.onclick = () => { const x = L0[+b.dataset.i]; at(el, opt, { lat: x.latitude, lon: x.longitude, label: '', src: 'cari' }); }); }
     catch (e) { res.innerHTML = '<p class="lx-note">Pencarian gagal. Periksa koneksi internet.</p>'; } };
-  el.querySelector('.lx-search button').onclick = go; inp.onkeydown = e => { if (e.key === 'Enter') go(); };
-  el.querySelector('[data-a=gps]').onclick = () => gps(el, opt, true);
+  sb.querySelector('button').onclick = go; inp.onkeydown = e => { if (e.key === 'Enter') go(); };
 }
+function at(el, opt, loc) { const L0 = Object.assign({ src: 'cari' }, loc); if (opt.remember !== false) store.set('lokasi', L0); return show(el, opt, L0); }
 async function show(el, opt, loc) {
   el.innerHTML = '<div class="lx"><div class="lx-skel"></div><div class="lx-skel" style="height:120px"></div></div>';
   try { const X = await load(loc.lat, loc.lon); X.label = loc.label; X.acc = loc.acc ?? null; X.src = loc.src || ''; view(el, X, opt); }
@@ -231,5 +237,5 @@ function gps(el, opt, force) {
   }, err => { if (err.code === 1) { done = true; clearTimeout(tm); el.innerHTML = `<div class="lx"><div class="lx-card"><h4>Akses lokasi ditolak</h4><p class="lx-note" style="font-size:13px">Untuk melihat cuaca di lokasi Anda, izinkan akses lokasi untuk aplikasi/peramban ini (Pengaturan → Aplikasi → Chrome/Fire Hotspot → Izin → Lokasi), lalu ketuk Coba lagi. Anda juga bisa mencari kota secara manual.</p><div class="lx-actions" style="margin-top:10px"><button class="lx-btn pri" data-a="re">Coba lagi</button><button class="lx-btn" data-a="cari">Cari kota</button></div></div></div>`; el.querySelector('[data-a=re]').onclick = () => gps(el, opt, true); el.querySelector('[data-a=cari]').onclick = () => search(el, opt); } },
   { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
 }
-window.FHLokasi = { render: (el, opt = {}) => gps(el, opt, false), refresh: (el, opt = {}) => gps(el, opt, true), search, icon };
+window.FHLokasi = { render: (el, opt = {}) => gps(el, opt, false), refresh: (el, opt = {}) => gps(el, opt, true), search, at, icon };
 })();

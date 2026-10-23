@@ -69,7 +69,8 @@ svg{display:block}
 
 /* ---------- prakiraan & peringatan dini ---------- */
 :root{--l0:#2F7FD1;--l1:#2E9E5B;--l2:#E0A800;--l3:#D93025}
-.fc-mode{position:sticky;top:0;z-index:5;padding:10px 16px 2px;background:linear-gradient(var(--bg) 80%,transparent)}
+.fc-mode{position:sticky;top:0;z-index:5;padding:10px 16px 2px;background:linear-gradient(var(--bg) 86%,transparent);display:grid;gap:8px}
+.fc-mode .fhc-in{height:46px}
 .seg2{position:relative;display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border-radius:16px;padding:4px;box-shadow:var(--shadow)}
 .seg2 button{position:relative;z-index:1;height:40px;border-radius:12px;font-weight:700;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--muted);transition:color .3s}
 .seg2 button[aria-selected="true"]{color:#fff}
@@ -501,7 +502,7 @@ body.is-off .offline{display:block}
 
 <!-- ================= UNDUH ================= -->
 <section class="view" id="v-fc" data-title="Prakiraan &amp; Peringatan Dini" data-sub="BMKG · ECMWF · FDRS">
-  <div class="fc-mode"><div class="seg2" role="tablist"><button class="tap" data-m="desa" aria-selected="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l7 11h-4l4 7H5l4-7H5z"/></svg>Desa dampingan</button><button class="tap" data-m="saya" aria-selected="false"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M21 3L3 10.5l7.2 2.3L12.5 20z"/></svg>Lokasi saya</button><i class="seg2-ind"></i></div></div>
+  <div class="fc-mode"><div id="fcSearch"></div><div class="seg2" role="tablist"><button class="tap" data-m="desa" aria-selected="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l7 11h-4l4 7H5l4-7H5z"/></svg>Desa dampingan</button><button class="tap" data-m="saya" aria-selected="false"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M21 3L3 10.5l7.2 2.3L12.5 20z"/></svg><span id="segSaya">Lokasi saya</span></button><i class="seg2-ind"></i></div></div>
   <div class="pad" id="fcBody"><div class="empty">Memuat prakiraan…</div></div>
   <div class="pad" id="lxBody" hidden></div>
 </section>
@@ -903,13 +904,14 @@ function renderFC(){
     <div style="background:rgba(0,0,0,.16);border-radius:12px;padding:8px 10px"><div style="font-size:11px;opacity:.85">Penyulutan permukaan (FFMC)</div><b>${LVN[Math.max(...D.map(d=>Math.max(d.k_ffmc,d.bmI?d.bmI.k_ffmc:0)))]}</b></div>
     <div style="background:rgba(0,0,0,.16);border-radius:12px;padding:8px 10px"><div style="font-size:11px;opacity:.85">Kekeringan dalam / gambut (DC)</div><b>${LVN[Math.max(...D.map(d=>Math.max(d.k_dc,d.bmI?d.bmI.k_dc:0)))]}</b></div></div>
    <span class="pk">Diperbarui ${hhmm(upd)} WIB · BMKG + ECMWF</span></div>
+  <div class="h2">Peta prakiraan asap &amp; udara<span class="src-tag" style="background:#13315C">ECMWF · CAMS</span></div><div id="ecBox"></div>
+  <div class="h2">Meteogram ensemble · 15 hari<span class="src-tag" style="background:#0B3B6F">ECMWF ENS</span></div><div class="card" id="mgBox"></div>
   <div class="h2">Kualitas udara &amp; asap<span class="src-tag" style="background:#5B3FA0">CAMS</span></div><div class="card">${window.FHUdara?FHUdara.html(L.udara):''}</div>
   <div class="h2">${DA.length} hari ke depan<span class="src-tag" style="background:#0D7C66">BMKG</span><span class="src-tag" style="background:#0B3B6F">ECMWF</span></div>
   <div class="fc-days">${DA.map((d,i)=>{const dn=dName(d.tanggal);return `${i===7?`<div class="fc-sep"><b>Hari 8–${DA.length}</b>kecenderungan<br>keyakinan lebih rendah</div>`:''}<div class="fc-day${i>=7?' far':''}" style="border-top-color:${lvCol(d.lv)}"><div class="dn">${d.tanggal===D[0].tanggal?'Hari ini':dn.s}</div><div class="dd">${dn.t}</div>
     <div class="ic">${wxIcon(d.kode_cuaca,d.hujan)}</div><div class="tt">${Math.round(d.tmaks)}°<span> / ${Math.round(d.tmin)}°</span></div><div class="rr">${N1(d.hujan)} mm</div>
     <div class="ds">${esc(d.bmD?d.bmD.cuaca:d.cuaca)}</div>${lvp(d.lv)}<div class="src">${d.lvB!==null?`BMKG: ${LVN[d.lvB]}<br>ECMWF: ${LVN[d.lvE]}`:'ECMWF'}${i>=3?`<br>keyakinan ${d.keyakinan||(i<7?'sedang':'rendah')}`:''}</div></div>`;}).join('')}</div>
   <div class="legend-l">${[0,1,2,3].map(lvp).join('')}<span class="small muted" style="align-self:center">kelas FDRS Indonesia</span></div>
-  <div class="h2">Meteogram ensemble · 15 hari<span class="src-tag" style="background:#0B3B6F">ECMWF ENS</span></div><div class="card" id="mgBox"></div>
   ${bm?`<div class="h2">Prakiraan resmi BMKG · Desa ${esc(bm.desa||SITE.desa_nama)}</div>
   <div class="card">${(bm.harian||[]).map(h=>{const dn=dName(h.tanggal);const ic=(bm.jam.find(j=>j.t.startsWith(h.tanggal)&&j.t.slice(11,13)==='13')||bm.jam.find(j=>j.t.startsWith(h.tanggal))||{}).ikon;return `<div class="bm-row">${ic?`<img src="${encodeURI(ic)}" alt="" loading="lazy">`:''}<span class="m"><b>${dn.l}, ${dn.t}</b><small>${esc(h.cuaca)} · RH ${h.rh??'–'}%</small></span><span class="r">${h.tmaks}° / ${h.tmin}°<small>${N1(h.hujan)} mm</small></span></div>`;}).join('')}
    <div class="bm-hours">${bm.jam.map(j=>`<div class="bm-h">${j.t.slice(11,16)}${j.ikon?`<img src="${encodeURI(j.ikon)}" alt="" loading="lazy">`:''}<b>${j.suhu}°</b><div style="color:#2F7FD1">${N1(j.hujan||0)}</div></div>`).join('')}</div>
@@ -929,12 +931,17 @@ function renderFC(){
   $$('#fcBody .allsite').forEach(b=>b.onclick=()=>applySite(b.dataset.id,false));
   if(window.FHRiwayat)FHRiwayat.render($('#rcBox'),{site:SITE,hotspots:ALL,si:SI});
   if(window.FHMeteogram){const c=SITE.pusat_wilayah||SITE.pusat;FHMeteogram.mount($('#mgBox'),c[0],c[1]);}
+  if(window.FHPetaEC){const c=SITE.pusat_wilayah||SITE.pusat;FHPetaEC.mount($('#ecBox'),{lat:c[0],lon:c[1],label:`${SITE.hd_nama} · Desa ${SITE.desa_nama}`});}
 }
 /* ---------- mode prakiraan: desa dampingan / lokasi saya ---------- */
 let FCMODE='desa',LXINIT=false;
-function fcMode(m){FCMODE=m;$$('.seg2 button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.m===m)));$('.seg2').classList.toggle('r',m==='saya');
+const LXOPT=()=>({hotspots:ALL,onMap:lxMap,searchEl:$('#fcSearch')});
+function fcPick(loc){fcMode('saya',true);LXINIT=true;$('#segSaya').textContent='Lokasi dicari';setBar('Cuaca · '+(loc.label||'').split(',')[0],'ECMWF · CAMS · FDRS',false);FHLokasi.at($('#lxBody'),LXOPT(),loc);}
+function fcGps(){fcMode('saya',true);LXINIT=true;$('#segSaya').textContent='Lokasi saya';FHLokasi.refresh($('#lxBody'),LXOPT());}
+document.addEventListener('DOMContentLoaded',()=>{if(window.FHCari)FHCari.box($('#fcSearch'),{placeholder:'Cari cuaca desa, kecamatan, kota…',onPick:fcPick,onGps:fcGps});});
+function fcMode(m,skip){FCMODE=m;$$('.seg2 button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.m===m)));$('.seg2').classList.toggle('r',m==='saya');
   $('#fcBody').hidden=m!=='desa';$('#lxBody').hidden=m!=='saya';$('#v-fc').scrollTop=0;
-  if(m==='saya'){setBar('Cuaca di lokasi saya','ECMWF · CAMS · FDRS',false);if(!LXINIT&&window.FHLokasi){LXINIT=true;FHLokasi.render($('#lxBody'),{hotspots:ALL,onMap:lxMap});}}
+  if(m==='saya'){setBar('Cuaca di lokasi saya','ECMWF · CAMS · FDRS',false);if(!skip&&!LXINIT&&window.FHLokasi){LXINIT=true;FHLokasi.render($('#lxBody'),LXOPT());}}
   else setBar($('#v-fc').dataset.title,$('#v-fc').dataset.sub,false);}
 $$('.seg2 button').forEach(b=>b.onclick=()=>fcMode(b.dataset.m));
 let LXM=null;
@@ -1175,6 +1182,8 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(
 <script src="assets/musiman.js"></script>
 <script src="assets/wilayah.js"></script>
 <script src="assets/meteogram.js"></script>
+<script src="assets/cari_lokasi.js"></script>
+<script src="assets/peta_ecmwf.js"></script>
 <script src="assets/lokasi_saya.js"></script>
 <script src="assets/peta3d.js"></script>
 <script src="assets/unduh.js"></script>
