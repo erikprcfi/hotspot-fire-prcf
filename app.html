@@ -188,7 +188,7 @@ svg{display:block}
 .leaflet-control-attribution a{color:#fff!important}
 .leaflet-bottom.leaflet-left .leaflet-control-scale{margin-bottom:6px}
 .glass{background:var(--glass);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);border:1px solid var(--glass-line);color:#F2F6F3;border-radius:18px}
-.topcards{position:absolute;z-index:500;top:12px;left:12px;right:12px;display:flex;gap:10px;align-items:flex-start;transition:transform .3s,opacity .3s}
+.topcards{position:absolute;z-index:500;top:12px;left:12px;right:74px;display:flex;gap:10px;align-items:flex-start;transition:transform .3s,opacity .3s}
 .eye{width:40px;height:40px;border-radius:50%;background:#fff;color:#0E1A14;display:grid;place-items:center;flex:none;box-shadow:0 4px 14px rgba(0,0,0,.3)}
 .tc-stack{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
 .tc{padding:12px 14px;text-align:left;width:100%}
@@ -200,11 +200,22 @@ svg{display:block}
 .tc p{margin:0;font-size:13px;opacity:.92}
 .cards-off .tc-stack{opacity:0;transform:translateY(-12px);pointer-events:none}
 .tc-stack{transition:opacity .3s,transform .3s}
-.fabs{position:absolute;z-index:500;right:12px;bottom:190px;display:flex;flex-direction:column;gap:12px;align-items:center}
-.fab{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;color:#fff;background:linear-gradient(150deg,#1E7A58,#0B3B2C);box-shadow:0 6px 18px -4px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.22)}
+.fabs{position:absolute;z-index:500;right:12px;bottom:190px;display:flex;flex-direction:column;gap:9px;align-items:center}
+.fab{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;color:#fff;background:linear-gradient(150deg,#1E7A58,#0B3B2C);box-shadow:0 6px 18px -4px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.22)}
 .fab svg{width:25px;height:25px}
 .fab.alt{background:#fff;color:var(--brand-2);flex-direction:column;gap:0;font:800 8.5px var(--f);letter-spacing:.05em}
 .fab.alt svg{width:21px;height:21px}
+.fab.sm{width:48px;height:48px}.fab.sm svg{width:19px;height:19px}.fab[aria-pressed=true]{background:#1F6FC5;color:#fff}
+#windPanel{position:absolute;z-index:520;left:12px;right:76px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+.hd-top{margin:4px -18px 0;padding:18px 18px 16px;color:#fff;text-align:center;border-radius:22px 22px 0 0}.hd-ic{display:grid;place-items:center;margin-bottom:4px}
+.hd-t{font-size:20px;font-weight:800}.hd-s{font-size:13px;opacity:.92;margin-top:2px}.hd-ago{font-size:16px;font-weight:800;margin-top:6px}.hd-src{font-size:11px;letter-spacing:.06em;opacity:.85;margin-top:6px;text-transform:uppercase}
+.hd-sec{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#D9480F;margin:16px 0 4px}
+.hd-r{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}.hd-r span{color:var(--muted)}.hd-r b{text-align:right;font-weight:600}.hd-r b small{display:block;font-size:11px;color:var(--muted);font-weight:500}
+.hd-help{margin:10px 0 0;font-size:13px}.hd-help summary{color:#D9480F;font-weight:700;cursor:pointer}.hd-help p{margin:6px 0 0;color:var(--muted);line-height:1.5}
+.hd-box{border:1px solid var(--line);border-radius:16px;padding:12px}.hd-wind{display:flex;gap:12px;align-items:center}.hd-arrow{flex:none;width:48px;height:48px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;transition:transform .6s}
+.hd-hrs{display:flex;gap:6px;margin-top:10px;overflow-x:auto}.hd-hrs div{flex:1;min-width:44px;text-align:center;font-size:11px;color:var(--muted)}.hd-hrs i{display:block;font-style:normal;font-size:16px;color:#1F6FC5;font-weight:800}.hd-hrs b{color:var(--fg);font-size:12px}
+.hd-pass{display:grid;grid-template-columns:auto 1fr auto;gap:2px 8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}.hd-pass:last-of-type{border:0}.hd-pass .b{grid-row:span 2;font-size:9.5px;font-weight:800;letter-spacing:.06em;padding:4px 6px;border-radius:6px;background:#FFF0E5;color:#C2410C}.hd-pass .muted{grid-column:2/4;font-size:11.5px}
+.hd-act{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px;border:1px solid var(--line);border-radius:18px;padding:10px 6px}.hd-act>*{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;color:var(--fg);font:600 12px var(--f);text-decoration:none;cursor:pointer}.hd-act svg{width:24px;height:24px;color:#D9480F}
 .fab.me{width:44px;height:44px;background:#fff;color:#1E6FD9}
 .fab.me svg{width:21px;height:21px}
 .sumpanel{position:absolute;z-index:500;left:10px;right:10px;bottom:10px;padding:12px 14px 10px}
@@ -221,6 +232,8 @@ svg{display:block}
 .pulse-ring{animation:pr 1.8s ease-out infinite;transform-origin:center;transform-box:fill-box}
 @keyframes pr{0%{opacity:.9;transform:scale(.6)}100%{opacity:0;transform:scale(1.6)}}
 .hs-icon{filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.6))}
+.flm{display:block;overflow:visible}.flm.fresh{animation:flk 1.6s ease-in-out infinite;transform-origin:50% 90%}@keyframes flk{0%,100%{transform:scale(1)}45%{transform:scale(1.08,1.13)}70%{transform:scale(.97,1.03)}}
+.leaflet-zoom-anim .flm.fresh{animation:none}
 .topcards{pointer-events:none}.topcards>*{pointer-events:auto}.topcards.cards-off .tc-stack{pointer-events:none}
 .leaflet-zoom-anim .hs-icon{filter:none}.leaflet-zoom-anim .pulse-ring{animation:none;opacity:0}
 .me-dot{width:16px;height:16px;border-radius:50%;background:#1E6FD9;border:3px solid #fff;box-shadow:0 0 0 6px rgba(30,111,217,.25)}
@@ -443,8 +456,11 @@ body.is-off .offline{display:block}
     <button class="fab tap" id="fabLayer" aria-label="Lapisan peta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 12.5l9 5 9-5M3 17l9 5 9-5"/></svg></button>
     <button class="fab alt tap" id="fab3d" aria-label="Peta 3D dan globe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z"/><path d="M3.5 7.3L12 12l8.5-4.7M12 12v9.5"/></svg>3D</button>
     <button class="fab alt tap" id="fabFocus" aria-label="Fokus wilayah"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>FOKUS</button>
+    <button class="fab alt sm tap" id="fabWind" aria-label="Animasi angin" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/></svg>ANGIN</button>
+    <button class="fab alt sm tap" id="fabKompas" aria-label="Kompas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z" fill="currentColor"/></svg>KOMPAS</button>
     <button class="fab me tap" id="fabMe" aria-label="Lokasi saya"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3L3 10.5l7.2 2.3L12.5 20z"/></svg></button>
   </div>
+  <div id="windPanel" hidden></div>
   <div class="glass sumpanel" id="sumpanel">
     <div class="sp-grid" id="spGrid"></div>
     <div class="sp-foot2"><button class="sp-per tap" id="spPer">NASA · 7 hari terakhir ▾</button>
@@ -605,6 +621,9 @@ function shapeSVG(sh,fill,size=14,stroke='#111'){
   return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}"><polygon points="${h},1 ${s-1},${h} ${h},${s-1} 1,${h}" fill="${fill}" stroke="${stroke}" stroke-width="1.1"/></svg>`;
 }
 const shapeOf=p=>SENS.find(s=>s.id===sensOf(p)).shape;
+/* ikon titik panas: api, warna = tingkat keyakinan (atau zona); berkedip bila terdeteksi < 24 jam */
+function flameSVG(fill,size=18,fresh=false){return `<svg class="flm${fresh?' fresh':''}" width="${size}" height="${Math.round(size*1.18)}" viewBox="0 0 24 28" aria-hidden="true"><path d="M12 1.5c.7 3.7 3 5.6 5 7.8 1.9 2.1 3.2 4.5 3.2 7.3A8.2 8.2 0 0 1 12 24.8a8.2 8.2 0 0 1-8.2-8.2c0-2.7 1.2-4.7 2.7-6.3.2 1.6 1 2.9 2.3 3.6-.4-4.2 1-8.5 3.2-12.4z" fill="${fill}" stroke="#2A0E00" stroke-width="1.3" stroke-linejoin="round"/><path d="M12 13.4c.5 1.6 1.9 2.5 1.9 4.3a2.2 2.2 0 0 1-1.9 2.4 2.3 2.3 0 0 1-2.3-2.3c0-1.7 1.1-2.8 2.3-4.4z" fill="#FFF3C4" opacity=".92"/></svg>`;}
+const fresh=p=>Date.now()-p.when<=24*36e5;
 const zIdx=p=>(p.ls&&p.ls.length>SI)?zoneOfCode(p.ls[SI],p.kab):Math.max(0,ZN.indexOf(p.z));
 const kmOf=p=>(p.ls&&p.ls.length>SI)?Math.max(0,p.ls[SI]):p.km;
 const evZ=e=>(e.ls&&e.ls.length>SI)?zoneOfCode(e.ls[SI],'Kapuas Hulu'):evZ(e);
@@ -710,13 +729,13 @@ function markerColor(p){return CMODE==='zone'?css(ZCOL[zIdx(p)]):css(CCOL[confLv
 function renderMap(){
   if(!MAP)return; ptsL.clearLayers(); const F=filtered();
   for(const p of [...F].reverse()){
-    const col=markerColor(p), size=zIdx(p)<=1?22:16; const near=zIdx(p)<=2;
-    const html=`<div class="hs-icon" style="position:relative;width:${size}px;height:${size}px">${near?`<svg width="${size*2}" height="${size*2}" style="position:absolute;left:${-size/2}px;top:${-size/2}px;overflow:visible"><circle class="pulse-ring" cx="${size}" cy="${size}" r="${size*.8}" fill="none" stroke="${css('--hi')}" stroke-width="2.5"/></svg>`:''}${shapeSVG(shapeOf(p),col,size)}</div>`;
-    L.marker([p.la,p.lo],{icon:L.divIcon({className:'',html,iconSize:[size,size],iconAnchor:[size/2,size/2]}),keyboard:false}).on('click',()=>detail(p)).addTo(ptsL);
+    const col=markerColor(p), size=zIdx(p)<=1?24:19, hh=Math.round(size*1.18); const near=zIdx(p)<=2;
+    const html=`<div class="hs-icon" style="position:relative;width:${size}px;height:${hh}px">${near?`<svg width="${size*2}" height="${size*2}" style="position:absolute;left:${-size/2}px;top:${hh-size*1.5}px;overflow:visible"><circle class="pulse-ring" cx="${size}" cy="${size}" r="${size*.8}" fill="none" stroke="${css('--hi')}" stroke-width="2.5"/></svg>`:''}${flameSVG(col,size,fresh(p))}</div>`;
+    L.marker([p.la,p.lo],{icon:L.divIcon({className:'',html,iconSize:[size+8,hh+8],iconAnchor:[(size+8)/2,(hh+8)*.62]}),keyboard:false}).on('click',()=>detail(p)).addTo(ptsL);
   }
   // summary panel
   $('#spGrid').innerHTML=SENS.map(s=>{const A=F.filter(p=>sensOf(p)===s.id);const c={hi:0,md:0,lo:0};A.forEach(p=>c[confLvl(p)]++);const dim=SENF.includes(s.id)?'':'opacity:.35';
-    return `<div class="sp-col" style="${dim}"><h4>${s.nm}<b>${A.length}</b></h4>${['hi','md','lo'].map(k=>`<div class="sp-row">${shapeSVG(s.shape,css(CCOL[k]),12)}<span>${c[k]}</span></div>`).join('')}</div>`;}).join('');
+    return `<div class="sp-col" style="${dim}"><h4>${s.nm}<b>${A.length}</b></h4>${['hi','md','lo'].map(k=>`<div class="sp-row">${flameSVG(css(CCOL[k]),12)}<span>${c[k]}</span></div>`).join('')}</div>`;}).join('');
   $('#spPer').textContent=`NASA · ${perTxt()} ▾`;
   // latest card
   const L0=F.find(p=>zIdx(p)<=4)||F[0];
@@ -735,35 +754,54 @@ $('#tcStatus').onclick=()=>openSheet(zonaHelp());
 
 /* ---------- detail sheet ---------- */
 function detail(p){
-  const lvl=confLvl(p), i=zIdx(p);
-  openSheet(`<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px"><span style="width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:var(--surface-2)">${shapeSVG(shapeOf(p),css(CCOL[lvl]),24)}</span>
-  <div><h3>${esc(ZLBL[i])}</h3><span class="zb" style="background:${css(ZCOL[i])}">${esc(ZS[i])}</span> <span class="zb" style="background:${css(CCOL[lvl])};color:${lvl==='md'?'#111':'#fff'}">Keyakinan ${({hi:'tinggi',md:'sedang',lo:'rendah'})[lvl]}</span></div></div>
-  <dl class="kv">
-  <dt>Waktu</dt><dd>${esc(wibShort(p.when))}<small>${p.d} ${p.t.slice(0,2)}:${p.t.slice(2)} UTC · ${p.dn==='D'?'siang':'malam'} · ${ago(p.when)}</small></dd>
-  <dt>Satelit</dt><dd>${esc(satName(p))}</dd>
-  <dt>Keyakinan</dt><dd>${esc(confTxt(p))}</dd>
-  <dt>FRP</dt><dd>${N1(p.frp)} MW<small>energi radiasi api</small></dd>
-  <dt>Suhu kecerahan</dt><dd>${N1(p.bt)} K</dd>
-  <dt>Koordinat</dt><dd class="num">${p.la.toFixed(5)}, ${p.lo.toFixed(5)}</dd>
-  <dt>Jarak ke desa</dt><dd>${i<=1?'di dalam':N1(kmOf(p))+' km'}</dd>
-  ${p.pt?`<dt>Petak patroli</dt><dd>${esc(p.pt)}</dd>`:''}
-  ${p.kw?`<dt>Fungsi kawasan</dt><dd>${esc(p.kw)}</dd>`:''}
-  ${p.tl?`<dt>Tutupan 2026</dt><dd>${esc(p.tl)}</dd>`:''}
-  ${p.gb?`<dt>Gambut</dt><dd>${esc(p.gb)}</dd>`:''}
-  <dt>Luas piksel</dt><dd>${N1(p.ha)} ha<small>bukan luas terbakar</small></dd>
-  <dt>Status data</dt><dd>${p.st==='SP'?'Arsip final NASA (SP)':'Near Real-Time (NRT)'}</dd>
-  ${p.ev?`<dt>ID kejadian</dt><dd class="num" style="font-size:12.5px">${esc(p.ev)}</dd>`:''}
-  </dl>
-  <div class="btnrow">
-   <a class="btn pri tap" href="https://www.google.com/maps/dir/?api=1&destination=${p.la},${p.lo}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3L3 10.5l7.2 2.3L12.5 20z"/></svg>Rute ke lokasi</a>
-   <button class="btn tap" id="cpy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>Salin koordinat</button>
-   <a class="btn full tap" href="https://firms.modaps.eosdis.nasa.gov/map/#d:${p.d}..${p.d};@${p.lo.toFixed(4)},${p.la.toFixed(4)},14.0z" target="_blank" rel="noopener">Verifikasi di NASA FIRMS ↗</a>
-  </div>`);
-  $('#cpy').onclick=async e=>{try{await navigator.clipboard.writeText(`${p.la.toFixed(5)}, ${p.lo.toFixed(5)}`);e.currentTarget.lastChild.textContent='Tersalin ✓';}catch(x){e.currentTarget.lastChild.textContent=`${p.la.toFixed(5)}, ${p.lo.toFixed(5)}`;}};
+  const lvl=confLvl(p), i=zIdx(p), ll=`${p.la.toFixed(5)}, ${p.lo.toFixed(5)}`;
+  const HG={hi:'linear-gradient(160deg,#F2361F,#B3170E)',md:'linear-gradient(160deg,#F5871F,#C24E05)',lo:'linear-gradient(160deg,#E9B21A,#A87600)'}[lvl];
+  const sen=p.ins==='MODIS'?'MODIS':'VIIRS', res=p.ins==='MODIS'?'1 km':'375 m';
+  const row=(k,v,sm)=>`<div class="hd-r"><span>${k}</span><b>${v}${sm?`<small>${sm}</small>`:''}</b></div>`;
+  openSheet(`<div class="hd-top" style="background:${HG}"><div class="hd-ic">${flameSVG('#fff',34,fresh(p))}</div>
+    <div class="hd-t">Titik panas terdeteksi</div><div class="hd-s">Titik panas ${esc(satName(p))}</div>
+    <div class="hd-ago">${ago(p.when)}</div><div class="hd-s">${esc(wibFull(p.when))} WIB</div><div class="hd-src">NASA FIRMS · ${sen} · ${p.st==='SP'?'arsip final (SP)':'near real-time (NRT)'}</div></div>
+   <div class="hd-sec">Deteksi</div>
+   ${row('Sensor',sen,`resolusi piksel ${res}`)}${row('Satelit',esc(satName(p).replace(/^(VIIRS|MODIS) /,'')))}${row('Tingkat kepercayaan',`<span class="zb" style="background:${css(CCOL[lvl])};color:${lvl==='md'?'#111':'#fff'}">${esc(confTxt(p))}</span>`)}
+   ${row('Siang atau malam',p.dn==='D'?'Siang':'Malam')}${row('Kekuatan radiasi api (FRP)',N1(p.frp)+' MW')}${row('Suhu kecerahan',N1(p.bt)+' K')}
+   ${row('Waktu satelit (UTC)',`${p.d} ${p.t.slice(0,2)}:${p.t.slice(2)}`)}${row('Koordinat',`<span class="num">${ll}</span>`)}${row('Luas piksel',N1(p.ha)+' ha','bukan luas terbakar')}
+   <details class="hd-help"><summary>Apa arti warna titik panas?</summary><p>Warna = <b>tingkat kepercayaan</b> NASA bahwa piksel itu benar api: <b style="color:${css('--hi')}">merah</b> tinggi, <b style="color:${css('--md')}">jingga/kuning</b> sedang (nominal), <b style="color:${css('--lo')}">kuning muda</b> rendah. Ikon berdenyut = terdeteksi &lt; 24 jam. FRP makin besar = api makin kuat. Satu titik mewakili satu piksel (${res}), api sebenarnya bisa lebih kecil.</p></details>
+   <div class="hd-sec">Lokasi</div>
+   ${row('Zona',`<span class="zb" style="background:${css(ZCOL[i])}">${esc(ZS[i])}</span>`)}${row('Jarak ke desa',i<=1?'di dalam':N1(kmOf(p))+' km')}
+   <div class="hd-r"><span>Wilayah</span><b id="hdW">memuat…</b></div>
+   ${p.pt?row('Petak patroli',esc(p.pt)):''}${p.kw?row('Fungsi kawasan',esc(p.kw)):''}${p.tl?row('Tutupan 2026',esc(p.tl)):''}${p.gb?row('Gambut',esc(p.gb)):''}${p.ev?row('ID kejadian',`<span class="num" style="font-size:12px">${esc(p.ev)}</span>`):''}
+   <div class="hd-sec">Angin di lokasi · saat ini</div><div id="hdA" class="hd-box"><span class="small muted">Memuat ECMWF…</span></div>
+   <div class="hd-sec">Lintasan satelit berikutnya</div><div id="hdL" class="hd-box"><span class="small muted">Menghitung orbit…</span></div>
+   <div class="hd-act">
+    <button class="tap" id="hdK"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Koordinat</button>
+    <a class="tap" href="https://www.google.com/maps/dir/?api=1&destination=${p.la},${p.lo}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3L3 10.5l7.2 2.3L12.5 20z"/></svg>Rute</a>
+    <button class="tap" id="hdC"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Kompas</button>
+    <button class="tap" id="hdW2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/></svg>Angin</button>
+   </div>
+   <a class="btn full tap" style="width:100%;margin-top:10px" href="https://firms.modaps.eosdis.nasa.gov/map/#d:${p.d}..${p.d};@${p.lo.toFixed(4)},${p.la.toFixed(4)},14.0z" target="_blank" rel="noopener">Verifikasi di NASA FIRMS ↗</a>`);
+  $('#hdK').onclick=async e=>{const t=`${ll}\nhttps://www.google.com/maps?q=${p.la},${p.lo}`;try{if(navigator.share)await navigator.share({title:'Titik panas '+wibShort(p.when),text:t});else{await navigator.clipboard.writeText(ll);e.currentTarget.lastChild.textContent='Tersalin ✓';}}catch(x){}};
+  $('#hdC').onclick=()=>openKompas({lat:p.la,lon:p.lo,label:'Arah ke titik panas · '+wibShort(p.when)});
+  $('#hdW2').onclick=()=>{closeAll();go('home');setTimeout(()=>{MAP.flyTo([p.la,p.lo],Math.max(MAP.getZoom(),9),{duration:.6});windOn(true);},150);};
+  if(window.FHWilayah)FHWilayah.lookup(p.la,p.lo).then(w=>{const e=$('#hdW');if(e)e.textContent=w?FHWilayah.label(w):'di luar batas desa BPS';}).catch(()=>{const e=$('#hdW');if(e)e.textContent='–';});
+  if(window.FHAngin)FHAngin.at(p.la,p.lo).then(A=>{const e=$('#hdA');if(!e)return;
+    e.innerHTML=`<div class="hd-wind"><div class="hd-arrow" style="transform:rotate(${A.ke}deg)"><svg viewBox="0 0 24 24" width="40" height="40"><path d="M12 2l6 14-6-3.5L6 16z" fill="#1F6FC5"/></svg></div>
+     <div><b style="font-size:20px">${N1(A.kmj)} km/jam</b>${A.hembus!=null?` <span class="small muted">hembusan ${N1(A.hembus)}</span>`:''}<div class="small">dari <b>${A.dariTxt}</b> (${Math.round(A.dari)}°) → asap/api cenderung bergerak ke <b>${A.keTxt}</b></div></div></div>
+     <div class="hd-hrs">${A.jam.filter((_,k)=>k%3===0).map(h=>`<div><span>${h.t.slice(11,16)}</span><i style="transform:rotate(${(h.dari+180)%360}deg)">↑</i><b>${Math.round(h.kmj)}</b></div>`).join('')}</div>
+     <p class="small muted" style="margin:6px 0 0">Angin 10 m model ECMWF IFS 0,25° (via Open-Meteo), waktu setempat, km/jam. Panah = arah angin bertiup.</p>`;}).catch(()=>{const e=$('#hdA');if(e)e.innerHTML='<span class="small muted">Data angin belum dapat dimuat (perlu internet).</span>';});
+  if(window.FHLintas)FHLintas.next(p.la,p.lo,5).then(P=>{const e=$('#hdL');if(!e)return;const f=t=>t.toLocaleString('id-ID',{weekday:'short',hour:'2-digit',minute:'2-digit'});const inn=t=>{const m=Math.round((t-Date.now())/6e4);return m<60?`dalam ${m} menit`:`dalam ${Math.floor(m/60)} j ${m%60} m`;};
+    e.innerHTML=P.list.map(x=>`<div class="hd-pass"><span class="b">${x.sensor}</span><b>${x.nama}</b><span>${f(x.t)}</span><span class="muted">${inn(x.t)}${x.tepi?' · tepi sapuan':''}</span></div>`).join('')+`<p class="small muted" style="margin:6px 0 0">Dihitung dari orbit satelit (TLE CelesTrak ${esc(P.tle)} UTC, model SGP4) untuk koordinat titik ini, dalam waktu HP Anda. Uji terhadap deteksi FIRMS: selisih 0–3 menit. Hasil di NASA FIRMS biasanya muncul ±3 jam setelah satelit lewat.</p>`;}).catch(()=>{const e=$('#hdL');if(e)e.innerHTML='<span class="small muted">Belum dapat dihitung (perlu internet sekali untuk data orbit).</span>';});
 }
-
+/* ---------- kompas ---------- */
+let KOMP=null;
+function openKompas(target){closeAll();setTimeout(()=>openPage('Kompas','Arah · GPS · matahari','<div class="pad" id="kpBox"></div>',()=>{KOMP=FHKompas.mount($('#kpBox'),{target:target||null,hotspots:ALL});const pg=$('#page');const ob=new MutationObserver(()=>{if(!pg.classList.contains('on')){if(KOMP)KOMP.destroy();KOMP=null;ob.disconnect();}});ob.observe(pg,{attributes:true,attributeFilter:['class']});}),80);}
+/* ---------- angin ---------- */
+let WIND=null;
+function windOn(v){if(!window.FHAngin||!MAP)return;if(!WIND)WIND=FHAngin.layer(MAP,{z:450});const fb=$('#fabWind');
+  if(v){WIND.on();WIND.panel($('#windPanel'),()=>{fb&&fb.setAttribute('aria-pressed','false');$('#windPanel').hidden=true;});$('#sumpanel').style.visibility='hidden';}
+  else{WIND.off();$('#windPanel').hidden=true;}
+  if(!v)$('#sumpanel').style.visibility='';fb&&fb.setAttribute('aria-pressed',String(v));}
 /* ---------- list sheet ---------- */
-function ptRow(p){const i=zIdx(p);return `<button class="pt tap" data-k="${esc(p.k)}"><span class="sh">${shapeSVG(shapeOf(p),markerColor(p),16)}</span><span class="m"><b>${esc(locTxt(p))}</b><small>${esc(wibShort(p.when))} · ${esc(satName(p))}</small></span><span class="r">${i<=1?'0':N1(kmOf(p))} km<small>${N1(p.frp)} MW</small></span></button>`;}
+function ptRow(p){const i=zIdx(p);return `<button class="pt tap" data-k="${esc(p.k)}"><span class="sh">${flameSVG(markerColor(p),16,fresh(p))}</span><span class="m"><b>${esc(locTxt(p))}</b><small>${esc(wibShort(p.when))} · ${esc(satName(p))}</small></span><span class="r">${i<=1?'0':N1(kmOf(p))} km<small>${N1(p.frp)} MW</small></span></button>`;}
 function bindPts(root,list){root.querySelectorAll('.pt').forEach(b=>b.onclick=()=>{const p=list.find(x=>x.k===b.dataset.k);if(!p)return;closeAll();go('home');setTimeout(()=>{MAP.flyTo([p.la,p.lo],13,{duration:.8});setTimeout(()=>detail(p),850);},120);});}
 $('#fabList').onclick=()=>{const F=filtered().filter(p=>zIdx(p)<=4);
   const cnt=[0,1,2,3,4].map(i=>F.filter(p=>zIdx(p)===i).length);
@@ -783,7 +821,8 @@ function filterSheet(){
   $$('#fSen .optc').forEach(b=>b.onclick=()=>{const s=b.dataset.s;SENF=SENF.includes(s)?SENF.filter(x=>x!==s):[...SENF,s];if(!SENF.length)SENF=[s];store.set('sens',SENF);$$('#fSen .optc').forEach(x=>x.setAttribute('aria-pressed',String(SENF.includes(x.dataset.s))));renderMap();});
   $$('#fCol .chip').forEach(b=>b.onclick=()=>{CMODE=b.dataset.m;store.set('cmode',CMODE);$$('#fCol .chip').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));renderMap();});
 }
-$('#fabSat').onclick=filterSheet;$('#spPer').onclick=filterSheet;
+$('#fabSat').onclick=filterSheet;
+$('#fabWind').onclick=()=>windOn(!(WIND&&WIND.isOn()));$('#fabKompas').onclick=()=>openKompas(null);$('#spPer').onclick=filterSheet;
 $('#fabLayer').onclick=()=>{const cur=store.get('base','terbaik');
   openSheet(`<h3>Lapisan peta</h3><p class="sub">Peta dasar dan citra</p><div class="opts" id="lyB">${[['terbaik','Citra satelit jelas (disarankan)','Sentinel-2 bebas awan 2025 + resolusi tinggi saat diperbesar'],['esri','Citra resolusi tinggi saja','Esri 30–60 cm · tanggal rekam beda tiap lokasi'],['s2026','Sentinel-2 6 bulan terakhir','Paling baru, 10 m · bisa tertutup awan/asap'],['eox','Sentinel-2 bebas awan 2025','Mosaik tahunan EOX 10 m'],['topo','Topografi','Esri World Topo'],['osm','Jalan & pemukiman','OpenStreetMap']].map(([k,t,s])=>`<button class="optc" data-b="${k}" aria-pressed="${cur===k}"><span class="rd"></span><span><b>${t}</b><small>${s}</small></span></button>`).join('')}</div>
   <div class="lbl">Tambahan</div><div class="opts"><button class="optc" id="lyS2" aria-pressed="${MAP.hasLayer(base.s2)}"><span class="rd"></span><span><b>Citra Sentinel-2 10 Agustus 2026</b><small>Komposit warna asli, bebas awan, area desa</small></span></button></div>
@@ -796,7 +835,8 @@ $('#fabLayer').onclick=()=>{const cur=store.get('base','terbaik');
    <div><i style="display:inline-block;width:22px;border-top:2.5px dashed #E8A317;vertical-align:middle;margin-right:8px"></i>Radius 5 km</div>
    <div><i style="display:inline-block;width:22px;border-top:2.5px dashed #C9B21E;vertical-align:middle;margin-right:8px"></i>Radius 25 km</div>
    <div><i style="display:inline-block;width:22px;border-top:2.5px solid #5AA9E6;vertical-align:middle;margin-right:8px"></i>Sungai utama</div>
-   <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px">${SENS.map(s=>`<span style="display:inline-flex;gap:6px;align-items:center">${shapeSVG(s.shape,'#8A968F',14)}${s.nm}</span>`).join('')}</div></div>`);
+   <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px">${['hi','md','lo'].map(k=>`<span style="display:inline-flex;gap:6px;align-items:center">${flameSVG(css(CCOL[k]),14)}Keyakinan ${({hi:'tinggi',md:'sedang',lo:'rendah'})[k]}</span>`).join('')}</div>
+   <div class="small muted">Ikon api berdenyut = terdeteksi dalam 24 jam terakhir. Satelit pendeteksi tertera di detail titik.</div></div>`);
   $$('#lyB .optc').forEach(b=>b.onclick=()=>{['terbaik','s2026','eox','esri','topo','osm'].forEach(k=>MAP.removeLayer(base[k]));base[b.dataset.b].addTo(MAP);store.set('base',b.dataset.b);imgInfo();$$('#lyB .optc').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});
   $('#lyTCL').onclick=e=>{if(!TCL)TCL=L.tileLayer('https://tiles.globalforestwatch.org/umd_tree_cover_loss/latest/dynamic/{z}/{x}/{y}.png',{maxNativeZoom:12,maxZoom:18,opacity:.85,attribution:'Hansen/UMD/Google/USGS/NASA · Global Forest Watch'});const on=!MAP.hasLayer(TCL);on?TCL.addTo(MAP):MAP.removeLayer(TCL);e.currentTarget.setAttribute('aria-pressed',String(on));};
   $('#lyPH').onclick=async e=>{const b=e.currentTarget;if(PHL&&MAP.hasLayer(PHL)){MAP.removeLayer(PHL);b.setAttribute('aria-pressed','false');return;}
@@ -1183,6 +1223,9 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(
 <script src="assets/wilayah.js"></script>
 <script src="assets/meteogram.js"></script>
 <script src="assets/cari_lokasi.js"></script>
+<script src="assets/lintasan.js"></script>
+<script src="assets/angin.js"></script>
+<script src="assets/kompas.js"></script>
 <script src="assets/peta_ecmwf.js"></script>
 <script src="assets/lokasi_saya.js"></script>
 <script src="assets/peta3d.js"></script>
