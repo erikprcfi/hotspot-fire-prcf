@@ -1,13 +1,17 @@
 /* Akun pengguna aplikasi HP – Fire Hotspot PRCF
  * Daftar sekali di aplikasi; setelah itu langsung masuk tanpa login. Profil: nama, tanggal lahir, alamat,
  * email, nomor HP, foto profil.
- * Data disimpan HANYA di perangkat ini (IndexedDB) – tidak dikirim ke server mana pun.
+ * Data disimpan di perangkat (IndexedDB) dan – dengan persetujuan pengguna – dikirim ke database pengguna
+ * Yayasan PRCF Indonesia (Google Sheets melalui Google Apps Script). Kata sandi TIDAK pernah dikirim.
  * Kata sandi tidak disimpan; yang disimpan hanya sidik PBKDF2-SHA-256 (210.000 iterasi) dengan garam acak.
  * Pemakaian: FHAkun.init({ pushLayer, back }); FHAkun.gate(lanjut); FHAkun.openProfile(); FHAkun.avatar(px)
  */
 (function () {
 'use strict';
 const DBN = 'fh-akun', ST = 'kv', ITER = 210000;
+// URL aplikasi web Google Apps Script (database pengguna PRCF). Kosong = belum aktif, data tetap di HP.
+const ENDPOINT = window.FH_AKUN_URL || '';
+const KUNCI = 'fh-prcf-2026-akun', VERSI = '2026.10';
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const BLN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 const tglID = s => { if (!s) return ''; const [y, m, d] = s.split('-').map(Number); return `${d} ${BLN[m - 1]} ${y}`; };
@@ -26,6 +30,30 @@ async function hashPw(pw, saltB64) {
   return { salt: b64(salt), hash: b64(bits), iter: ITER };
 }
 const notify = () => subs.forEach(f => { try { f(U); } catch (e) { } });
+
+/* ---------- sinkronisasi ke database PRCF ---------- */
+let syncing = false;
+const dev = () => { const ua = navigator.userAgent; const m = /Android [\d.]+/.exec(ua) || /iPhone OS [\d_]+/.exec(ua) || /iPad; CPU OS [\d_]+/.exec(ua) || /Windows NT [\d.]+/.exec(ua) || /Mac OS X [\d_]+/.exec(ua); return (m ? m[0].replace(/_/g, '.') : 'Perangkat lain') + (/wv|standalone/.test(ua) || (window.matchMedia && matchMedia('(display-mode: standalone)').matches) ? ' · aplikasi terpasang' : ' · browser'); };
+async function mark(kind) { if (!U) return; if (!U.id) U.id = crypto.randomUUID(); if (kind === 'profil') U.kirimProfil = true; if (kind === 'foto') { U.kirimFoto = true; U.kirimProfil = true; } await put('akun', U); return flush(false); }
+async function flush(ping) {
+  if (!ENDPOINT || syncing || !U || !U.setuju || (navigator.onLine === false)) return;
+  if (!U.id) { U.id = crypto.randomUUID(); await put('akun', U); }
+  const first = !U.terkirim, doPing = ping && Date.now() - (U.pingT || 0) > 3 * 36e5;
+  if (!first && !doPing && !U.kirimProfil && !U.kirimFoto) return;
+  syncing = true;
+  try {
+    const p = { kunci: KUNCI, aksi: first ? 'daftar' : doPing ? 'aktif' : 'ubah', id: U.id, lokasi: OPT.lokasi ? OPT.lokasi() : '', perangkat: dev(), versi: VERSI };
+    if (first || U.kirimProfil) p.profil = { nama: U.nama, lahir: U.lahir, alamat: U.alamat, email: U.email, hp: U.hp, dibuat: U.dibuat, diubah: U.diubah };
+    if (first || U.kirimFoto) p.foto = U.foto ? U.foto.split(',')[1] : '';
+    const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 30000);
+    const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(p), signal: ctl.signal }); clearTimeout(tm);
+    const j = await r.json();
+    if (j.ok) { U.terkirim = true; U.kirimProfil = false; U.kirimFoto = false; if (first || doPing) U.pingT = Date.now(); U.sinkronT = new Date().toISOString(); await put('akun', U); notify(); }
+    else console.warn('Database pengguna menolak:', j.galat);
+  } catch (e) { console.warn('Sinkron akun tertunda:', e.message); } finally { syncing = false; }
+}
+async function sendDelete() { if (!ENDPOINT || !U || !U.terkirim || !U.id) return; try { const ctl = new AbortController(); setTimeout(() => ctl.abort(), 8000); await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ kunci: KUNCI, aksi: 'hapus', id: U.id }), signal: ctl.signal }); } catch (e) { } }
+window.addEventListener('online', () => flush(false));
 
 /* ---------- validasi ---------- */
 const V = {
@@ -181,7 +209,8 @@ function photoMenu() {
 /* ---------- layar: selamat datang / daftar / masuk ---------- */
 function screen(html) { const d = document.createElement('div'); d.className = 'ak'; d.setAttribute('role', 'dialog'); d.innerHTML = html; document.body.appendChild(d); bindEyes(d); return d; }
 const hero = (h, p, cls = '') => `<div class="ak-hero ${cls}"><div class="lg"><img src="assets/logo_fh.svg" alt=""><div><b>Fire Hotspot</b><small>Yayasan PRCF Indonesia</small></div></div><h1>${h}</h1><p>${p}</p></div>`;
-const privacy = `<div class="ak-note">${svg('shield', 18)}<span>Data akun dan foto disimpan <b>hanya di HP ini</b>, tidak dikirim ke server mana pun. Kata sandi disimpan dalam bentuk terenkripsi satu arah.</span></div>`;
+const privacy = `<div class="ak-note">${svg('shield', 18)}<span>Biodata dan foto disimpan di HP ini dan dikirim ke <b>database pengguna Yayasan PRCF Indonesia</b> untuk administrasi pengguna aplikasi. Data tidak dibagikan ke pihak lain. <b>Kata sandi tidak pernah dikirim</b>; di HP disimpan terenkripsi satu arah.</span></div>`;
+const SETUJU = 'Saya menyetujui biodata dan foto saya disimpan dan diolah oleh Yayasan PRCF Indonesia untuk administrasi pengguna aplikasi Fire Hotspot, sesuai UU No. 27 Tahun 2022 tentang Pelindungan Data Pribadi. Saya dapat mengubah atau menghapus akun kapan saja.';
 
 function registerScreen(onDone) {
   let foto = null;
@@ -196,7 +225,7 @@ function registerScreen(onDone) {
        <button class="ak-btn" id="akN1">Lanjut</button></div></div>
      <div data-s="2" hidden><h2>Keamanan akun</h2><p class="mut">Buat kata sandi untuk melindungi profil Anda.</p>
       <div class="ak-f">${field('pw', 'Kata sandi', 'lock', 'password', '', 'autocomplete="new-password"')}${field('pw2', 'Ulangi kata sandi', 'lock', 'password', '', 'autocomplete="new-password"')}
-       ${privacy}<label class="ak-chk"><input type="checkbox" id="akOk"><span>Saya menyetujui data di atas disimpan di perangkat ini untuk keperluan profil aplikasi Fire Hotspot.</span></label>
+       ${privacy}<label class="ak-chk"><input type="checkbox" id="akOk"><span>${SETUJU}</span></label>
        <button class="ak-btn" id="akDaftar">Daftar &amp; masuk</button><button class="ak-btn alt" id="akB1">Kembali</button></div></div></div>`);
   pwMeter(d, 'pw');
   d.querySelector('#akFoto').onclick = async () => { const r = await photoMenu(); if (r === undefined) return; foto = r; d.querySelector('#akPh').innerHTML = foto ? `<img src="${foto}" alt="">` : svg('user', 44); };
@@ -210,9 +239,9 @@ function registerScreen(onDone) {
     const b = d.querySelector('#akDaftar'); b.disabled = true; b.textContent = 'Menyimpan…';
     try {
       const h = await hashPw(d.querySelector('#ak_pw').value), v = id => d.querySelector('#ak_' + id).value.trim();
-      U = { nama: v('nama'), lahir: v('lahir'), alamat: v('alamat'), email: v('email').toLowerCase(), hp: normHP(v('hp')), foto, dibuat: new Date().toISOString(), diubah: new Date().toISOString(), pw: h };
+      U = { nama: v('nama'), lahir: v('lahir'), alamat: v('alamat'), email: v('email').toLowerCase(), hp: normHP(v('hp')), foto, dibuat: new Date().toISOString(), diubah: new Date().toISOString(), pw: h, id: crypto.randomUUID(), setuju: true, setujuT: new Date().toISOString() };
       await put('akun', U); await put('sesi', { masuk: true, t: Date.now() }); try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) { }
-      d.remove(); notify(); toast(`Selamat datang, ${U.nama.split(' ')[0]}!`); onDone();
+      d.remove(); notify(); toast(`Selamat datang, ${U.nama.split(' ')[0]}!`); onDone(); flush(true);
     } catch (e) { console.error(e); b.disabled = false; b.textContent = 'Daftar & masuk'; toast('Gagal menyimpan: ' + e.message); }
   };
 }
@@ -228,10 +257,10 @@ function loginScreen(onDone) {
     b.disabled = true; b.textContent = 'Memeriksa…';
     const h = await hashPw(pw, U.pw.salt);
     if (h.hash !== U.pw.hash) { setErr(d, 'pw', 'Kata sandi salah.'); b.disabled = false; b.textContent = 'Masuk'; return; }
-    await put('sesi', { masuk: true, t: Date.now() }); d.remove(); notify(); onDone();
+    await put('sesi', { masuk: true, t: Date.now() }); d.remove(); notify(); onDone(); flush(true);
   };
   d.querySelector('#akIn').onclick = go; d.querySelector('#ak_pw').onkeydown = e => { if (e.key === 'Enter') go(); };
-  d.querySelector('#akLupa').onclick = () => confirmSheet('Atur ulang akun?', 'Akun hanya tersimpan di HP ini, sehingga kata sandi tidak dapat dipulihkan. Anda dapat menghapus akun di perangkat ini lalu mendaftar ulang. Data pemantauan tidak terpengaruh.', 'Hapus & daftar ulang', async () => { await del('akun'); await del('sesi'); U = null; d.remove(); notify(); registerScreen(onDone); });
+  d.querySelector('#akLupa').onclick = () => confirmSheet('Atur ulang akun?', 'Akun hanya tersimpan di HP ini, sehingga kata sandi tidak dapat dipulihkan. Anda dapat menghapus akun di perangkat ini lalu mendaftar ulang. Data pemantauan tidak terpengaruh.', 'Hapus & daftar ulang', async () => { await sendDelete(); await del('akun'); await del('sesi'); U = null; d.remove(); notify(); registerScreen(onDone); });
 }
 function confirmSheet(title, text, okTxt, onOk) {
   const sh = document.createElement('div'); sh.className = 'ak-sheet ak';
@@ -255,16 +284,17 @@ function openProfile() {
        <div class="ak-grp"><div class="ak-prog"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>Kelengkapan profil</span><span>${pct}%</span></div><div class="bar" style="margin-top:8px"><i style="width:${pct}%"></i></div><p>${pct < 100 ? (U.foto ? 'Lengkapi biodata Anda.' : 'Tambahkan foto profil agar profil Anda lengkap.') : 'Profil Anda sudah lengkap.'}</p></div></div>
        <div class="ak-grp"><h3>Biodata</h3>${items.map(([k, l, ic, v]) => `<button class="ak-row" data-ed="${k}"><span class="ic">${svg(ic)}</span><span class="m"><small>${l}</small><b class="${v ? '' : 'empty'}">${esc(v || 'Belum diisi')}</b></span><span class="ch">${svg('edit', 18)}</span></button>`).join('')}</div>
        <div class="ak-grp"><h3>Keamanan</h3><button class="ak-row" id="pfPw"><span class="ic">${svg('lock')}</span><span class="m"><b>Ubah kata sandi</b><small>Terakhir diubah ${tglID((U.pwDiubah || U.dibuat).slice(0, 10))}</small></span><span class="ch">${svg('chev', 18)}</span></button>
-        <div class="ak-row" style="align-items:flex-start"><span class="ic">${svg('shield')}</span><span class="m"><b>Privasi data</b><small style="font-weight:500;margin-top:2px;line-height:1.45">Biodata dan foto hanya tersimpan di HP ini dan tidak dikirim ke server. Menghapus data aplikasi atau browser akan menghapus akun ini.</small></span></div></div>
+        <button class="ak-row" id="pfPriv" style="align-items:flex-start"><span class="ic">${svg('shield')}</span><span class="m"><b>Privasi data</b><small style="font-weight:500;margin-top:2px;line-height:1.45">${U.setuju ? `Biodata dan foto tersinkron ke database pengguna Yayasan PRCF Indonesia${U.sinkronT ? ' (terakhir ' + tglID(U.sinkronT.slice(0, 10)) + ')' : ' (menunggu pengiriman)'}. Kata sandi tidak pernah dikirim. Menghapus akun juga menghapus biodata Anda di database.` : 'Biodata hanya tersimpan di HP ini. Ketuk untuk menyetujui pengiriman ke database PRCF.'}</small></span></button></div>
        <div class="ak-grp"><button class="ak-row" id="pfOut"><span class="ic">${svg('out')}</span><span class="m"><b>Keluar</b><small>Perlu kata sandi untuk masuk lagi</small></span></button>
         <button class="ak-row" id="pfDel" style="color:var(--crit)"><span class="ic" style="color:var(--crit);background:var(--crit-soft)">${svg('trash')}</span><span class="m"><b>Hapus akun dari perangkat</b></span></button></div>
        <p class="mut" style="text-align:center;font-size:11.5px;margin:4px 0 0">Fire Hotspot · Yayasan PRCF Indonesia</p></div>`;
     d.querySelector('#pfBack').onclick = () => closeProfile(true);
-    d.querySelector('#pfFoto').onclick = async () => { const r = await photoMenu(); if (r === undefined) return; U.foto = r; U.diubah = new Date().toISOString(); await put('akun', U); notify(); render(); toast(r ? 'Foto profil diperbarui' : 'Foto profil dihapus'); };
+    d.querySelector('#pfFoto').onclick = async () => { const r = await photoMenu(); if (r === undefined) return; U.foto = r; U.diubah = new Date().toISOString(); await put('akun', U); notify(); render(); mark('foto'); toast(r ? 'Foto profil diperbarui' : 'Foto profil dihapus'); };
     d.querySelectorAll('[data-ed]').forEach(b => b.onclick = () => editSheet(b.dataset.ed, render));
     d.querySelector('#pfPw').onclick = () => pwSheet(render);
+    d.querySelector('#pfPriv').onclick = () => { if (!U.setuju) consentSheet(render); };
     d.querySelector('#pfOut').onclick = () => confirmSheet('Keluar dari akun?', 'Anda perlu memasukkan kata sandi untuk masuk kembali.', 'Keluar', async () => { await put('sesi', { masuk: false, t: Date.now() }); closeProfile(true); notify(); loginScreen(() => { }); });
-    d.querySelector('#pfDel').onclick = () => confirmSheet('Hapus akun dari perangkat?', 'Biodata, foto dan kata sandi di HP ini akan dihapus permanen. Data pemantauan kebakaran tidak terpengaruh.', 'Hapus akun', async () => { await del('akun'); await del('sesi'); U = null; closeProfile(true); notify(); registerScreen(() => { }); });
+    d.querySelector('#pfDel').onclick = () => confirmSheet('Hapus akun dari perangkat?', 'Biodata, foto dan kata sandi di HP ini akan dihapus permanen, dan biodata serta foto Anda di database PRCF ikut dihapus. Data pemantauan kebakaran tidak terpengaruh.', 'Hapus akun', async () => { await sendDelete(); await del('akun'); await del('sesi'); U = null; closeProfile(true); notify(); registerScreen(() => { }); });
   };
   render();
   if (OPT.pushLayer) OPT.pushLayer(() => closeProfile(false));
@@ -277,7 +307,7 @@ function editSheet(k, after) {
   document.body.appendChild(sh); setTimeout(() => sh.querySelector('#ak_' + k).focus(), 250);
   sh.onclick = e => { if (e.target === sh) sh.remove(); }; sh.querySelector('[data-x]').onclick = () => sh.remove();
   sh.querySelector('[data-ok]').onclick = async () => { if (!check(sh, [k])) return; let v = sh.querySelector('#ak_' + k).value.trim(); if (k === 'hp') v = normHP(v); if (k === 'email') v = v.toLowerCase();
-    U[k] = v; U.diubah = new Date().toISOString(); await put('akun', U); sh.remove(); notify(); after(); toast('Tersimpan'); };
+    U[k] = v; U.diubah = new Date().toISOString(); await put('akun', U); sh.remove(); notify(); after(); toast('Tersimpan'); mark('profil'); };
 }
 function pwSheet(after) {
   const sh = document.createElement('div'); sh.className = 'ak-sheet ak';
@@ -291,6 +321,14 @@ function pwSheet(after) {
   };
 }
 
+function consentSheet(after) {
+  const sh = document.createElement('div'); sh.className = 'ak-sheet ak';
+  sh.innerHTML = `<div class="in"><div class="gr"></div><h2>Sinkronkan profil ke database PRCF?</h2><p class="mut" style="font-size:14px">Agar Yayasan PRCF Indonesia dapat mengelola pengguna aplikasi, biodata dan foto profil Anda akan dikirim ke database pengguna PRCF. Kata sandi tidak dikirim.</p>
+    <label class="ak-chk" style="margin-bottom:14px"><input type="checkbox" id="akOk2"><span>${SETUJU}</span></label><div class="ak-two"><button class="ak-btn alt" data-x>Nanti</button><button class="ak-btn" data-ok>Setuju</button></div></div>`;
+  document.body.appendChild(sh); sh.querySelector('[data-x]').onclick = () => { U.tanyaT = Date.now(); put('akun', U); sh.remove(); };
+  sh.querySelector('[data-ok]').onclick = async () => { if (!sh.querySelector('#akOk2').checked) { toast('Centang persetujuan terlebih dahulu'); return; } U.setuju = true; U.setujuT = new Date().toISOString(); if (!U.id) U.id = crypto.randomUUID(); await put('akun', U); sh.remove(); toast('Terima kasih'); flush(true); after && after(); };
+}
+
 /* ---------- API ---------- */
 async function gate(next) {
   css();
@@ -299,6 +337,7 @@ async function gate(next) {
   if (!U) return registerScreen(next);
   if (!sesi || !sesi.masuk) return loginScreen(next);
   next();
+  if (ENDPOINT && !U.setuju && Date.now() - (U.tanyaT || 0) > 7 * 864e5) setTimeout(() => consentSheet(), 2500); else flush(true);
 }
 function avatar(px = 34) { return `<span class="ak-mini" style="width:${px}px;height:${px}px">${U ? avatarInner(U) : svg('user', Math.round(px * .55))}</span>`; }
 window.FHAkun = { init: o => { OPT = o || {}; css(); }, gate, openProfile, avatar, user: () => U, onChange: f => subs.push(f), firstName: () => U ? U.nama.split(' ')[0] : '' };
