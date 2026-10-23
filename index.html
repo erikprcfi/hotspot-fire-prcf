@@ -574,10 +574,10 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 /* ---------- map ---------- */
 const map=L.map('map',{zoomSnap:.25,preferCanvas:true}); window.FHMAP=map;
 const IMGC=L.control({position:'bottomright'});IMGC.onAdd=()=>{const d=L.DomUtil.create('div','imgc');d.style.cssText='background:rgba(10,20,15,.72);color:#fff;font:600 11px system-ui;padding:4px 9px;border-radius:999px;margin-bottom:4px';return d;};IMGC.addTo(map);
-let IMGT=0;const imgInfo=()=>{clearTimeout(IMGT);IMGT=setTimeout(async()=>{const k=[['s2026',s2026],['eox',eox],['esri',esri]].find(([,l])=>map.hasLayer(l));const el=IMGC.getContainer();if(!k){el.style.display='none';return;}const c=map.getCenter();el.textContent='🛰 '+await FHCitra.info(k[0],c.lat,c.lng);el.style.display='';},400);};map.on('moveend baselayerchange',imgInfo);
-const CIT=FHCitra.leaflet(L),esri=CIT.esri,s2026=CIT.s2026,eox=CIT.eox;
+let IMGT=0;const imgInfo=()=>{clearTimeout(IMGT);IMGT=setTimeout(async()=>{const k=[['terbaik',terbaik],['s2026',s2026],['eox',eox],['esri',esri]].find(([,l])=>map.hasLayer(l));const el=IMGC.getContainer();if(!k){el.style.display='none';return;}const c=map.getCenter();el.textContent='🛰 '+await FHCitra.info(k[0],c.lat,c.lng,map.getZoom());el.style.display='';},400);};map.on('moveend baselayerchange',imgInfo);
+const CIT=FHCitra.leaflet(L),esri=CIT.esri,s2026=CIT.s2026,eox=CIT.eox,terbaik=CIT.terbaik;map.options.maxZoom=19;
 const osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'});
-s2026.addTo(map);
+terbaik.addTo(map);
 map.createPane('base').style.zIndex=350;map.createPane('img').style.zIndex=360;
 const s2=L.imageOverlay(G.img.url,G.img.bounds,{opacity:.95,pane:'img',attribution:'Sentinel-2 10 Agu 2026: Copernicus/ESA'});
 const st=(c,w,o)=>({color:c,weight:w,fill:false,opacity:o??1});
@@ -610,7 +610,7 @@ map.on('overlayadd',e=>{if(e.layer===BTL&&!BTL._loaded){BTL._loaded=1;fetch('dat
 const TCL=L.tileLayer('https://tiles.globalforestwatch.org/umd_tree_cover_loss/latest/dynamic/{z}/{x}/{y}.png',{maxNativeZoom:12,maxZoom:18,opacity:.85,attribution:'Hansen/UMD/Google/USGS/NASA · Global Forest Watch'});
 const PHL=L.geoJSON(null,{style:{color:'#FF2EBD',weight:1.5,fillOpacity:.5},onEachFeature:(f,l)=>{const p=f.properties;l.bindPopup(`<div class="pop"><h3>Indikasi perubahan hutan</h3><table><tr><td>Lokasi</td><td>${esc(p.hd)}${p.di_hutan_desa?' (di dalam HD)':''}</td></tr><tr><td>Luas</td><td>${p.luas_ha} ha</td></tr><tr><td>Periode</td><td>${esc(p.periode)}</td></tr><tr><td>Dibanding</td><td>${esc(p.dibanding)}</td></tr></table><p style="font-size:11px;color:var(--muted)">${esc(p.metode)}. Perlu verifikasi lapangan.</p></div>`);}});
 map.on('overlayadd',e=>{if(e.layer===PHL&&!PHL._loaded){PHL._loaded=1;fetch('data/hutan/peringatan.geojson').then(r=>r.json()).then(g=>PHL.addData(g)).catch(()=>{});}});
-L.control.layers({['Citra satelit terbaru '+new Date().getFullYear()+' (Sentinel-2, '+FHCitra.periodeTxt()+')']:s2026,'Citra resolusi tinggi (Esri, tanggal rekam bervariasi)':esri,'Sentinel-2 bebas awan 2025 (EOX)':eox,'OpenStreetMap':osm},{'Sentinel-2 10 Agu 2026':s2,'Bekas terbakar (Sentinel-2, sejak 2023)':BTL,'Kehilangan tutupan pohon 2001–2025 (GFW/UMD)':TCL,'Peringatan perubahan hutan 90 hari (Sentinel-2)':PHL},{position:'topright'}).addTo(map);
+L.control.layers({'Citra satelit jelas (Sentinel-2 2025 + resolusi tinggi saat diperbesar)':terbaik,'Citra resolusi tinggi saja (Esri)':esri,['Sentinel-2 6 bulan terakhir (bisa tertutup awan/asap)']:s2026,'Sentinel-2 bebas awan 2025 (EOX)':eox,'OpenStreetMap':osm},{'Sentinel-2 10 Agu 2026':s2,'Bekas terbakar (Sentinel-2, sejak 2023)':BTL,'Kehilangan tutupan pohon 2001–2025 (GFW/UMD)':TCL,'Peringatan perubahan hutan 90 hari (Sentinel-2)':PHL},{position:'topright'}).addTo(map);
 const NASA=FHNasa.create(map); FHNasa.control(map,NASA,'topleft');
 {const C3=L.Control.extend({onAdd(){const b=L.DomUtil.create('button','leaflet-bar');b.type='button';b.title='Peta 3D & globe';b.textContent='3D';b.style.cssText='width:34px;height:34px;background:#fff;font:800 12px system-ui;color:#22382B;cursor:pointer';L.DomEvent.disableClickPropagation(b);b.onclick=()=>window.FH3D&&FH3D.open({sites:SITES,site:SITE,points:ALL});return b;}});new C3({position:'topleft'}).addTo(map);}
 const ptsL=L.layerGroup().addTo(map);

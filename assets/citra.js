@@ -40,6 +40,8 @@ function leaflet(L) {
   s2.getTileUrl = function (c) { if (!this._url || c.z % 1 !== 0) return BLANK; return L.TileLayer.prototype.getTileUrl.call(this, c); };  // hindari permintaan zoom pecahan / sebelum siap
   register().then(id => s2.setUrl(s2url(id))).catch(() => s2.fire('fh-gagal'));
   return {
+    // "Citra terbaik": mosaik Sentinel-2 bebas awan 2025 (bersih) untuk zoom jauh, citra resolusi tinggi Esri untuk zoom dekat (tajam)
+    terbaik: L.layerGroup([L.tileLayer(EOX, { ...o, maxNativeZoom: 14, maxZoom: 14, attribution: ATTR.eox }), L.tileLayer(ESRI, { ...o, minZoom: 15, maxZoom: 19, maxNativeZoom: 19, attribution: ATTR.esri })]),
     s2026: s2,
     eox: L.tileLayer(EOX, { ...o, maxNativeZoom: 15, maxZoom: 18, attribution: ATTR.eox }),
     esri: L.tileLayer(ESRI, { ...o, maxZoom: 18, attribution: ATTR.esri }),
@@ -57,7 +59,8 @@ async function esriDate(lat, lon) { // tanggal rekam citra Esri di titik (dari l
     return (cache[k] = best ? `${best.getDate()} ${BLN[best.getMonth()]} ${best.getFullYear()}` : null);
   } catch (e) { return (cache[k] = null); }
 }
-async function info(kind, lat, lon) {
+async function info(kind, lat, lon, z) {
+  if (kind === 'terbaik') return z >= 15 ? info('esri', lat, lon) : 'Sentinel-2 bebas awan 2025 · 10 m (dekatkan untuk citra resolusi tinggi)';
   if (kind === 's2026') return `Sentinel-2 10 m · komposit bebas awan ${periodeTxt()}`;
   if (kind === 'eox') return 'Sentinel-2 10 m · mosaik bebas awan 2025';
   if (kind === 'esri') { const d = await esriDate(lat, lon); return `Esri resolusi tinggi · direkam ${d || 'tanggal tidak tersedia'}`; }
