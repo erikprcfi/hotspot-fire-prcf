@@ -234,6 +234,8 @@ svg{display:block}
 .hs-icon{filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.6))}
 .flm{display:block;overflow:visible}.flm.fresh{animation:flk 1.6s ease-in-out infinite;transform-origin:50% 90%}@keyframes flk{0%,100%{transform:scale(1)}45%{transform:scale(1.08,1.13)}70%{transform:scale(.97,1.03)}}
 .leaflet-zoom-anim .flm.fresh{animation:none}
+.vbadge{position:absolute;right:-6px;top:-4px;width:14px;height:14px;border-radius:50%;background:#2E7D32;color:#fff;font:900 9px/14px system-ui;text-align:center;border:1.5px solid #fff}
+#offChip{position:fixed;z-index:95;left:50%;transform:translateX(-50%);top:calc(64px + env(safe-area-inset-top,0px));background:#B26A00;color:#fff;font:700 12px var(--f);padding:6px 12px;border-radius:999px;box-shadow:0 6px 16px -6px rgba(0,0,0,.5)}
 .topcards{pointer-events:none}.topcards>*{pointer-events:auto}.topcards.cards-off .tc-stack{pointer-events:none}
 .leaflet-zoom-anim .hs-icon{filter:none}.leaflet-zoom-anim .pulse-ring{animation:none;opacity:0}
 .me-dot{width:16px;height:16px;border-radius:50%;background:#1E6FD9;border:3px solid #fff;box-shadow:0 0 0 6px rgba(30,111,217,.25)}
@@ -530,6 +532,10 @@ body.is-off .offline{display:block}
     <div class="h2" id="dlHead" style="margin-top:4px">Desa Nanga Lauk &amp; radius 25 km</div>
     <div class="group" style="padding:14px" id="dlx"></div>
     <p class="small muted" style="margin:14px 4px 0">Atribut lengkap: koordinat, waktu UTC & WIB, satelit, keyakinan, FRP, suhu kecerahan, zona, jarak ke desa, petak, fungsi kawasan, tutupan 2026, gambut, status data (NRT/SP) dan ID kejadian. Luas piksel bukan luas terbakar.</p>
+    <div class="h2">Patroli lapangan</div>
+    <div class="group" style="padding:14px;display:grid;gap:10px"><button class="btn pri full tap" id="vfNew" style="width:100%;background:#B3261E;border-color:#B3261E">Laporkan temuan kebakaran baru</button><p class="small muted" style="margin:0">Untuk titik dari satelit: buka titiknya di peta → <b>Laporkan hasil cek lapangan</b>. Laporan tersimpan di HP dan terkirim otomatis ke basis data PRCF saat ada sinyal.</p></div>
+    <div class="h2">Peta luring (tanpa sinyal)</div>
+    <div class="group" style="padding:14px" id="luBox"></div>
     <div class="h2">Status sistem</div>
     <div class="sys">
       <div class="card"><span>Pembaruan terakhir</span><b id="sLast">–</b><span id="sLastS"></span></div>
@@ -730,7 +736,7 @@ function renderMap(){
   if(!MAP)return; ptsL.clearLayers(); const F=filtered();
   for(const p of [...F].reverse()){
     const col=markerColor(p), size=zIdx(p)<=1?24:19, hh=Math.round(size*1.18); const near=zIdx(p)<=2;
-    const html=`<div class="hs-icon" style="position:relative;width:${size}px;height:${hh}px">${near?`<svg width="${size*2}" height="${size*2}" style="position:absolute;left:${-size/2}px;top:${hh-size*1.5}px;overflow:visible"><circle class="pulse-ring" cx="${size}" cy="${size}" r="${size*.8}" fill="none" stroke="${css('--hi')}" stroke-width="2.5"/></svg>`:''}${flameSVG(col,size,fresh(p))}</div>`;
+    const html=`<div class="hs-icon" style="position:relative;width:${size}px;height:${hh}px">${near?`<svg width="${size*2}" height="${size*2}" style="position:absolute;left:${-size/2}px;top:${hh-size*1.5}px;overflow:visible"><circle class="pulse-ring" cx="${size}" cy="${size}" r="${size*.8}" fill="none" stroke="${css('--hi')}" stroke-width="2.5"/></svg>`:''}${flameSVG(col,size,fresh(p))}${VERIF[p.k]?'<span class="vbadge">✓</span>':''}</div>`;
     L.marker([p.la,p.lo],{icon:L.divIcon({className:'',html,iconSize:[size+8,hh+8],iconAnchor:[(size+8)/2,(hh+8)*.62]}),keyboard:false}).on('click',()=>detail(p)).addTo(ptsL);
   }
   // summary panel
@@ -778,8 +784,10 @@ function detail(p){
     <button class="tap" id="hdC"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Kompas</button>
     <button class="tap" id="hdW2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/></svg>Angin</button>
    </div>
+   <button class="btn pri full tap" id="hdV" style="width:100%;margin-top:12px;background:#B3261E;border-color:#B3261E">${VERIF[p.k]?'✓ Sudah dicek: '+esc(VERIF[p.k])+' · tambah laporan':'Laporkan hasil cek lapangan'}</button>
    <a class="btn full tap" style="width:100%;margin-top:10px" href="https://firms.modaps.eosdis.nasa.gov/map/#d:${p.d}..${p.d};@${p.lo.toFixed(4)},${p.la.toFixed(4)},14.0z" target="_blank" rel="noopener">Verifikasi di NASA FIRMS ↗</a>`);
   $('#hdK').onclick=async e=>{const t=`${ll}\nhttps://www.google.com/maps?q=${p.la},${p.lo}`;try{if(navigator.share)await navigator.share({title:'Titik panas '+wibShort(p.when),text:t});else{await navigator.clipboard.writeText(ll);e.currentTarget.lastChild.textContent='Tersalin ✓';}}catch(x){}};
+  $('#hdV').onclick=()=>openVerif(p);
   $('#hdC').onclick=()=>openKompas({lat:p.la,lon:p.lo,label:'Arah ke titik panas · '+wibShort(p.when)});
   $('#hdW2').onclick=()=>{closeAll();go('home');setTimeout(()=>{MAP.flyTo([p.la,p.lo],Math.max(MAP.getZoom(),9),{duration:.6});windOn(true);},150);};
   if(window.FHWilayah)FHWilayah.lookup(p.la,p.lo).then(w=>{const e=$('#hdW');if(e)e.textContent=w?FHWilayah.label(w):'di luar batas desa BPS';}).catch(()=>{const e=$('#hdW');if(e)e.textContent='–';});
@@ -791,6 +799,22 @@ function detail(p){
   if(window.FHLintas)FHLintas.next(p.la,p.lo,5).then(P=>{const e=$('#hdL');if(!e)return;const f=t=>t.toLocaleString('id-ID',{weekday:'short',hour:'2-digit',minute:'2-digit'});const inn=t=>{const m=Math.round((t-Date.now())/6e4);return m<60?`dalam ${m} menit`:`dalam ${Math.floor(m/60)} j ${m%60} m`;};
     e.innerHTML=P.list.map(x=>`<div class="hd-pass"><span class="b">${x.sensor}</span><b>${x.nama}</b><span>${f(x.t)}</span><span class="muted">${inn(x.t)}${x.tepi?' · tepi sapuan':''}</span></div>`).join('')+`<p class="small muted" style="margin:6px 0 0">Dihitung dari orbit satelit (TLE CelesTrak ${esc(P.tle)} UTC, model SGP4) untuk koordinat titik ini, dalam waktu HP Anda. Uji terhadap deteksi FIRMS: selisih 0–3 menit. Hasil di NASA FIRMS biasanya muncul ±3 jam setelah satelit lewat.</p>`;}).catch(()=>{const e=$('#hdL');if(e)e.innerHTML='<span class="small muted">Belum dapat dihitung (perlu internet sekali untuk data orbit).</span>';});
 }
+/* ---------- verifikasi lapangan & luring ---------- */
+let VERIF={};
+function loadVerif(force){if(!window.FHVerif)return;FHVerif.dicek(force).then(v=>{VERIF=v||{};if(MAP)renderMap();}).catch(()=>{});}
+function openVerif(p){closeAll();setTimeout(()=>openPage(p?'Cek lapangan':'Temuan kebakaran','Laporan verifikasi · tersimpan di HP dulu','<div class="pad" id="vfBox"></div>',()=>{FHVerif.mount($('#vfBox'),{titik:p,label:p?wibShort(p.when):'',satelit:p?satName(p):'',situs:SITE?SITE.hd_nama:'',onDone:()=>loadVerif(false)});}),80);}
+function luringUI(){const el=$('#luBox');if(!el||!window.FHLuring||!SITE)return;const c=SITE.pusat_wilayah||SITE.pusat,I=FHLuring.info(),E=FHLuring.perkiraan(c[0],c[1],25);
+  el.innerHTML=`<div style="display:grid;gap:10px"><div class="small">${I?`<b style="color:#2E7D32">✓ Tersimpan</b> · ${N(I.n)} ubin citra · ${new Date(I.t).toLocaleString('id-ID',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}${I.gagal?` · ${I.gagal} gagal`:''}`:'Belum ada peta luring di HP ini.'}</div>
+   <button class="btn pri full tap" id="luGo" style="width:100%">Simpan peta &amp; data ${esc(SITE.hd_nama)} (±${E.mb} MB)</button>${I?'<button class="btn full tap" id="luDel" style="width:100%">Hapus peta luring</button>':''}
+   <p class="small muted" style="margin:0">Menyimpan citra Sentinel-2 2025 (zoom 8–14, radius 25 km), titik panas, batas wilayah, prakiraan &amp; orbit satelit. Setelah itu peta, titik, kompas &amp; formulir cek lapangan tetap jalan tanpa sinyal. Citra resolusi tinggi (Esri) hanya tersimpan untuk area yang pernah dibuka, karena ketentuan layanannya melarang unduh massal.</p></div>`;
+  $('#luGo').onclick=async e=>{const b=e.currentTarget;b.disabled=true;try{if(navigator.storage&&navigator.storage.persist)await navigator.storage.persist();
+const files=['data/geo.json','data/hotspots.json','data/status.json','data/prakiraan.json','data/tle.json','data/wilayah/indeks.json','data/cuaca.json','data/kejadian.json','data/stats.json'];
+    try{const w=await FHWilayah.lookup(c[0],c[1]);}catch(x){}
+    await FHLuring.simpan(c[0],c[1],25,(d,t,f)=>{b.textContent=`Menyimpan… ${Math.round(d/t*100)}%`;},files);luringUI();}catch(x){b.textContent='Gagal: '+x.message;b.disabled=false;}};
+  if($('#luDel'))$('#luDel').onclick=async()=>{await FHLuring.hapus();luringUI();};}
+function netUI(){const off=navigator.onLine===false;const c=$('#offChip');if(c)c.hidden=!off;}
+addEventListener('online',()=>{netUI();loadVerif(true);});addEventListener('offline',netUI);
+document.addEventListener('DOMContentLoaded',()=>{const v=document.getElementById('vfNew');if(v)v.onclick=()=>openVerif(null);netUI();setTimeout(()=>{loadVerif(false);luringUI();},2500);});
 /* ---------- kompas ---------- */
 let KOMP=null;
 function openKompas(target){closeAll();setTimeout(()=>openPage('Kompas','Arah · GPS · matahari','<div class="pad" id="kpBox"></div>',()=>{KOMP=FHKompas.mount($('#kpBox'),{target:target||null,hotspots:ALL});const pg=$('#page');const ob=new MutationObserver(()=>{if(!pg.classList.contains('on')){if(KOMP)KOMP.destroy();KOMP=null;ob.disconnect();}});ob.observe(pg,{attributes:true,attributeFilter:['class']});}),80);}
@@ -856,7 +880,7 @@ function siteStatus(k){const now=Date.now();const F=ALL.filter(p=>now-p.when<=7*
   return {lvl:inside?'crit':near?'warn':'ok',txt:inside?'Siaga':near?'Waspada':'Aman',inside,near,r25};}
 function applySite(id,fly){
   const k=Math.max(0,SITES.findIndex(x=>x.id===id));SI=k;SITE=SITES[k]||null;if(!SITE)return;
-  store.set('site',SITE.id);window.FH_SITE=SITE.id;if(window.PantauLaporan&&PantauLaporan.reset)PantauLaporan.reset();
+  store.set('site',SITE.id);window.FH_SITE=SITE.id;if(typeof luringUI==='function')setTimeout(luringUI,0);if(window.PantauLaporan&&PantauLaporan.reset)PantauLaporan.reset();
   ZLBL[1]='Desa '+SITE.desa_nama;
   $('#v-home').dataset.sub=SITE.hd_nama+' ▾';$$('.view').forEach(v=>{if(v.id!=='v-home')v.dataset.sub=(v.dataset.base||(v.dataset.base=v.dataset.sub));});
   if(!$('#appbar').classList.contains('stack'))$('#abSub').textContent=(CUR==='home'?SITE.hd_nama+' ▾':$(views[CUR]).dataset.sub);
@@ -1226,6 +1250,9 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(
 <script src="assets/lintasan.js"></script>
 <script src="assets/angin.js"></script>
 <script src="assets/kompas.js"></script>
+<script>window.FH_VERIF_URL=window.FH_VERIF_URL||'';/* URL Apps Script penerima laporan verifikasi lapangan */</script>
+<script src="assets/verifikasi.js"></script>
+<script src="assets/luring.js"></script>
 <script src="assets/peta_ecmwf.js"></script>
 <script src="assets/lokasi_saya.js"></script>
 <script src="assets/peta3d.js"></script>
