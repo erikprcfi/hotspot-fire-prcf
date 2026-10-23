@@ -308,6 +308,7 @@ body.is-off .offline{display:block}
 .g3{background:linear-gradient(120deg,#1F2A55 0%,#3B5BB5 55%,#6BA4E8 100%)}
 .g4{background:linear-gradient(120deg,#2A1C47 0%,#6A3FA0 55%,#B07BD8 100%)}
 .g6{background:linear-gradient(120deg,#08301F 0%,#176B3A 55%,#5DB36A 100%)}
+.g7{background:linear-gradient(120deg,#0B2545 0%,#13315C 50%,#2A7F62 100%)}
 .g5{background:linear-gradient(120deg,#3B1F0E 0%,#8A4A1C 55%,#D98A3A 100%)}
 .ba{position:relative;border-radius:16px;overflow:hidden;background:#111;touch-action:pan-y;user-select:none}
 .ba img{display:block;width:100%;height:auto}.ba .top{position:absolute;inset:0;clip-path:inset(0 50% 0 0)}
@@ -478,6 +479,7 @@ body.is-off .offline{display:block}
     <button class="dcard g3 tap" data-page="cuaca"><span class="t">Cuaca &amp; Musim Api<small id="dc3">Curah hujan ERA5 & risiko</small></span><span class="mock" id="mk3"></span></button>
     <button class="dcard g4 tap" data-page="kejadian"><span class="t">Kejadian Api<small id="dc4">Deteksi dikelompokkan per kejadian</small></span><span class="mock" id="mk4"></span></button>
     <button class="dcard g5 tap" data-page="bekas"><span class="t">Bekas Terbakar<small id="dc5">Luas dari citra Sentinel-2</small></span><span class="mock" id="mk5"></span></button>
+    <button class="dcard g7 tap" data-page="analisis"><span class="t">Analisis Lahan &amp; Karbon<small>Tutupan lahan, hutan, emisi karbon · unggah SHP</small></span><span class="mock"></span></button>
     <button class="dcard g6 tap" data-page="hutan"><span class="t">Tutupan Hutan<small id="dc6">Kehilangan pohon 2001–2025</small></span><span class="mock" id="mk6"></span></button>
   </div>
 </section>
@@ -1065,7 +1067,7 @@ function dataMocks(){try{btMock();hutMock();}catch(e){}
     $('#dc4').textContent=`${N(EVENTS.filter(e=>evZ(e)<=2).length)} kejadian di desa & radius 5 km`;}
   else $('#mk4').innerHTML='<div class="mh"><i></i>Kejadian Api</div><div style="color:#888">memuat…</div>';
 }
-$$('.dcard').forEach(b=>b.onclick=async()=>{const k=b.dataset.page;if(k!=='sebaran'&&k!=='bekas'&&k!=='hutan'){await loadHist();if(k==='cuaca')await getCuaca();if(k==='cuaca'&&!CUACA)return openSheet('<h3>Data cuaca belum tersedia</h3><p class="sub">Sambungkan internet lalu coba lagi.</p>');if(!STATS)return openSheet('<h3>Belum bisa dimuat</h3><p class="sub">Sambungkan internet lalu coba lagi.</p>');}PAGES[k]();});
+$$('.dcard').forEach(b=>b.onclick=async()=>{const k=b.dataset.page;if(k!=='sebaran'&&k!=='bekas'&&k!=='hutan'&&k!=='analisis'){await loadHist();if(k==='cuaca')await getCuaca();if(k==='cuaca'&&!CUACA)return openSheet('<h3>Data cuaca belum tersedia</h3><p class="sub">Sambungkan internet lalu coba lagi.</p>');if(!STATS)return openSheet('<h3>Belum bisa dimuat</h3><p class="sub">Sambungkan internet lalu coba lagi.</p>');}PAGES[k]();});
 
 /* ---------- charts ---------- */
 function barChart(labels,series,{h=200,every=1,stack=true,line=null}={}){
@@ -1083,6 +1085,7 @@ let REDRAW=null; function redrawCharts(){if(MAP)renderMap();if(REDRAW)REDRAW();d
 
 /* ---------- pages ---------- */
 const PAGES={
+ analisis(){openPage('Analisis area','Lahan · hutan · karbon · titik panas','<div id="anBox"></div>',()=>{if(window.FHAnalisis)FHAnalisis.mount($('#anBox'),{mode:'app',akun:()=>{const u=window.FHAkun&&FHAkun.user();return u&&u.token?{id:u.id,token:u.token,nama:u.nama}:null;}});});},
  sebaran(){
   let P=PER;
   const html=()=>{const now=Date.now();const F=ALL.filter(p=>zIdx(p)<=4&&(P===0||now-p.when<=P*864e5+36e5)).sort((a,b)=>b.when-a.when);
@@ -1252,7 +1255,8 @@ if('serviceWorker' in navigator){const HAD=!!navigator.serviceWorker.controller;
 <script src="assets/kompas.js?v=31"></script>
 <script>window.FH_VERIF_URL=window.FH_VERIF_URL||'https://script.google.com/macros/s/AKfycbwQz_--p7liI6ig1X6jsDCbdpElAJahItVrnVQqxkqBzLJLzvSJojk8eUSEHWzJgY-PoQ/exec';/* URL Apps Script penerima laporan verifikasi lapangan */</script>
 <script src="assets/verifikasi.js?v=31"></script>
-<script src="assets/luring.js?v=31"></script>
+<script src="assets/luring.js?v=32"></script>
+<script src="assets/analisis.js?v=32"></script>
 <script src="assets/peta_ecmwf.js?v=31"></script>
 <script src="assets/lokasi_saya.js?v=31"></script>
 <script src="assets/peta3d.js?v=31"></script>

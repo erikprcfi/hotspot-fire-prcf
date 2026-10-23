@@ -27,16 +27,16 @@ def main():
            "definisi": "Hutan = tutupan tajuk tahun 2000 >= 30% (ambang Global Forest Watch). Kehilangan = hilangnya tutupan pohon (penebangan, kebakaran, pembukaan, kerusakan alami); bukan selalu deforestasi permanen.",
            "dibuat_utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "lokasi": {}}
     for s in geo["sites"]:
-        hd = unary_union([shape(f["geometry"]) for f in s["hd"]["features"]])
-        ds = unary_union([shape(f["geometry"]) for f in s["desa"]["features"]])
+        hd = unary_union([shape(f["geometry"]) for f in s["hd"]["features"]]).buffer(0)
+        ds = unary_union([shape(f["geometry"]) for f in s["desa"]["features"]]).buffer(0)
         b5 = unary_union([shape(f["geometry"]) for f in s["buf5"]["features"]])
         area = unary_union([hd, ds]); ring = b5.difference(area); desa_only = ds.difference(hd)
         x0, y0, x1, y1 = b5.bounds
         tile = f"{int(math.ceil(y1 / 10) * 10):02d}N_{int(math.floor(x0 / 10) * 10):03d}E"
         with rasterio.open(BASE + f"treecover2000_{tile}.tif") as src:
-            w = from_bounds(x0, y0, x1, y1, src.transform); tc = src.read(1, window=w); tr = src.window_transform(w)
+            w = from_bounds(x0, y0, x1, y1, src.transform).round_offsets().round_lengths(); tc = src.read(1, window=w); tr = src.window_transform(w)   # jendela piksel utuh, tanpa resampling
         with rasterio.open(BASE + f"lossyear_{tile}.tif") as src:
-            ly = src.read(1, window=from_bounds(x0, y0, x1, y1, src.transform))
+            ly = src.read(1, window=w)
         H, W = tc.shape
         R = 6371008.8; dlon = math.radians(abs(tr.a)); lat_top = tr.f; dlat = abs(tr.e)
         rows = np.arange(H); la1 = np.radians(lat_top - rows * dlat); la2 = np.radians(lat_top - (rows + 1) * dlat)

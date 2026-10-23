@@ -1,0 +1,49 @@
+name: Analisis SHP pengguna
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # periksa antrean tiap 5 menit (jadwal GitHub bisa tertunda beberapa menit)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analisis-shp
+  cancel-in-progress: false
+
+jobs:
+  analisis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Cek antrean
+        id: cek
+        env:
+          ANALISIS_KEY: ${{ secrets.ANALISIS_KEY }}
+        run: |
+          if [ -z "$ANALISIS_KEY" ]; then echo "n=0" >> $GITHUB_OUTPUT; exit 0; fi
+          N=$(curl -sL -m 60 "https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec?pekerja=$ANALISIS_KEY&cek=1" | python3 -c "import json,sys;print(json.load(sys.stdin).get('menunggu',0))" || echo 0)
+          echo "antrean: $N"; echo "n=$N" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v4
+        if: steps.cek.outputs.n != '0'
+      - uses: actions/setup-python@v5
+        if: steps.cek.outputs.n != '0'
+        with:
+          python-version: "3.12"
+      - name: Cache arsip FIRMS
+        if: steps.cek.outputs.n != '0'
+        uses: actions/cache@v4
+        with:
+          path: /tmp/firms_cache
+          key: firms-indonesia-2016-2025-v1
+      - name: Pasang pustaka
+        if: steps.cek.outputs.n != '0'
+        run: pip install shapely==2.0.6 pyproj==3.7.0 rasterio==1.4.3 numpy
+      - name: Proses antrean
+        if: steps.cek.outputs.n != '0'
+        env:
+          ANALISIS_KEY: ${{ secrets.ANALISIS_KEY }}
+          AKUN_URL: https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec
+          FIRMS_CACHE: /tmp/firms_cache
+        run: python scripts/analisis_antrean.py

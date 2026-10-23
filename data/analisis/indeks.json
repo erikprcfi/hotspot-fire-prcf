@@ -1,0 +1,77 @@
+{
+ "diperbarui_utc": "2026-10-23T23:04:13Z",
+ "area": [
+  {
+   "id": "nangalauk_hd",
+   "nama": "Hutan Desa Nanga Lauk",
+   "lokasi": "nangalauk",
+   "luas_ha": 1437.3
+  },
+  {
+   "id": "nangalauk_desa",
+   "nama": "Desa Nanga Lauk",
+   "lokasi": "nangalauk",
+   "luas_ha": 12637.9
+  },
+  {
+   "id": "batangtau_hd",
+   "nama": "Hutan Desa Batang Tau",
+   "lokasi": "batangtau",
+   "luas_ha": 338.2
+  },
+  {
+   "id": "batangtau_desa",
+   "nama": "Desa Sri Wangi",
+   "lokasi": "batangtau",
+   "luas_ha": 3618.8
+  },
+  {
+   "id": "nyuai_hd",
+   "nama": "Hutan Desa Nyuai Peningun",
+   "lokasi": "nyuai",
+   "luas_ha": 4397.6
+  },
+  {
+   "id": "nyuai_desa",
+   "nama": "Desa Nanga Jemah",
+   "lokasi": "nyuai",
+   "luas_ha": 31315.2
+  },
+  {
+   "id": "pundjung_hd",
+   "nama": "Hutan Desa Pundjung Batara",
+   "lokasi": "pundjung",
+   "luas_ha": 1984.1
+  },
+  {
+   "id": "pundjung_desa",
+   "nama": "Desa Nanga Betung",
+   "lokasi": "pundjung",
+   "luas_ha": 4242.1
+  },
+  {
+   "id": "bumilestari_hd",
+   "nama": "Hutan Desa Bumi Lestari",
+   "lokasi": "bumilestari",
+   "luas_ha": 1294.5
+  },
+  {
+   "id": "bumilestari_desa",
+   "nama": "Desa Penepian Raya",
+   "lokasi": "bumilestari",
+   "luas_ha": 6652.6
+  },
+  {
+   "id": "bukitbelang_hd",
+   "nama": "Hutan Desa Bukit Belang",
+   "lokasi": "bukitbelang",
+   "luas_ha": 3633.0
+  },
+  {
+   "id": "bukitbelang_desa",
+   "nama": "Desa Tanjung",
+   "lokasi": "bukitbelang",
+   "luas_ha": 23057.9
+  }
+ ]
+}

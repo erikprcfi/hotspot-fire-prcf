@@ -333,7 +333,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 36px;color:var(--muted);f
 footer .wrap{display:flex;flex-wrap:wrap;gap:10px 30px;justify-content:space-between}
 
 /* ---------- tampilan per menu ---------- */
-html:not([data-v="beranda"]) #beranda{display:none!important}html:not([data-v="peta"]) #peta{display:none!important}html:not([data-v="prakiraan"]) #prakiraan{display:none!important}html:not([data-v="status-sistem"]) #status-sistem{display:none!important}html:not([data-v="riwayat"]) #riwayat{display:none!important}html:not([data-v="buat-laporan"]) #buat-laporan{display:none!important}html:not([data-v="unduh"]) #unduh{display:none!important}html:not([data-v="sumber"]) #sumber{display:none!important}
+html:not([data-v="beranda"]) #beranda{display:none!important}html:not([data-v="peta"]) #peta{display:none!important}html:not([data-v="prakiraan"]) #prakiraan{display:none!important}html:not([data-v="status-sistem"]) #status-sistem{display:none!important}html:not([data-v="riwayat"]) #riwayat{display:none!important}html:not([data-v="buat-laporan"]) #buat-laporan{display:none!important}html:not([data-v="unduh"]) #unduh{display:none!important}html:not([data-v="sumber"]) #sumber{display:none!important}html:not([data-v="analisis"]) #analisis{display:none!important}
 html:not([data-v="beranda"]) .hero .kpis,html:not([data-v="beranda"]) .hero p.lead{display:none}
 html:not([data-v="beranda"]) .hero{background:var(--brand);padding-bottom:4px}
 html:not([data-v="beranda"]) .hero h1{font-size:clamp(20px,2.3vw,28px)}
@@ -361,7 +361,7 @@ html:not([data-v="beranda"]) .hero-head{margin-bottom:14px}
 .qa{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.qa a{display:flex;gap:10px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:14px;text-decoration:none;color:var(--fg);font-weight:700;font-size:14px;background:var(--surface-2)}
 .qa a:hover{border-color:var(--brand-2)}.qa a i{font-style:normal;font-size:18px}
 </style>
-<script>(function(){var V=["beranda", "peta", "prakiraan", "status-sistem", "riwayat", "buat-laporan", "unduh", "sumber"];var h=(location.hash||'').slice(1);document.documentElement.dataset.v=V.indexOf(h)>=0?h:'beranda';})();</script>
+<script>(function(){var V=["beranda", "peta", "prakiraan", "status-sistem", "riwayat", "buat-laporan", "unduh", "analisis", "sumber"];var h=(location.hash||'').slice(1);document.documentElement.dataset.v=V.indexOf(h)>=0?h:'beranda';})();</script>
 </head>
 <body>
 <div class="topbar"><div class="wrap">
@@ -370,12 +370,12 @@ html:not([data-v="beranda"]) .hero-head{margin-bottom:14px}
     <span class="brand-mark" aria-hidden="true"><img src="assets/logo_fh.svg" alt="Fire Hotspot" class="fh-logo" style="width:100%;height:100%;display:block"></span>
     <span class="brand-txt"><b>Fire Hotspot</b><small>Pemantauan Titik Panas Hutan Desa · Kapuas Hulu</small></span>
   </a>
-  <nav class="nav" aria-label="Navigasi"><a href="#beranda">Beranda</a><a href="#peta">Peta</a><a href="#prakiraan">Prakiraan</a><a href="#status-sistem">Status</a><a href="#riwayat">Riwayat</a><a href="#buat-laporan">Laporan</a><a href="#unduh">Data</a><a href="#sumber">Metodologi</a></nav>
+  <nav class="nav" aria-label="Navigasi"><a href="#beranda">Beranda</a><a href="#peta">Peta</a><a href="#prakiraan">Prakiraan</a><a href="#status-sistem">Status</a><a href="#riwayat">Riwayat</a><a href="#buat-laporan">Laporan</a><a href="#unduh">Data</a><a href="#analisis">Analisis</a><a href="#sumber">Metodologi</a></nav>
   <button type="button" class="inst" id="instBtn" aria-label="Pasang aplikasi di HP"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg><span class="inst-l">Pasang aplikasi</span><span class="inst-s">Pasang</span></button>
   <span class="live" id="livechip" title="Diperbarui otomatis setiap 3 jam mengikuti lintasan satelit NASA"><i></i><span>Near Real-Time</span></span>
 </div></div>
 
-<nav class="mtabs" aria-label="Menu"><a href="#beranda">Beranda</a><a href="#peta">Peta</a><a href="#prakiraan">Prakiraan</a><a href="#status-sistem">Status</a><a href="#riwayat">Riwayat</a><a href="#buat-laporan">Laporan</a><a href="#unduh">Data</a><a href="#sumber">Metodologi</a></nav>
+<nav class="mtabs" aria-label="Menu"><a href="#beranda">Beranda</a><a href="#peta">Peta</a><a href="#prakiraan">Prakiraan</a><a href="#status-sistem">Status</a><a href="#riwayat">Riwayat</a><a href="#buat-laporan">Laporan</a><a href="#unduh">Data</a><a href="#analisis">Analisis</a><a href="#sumber">Metodologi</a></nav>
 
 <section class="hero">
   <div class="wrap">
@@ -500,6 +500,11 @@ html:not([data-v="beranda"]) .hero-head{margin-bottom:14px}
     </form>
     <p id="rpStatus" class="rp-note" role="status" aria-live="polite">Laporan dibuat langsung di browser Anda dari basis data terbaru.</p>
     <div id="rpPreview"></div>
+  </section>
+
+  <section class="card sec" id="analisis">
+    <div class="sec-h"><div><div class="kick">Analisis area</div><h2>Tutupan lahan, perubahan hutan, karbon &amp; titik panas</h2><p>Setara analisis area Global Forest Watch / Global Nature Watch. Pilih area dampingan PRCF atau unggah SHP (zip) area Anda – dihitung otomatis dari dataset resmi.</p></div></div>
+    <div id="anWeb" style="max-width:980px"></div>
   </section>
 
   <section class="card sec" id="unduh">
@@ -931,7 +936,7 @@ function renderDash(){
   if(!PHI)fetch('data/hutan/peringatan.json?'+Date.now()).then(r=>r.ok?r.json():{lokasi:{}}).then(j=>{PHI=j;renderDash();}).catch(()=>{PHI={lokasi:{}};});
 }
 /* ---------- menu: satu tampilan per menu ---------- */
-const VIEWS=['beranda','peta','prakiraan','status-sistem','riwayat','buat-laporan','unduh','sumber'];
+const VIEWS=['beranda','peta','prakiraan','status-sistem','riwayat','buat-laporan','unduh','analisis','sumber'];
 function showView(v,scroll){
   if(!VIEWS.includes(v))v='beranda';document.documentElement.dataset.v=v;
   document.querySelectorAll('.nav a,.mtabs a').forEach(a=>{if(a.getAttribute('href')==='#'+v)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
@@ -939,6 +944,7 @@ function showView(v,scroll){
   if(v==='riwayat')setTimeout(()=>{if(STATS)histChart();},40);
   if(v==='prakiraan')setTimeout(renderFCw,40);
   if(v==='beranda')renderDash();
+  if(v==='analisis'&&window.FHAnalisis&&!window.__AN){window.__AN=1;FHAnalisis.mount(document.getElementById('anWeb'),{mode:'web'});}
   if(scroll!==false)window.scrollTo({top:0,behavior:'auto'});
   const m=document.querySelector('.mtabs a[aria-current]');if(m){const t=m.parentElement;t.scrollLeft=m.offsetLeft-t.clientWidth/2+m.clientWidth/2;}
 }
@@ -957,6 +963,8 @@ setInterval(setStatus,60000);
 <script src="assets/cari_lokasi.js?v=31"></script>
 <script src="assets/peta_ecmwf.js?v=31"></script>
 <script src="assets/lokasi_saya.js?v=31"></script>
+<script src="assets/analisis.js?v=32"></script>
+<script>if(document.documentElement.dataset.v==='analisis'&&window.FHAnalisis&&!window.__AN){window.__AN=1;FHAnalisis.mount(document.getElementById('anWeb'),{mode:'web'});}</script>
 <script>
 (function(){ /* pencarian lokasi di menu Prakiraan (website) */
   const sb=document.getElementById('fcwSearch');if(!sb||!window.FHCari||!window.FHLokasi)return;
