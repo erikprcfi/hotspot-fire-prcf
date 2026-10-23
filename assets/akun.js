@@ -10,7 +10,7 @@
 'use strict';
 const DBN = 'fh-akun', ST = 'kv', ITER = 210000;
 // URL aplikasi web Google Apps Script (database pengguna PRCF). Kosong = belum aktif, data tetap di HP.
-const ENDPOINT = window.FH_AKUN_URL || '';
+const ENDPOINT = window.FH_AKUN_URL || 'https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec';
 const KUNCI = 'fh-prcf-2026-akun', VERSI = '2026.10';
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const BLN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -43,7 +43,7 @@ async function flush(ping) {
   syncing = true;
   try {
     const p = { kunci: KUNCI, aksi: first ? 'daftar' : doPing ? 'aktif' : 'ubah', id: U.id, lokasi: OPT.lokasi ? OPT.lokasi() : '', perangkat: dev(), versi: VERSI };
-    if (first || U.kirimProfil) p.profil = { nama: U.nama, lahir: U.lahir, alamat: U.alamat, email: U.email, hp: U.hp, dibuat: U.dibuat, diubah: U.diubah };
+    if (first || U.kirimProfil) p.profil = { nama: U.nama, lahir: U.lahir, alamat: U.alamat, email: U.email, hp: U.hp ? '+62 ' + fmtHP(U.hp).slice(1) : '', dibuat: U.dibuat, diubah: U.diubah };
     if (first || U.kirimFoto) p.foto = U.foto ? U.foto.split(',')[1] : '';
     const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 30000);
     const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(p), signal: ctl.signal }); clearTimeout(tm);
