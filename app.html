@@ -668,7 +668,7 @@ body.is-off .offline{display:block}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="assets/bahasa.js?v=43"></script>
+<script src="assets/bahasa.js?v=44"></script>
 <script src="assets/nasa_layers.js?v=33"></script>
 <script src="assets/citra.js?v=41"></script>
 <script src="assets/akun.js?v=33"></script>
@@ -1228,7 +1228,7 @@ function hubGo(k){const P=x=>{if(!SITE)return chooser(true);const run=()=>PAGES[
   ({peta:()=>go('home'),p3d:()=>{go('home');setTimeout(()=>$('#fab3d').click(),250);},sebaran:()=>P('sebaran'),kejadian:()=>P('kejadian'),
     angin:()=>{go('home');setTimeout(()=>{if($('#fabWind').getAttribute('aria-pressed')!=='true')$('#fabWind').click();},250);},kompas:()=>openKompas(),ai:()=>go('ai'),
     satelit:()=>{const p=ALL.slice().sort((a,b)=>b.when-a.when)[0];if(p)detail(p);else go('home');},
-    cuaca:()=>go('fc'),hujan:()=>P('cuaca'),udara:()=>{go('fc');setTimeout(()=>{const e=[...document.querySelectorAll('#v-fc .h2')].find(x=>/Kualitas udara/.test(x.textContent));if(e)e.scrollIntoView({behavior:'smooth',block:'start'});},450);},
+    cuaca:()=>go('fc'),hujan:()=>P('cuaca'),udara:()=>P('udara'),
     lokasi:()=>{go('fc');setTimeout(()=>{const b=[...document.querySelectorAll('#v-fc button')].find(x=>/Lokasi saya/.test(x.textContent));if(b)b.click();},300);},
     hutan:()=>P('hutan'),bekas:()=>P('bekas'),analisis:()=>P('analisis'),grafik:()=>P('grafik'),
     peringatan:()=>bukaSec('peringatan'),cek:()=>openVerif(null),patroli:()=>bukaSec('patroli'),laporan:()=>go('lap'),unduh:()=>bukaSec('unduh'),luring:()=>bukaSec('luring'),sistem:()=>bukaSec('sistem')})[k]();}
@@ -1334,6 +1334,28 @@ function periodeBind(id,o,cb){const r=document.getElementById(id);if(!r)return;c
     if(a>b)[a,b]=[b,a];if(b<min||a>max){e.textContent='Periode di luar rentang data yang tersedia.';return;}
     const a2=a<min?min:a,b2=b>max?max:b;e.textContent='';cb({a:a2,b:b2,lbl:labelRentang(a2,b2)+(a2!==a||b2!==b?' (disesuaikan dengan data tersedia)':'')});};}
 const PAGES={
+ udara(){   // riwayat kualitas udara CAMS global (Copernicus/ECMWF) via Open-Meteo; data riwayat nyata tersedia sejak Sep 2022
+  const MIN='2022-09-01',KT=[[15.5,'Baik','#2E9E5B'],[55.4,'Sedang','#3B6FD1'],[150.4,'Tidak Sehat','#E8A317'],[250.4,'Sangat Tidak Sehat','#D93025'],[1e9,'Berbahaya','#6B1B1B']];
+  const kat=v=>KT.find(k=>v<=k[0]);let R={a:hariWIB(Date.now()-29*864e5),b:hariIni()};R.lbl='30 hari terakhir';let D=null,err='';
+  const muat=async()=>{const [la,lo]=(SITE.pusat_wilayah||SITE.pusat);D=null;err='';draw();
+   try{const u=`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${la}&longitude=${lo}&hourly=pm2_5,pm10,carbon_monoxide,aerosol_optical_depth&timezone=Asia%2FJakarta&domains=cams_global&start_date=${R.a}&end_date=${R.b}`;
+    const j=await fetch(u).then(r=>r.json());if(j.error)throw new Error(j.reason||'galat');const h=j.hourly,g={};
+    h.time.forEach((t,i)=>{const d=t.slice(0,10),v=h.pm2_5[i];if(v==null)return;(g[d]=g[d]||{d,s:0,n:0,mx:0,aod:0,na:0});g[d].s+=v;g[d].n++;g[d].mx=Math.max(g[d].mx,v);if(h.aerosol_optical_depth[i]!=null){g[d].aod+=h.aerosol_optical_depth[i];g[d].na++;}});
+    D=Object.values(g).filter(x=>x.n>=18).map(x=>({d:x.d,m:x.s/x.n,mx:x.mx,aod:x.na?x.aod/x.na:null}));}catch(e){err=e.message;D=[];}draw();};
+  const draw=()=>{const dl=D&&D.length,bul=dl&&D.length>92,G=!dl?[]:bul?Object.values(D.reduce((o,x)=>{const k=x.d.slice(0,7);(o[k]=o[k]||{k,s:0,n:0,mx:0});o[k].s+=x.m;o[k].n++;o[k].mx=Math.max(o[k].mx,x.mx);return o;},{})).map(x=>({k:x.k,m:x.s/x.n,mx:x.mx})):D.map(x=>({k:x.d,m:x.m,mx:x.mx}));
+   const rata=dl?D.reduce((a,x)=>a+x.m,0)/D.length:0,top=dl?D.reduce((a,x)=>x.m>a.m?x:a,D[0]):null,hk=KT.map(k=>dl?D.filter(x=>kat(x.m)===k).length:0);
+   $('#pageBody').innerHTML=`<div class="seg" id="uP" style="margin-bottom:8px"><button class="chip" data-p="0" aria-pressed="${R.lbl==='30 hari terakhir'}">30 hari terakhir</button><button class="chip" data-p="1" aria-pressed="${R.lbl!=='30 hari terakhir'}">${R.lbl!=='30 hari terakhir'?esc(R.lbl):'Pilih periode…'}</button></div>
+   <div id="uX" hidden>${periodeHTML('pdUd',{min:MIN,nilai:R})}</div>
+   ${D===null?'<div class="empty">Memuat data CAMS…</div>':!dl?`<div class="empty">${err?'Data tidak dapat dimuat ('+esc(err)+'). Coba lagi nanti.':'Data CAMS tidak tersedia untuk periode ini.'}</div>`:`
+   <div class="stat3"><div class="card"><b>${N1(rata)}</b><span>PM2.5 rata-rata harian, µg/m³</span></div><div class="card"><b>${N1(top.m)}</b><span>tertinggi · ${esc(tglID(top.d))}</span></div><div class="card"><b style="color:${kat(rata)[2]}">${kat(rata)[1]}</b><span>kategori rata-rata</span></div></div>
+   <div class="h2">PM2.5 ${bul?'rata-rata bulanan':'rata-rata harian'} · ${esc(R.lbl)}</div><div class="card chart">${barChart(G.map(x=>bul?BULAN[+x.k.slice(5,7)-1]+(G.length>12?" '"+x.k.slice(2,4):''):+x.k.slice(8)),[{c:'#7C5CC4',v:G.map(x=>Math.round(x.m*10)/10)}],{h:180,every:Math.max(1,Math.ceil(G.length/10)),line:{c:'#E4572E',v:G.map(x=>Math.round(x.mx*10)/10)}})}
+    <div class="legend"><span><i style="background:#7C5CC4"></i>Rata-rata</span><span><i style="background:#E4572E"></i>Maksimum per jam</span></div></div>
+   <div class="h2">Jumlah hari per kategori</div><div class="group">${KT.map((k,i)=>`<div class="row"><span class="ico-sq" style="background:${k[2]};width:14px;height:14px;border-radius:4px"></span><span class="m"><b>${k[1]}</b></span><b class="num">${hk[i]} hari</b></div>`).join('')}</div>`}
+   <p class="small muted" style="margin:12px 4px">Sumber: Copernicus Atmosphere Monitoring Service (CAMS) global, ECMWF – via Open-Meteo Air Quality API, titik pusat ${esc(SITE.hd_nama)}. Rata-rata harian dari nilai per jam (hari dengan ≥18 jam data). Kategori PM2.5 menurut rentang BMKG. Hasil model (grid ±40 km), bukan alat ukur di desa. Riwayat tersedia sejak September 2022.</p>`;
+   $$('#uP .chip').forEach(b=>b.onclick=()=>{if(b.dataset.p==='1'){$('#uX').hidden=!$('#uX').hidden;return;}R={a:hariWIB(Date.now()-29*864e5),b:hariIni(),lbl:'30 hari terakhir'};muat();});
+   periodeBind('pdUd',{min:MIN},r=>{const hari=(Date.parse(r.b)-Date.parse(r.a))/864e5;if(hari>731){$('#pdUd [data-e]').textContent='Pilih paling lama 2 tahun.';return;}R=r;muat();});};
+  openPage('Kualitas Udara','CAMS · '+SITE.hd_nama,'',muat);
+ },
  bara(){go('ai');},
  analisis(){openPage('Analisis area','Lahan · hutan · karbon · titik panas','<div id="anBox"></div>',()=>{if(window.FHAnalisis)FHAnalisis.mount($('#anBox'),{mode:'app',akun:()=>{const u=window.FHAkun&&FHAkun.user();return u&&u.token?{id:u.id,token:u.token,nama:u.nama}:null;}});});},
  sebaran(){
