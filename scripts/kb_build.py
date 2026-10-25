@@ -84,16 +84,34 @@ def bagian(t):
         if l: lab = l
         segs.append((lab, t[pos:end]))
     return segs
+HEAD = re.compile(r"^\s*Pasal\s*([0-9lLIiOo|]{1,4}(?: [0-9lLIiOo|]{1,2})?)\s*([A-Z])?\s*$")
+def angka(tok):
+    t = tok.translate(str.maketrans("lLIi|Oo", "1111100")).replace(" ", "")
+    return int(t) if t.isdigit() else None
+def pecah_pasal(seg):
+    """Pecah per judul 'Pasal N' yang berdiri sendiri di satu baris. Tahan salah-baca OCR (l/I→1, O→0, spasi di tengah angka)
+    dan hanya menerima nomor yang berurutan wajar, agar label pasal tidak tertukar."""
+    out, cur, buf, last = [], None, [], 0
+    for line in seg.split("\n"):
+        m = HEAD.match(line)
+        n = angka(m.group(1)) if m else None
+        suf = (m.group(2) or "") if m else ""
+        if n is not None and ((last < n <= last + 6) or (suf and n == last)):
+            out.append((cur, "\n".join(buf))); cur, buf, last = f"Pasal {n}{suf}", [], n
+        else:
+            buf.append(line)
+    out.append((cur, "\n".join(buf)))
+    return out
 def potong(kode, judul, url, t):
     out = []
     for pref, seg in bagian(t):
-        if pref.startswith("Lampiran"):   # lampiran = format/contoh dokumen, tidak dipecah per pasal
+        if pref.startswith("Lampiran"):   # lampiran = format/contoh dokumen atau daftar, tidak dipecah per pasal
             out.append(("Lampiran", seg.strip())); continue
-        parts = re.split(r"\n\s*(Pasal\s+\d+[A-Z]?)\s*\n", "\n" + seg)
-        head = parts[0].strip()
-        if head: out.append((pref + "bagian umum" if pref else ("Pembukaan & ketentuan awal" if not out else "Penutup"), head))
-        for i in range(1, len(parts) - 1, 2):
-            out.append((pref + re.sub(r"\s+", " ", parts[i]), parts[i + 1].strip()))
+        for ps, body in pecah_pasal("\n" + seg):
+            body = body.strip()
+            if not body: continue
+            if ps is None: out.append((pref + "bagian umum" if pref else ("Pembukaan & ketentuan awal" if not out else "Penutup"), body))
+            else: out.append((pref + ps, body))
     res = []
     for ps, body in out:
         body = re.sub(r"\s*\n\s*", " ", body)

@@ -11,7 +11,7 @@ const URL_ = 'https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2
 const BASE = (document.currentScript && document.currentScript.src ? new URL('../', document.currentScript.src).href : './');
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const STOP = new Set('yang dan di ke dari untuk dengan pada adalah ini itu atau dalam oleh sebagai juga tidak akan dapat bisa apa apakah bagaimana berapa siapa kapan dimana mana saja tentang terkait serta para kami kita saya anda mohon tolong jelaskan sebutkan the of and to in is what how a an for are'.split(' '));
-const SIN = { hd: 'hutan desa', hkm: 'hutan kemasyarakatan', htr: 'hutan tanaman rakyat', lphd: 'lembaga pengelola hutan desa', ps: 'perhutanan sosial', karhutla: 'kebakaran hutan lahan', kph: 'kesatuan pengelolaan hutan', rkps: 'rencana kelola perhutanan sosial', rkt: 'rencana kerja tahunan', kulin: 'kemitraan kehutanan', hhbk: 'hasil hutan bukan kayu', sk: 'keputusan persetujuan', izin: 'persetujuan', fire: 'kebakaran', forest: 'hutan', social: 'sosial', village: 'desa', permit: 'persetujuan', burning: 'pembakaran', community: 'masyarakat' };
+const SIN = { hd: 'hutan desa', hkm: 'hutan kemasyarakatan', htr: 'hutan tanaman rakyat', lphd: 'lembaga pengelola hutan desa', ps: 'perhutanan sosial', karhutla: 'kebakaran hutan lahan', kph: 'kesatuan pengelolaan hutan', rkps: 'rencana kelola perhutanan sosial', rkt: 'rencana kerja tahunan', kulin: 'kemitraan kehutanan', hhbk: 'hasil hutan bukan kayu', sk: 'keputusan persetujuan', izin: 'persetujuan', fire: 'kebakaran', forest: 'hutan', social: 'sosial', village: 'desa', permit: 'persetujuan', burning: 'pembakaran', community: 'masyarakat', obligation: 'kewajiban', obligations: 'kewajiban', duty: 'kewajiban', duties: 'kewajiban', holder: 'pemegang', requirement: 'persyaratan', requirements: 'persyaratan', apply: 'permohonan', application: 'permohonan', prohibited: 'larangan', prohibition: 'larangan', sanction: 'sanksi', penalty: 'pidana', land: 'lahan', clearing: 'pembukaan', protected: 'dilindungi', species: 'jenis', wildlife: 'satwa', plant: 'tumbuhan', management: 'pengelolaan', plan: 'rencana', duration: 'jangka waktu', period: 'jangka waktu', rights: 'hak', right: 'hak', timber: 'kayu', harvest: 'pemanfaatan', utilization: 'pemanfaatan', business: 'usaha', partnership: 'kemitraan', customary: 'adat', peat: 'gambut', haze: 'asap', ministry: 'menteri', report: 'laporan', evaluation: 'evaluasi', revoke: 'pencabutan', revocation: 'pencabutan' };
 const stem = w => { if (w.length < 6 || /\d/.test(w)) return w; w = w.replace(/(nya|lah|kah)$/, ''); w = w.replace(/(kan|an|i)$/, m => w.length - m.length >= 4 ? '' : m);
   return w.replace(/^(meng|meny|mem|men|me|peng|peny|per|pem|pen|pe|ber|be|di|ke|ter|se)(?=[a-z]{3})/, ''); };
 const tok = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter(w => w.length > 1 && !STOP.has(w)).map(stem);
@@ -28,6 +28,7 @@ function cari(q, k = 8) {
   const qs = []; tok(q).forEach(w => { qs.push(w); if (SIN[w]) qs.push(...tok(SIN[w])); });
   const { docs, df, N, avg } = IDX, k1 = 1.4, b = .75, sc = [];
   docs.forEach((d, i) => { let s = 0; for (const w of new Set(qs)) { const f = d.tf[w]; if (!f) continue; const idf = Math.log(1 + (N - df[w] + .5) / (df[w] + .5)); s += idf * f * (k1 + 1) / (f + k1 * (1 - b + b * d.len / avg)); } if (s > 0) sc.push([s, i]); });
+  sc.forEach(x => { const ps = KB.potongan[x[1]].pasal; if (/^Lampiran/.test(ps)) x[0] *= 0.45; else if (/^Penjelasan/.test(ps)) x[0] *= 0.8; });
   sc.sort((a, c) => c[0] - a[0]); return sc.slice(0, k).map(x => x[1]);
 }
 const H = { get() { try { return JSON.parse(localStorage.getItem('fh_bara')) || []; } catch (e) { return []; } }, set(v) { try { localStorage.setItem('fh_bara', JSON.stringify(v.slice(-40))); } catch (e) { } } };
@@ -38,7 +39,7 @@ function md(t) {   // markdown sederhana → HTML aman
     if (inList) { html += '</ul>'; inList = false; }
     html += l.trim() ? `<p>${l}</p>` : ''; }
   if (inList) html += '</ul>';
-  return html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<i>$2</i>').replace(/^#{1,3}\s*/gm, '').replace(/\[(\d{1,2})\]/g, '<sup class="bara-n">$1</sup>');
+  return html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<i>$2</i>').replace(/^#{1,3}\s*/gm, '').replace(/\[(\d{1,2}(?:\s*[,–-]\s*\d{1,2})*)\]/g, '<sup class="bara-n">$1</sup>');
 }
 if (!document.getElementById('fhbara-css')) {
   const st = document.createElement('style'); st.id = 'fhbara-css';
