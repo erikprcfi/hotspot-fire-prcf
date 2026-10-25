@@ -161,10 +161,11 @@ def wib(d, t):
     dt = datetime.datetime.strptime(d + t.zfill(4), "%Y-%m-%d%H%M") + datetime.timedelta(hours=7)
     return dt.strftime("%Y-%m-%d %H:%M")
 
+SAT_NORM = {"A": "Aqua", "T": "Terra", "1": "N20", "2": "N21"}   # FIRMS API memakai kode singkat, berkas CSV harian memakai nama
 def make_record(r, sid, status):
     modis = sid == "MODIS"
     t = str(r["acq_time"]).zfill(4)
-    sat = r["satellite"]
+    sat = SAT_NORM.get(str(r["satellite"]).strip(), str(r["satellite"]).strip())   # kode satelit seragam antar-sumber NASA
     uid = f'{sid}_{sat}_{r["acq_date"]}_{t}_{float(r["latitude"]):.5f}_{float(r["longitude"]):.5f}'
     try:
         area = float(r["scan"]) * float(r["track"]) * 100.0
@@ -230,13 +231,13 @@ def ingest_nrt(recs, prov):
         rec.update(ok=True, http_status=st, last_modified=lm, ukuran_byte=len(raw),
                    sha256=hashlib.sha256(raw).hexdigest(), baris_total=len(rows))
         kept = 0
-        sp_years = {r["acq_date"][:4] for r in recs.values() if r["status_data"] == "SP" and r["sensor"] == s["nama"]}
+        sp_max = max((r["acq_date"] for r in recs.values() if r["status_data"] == "SP" and r["sensor"] == s["nama"]), default="")
         for r in rows:
             if not in_bbox(r):
                 continue
             kept += 1
-            if r["acq_date"][:4] in sp_years:
-                continue  # tahun ini sudah ada arsip final (SP) untuk sensor ini
+            if r["acq_date"] <= sp_max:
+                continue  # tanggal ini sudah tercakup arsip final (SP) untuk sensor ini
             nr = make_record(r, sid, "NRT")
             if nr["uid"] not in recs:
                 recs[nr["uid"]] = nr; new += 1
@@ -277,6 +278,61 @@ def ingest_sp(recs, prov, years, force=False):
             changed += 1
     json.dump(idx, open(idx_f, "w"), indent=1)
     return changed
+
+# ------------------------------------------------------------------ FIRMS API (MAP_KEY) – mengisi celah tahun berjalan
+API = "https://firms.modaps.eosdis.nasa.gov/api/"
+API_SRC = {"VIIRS_SNPP": ("VIIRS_SNPP_SP", "VIIRS_SNPP_NRT"), "VIIRS_NOAA20": ("VIIRS_NOAA20_SP", "VIIRS_NOAA20_NRT"),
+           "VIIRS_NOAA21": ("VIIRS_NOAA21_SP", "VIIRS_NOAA21_NRT"), "MODIS": ("MODIS_SP", "MODIS_NRT")}
+def _d(s): return datetime.date.fromisoformat(s)
+def ingest_api(recs, prov, key, tahun):
+    """Arsip final (SP) bila sudah dirilis NASA, sisanya near real-time (NRT), lewat FIRMS Area API.
+    Hanya untuk tahun yang arsip tahunan negaranya belum ada. Nilai disalin apa adanya dari NASA."""
+    idx_f = os.path.join(PROV, "api_firms_index.json")
+    idx = json.load(open(idx_f)) if os.path.exists(idx_f) else {}
+    ar = json.load(open(os.path.join(PROV, "arsip_tahunan_index.json"))) if os.path.exists(os.path.join(PROV, "arsip_tahunan_index.json")) else {}
+    raw, _, _ = fetch(f"{API}data_availability/csv/{key}/ALL", 60)
+    avail = {r["data_id"]: (r["min_date"], r["max_date"]) for r in csv.DictReader(io.StringIO(raw.decode("utf-8")))}
+    bb = ",".join(str(x) for x in BBOX); y0, y1 = datetime.date(tahun, 1, 1), min(datetime.date(tahun, 12, 31), NOW.date())
+    total = 0
+    for sid, (sp, nrt) in API_SRC.items():
+        s = SENSORS[sid]
+        if any(u.startswith(f'{BASE}country/{s["sp"]}/{tahun}/') for u in ar):
+            continue   # arsip tahunan negara (lebih lengkap) sudah dipakai
+        st = idx.setdefault(f"{sid}_{tahun}", {})
+        sp_max = min(_d(avail[sp][1]), y1) if sp in avail and _d(avail[sp][1]) >= y0 else None
+        rentang = []
+        if sp_max:
+            a0 = _d(st["sp_sampai"]) + datetime.timedelta(days=1) if st.get("sp_sampai") else y0
+            if a0 <= sp_max: rentang.append(("SP", sp, a0, sp_max))
+        if nrt in avail:
+            n0 = max(_d(avail[nrt][0]), (sp_max + datetime.timedelta(days=1)) if sp_max else y0, y0)
+            if st.get("nrt_sampai"): n0 = max(n0, _d(st["nrt_sampai"]) - datetime.timedelta(days=9))   # 10 hari terakhir dicek ulang
+            n1 = min(_d(avail[nrt][1]), y1)
+            if n0 <= n1: rentang.append(("NRT", nrt, n0, n1))
+        for status, src, a, b in rentang:
+            rows, h, d, n_call = [], hashlib.sha256(), a, 0
+            while d <= b:
+                n = min(5, (b - d).days + 1)
+                txt = fetch(f"{API}area/csv/{key}/{src}/{bb}/{n}/{d.isoformat()}", 120)[0]
+                h.update(txt); n_call += 1
+                if not txt.startswith(b"latitude"): raise RuntimeError(f"FIRMS API {src}: {txt[:120]!r}")
+                rows += [r for r in csv.DictReader(io.StringIO(txt.decode("utf-8"))) if in_bbox(r) and a.isoformat() <= r["acq_date"] <= b.isoformat()]
+                d += datetime.timedelta(days=n)
+            if status == "SP":   # arsip final menggantikan NRT sensor ini pada rentang tanggal yang sama
+                for u in [u for u, r in recs.items() if r["sensor"] == s["nama"] and r["status_data"] == "NRT" and a.isoformat() <= r["acq_date"] <= b.isoformat()]:
+                    del recs[u]
+            baru = 0
+            for r in rows:
+                nr = make_record(r, sid, status)
+                if nr["uid"] not in recs: recs[nr["uid"]] = nr; baru += 1
+            total += baru
+            st["sp_sampai" if status == "SP" else "nrt_sampai"] = b.isoformat()
+            prov.append({"jenis": f"FIRMS API {status}", "sensor": sid, "sumber": src, "url": f"{API}area/csv/[MAP_KEY]/{src}/{bb}/…",
+                         "rentang": [a.isoformat(), b.isoformat()], "permintaan": n_call, "baris_di_kotak": len(rows), "baru": baru,
+                         "sha256": h.hexdigest(), "ok": True, "doi": s["doi"]})
+    idx["diperbarui_utc"] = NOW_S
+    json.dump(idx, open(idx_f, "w"), indent=1)
+    return total
 
 # ------------------------------------------------------------------ kejadian api
 def cluster(recs, dist_m=1000.0, days=2):
@@ -652,6 +708,11 @@ def site_files(recs, events, prov, archive_years, n_new, sp_changed):
 def main():
     full = "--rebuild" in sys.argv
     recs = load_archive()
+    for u in [u for u, r in recs.items() if r.get("satellite") in SAT_NORM]:   # rapikan catatan lama berkode singkat (hindari duplikat)
+        r = recs.pop(u); r["satellite"] = SAT_NORM[r["satellite"]]
+        bag = u.split("_"); bag[1 if bag[0] == "MODIS" else 2] = r["satellite"]; nu = "_".join(bag)
+        r["uid"] = nu
+        if nu not in recs: recs[nu] = r
     before = {u: (r["acq_date"][:4]) for u, r in recs.items()}
     prov = []
     if full:  # hitung ulang atribut seluruh catatan (mis. setelah batas diperbarui)
@@ -661,11 +722,24 @@ def main():
     sp_changed = 0
     if full or NOW.hour < 3 or "--cek-arsip" in sys.argv:  # cek arsip tahunan sekali sehari
         sp_changed = ingest_sp(recs, prov, [NOW.year - 1, NOW.year], force=False)
+    n_api, key = 0, os.environ.get("FIRMS_MAP_KEY", "").strip()
+    if not key and os.environ.get("ANALISIS_KEY") and os.environ.get("AKUN_URL"):   # kunci disimpan di Apps Script PRCF
+        try:
+            with urllib.request.urlopen(f'{os.environ["AKUN_URL"]}?pekerja={os.environ["ANALISIS_KEY"]}&rahasia=1', timeout=60) as r:
+                key = (json.loads(r.read()).get("firms") or "").strip()
+        except Exception as e:
+            prov.append({"jenis": "FIRMS API", "ok": False, "galat": "kunci tidak dapat dibaca: " + str(e)[:120]})
+    if key:
+        try:
+            n_api = ingest_api(recs, prov, key, NOW.year)
+            n_new += n_api
+        except Exception as e:
+            prov.append({"jenis": "FIRMS API", "ok": False, "galat": str(e).replace(key, "[MAP_KEY]")[:200]})
     compute_codes(recs)
     events = cluster(recs)
     years = save_archive(recs)
     changed_years = {r["acq_date"][:4] for u, r in recs.items() if u not in before} | {y for u, y in before.items() if u not in recs}
-    if sp_changed or full:
+    if sp_changed or full or n_api:
         changed_years |= set(years)
     exports(recs, events, changed_years, focus_changed=bool(changed_years) or full)
     update_weather(prov)

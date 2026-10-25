@@ -32,7 +32,19 @@ jobs:
         run: python scripts/tle.py
       - name: Unduh & olah data NASA FIRMS
         if: github.event_name != 'push'
+        env:
+          ANALISIS_KEY: ${{ secrets.ANALISIS_KEY }}
+          FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+          AKUN_URL: https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec
         run: python scripts/pipeline.py
+      - name: Peringatan dini otomatis (notifikasi HP & email)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        timeout-minutes: 10
+        env:
+          ANALISIS_KEY: ${{ secrets.ANALISIS_KEY }}
+          AKUN_URL: https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec
+        run: pip install -q cryptography && python scripts/peringatan.py
       - name: Bekas terbakar dari Sentinel-2 (bertahap, maks. 20 menit per run)
         if: github.event_name != 'push'
         continue-on-error: true
