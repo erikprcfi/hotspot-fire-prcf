@@ -419,6 +419,35 @@ body.is-off .offline{display:block}
 .hub-t .ic3 svg{position:relative;width:26px;height:26px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
 .hub-t .ic3 b{position:relative;font:800 15px/1 var(--f);letter-spacing:.03em;text-shadow:0 2px 2px rgba(0,0,0,.25)}
 .hub-t:active .ic3{transform:translateY(2px) scale(.97)}
+
+.hub-site{display:flex;align-items:center;gap:8px;border:0;background:none;color:#fff;padding:0;cursor:pointer;text-align:left}
+.hub-site span{font-size:14px;opacity:.7}
+.hub-wx{position:relative;z-index:1;display:flex;align-items:center;gap:14px;margin:-4px 0 14px}
+.hub-wx .wx{width:68px;height:68px;flex:none;filter:drop-shadow(0 8px 14px rgba(0,0,0,.35))}
+.hub-wx strong{display:block;font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1}.hub-wx strong small{font-size:16px;opacity:.7;font-weight:700}
+.hub-wx span{display:block;font-size:12.5px;opacity:.85;margin-top:4px}.hub-wind{display:flex!important;align-items:center;gap:6px}
+.hub-grid{grid-template-columns:repeat(4,1fr)}
+.hub-t .ic3 svg{overflow:visible}
+/* animasi ikon (dimatikan bila pengguna memilih kurangi gerak) */
+@keyframes aSpin{to{transform:rotate(360deg)}}@keyframes aBob{50%{transform:translateY(-2.5px)}}@keyframes aDrift{50%{transform:translateX(2.5px)}}
+@keyframes aRain{0%{transform:translateY(-3px);opacity:0}30%{opacity:1}100%{transform:translateY(4px);opacity:0}}
+@keyframes aFlow{to{stroke-dashoffset:-40}}@keyframes aSwing{0%,100%{transform:rotate(-18deg)}50%{transform:rotate(22deg)}}
+@keyframes aRing{0%,60%,100%{transform:rotate(0)}10%{transform:rotate(14deg)}20%{transform:rotate(-12deg)}30%{transform:rotate(8deg)}40%{transform:rotate(-5deg)}}
+@keyframes aFlick{0%,100%{transform:scale(1,1)}33%{transform:scale(.94,1.06)}66%{transform:scale(1.05,.96)}}
+@keyframes aGrow{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.6)}}@keyframes aSway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+@keyframes aDraw{0%{stroke-dashoffset:40}60%,100%{stroke-dashoffset:0}}@keyframes aPing{0%{transform:scale(.7);opacity:1}100%{transform:scale(1.6);opacity:0}}
+@keyframes aBlink{0%,100%{opacity:1}50%{opacity:.25}}@keyframes aSmoke{0%{transform:translateY(2px);opacity:0}50%{opacity:1}100%{transform:translateY(-3px);opacity:0}}
+@keyframes aGlow{0%,100%{text-shadow:0 0 0 rgba(255,255,255,0)}50%{text-shadow:0 0 10px rgba(255,255,255,.9)}}@keyframes aSpin3{0%,100%{transform:rotateY(0) rotate(0)}50%{transform:rotate(12deg) scale(1.06)}}
+.a-spin,.a-bob,.a-drift,.a-rain,.a-swing,.a-ring,.a-flick,.a-grow,.a-sway,.a-ping,.a-smoke,.a-orbit,.a-spin3{transform-box:fill-box;transform-origin:center}
+.a-spin{animation:aSpin 12s linear infinite}.a-bob{animation:aBob 1.8s ease-in-out infinite}.a-drift{animation:aDrift 3.2s ease-in-out infinite}
+.a-rain{animation:aRain 1.1s linear infinite}.a-flow{stroke-dasharray:14 6;animation:aFlow 1.6s linear infinite}.a-flow.d2{animation-duration:2.1s}.a-flow.d3{animation-duration:1.3s}
+.a-swing{transform-origin:50% 50%;animation:aSwing 2.6s ease-in-out infinite}.a-ring{transform-origin:50% 10%;animation:aRing 2.8s ease-in-out infinite}
+.a-flick{transform-origin:50% 100%;animation:aFlick .9s ease-in-out infinite}.a-grow{transform-origin:50% 100%;animation:aGrow 1.8s ease-in-out infinite}.a-grow.d2{animation-delay:.3s}.a-grow.d3{animation-delay:.6s}
+.a-sway{transform-origin:50% 100%;animation:aSway 2.4s ease-in-out infinite}.a-draw{stroke-dasharray:40;animation:aDraw 2.6s ease-in-out infinite}
+.a-ping{animation:aPing 1.8s ease-out infinite}.a-blink{animation:aBlink 1.6s ease-in-out infinite}.a-smoke{animation:aSmoke 2s ease-in-out infinite}
+.a-glow{animation:aGlow 2s ease-in-out infinite}.a-orbit{animation:aSpin 7s linear infinite}.a-spin3{animation:aSpin3 3s ease-in-out infinite}
+.a-pulse-l{stroke-dasharray:60;animation:aDraw 2.2s linear infinite}
+@media (prefers-reduced-motion:reduce){[class*="a-"]{animation:none!important}}
 /* catatan sumber/metode: ringkas 2 baris, ketuk untuk lengkap */
 .clampx{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
 .clampx.open{display:block;-webkit-line-clamp:unset}
@@ -462,7 +491,7 @@ body.is-off .offline{display:block}
 </header>
 
 <!-- ================= BERANDA (PETA) ================= -->
-<section class="view" id="v-home" data-title="Fire Hotspot" data-sub="Hutan Desa Nanga Lauk">
+<section class="view" id="v-home" data-title="Peta" data-sub="Hutan Desa Nanga Lauk">
   <div id="map"></div>
   <div class="imgchip glass" id="imgChip" hidden></div>
   <div class="offline">Offline · menampilkan data terakhir</div>
@@ -506,8 +535,6 @@ body.is-off .offline{display:block}
 <!-- ================= DATA ================= -->
 <section class="view" id="v-data" data-title="Data" data-sub="Pusat kendali &amp; analisis">
   <div class="pad">
-    <div class="hub" id="hub"></div>
-    <div class="hub-h">Analisis data</div>
     <button class="dcard g1 tap" data-page="sebaran"><span class="t">Sebaran Titik Panas<small id="dc1">Per zona, petak & satelit</small></span><span class="mock" id="mk1"></span></button>
     <button class="dcard g2 tap" data-page="grafik"><span class="t">Grafik dan Rekap<small id="dc2">Tren tahunan 2001–sekarang</small></span><span class="mock" id="mk2"></span></button>
     <button class="dcard g3 tap" data-page="cuaca"><span class="t">Cuaca &amp; Musim Api<small id="dc3">Curah hujan ERA5 & risiko</small></span><span class="mock" id="mk3"></span></button>
@@ -517,6 +544,9 @@ body.is-off .offline{display:block}
     <button class="dcard g6 tap" data-page="hutan"><span class="t">Tutupan Hutan<small id="dc6">Kehilangan pohon 2001–2025</small></span><span class="mock" id="mk6"></span></button>
   </div>
 </section>
+
+<!-- ================= DASBOR (BERANDA) ================= -->
+<section class="view" id="v-dash" data-title="Fire Hotspot" data-sub="Dasbor pemantauan"><div class="pad"><div class="hub" id="hub"></div></div></section>
 
 <!-- ================= BARA AI ================= -->
 <section class="view" id="v-ai" data-title="Bara Api" data-sub="Asisten AI · perhutanan sosial, regulasi, satwa"><div id="aiBox"></div></section>
@@ -565,18 +595,20 @@ body.is-off .offline{display:block}
 </section>
 
 <!-- ================= INFO ================= -->
-<section class="view" id="v-info" data-title="Lainnya" data-sub="Unduh data · status sistem · info">
+<section class="view" id="v-info" data-title="Profil" data-sub="Akun &amp; pengaturan">
   <div class="pad">
-    <button class="group tap" id="pfCard" style="display:flex;gap:14px;align-items:center;padding:14px;width:100%;text-align:left;margin-bottom:6px"></button>
-    <div class="h2">Peringatan dini</div>
-    <div class="group" id="prBox"></div>
+    <div data-sec="pengaturan"><button class="group tap" id="pfCard" style="display:flex;gap:14px;align-items:center;padding:14px;width:100%;text-align:left;margin-bottom:6px"></button></div>
+    <div data-sec="peringatan"><div class="group" id="prBox"></div></div>
+    <div data-sec="unduh">
     <div class="h2" id="dlHead" style="margin-top:4px">Desa Nanga Lauk &amp; radius 25 km</div>
     <div class="group" style="padding:14px" id="dlx"></div>
     <p class="small muted" style="margin:14px 4px 0">Atribut lengkap: koordinat, waktu UTC & WIB, satelit, keyakinan, FRP, suhu kecerahan, zona, jarak ke desa, petak, fungsi kawasan, tutupan 2026, gambut, status data (NRT/SP) dan ID kejadian. Luas piksel bukan luas terbakar.</p>
-    <div class="h2">Patroli lapangan</div>
+    </div>
+    <div data-sec="patroli">
     <div class="group" style="padding:14px;display:grid;gap:10px"><button class="btn pri full tap" id="vfNew" style="width:100%;background:#B3261E;border-color:#B3261E">Laporkan temuan kebakaran baru</button><p class="small muted" style="margin:0">Untuk titik dari satelit: buka titiknya di peta → <b>Laporkan hasil cek lapangan</b>. Laporan tersimpan di HP dan terkirim otomatis ke basis data PRCF saat ada sinyal.</p></div>
-    <div class="h2">Peta luring (tanpa sinyal)</div>
-    <div class="group" style="padding:14px" id="luBox"></div>
+    </div>
+    <div data-sec="luring"><div class="group" style="padding:14px" id="luBox"></div></div>
+    <div data-sec="sistem">
     <div class="h2">Status sistem</div>
     <div class="sys">
       <div class="card"><span>Pembaruan terakhir</span><b id="sLast">–</b><span id="sLastS"></span></div>
@@ -587,6 +619,8 @@ body.is-off .offline{display:block}
     <div class="sys" id="sDb"></div>
     <div class="h2">Sumber NASA hari ini</div>
     <div class="group" id="sSrc"></div>
+    </div>
+    <div data-sec="pengaturan">
     <div class="h2">Tampilan</div>
     <div class="card"><div class="seg" id="theme"><button class="chip" data-t="auto">Otomatis</button><button class="chip" data-t="light">Terang</button><button class="chip" data-t="dark">Gelap</button></div></div>
     <div class="h2" data-notr>Bahasa · Language</div>
@@ -600,6 +634,7 @@ body.is-off .offline{display:block}
     </div>
     <img src="assets/logo_prcf.jpg" alt="Yayasan PRCF Indonesia" style="height:54px;border-radius:6px;display:block;margin:22px auto 0">
     <p class="small muted" style="text-align:center;margin-top:10px"><b>Yayasan PRCF Indonesia</b><br>Fire Hotspot · Pemantauan Hutan Desa<br>Kabupaten Kapuas Hulu, Kalimantan Barat</p>
+    </div>
   </div>
 </section>
 
@@ -608,12 +643,12 @@ body.is-off .offline{display:block}
 
 <!-- ================= TAB BAR ================= -->
 <nav class="tabbar" id="tabbar" role="tablist">
-  <button role="tab" data-v="home" aria-selected="true"><span class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2l9 7.6V21a1 1 0 0 1-1 1h-5.5v-6.5h-5V22H4a1 1 0 0 1-1-1V10.8z"/></svg></span>Beranda</button>
+  <button role="tab" data-v="dash" aria-selected="true"><span class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2l9 7.6V21a1 1 0 0 1-1 1h-5.5v-6.5h-5V22H4a1 1 0 0 1-1-1V10.8z"/></svg></span>Beranda</button>
+  <button role="tab" data-v="home" aria-selected="false"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg></span>Peta</button>
   <button role="tab" data-v="fc" aria-selected="false"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 11.1 3.5 3.5 0 0 0 7 18z"/><path d="M9 21l1-2M13 21l1-2"/></svg></span>Prakiraan</button>
   <button role="tab" data-v="ai" aria-selected="false" aria-label="Bara Api – asisten AI"><span class="ic"><b class="ai-mark">AI</b></span>Bara Api</button>
-  <button role="tab" data-v="data" aria-selected="false"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 20v-6M10 20V9M15 20v-8M20 20V5"/><path d="M4 9l5-4 5 4 6-5" stroke-width="1.8"/></svg></span>Data</button>
   <button role="tab" data-v="lap" aria-selected="false"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></span>Laporan</button>
-  <button role="tab" data-v="info" aria-selected="false"><span class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span>Lainnya</button>
+  <button role="tab" data-v="info" aria-selected="false"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>Profil</button>
 </nav>
 
 <div class="scrim" id="scrim"></div>
@@ -625,7 +660,7 @@ body.is-off .offline{display:block}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="assets/bahasa.js?v=41"></script>
+<script src="assets/bahasa.js?v=42"></script>
 <script src="assets/nasa_layers.js?v=33"></script>
 <script src="assets/citra.js?v=41"></script>
 <script src="assets/akun.js?v=33"></script>
@@ -687,8 +722,8 @@ let G=null, STATUS=null, ALL=[], STATS=null, EVENTS=null, CUACA=null, FC=null, B
 let PER=store.get('per',7), SENF=store.get('sens',['MODIS','SNPP','N20','N21']), CMODE=store.get('cmode','conf');
 
 /* ---------- navigation ---------- */
-const views={home:'#v-home',fc:'#v-fc',ai:'#v-ai',data:'#v-data',lap:'#v-lap',info:'#v-info',unduh:'#v-info'};
-let CUR='home', BOOT=true; const BACK=[];
+const views={dash:'#v-dash',home:'#v-home',fc:'#v-fc',ai:'#v-ai',data:'#v-data',lap:'#v-lap',info:'#v-info',unduh:'#v-info'};
+let CUR='dash', BOOT=true; const BACK=[];
 function setBar(t,s,stack){$('#abTitle').innerHTML=t;$('#abSub').textContent=s||'';$('#appbar').classList.toggle('stack',!!stack);}
 function go(v,push=true){
   if(!views[v])v='home';
@@ -696,17 +731,19 @@ function go(v,push=true){
   const from=CUR;CUR=v;$$('.view').forEach(e=>e.classList.remove('on'));const el=$(views[v]);el.classList.add('on');
   $$('#tabbar button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.v===v)));
   setBar(el.dataset.title,el.dataset.sub,false);if(v==='fc'&&FCMODE==='saya')setBar('Cuaca di lokasi saya','ECMWF · CAMS · FDRS',false);
-  if(v==='home'&&MAP)setTimeout(()=>MAP.invalidateSize(),60);
-  if(v==='data'){loadHist();hubRender();}
-  if(v==='info')prMount();
+  if(v==='home'&&MAP)setTimeout(()=>{MAP.invalidateSize();if(!MAPSEEN&&SITE){MAPSEEN=true;try{applySite(SITE.id,false);}catch(e){}}},60);
+  if(v==='dash')hubRender();
+  if(v==='data')loadHist();
+  if(v==='info'){const sec=INFOSEC||'pengaturan';INFOSEC=null;$$('#v-info [data-sec]').forEach(e=>e.hidden=e.dataset.sec!==sec);setBar(SECT[sec][0],SECT[sec][1],false);el.scrollTop=0;
+    if(sec!=='pengaturan')$$('#tabbar button').forEach(b=>b.setAttribute('aria-selected','false'));if(sec==='peringatan')prMount();}
   if(v==='ai'&&window.FHBara&&!$('#aiBox').firstChild)FHBara.mount($('#aiBox'),{dock:true,akun:()=>{const u=window.FHAkun&&FHAkun.user();return u&&u.token?{id:u.id,token:u.token,nama:u.nama}:null;},data:baraData});
-  if(push){const h=v==='home'?location.pathname+location.search:'#'+v;
-    if(from==='home'&&v!=='home'&&!BOOT)history.pushState({tab:v},'',h);else history.replaceState({tab:v},'',h);}
+  if(push){const h=v==='dash'?location.pathname+location.search:'#'+v;
+    if(from==='dash'&&v!=='dash'&&!BOOT)history.pushState({tab:v},'',h);else history.replaceState({tab:v},'',h);}
 }
-$$('#tabbar button').forEach(b=>b.onclick=()=>{const v=b.dataset.v;if(v==='home'&&CUR!=='home'&&!BACK.length&&history.state&&history.state.tab){history.back();return;}go(v);});
+$$('#tabbar button').forEach(b=>b.onclick=()=>{const v=b.dataset.v;if(v==='dash'&&CUR!=='dash'&&!BACK.length&&history.state&&history.state.tab){history.back();return;}go(v);});
 function pushLayer(close){BACK.push(close);history.pushState({layer:BACK.length},'');}
 let SKIP=0;
-window.addEventListener('popstate',()=>{if(SKIP>0){SKIP--;return;}const c=BACK.pop();if(c)c();else if(CUR!=='home')go('home',false);});
+window.addEventListener('popstate',()=>{if(SKIP>0){SKIP--;return;}const c=BACK.pop();if(c)c();else if(CUR!=='dash')go('dash',false);});
 function back(){if(BACK.length)history.back();}
 $('#abBack').onclick=back;
 function meUI(){if(!window.FHAkun)return;const u=FHAkun.user();$('#abMe').innerHTML=FHAkun.avatar(34);$('#abMe').style.display=u?'':'none';
@@ -729,7 +766,7 @@ setTimeout(hideSplash,6000);
 const spMsg=t=>{$('#spMsg').textContent=t;};
 
 /* ---------- map ---------- */
-let MAP=null, ptsL=null, meL=null, ACT=null, B={}, base={};
+let MAPSEEN=false, MAP=null, ptsL=null, meL=null, ACT=null, B={}, base={};
 const PADV={paddingTopLeft:[10,150],paddingBottomRight:[60,150]};
 function siteLayers(){if(!MAP||!SITE)return;ACT.clearLayers();
   L.geoJSON(SITE.buf25,{style:{color:'#C9B21E',weight:1.2,dashArray:'6 5',fill:false},interactive:false}).addTo(ACT);
@@ -1008,7 +1045,7 @@ function chooser(fromBar){
    <span class="r"><span class="sbadge sb-${st.lvl}">${st.txt}</span>${(()=>{const r=riskOf(x.id);return r?`<span style="font-size:10.5px;color:var(--muted);text-align:right;line-height:1.2">Risiko 7 hari<br>${lvp(r.lv)}</span>`:'';})()}<span class="go"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></span></span></button>`).join('');
   const L0=$('#live');$('#chLive').className=L0.className;$('#chLive').querySelector('span').textContent=L0.querySelector('span').textContent;
   const close=()=>{$('#chooser').classList.add('hide');setTimeout(()=>MAP&&MAP.invalidateSize(),400);};
-  $$('#chList .sc').forEach(b=>b.onclick=()=>{const id=b.dataset.id;if(fromBar)history.back();else close();if(CUR!=='home')go('home');setTimeout(()=>applySite(id,true),fromBar?80:200);});
+  $$('#chList .sc').forEach(b=>b.onclick=()=>{const id=b.dataset.id;if(fromBar)history.back();else close();if(!fromBar&&CUR!=='dash')go('dash');else if(fromBar&&CUR!=='home'&&CUR!=='dash')go('dash');setTimeout(()=>applySite(id,true),fromBar?80:200);});
   $('#chMe').onclick=()=>{if(fromBar)history.back();else close();setTimeout(()=>{go('fc');fcMode('saya');},fromBar?80:220);};
   $('#chAll').onclick=()=>{if(fromBar)history.back();else close();if(CUR!=='home')go('home');setTimeout(()=>MAP.flyToBounds(B.all,{...PADV,duration:.9}),250);};
   $('#chooser').scrollTop=0;$('#chooser').classList.remove('hide');
@@ -1142,36 +1179,70 @@ function hutMock(){const L0=HUT&&HUT.lokasi&&SITE&&HUT.lokasi[SITE.id];if(!L0){$
   $('#mk6').innerHTML=`<div class="mh"><i></i>Kehilangan pohon</div><svg viewBox="0 0 120 70" width="100%" height="80">${ys.map((y,i)=>`<rect x="${i*4.8}" y="${68-64*per[y]/mx}" width="3.6" height="${64*per[y]/mx}" fill="#176B3A"/>`).join('')}</svg><div>Hutan Desa, ${ys[0]}–${ys.at(-1)}</div>`;
   $('#dc6').textContent=`Hilang ${N1(L0.hutan_desa.kehilangan_total_ha)} ha di HD sejak 2001`;}
 
-/* ---------- pusat kendali: ringkasan + semua alat ---------- */
-const HUB_T=[
- ['3d','Peta 3D','#3B82F6','#1E3A8A','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z"/><path d="M12 12l8.5-4.7M12 12v9.5M12 12L3.5 7.3"/></svg>'],
- ['ai','Bara Api','#F59E0B','#C2410C','<b>AI</b>'],
- ['angin','Angin','#22D3EE','#0E7490','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/></svg>'],
- ['kompas','Kompas','#A78BFA','#5B21B6','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z" fill="currentColor"/></svg>'],
- ['peringatan','Peringatan','#F87171','#B91C1C','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>'],
- ['cek','Cek lapangan','#FB7185','#9F1239','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6v3H9z"/><path d="M7 5H5v16h14V5h-2"/><path d="M9 13l2 2 4-4"/></svg>'],
- ['analisis','Analisis SHP','#34D399','#047857','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 18l5-12 5 8 3-4 3 8z"/></svg>'],
- ['hutan','Tutupan hutan','#4ADE80','#166534','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 2l6 9h-3l4 6H5l4-6H6z"/><path d="M12 17v5"/></svg>'],
- ['prakiraan','Prakiraan','#60A5FA','#1D4ED8','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 11.1 3.5 3.5 0 0 0 7 18z"/></svg>'],
- ['laporan','Laporan','#94A3B8','#334155','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M14 3v5h5"/></svg>'],
- ['unduh','Unduh data','#2DD4BF','#0F766E','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>'],
- ['luring','Peta luring','#FBBF24','#A16207','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>']];
-function hubGo(k){const lain=id=>{go('info');setTimeout(()=>{const e=$(id);if(e)e.scrollIntoView({behavior:'smooth',block:'start'});},180);};
-  ({'3d':()=>{go('home');setTimeout(()=>$('#fab3d').click(),250);},ai:()=>go('ai'),angin:()=>{go('home');setTimeout(()=>{if($('#fabWind').getAttribute('aria-pressed')!=='true')$('#fabWind').click();},250);},
-    kompas:()=>openKompas(),peringatan:()=>lain('#prBox'),cek:()=>openVerif(null),analisis:()=>PAGES.analisis(),hutan:()=>PAGES.hutan(),prakiraan:()=>go('fc'),laporan:()=>go('lap'),unduh:()=>lain('#dlx'),luring:()=>lain('#luBox')})[k]();}
-function hubRender(){const el=$('#hub');if(!el||!SITE)return;
+/* ---------- DASBOR: ringkasan + cuaca animasi + semua alat (ikon animasi) ---------- */
+const IC={
+ peta:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14" opacity=".6"/><g class="a-bob"><path d="M15.5 6.5a2.5 2.5 0 0 1 5 0c0 1.9-2.5 4.5-2.5 4.5s-2.5-2.6-2.5-4.5z" fill="currentColor" stroke="none"/></g></svg>',
+ p3d:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><g class="a-spin3"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z"/><path d="M12 12l8.5-4.7M12 12v9.5M12 12L3.5 7.3"/></g></svg>',
+ cuaca:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><g class="a-spin"><circle cx="8" cy="8" r="3" fill="#FDE047" stroke="#FDE047"/><path d="M8 2.5v1.2M8 12.3v1.2M2.5 8h1.2M12.3 8h1.2M4.1 4.1l.9.9M11 11l.9.9M4.1 11.9l.9-.9M11 5l.9-.9" stroke="#FDE047"/></g><g class="a-drift"><path d="M9 19h9a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.6 1.2A3 3 0 0 0 9 19z" fill="currentColor" stroke="none"/></g></svg>',
+ hujan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 15h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 8.1 3.5 3.5 0 0 0 7 15z" fill="currentColor" stroke="none"/><g class="a-rain"><path d="M9 18l-1 2.5M13 18l-1 2.5M17 18l-1 2.5"/></g></svg>',
+ angin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path class="a-flow" d="M3 8h11a3 3 0 1 0-3-3"/><path class="a-flow d2" d="M3 12h16a3 3 0 1 1-3 3"/><path class="a-flow d3" d="M3 16h8"/></svg>',
+ kompas:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><g class="a-swing"><path d="M12 5l2.5 7h-5z" fill="#FCA5A5" stroke="none"/><path d="M12 19l-2.5-7h5z" fill="currentColor" stroke="none"/></g></svg>',
+ ai:'<b class="a-glow">AI</b>',
+ api:'<svg viewBox="0 0 24 28" fill="currentColor"><g class="a-flick"><path d="M12 1.5c.7 3.7 3 5.6 5 7.8 1.9 2.1 3.2 4.5 3.2 7.3A8.2 8.2 0 0 1 12 24.8a8.2 8.2 0 0 1-8.2-8.2c0-2.7 1.2-4.7 2.7-6.3.2 1.6 1 2.9 2.3 3.6-.4-4.2 1-8.5 3.2-12.4z"/><path d="M12 13.4c.5 1.6 1.9 2.5 1.9 4.3a2.2 2.2 0 0 1-1.9 2.4 2.3 2.3 0 0 1-2.3-2.3c0-1.7 1.1-2.8 2.3-4.4z" fill="#FDE68A"/></g></svg>',
+ sebaran:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" opacity=".5"/><circle cx="12" cy="12" r="5" opacity=".7"/><circle class="a-ping" cx="12" cy="12" r="2" fill="currentColor"/><circle cx="17" cy="7" r="1.4" fill="#FDE68A" stroke="none"/><circle cx="7" cy="16" r="1.4" fill="#FDE68A" stroke="none"/></svg>',
+ grafik:'<svg viewBox="0 0 24 24" fill="currentColor"><rect class="a-grow" x="4" y="12" width="3.4" height="8" rx="1"/><rect class="a-grow d2" x="10.3" y="7" width="3.4" height="13" rx="1"/><rect class="a-grow d3" x="16.6" y="4" width="3.4" height="16" rx="1"/></svg>',
+ kejadian:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8" stroke-dasharray="3 3" class="a-spin"/><circle cx="9" cy="11" r="1.6" fill="currentColor"/><circle cx="14" cy="10" r="1.6" fill="currentColor"/><circle cx="12" cy="14.5" r="1.6" fill="#FDE68A" stroke="none"/></svg>',
+ bekas:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 18c2-6 5-9 8-9s6 3 8 9z" fill="currentColor" opacity=".35"/><path d="M4 18c2-6 5-9 8-9s6 3 8 9"/><g class="a-smoke"><path d="M10 7c-1-1.5 1-2.5 0-4M14 7c-1-1.5 1-2.5 0-4" stroke-linecap="round"/></g></svg>',
+ hutan:'<svg viewBox="0 0 24 24" fill="currentColor"><g class="a-sway"><path d="M12 2l6 9h-3l4 6H5l4-6H6z"/></g><rect x="11" y="17" width="2" height="5" rx="1"/></svg>',
+ analisis:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 18l5-12 5 8 3-4 3 8z" fill="currentColor" fill-opacity=".25"/><path class="a-draw" d="M4 18l5-12 5 8 3-4 3 8"/></svg>',
+ udara:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path class="a-flow" d="M4 9h10a2.5 2.5 0 1 0-2.5-2.5"/><path class="a-flow d2" d="M4 14h13a2.5 2.5 0 1 1-2.5 2.5"/><circle class="a-ping" cx="19" cy="7" r="1.5" fill="#FDE68A" stroke="none"/></svg>',
+ lokasi:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle class="a-ping" cx="12" cy="12" r="6" opacity=".6"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
+ peringatan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><g class="a-ring"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" fill="currentColor" fill-opacity=".25"/><path d="M10 20a2 2 0 0 0 4 0"/></g></svg>',
+ cek:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6v3H9z"/><path d="M7 5H5v16h14V5h-2"/><path class="a-draw" d="M9 13l2 2 4-4"/></svg>',
+ patroli:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="a-draw" d="M4 19c3-1 3-5 6-6s3 3 6 2 3-6 4-8" stroke-dasharray="2.5 2.5"/><circle cx="4" cy="19" r="1.8" fill="currentColor"/><path d="M20 3v6M20 3l-3 1.5L20 6" fill="currentColor"/></svg>',
+ laporan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z" fill="currentColor" fill-opacity=".2"/><path d="M14 3v5h5"/><path class="a-draw" d="M9 12h7M9 16h5"/></svg>',
+ unduh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><g class="a-bob"><path d="M12 4v10M7.5 9.5L12 14l4.5-4.5"/></g><path d="M5 20h14"/></svg>',
+ luring:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z" fill="currentColor" fill-opacity=".2"/><path d="M9 4v14M15 6v14"/><path class="a-blink" d="M2 2l20 20" stroke="#FCA5A5" stroke-width="2.4" stroke-linecap="round"/></svg>',
+ sistem:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path class="a-pulse-l" d="M2 12h4l2.5-6 4 12 2.5-6H22"/></svg>',
+ satelit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><g class="a-orbit"><rect x="9.5" y="9.5" width="5" height="5" rx="1" fill="currentColor"/><path d="M8 12H3M21 12h-5" stroke-width="3"/></g><circle cx="12" cy="12" r="9.5" opacity=".35" stroke-dasharray="2 3"/></svg>'};
+const HUB_G=[
+ ['Pemantauan',[['peta','Peta','#3B82F6','#1E3A8A'],['p3d','Peta 3D','#6366F1','#3730A3'],['sebaran','Sebaran titik','#F97316','#C2410C'],['kejadian','Kejadian api','#EF4444','#991B1B'],['angin','Angin','#22D3EE','#0E7490'],['kompas','Kompas','#A78BFA','#5B21B6'],['satelit','Lintasan satelit','#64748B','#1E293B'],['ai','Bara Api','#F59E0B','#C2410C']]],
+ ['Cuaca & iklim',[['cuaca','Prakiraan','#60A5FA','#1D4ED8'],['hujan','Cuaca & musim api','#38BDF8','#0369A1'],['udara','Kualitas udara','#94A3B8','#475569'],['lokasi','Cuaca lokasi saya','#2DD4BF','#0F766E']]],
+ ['Hutan & karbon',[['hutan','Tutupan hutan','#4ADE80','#166534'],['bekas','Bekas terbakar','#FB923C','#9A3412'],['analisis','Analisis lahan & karbon','#34D399','#047857'],['grafik','Grafik & rekap','#F472B6','#9D174D']]],
+ ['Lapangan & data',[['peringatan','Peringatan dini','#F87171','#B91C1C'],['cek','Cek lapangan','#FB7185','#9F1239'],['patroli','Laporan patroli','#FBBF24','#B45309'],['laporan','Laporan PDF','#A3A3A3','#404040'],['unduh','Unduh data','#2DD4BF','#0F766E'],['luring','Peta luring','#FACC15','#A16207'],['sistem','Status sistem','#4ADE80','#15803D']]]];
+const SECT={pengaturan:['Profil','Akun & pengaturan'],peringatan:['Peringatan dini','Notifikasi HP & email'],unduh:['Unduh data','CSV · SHP · GeoJSON · KML'],patroli:['Laporan patroli','Temuan & cek lapangan'],luring:['Peta luring','Tanpa sinyal'],sistem:['Status sistem','Pembaruan · basis data · sumber NASA']};
+let INFOSEC=null;
+function bukaSec(sec){INFOSEC=sec;go('info');pushLayer(()=>go('dash',false));setBar(SECT[sec][0],SECT[sec][1],true);}
+function hubGo(k){const P=x=>PAGES[x]&&PAGES[x]();
+  ({peta:()=>go('home'),p3d:()=>{go('home');setTimeout(()=>$('#fab3d').click(),250);},sebaran:()=>P('sebaran'),kejadian:()=>P('kejadian'),
+    angin:()=>{go('home');setTimeout(()=>{if($('#fabWind').getAttribute('aria-pressed')!=='true')$('#fabWind').click();},250);},kompas:()=>openKompas(),ai:()=>go('ai'),
+    satelit:()=>{const p=ALL.slice().sort((a,b)=>b.when-a.when)[0];if(p)detail(p);else go('home');},
+    cuaca:()=>go('fc'),hujan:()=>P('cuaca'),udara:()=>{go('fc');setTimeout(()=>{const e=document.querySelector('#v-fc .aq, #v-fc [id*="udara"], #v-fc [class*="udara"]');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});},400);},
+    lokasi:()=>{go('fc');setTimeout(()=>{const b=[...document.querySelectorAll('#v-fc button')].find(x=>/Lokasi saya/.test(x.textContent));if(b)b.click();},300);},
+    hutan:()=>P('hutan'),bekas:()=>P('bekas'),analisis:()=>P('analisis'),grafik:()=>P('grafik'),
+    peringatan:()=>bukaSec('peringatan'),cek:()=>openVerif(null),patroli:()=>bukaSec('patroli'),laporan:()=>go('lap'),unduh:()=>bukaSec('unduh'),luring:()=>bukaSec('luring'),sistem:()=>bukaSec('sistem')})[k]();}
+function wxIkon(kode,hujan){const k=+kode||0;
+  if(k>=95)return '<svg class="wx" viewBox="0 0 64 64"><g class="a-drift"><path d="M18 40h28a10 10 0 0 0 1-20 14 14 0 0 0-27 3 9 9 0 0 0-2 17z" fill="#CBD5E1"/></g><path class="a-blink" d="M33 40l-5 10h6l-4 10" stroke="#FDE047" stroke-width="3.5" fill="none" stroke-linejoin="round"/></svg>';
+  if(k>=51||hujan>=1)return '<svg class="wx" viewBox="0 0 64 64"><g class="a-drift"><path d="M18 38h28a10 10 0 0 0 1-20 14 14 0 0 0-27 3 9 9 0 0 0-2 17z" fill="#E2E8F0"/></g><g class="a-rain" stroke="#7DD3FC" stroke-width="3" stroke-linecap="round"><path d="M24 44l-3 7M33 44l-3 7M42 44l-3 7"/></g></svg>';
+  if(k>=45)return '<svg class="wx" viewBox="0 0 64 64"><g stroke="#E2E8F0" stroke-width="4" stroke-linecap="round"><path class="a-flow" d="M12 24h40"/><path class="a-flow d2" d="M8 34h44"/><path class="a-flow d3" d="M14 44h36"/></g></svg>';
+  if(k>=2)return '<svg class="wx" viewBox="0 0 64 64"><g class="a-spin" style="transform-origin:24px 24px"><circle cx="24" cy="24" r="9" fill="#FDE047"/><path d="M24 8v5M24 35v5M8 24h5M35 24h5M12.7 12.7l3.5 3.5M31.8 31.8l3.5 3.5M12.7 35.3l3.5-3.5M31.8 16.2l3.5-3.5" stroke="#FDE047" stroke-width="3" stroke-linecap="round"/></g><g class="a-drift"><path d="M24 50h24a9 9 0 0 0 1-18 12 12 0 0 0-23 2.5 8 8 0 0 0-2 15.5z" fill="#F1F5F9"/></g></svg>';
+  return '<svg class="wx" viewBox="0 0 64 64"><g class="a-spin" style="transform-origin:32px 32px"><circle cx="32" cy="32" r="12" fill="#FDE047"/><path d="M32 8v7M32 49v7M8 32h7M49 32h7M15 15l5 5M44 44l5 5M15 49l5-5M44 20l5-5" stroke="#FDE047" stroke-width="3.5" stroke-linecap="round"/></g></svg>';}
+function hubRender(){const el=$('#hub');if(!el)return;
+  if(!SITE){el.innerHTML='<div class="hub-hero"><div class="hub-site">Fire Hotspot</div><p style="position:relative;z-index:1;margin:0;opacity:.8">Memuat data…</p></div>';return;}
   let st={txt:'–',inside:0,near:0,r25:0,lvl:'ok'};try{st=siteStatus(SI);}catch(e){}
-  const F=(FC&&FC.lokasi&&FC.lokasi[SITE.id])||{},KL=(FC&&FC.kelas)||['Rendah','Sedang','Tinggi','Ekstrem'],lv=F.hari&&F.hari.length?Math.max(...F.hari.slice(0,7).map(h=>h.level||0)):null;
+  const F=(FC&&FC.lokasi&&FC.lokasi[SITE.id])||{},KL=(FC&&FC.kelas)||['Rendah','Sedang','Tinggi','Ekstrem'],H=(F.hari||[])[0],lv=F.hari&&F.hari.length?Math.max(...F.hari.slice(0,7).map(h=>h.level||0)):null;
   const u=F.udara&&F.udara.sekarang,un=u?(F.udara.kategori_nama||[])[u.kategori]:null,last=ALL.reduce((m,p)=>p.when>m?p.when:m,0);
-  const LC=['#4ADE80','#FACC15','#FB923C','#EF4444'],SC={ok:'#4ADE80',warn:'#FACC15',crit:'#EF4444'};
-  el.innerHTML=`<div class="hub-hero"><div class="hub-k"><b>Ringkasan</b><span>${last?'NASA FIRMS · '+new Date(last).toLocaleString('id-ID',{timeZone:'Asia/Jakarta',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+' WIB':''}</span></div>
-    <div class="hub-site">${esc(SITE.hd_nama)}</div>
+  const LC=['#4ADE80','#FACC15','#FB923C','#EF4444'],SC={ok:'#4ADE80',warn:'#FACC15',crit:'#EF4444'},n1=x=>(+x).toLocaleString('id-ID',{maximumFractionDigits:1});
+  el.innerHTML=`<div class="hub-hero"><div class="hub-k"><b>${esc(greet())}</b><span>${last?'NASA FIRMS · '+new Date(last).toLocaleString('id-ID',{timeZone:'Asia/Jakarta',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+' WIB':''}</span></div>
+    <button class="hub-site" data-hub="pilih">${esc(SITE.hd_nama)} <span>▾</span></button>
+    ${H?`<div class="hub-wx">${wxIkon(H.kode_cuaca,H.hujan)}<div><strong>${n1(H.tmaks)}°<small> / ${n1(H.tmin)}°</small></strong><span>${esc(H.cuaca)} · hujan ${n1(H.hujan)} mm</span>
+      <span class="hub-wind"><svg viewBox="0 0 40 14" width="34" height="12"><path class="a-flow" d="M1 4h26a4 4 0 1 0-4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="a-flow d2" d="M1 10h32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>angin maks ${n1(H.angin_maks)} km/jam</span></div></div>`:''}
     <div class="hub-kpi"><div><small>Status 7 hari</small><strong><i style="background:${SC[st.lvl]||'#4ADE80'}"></i>${esc(st.txt)}</strong></div>
       <div><small>Titik panas ≤25 km</small><strong>${st.r25}</strong></div>
       <div><small>Bahaya kebakaran</small><strong>${lv==null?'–':`<i style="background:${LC[lv]}"></i>${esc(KL[lv])}`}</strong></div>
       <div><small>PM2.5 · µg/m³</small><strong>${u?Math.round(u.pm25):'–'}<span style="font-size:12px;font-weight:600;opacity:.75"> ${u?esc(un||''):''}</span></strong></div></div></div>
-    <div class="hub-h">Alat</div><div class="hub-grid">${HUB_T.map(([k,n,c1,c2,ic])=>`<button class="hub-t" data-hub="${k}"><span class="ic3" style="--c1:${c1};--c2:${c2}">${ic}</span>${n}</button>`).join('')}</div>`;
-  el.querySelectorAll('[data-hub]').forEach(b=>b.onclick=()=>hubGo(b.dataset.hub));}
+    ${HUB_G.map(([g,L])=>`<div class="hub-h">${g}</div><div class="hub-grid">${L.map(([k,n,c1,c2])=>`<button class="hub-t" data-hub="${k}"><span class="ic3" style="--c1:${c1};--c2:${c2}">${IC[k]}</span>${n}</button>`).join('')}</div>`).join('')}`;
+  el.querySelectorAll('[data-hub]').forEach(b=>b.onclick=()=>b.dataset.hub==='pilih'?chooser(true):hubGo(b.dataset.hub));}
 /* ---------- catatan sumber/metode yang panjang: tampil 2 baris, ketuk untuk lengkap ---------- */
 function ringkasCatatan(root){(root||document).querySelectorAll('p,div,small,span').forEach(e=>{
   if(e.dataset.rk||e.closest('[data-norg],.bara-log,.hd-top,.hub,.pr-chips,table,svg,.leaflet-container,.maplibregl-map')||e.querySelector('button,input,select,textarea,table,svg,canvas,img,.card,.group'))return;
@@ -1367,7 +1438,7 @@ for(const g of $$('[data-for]'))for(const b of g.querySelectorAll('[data-v]'))b.
 window.addEventListener('load',()=>setTimeout(sync,50));
 
 /* ---------- start ---------- */
-const h0=location.hash.replace('#','');go(views[h0]?h0:'home');BOOT=false;
+const h0=location.hash.replace('#','');go(views[h0]?h0:'dash');BOOT=false;
 load(true);setInterval(()=>{if(navigator.onLine)load();},10*60*1000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&STATUS&&Date.now()-new Date(STATUS.terakhir_cek_utc)>30*6e4)load();});
 if('serviceWorker' in navigator){const HAD=!!navigator.serviceWorker.controller;navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{});let RL=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(RL||!HAD)return;RL=true;location.reload();});}
