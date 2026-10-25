@@ -660,17 +660,39 @@ def system_health(recs):
             "hari_cuaca": len(json.load(open(cu))["t"]) if os.path.exists(cu) else 0,
             "jumlah_pembaruan_tercatat": sum(1 for f in glob.glob(os.path.join(PROV, "*.jsonl")) for _ in open(f, encoding="utf-8"))}
 
-def site_files(recs, events, prov, archive_years, n_new, sp_changed):
-    cutoff = (NOW - datetime.timedelta(days=400)).strftime("%Y-%m-%d")
-    pts = [{"k": r["uid"], "la": float(r["latitude"]), "lo": float(r["longitude"]), "d": r["acq_date"], "t": r["acq_time"],
+def titik_app(r):
+    return {"k": r["uid"], "la": float(r["latitude"]), "lo": float(r["longitude"]), "d": r["acq_date"], "t": r["acq_time"],
             "sat": r["satellite"], "ins": r["instrument"], "c": r["confidence"], "frp": num(r["frp"]), "bt": num(r["brightness"]),
             "dn": r["daynight"], "v": r["version"], "st": r["status_data"], "ty": r.get("type", ""), "z": r["zona"],
             "km": num(r["jarak_desa_km"]), "pt": r["petak"], "kab": r["kabupaten"], "kw": r["fungsi_kawasan"],
             "tl": r["tutupan_2026"], "gb": r["gambut"], "ha": num(r["luas_piksel_ha"]), "ev": r["id_kejadian"],
             "ls": CODE.get(r["uid"], [])}
-           for r in recs.values() if r["acq_date"] >= cutoff and r["zona"] != "Luar Kapuas Hulu"]
+
+def titik_tahunan(recs):
+    """Arsip titik panas per tahun untuk pencarian periode di aplikasi (data/titik/YYYY.json, format sama dengan hotspots.json).
+    Hanya ditulis ulang bila isinya berubah. Nilai NASA tidak diubah."""
+    out = os.path.join(DATA, "titik"); os.makedirs(out, exist_ok=True)
+    per = defaultdict(list)
+    for r in recs.values():
+        if r["zona"] != "Luar Kapuas Hulu":
+            per[r["acq_date"][:4]].append(titik_app(r))
+    idx = {}
+    for y, L in sorted(per.items()):
+        L.sort(key=lambda p: (p["d"], p["t"]))
+        txt = json.dumps({"tahun": y, "lokasi": SITE_IDS, "titik": L}, separators=(",", ":"))
+        f = os.path.join(out, f"{y}.json")
+        if not os.path.exists(f) or open(f).read() != txt:
+            open(f, "w").write(txt)
+        idx[y] = {"n": len(L), "awal": L[0]["d"], "akhir": L[-1]["d"], "sha256": hashlib.sha256(txt.encode()).hexdigest()}
+    json.dump({"diperbarui_utc": NOW_S, "lokasi": SITE_IDS, "tahun": idx, "sumber": "NASA FIRMS (arsip final SP + near real-time NRT), wilayah Kabupaten Kapuas Hulu"},
+              open(os.path.join(out, "indeks.json"), "w"), indent=1)
+
+def site_files(recs, events, prov, archive_years, n_new, sp_changed):
+    cutoff = (NOW - datetime.timedelta(days=400)).strftime("%Y-%m-%d")
+    pts = [titik_app(r) for r in recs.values() if r["acq_date"] >= cutoff and r["zona"] != "Luar Kapuas Hulu"]
     pts.sort(key=lambda p: (p["d"], p["t"]))
     json.dump({"diperbarui_utc": NOW_S, "lokasi": SITE_IDS, "titik": pts}, open(os.path.join(DATA, "hotspots.json"), "w"), separators=(",", ":"))
+    titik_tahunan(recs)
     # statistik tahunan per sensor & zona (tanpa sumber statis/gunung api/lepas pantai)
     ann = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
     for r in recs.values():
