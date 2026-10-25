@@ -52,15 +52,17 @@ function titikFeature(r, ctx) {
   return { type: 'Feature', geometry: { type: 'Point', coordinates: [r.lon, r.lat] }, properties: p };
 }
 async function build(sel, ctx) {
-  const D = DATA[sel.data], yr = sel.tahun, years = yr === 'semua' ? ctx.years : [yr];
+  const D = DATA[sel.data], yr = sel.tahun, rg = yr === 'rentang';
+  const years = rg ? ctx.years.filter(y => y >= +sel.dari.slice(0, 4) - (sel.dari.slice(5) === '01-01' ? 1 : 0) && y <= +sel.sampai.slice(0, 4)) : yr === 'semua' ? ctx.years : [yr];
+  const okTgl = d => !rg || (d >= sel.dari && d <= sel.sampai);   // tanggal WIB
   if (sel.data === 'titik') {
     const rows = await rowsYears(years); const lim = +sel.wil;
-    return rows.filter(r => r.ls && r.ls.length > ctx.si && r.ls[ctx.si] <= lim).sort((a, b) => (a.d + a.t).localeCompare(b.d + b.t)).map(r => titikFeature(r, ctx));
+    return rows.filter(r => r.ls && r.ls.length > ctx.si && r.ls[ctx.si] <= lim && okTgl(String(r.wib).slice(0, 10))).sort((a, b) => (a.d + a.t).localeCompare(b.d + b.t)).map(r => titikFeature(r, ctx));
   }
-  if (sel.data === 'kh') { const rows = await rowsYears(years); return rows.filter(r => r.kab === 'Kapuas Hulu').sort((a, b) => (a.d + a.t).localeCompare(b.d + b.t)).map(r => titikFeature(r, ctx)); }
+  if (sel.data === 'kh') { const rows = await rowsYears(years); return rows.filter(r => r.kab === 'Kapuas Hulu' && okTgl(String(r.wib).slice(0, 10))).sort((a, b) => (a.d + a.t).localeCompare(b.d + b.t)).map(r => titikFeature(r, ctx)); }
   if (sel.data === 'kejadian') {
     const k = await getJ('data/kejadian.json'), K = k.kolom, si = k.lokasi.indexOf(ctx.id), lim = +sel.wil, out = [];
-    for (const a of k.baris) { const o = {}; K.forEach((n, i) => o[n] = a[i]); const c = o.ls && o.ls[si]; if (c === undefined || c === null || c > lim) continue; if (yr !== 'semua' && o.mulai_wib.slice(0, 4) !== String(yr)) continue;
+    for (const a of k.baris) { const o = {}; K.forEach((n, i) => o[n] = a[i]); const c = o.ls && o.ls[si]; if (c === undefined || c === null || c > lim) continue; if (rg ? !okTgl(o.mulai_wib.slice(0, 10)) : yr !== 'semua' && o.mulai_wib.slice(0, 4) !== String(yr)) continue;
       const p = { id_kejadi: o.id_kejadian, mulai_wib: o.mulai_wib, selesai_wb: o.selesai_wib, n_deteksi: o.jumlah_deteksi, sensor: o.sensor, status: o.status_data, frp_maks: o.frp_maks_mw, luas_pk_ha: o.luas_cakupan_piksel_ha,
         zona: zoneName(c, c > 25 ? 'Kapuas Hulu' : '', ctx.desa), jarak_km: Math.round(Math.max(0, c) * 100) / 100, lat: o.lat, lon: o.lon };
       if (ctx.nl) Object.assign(p, { petak: o.petak || '', kawasan: o.fungsi_kawasan || '', tutupan: o.tutupan_2026 || '', gambut: o.gambut || '' });
@@ -186,19 +188,20 @@ function css() {
   document.head.appendChild(s);
 }
 function mount(el, opt) {
-  css(); const thisYear = new Date(Date.now() + 7 * 36e5).getUTCFullYear(); const st = { data: 'titik', wil: '25', tahun: 'semua', fmt: 'shp' };
+  css(); const thisYear = new Date(Date.now() + 7 * 36e5).getUTCFullYear(); const hariIni = new Date(Date.now() + 7 * 36e5).toISOString().slice(0, 10); const st = { data: 'titik', wil: '25', tahun: 'semua', fmt: 'shp', dari: hariIni.slice(0, 8) + '01', sampai: hariIni };
   el.innerHTML = `<div class="dlx"><div class="dlx-g">
     <label>Jenis data<select data-k="data">${Object.entries(DATA).map(([k, d]) => `<option value="${k}">${esc(d.nm)}</option>`).join('')}</select></label>
     <label>Wilayah<select data-k="wil"></select></label>
     <label>Tahun / periode<select data-k="tahun"></select></label>
     <label>Format file<select data-k="fmt"></select></label></div>
+    <div class="dlx-g" id="dlxR" hidden><label>Dari tanggal<input type="date" data-r="dari"></label><label>Sampai tanggal<input type="date" data-r="sampai"></label></div>
     <div class="dlx-info" id="dlxInfo"></div>
     <div class="dlx-go"><button type="button" id="dlxBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M4 19.5h16"/></svg>Unduh</button><span id="dlxMsg" role="status" aria-live="polite"></span></div>
     <div class="dlx-more">Koordinat WGS 1984 (EPSG:4326), kecuali poligon cakupan piksel (UTM 49N). Jejak audit sumber: <a href="https://github.com/erikprcfi/hotspot-fire-prcf/tree/main/data/provenance" target="_blank" rel="noopener">data/provenance ↗</a></div></div>`;
   const $ = s => el.querySelector(s), sel = k => el.querySelector(`select[data-k="${k}"]`);
   const ctx = () => { const S = opt.site(), STATUS = opt.status() || {}; const ys = (STATUS.tahun_arsip || []).map(Number).filter(Boolean); const years = ys.length ? ys : Array.from({ length: thisYear - 2000 }, (_, i) => 2001 + i);
     return { site: S, id: S.id, si: opt.si(), desa: S.desa_nama, nl: S.id === 'nangalauk', years, ekspor: STATUS.ekspor || [] }; };
-  const fname = (c) => { const D = DATA[st.data], w = { 0: 'desa', 5: 'radius5km', 25: 'radius25km' }[st.wil], t = st.tahun === 'semua' ? 'semua_tahun' : st.tahun, ext = st.fmt === 'shp' ? 'zip' : st.fmt;
+  const fname = (c) => { const D = DATA[st.data], w = { 0: 'desa', 5: 'radius5km', 25: 'radius25km' }[st.wil], t = st.tahun === 'semua' ? 'semua_tahun' : st.tahun === 'rentang' ? `${st.dari}_sd_${st.sampai}` : st.tahun, ext = st.fmt === 'shp' ? 'zip' : st.fmt;
     const b = { titik: `titik_panas_${c.id}_${w}_${t}`, kejadian: `kejadian_api_${c.id}_${w}_${t}`, bekas: `bekas_terbakar_${c.id}_${st.tahun === 'semua' ? 'semua_musim' : 'musim_' + st.tahun}`, hutan: `peringatan_hutan_${c.id}_90hari`, batas: `batas_wilayah_${c.id}`, kh: `titik_panas_kapuashulu_${t}`, arsip: `firms_arsip_${t}`, analisis: `analisis_lahan_karbon_${c.id}` }[st.data];
     return { base: b, name: `${b}${st.fmt === 'shp' ? '_shp' : ''}.${ext}` }; };
   const prebuilt = c => { // file siap pakai di server bila cocok persis
@@ -216,14 +219,17 @@ function mount(el, opt) {
     else if (D.tahun === 'tahun') yo = c.years.slice().reverse().map(y => [String(y), String(y)]);
     else if (D.tahun === 'bekas') yo = [['semua', 'Semua musim (sejak 2023)'], ...c.years.filter(y => y >= 2023).reverse().map(y => [String(y), 'Musim ' + y])];
     else yo = [['semua', D.tetap]];
+    if (['titik', 'kejadian', 'kh'].includes(st.data)) yo.push(['rentang', st.tahun === 'rentang' ? `${st.dari} s.d. ${st.sampai}` : 'Pilih tanggal…']);
     t.innerHTML = yo.map(([v, n]) => `<option value="${v}">${esc(n)}</option>`).join(''); t.disabled = yo.length < 2;
     if (!yo.some(o => o[0] === st.tahun)) st.tahun = yo[0][0]; t.value = st.tahun;
+    const R = $('#dlxR'), mn = c.years[0] + '-01-01'; R.hidden = st.tahun !== 'rentang'; R.querySelectorAll('input').forEach(i => { i.min = mn; i.max = hariIni; i.value = st[i.dataset.r]; });
     const f = sel('fmt'); f.innerHTML = D.fmt.map(k => `<option value="${k}">${FMT[k]}</option>`).join(''); if (!D.fmt.includes(st.fmt)) st.fmt = D.fmt[0]; f.value = st.fmt; f.disabled = D.fmt.length < 2;
     const nm = fname(c).name, pre = prebuilt(c);
     $('#dlxInfo').innerHTML = `<b>${esc(D.nm)}</b>${esc(D.ket)}${st.data === 'titik' && st.tahun === String(thisYear) ? ' Tahun berjalan berisi data Near Real-Time; sebagian bulan menunggu arsip final NASA.' : ''}${(st.data === 'titik' || st.data === 'kejadian') && !c.nl ? ' Petak patroli, fungsi kawasan, tutupan lahan dan gambut hanya tersedia untuk Nanga Lauk.' : ''}<small>Nama file: ${esc(st.data === 'arsip' ? st.tahun + '.csv' : pre || nm)}</small>`;
     $('#dlxMsg').textContent = ''; $('#dlxMsg').className = '';
   }
   el.querySelectorAll('select').forEach(s => s.onchange = () => { st[s.dataset.k] = s.value; refresh(); });
+  el.querySelectorAll('[data-r]').forEach(i => i.onchange = () => { if (!/^\d{4}-\d{2}-\d{2}$/.test(i.value)) return; st[i.dataset.r] = i.value; if (st.dari > st.sampai) [st.dari, st.sampai] = [st.sampai, st.dari]; refresh(); });
   $('#dlxBtn').onclick = async () => {
     const c = ctx(), btn = $('#dlxBtn'), msg = $('#dlxMsg'); msg.className = ''; btn.disabled = true;
     try {
