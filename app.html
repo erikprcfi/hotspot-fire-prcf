@@ -1048,7 +1048,7 @@ async function load(first){
     STATUS=s; if(first)spMsg(`${N(s.jumlah_catatan)} deteksi tersinkron ✓`);
     renderMap(); statusCard(); liveChip(); sysPanel(); downloads(); dataMocks(); renderFC();
   }catch(e){console.error(e);if(first)spMsg('Tidak ada sinyal — memakai data tersimpan');liveChip();if(!G){$('#stTxt').textContent='Data belum tersedia. Sambungkan internet lalu ketuk ⟳.';}}
-  if(first){const deep=location.hash.length>1||new URLSearchParams(location.search).get('lokasi');const go0=()=>{if(SITES.length&&!deep)chooser(false);};if(window.FHAkun)FHAkun.gate(go0);else go0();hideSplash();}
+  if(first){const deep=location.hash.length>1||new URLSearchParams(location.search).get('lokasi');const go0=()=>{if(SITES.length&&!deep){if(window.FHBeranda)FHBeranda.show({sapa:()=>{const n=window.FHAkun&&FHAkun.firstName&&FHAkun.firstName();return greet()+(n?', '+n+' 🌿':'');},pesan:semangat,hotspots:()=>ALL,ringkas:()=>{const S=SITES.map((x,k)=>siteStatus(k));return {n:SITES.length,aman:S.filter(o=>o.lvl==='ok').length,dekat:S.reduce((a,o)=>a+o.r25,0)};},onNext:()=>chooser(false)});else chooser(false);}};if(window.FHAkun)FHAkun.gate(go0);else go0();hideSplash();}
 }
 $('#abRefresh').onclick=async e=>{const b=e.currentTarget;b.style.transition='transform .8s';b.style.transform='rotate(360deg)';await load();setTimeout(()=>{b.style.transition='none';b.style.transform='';},850);};
 
@@ -1268,6 +1268,7 @@ if('serviceWorker' in navigator){const HAD=!!navigator.serviceWorker.controller;
 <script src="assets/lintasan.js?v=33"></script>
 <script src="assets/angin.js?v=33"></script>
 <script src="assets/kompas.js?v=33"></script>
+<script src="assets/beranda.js?v=36"></script>
 <script>window.FH_VERIF_URL=window.FH_VERIF_URL||'https://script.google.com/macros/s/AKfycbwQz_--p7liI6ig1X6jsDCbdpElAJahItVrnVQqxkqBzLJLzvSJojk8eUSEHWzJgY-PoQ/exec';/* URL Apps Script penerima laporan verifikasi lapangan */</script>
 <script src="assets/verifikasi.js?v=33"></script>
 <script src="assets/luring.js?v=33"></script>
