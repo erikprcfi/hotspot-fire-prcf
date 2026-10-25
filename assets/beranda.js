@@ -7,7 +7,7 @@
 (function () {
 'use strict';
 const ML_JS = 'https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.0/dist/maplibre-gl.js', ML_CSS = 'https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.0/dist/maplibre-gl.css';
-const EOX = 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2025_3857/default/g/{z}/{y}/{x}.jpg', DEM = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
+const EOX = 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2025_3857/default/g/{z}/{y}/{x}.jpg', ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', DEM = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
 const WMO = { 0: 'Cerah', 1: 'Cerah berawan', 2: 'Berawan sebagian', 3: 'Berawan', 45: 'Berkabut', 48: 'Berkabut', 51: 'Gerimis ringan', 53: 'Gerimis', 55: 'Gerimis lebat', 61: 'Hujan ringan', 63: 'Hujan sedang', 65: 'Hujan lebat', 80: 'Hujan lokal ringan', 81: 'Hujan lokal sedang', 82: 'Hujan lokal lebat', 95: 'Hujan petir', 96: 'Hujan petir', 99: 'Hujan petir' };
 const KAT = ['Baik', 'Sedang', 'Tidak Sehat', 'Sangat Tidak Sehat', 'Berbahaya'], KC = ['#2E9E5B', '#2F7FD1', '#E0A800', '#D93025', '#6B2A8A'];
 const ispu = v => v <= 15.5 ? 0 : v <= 55.4 ? 1 : v <= 150.4 ? 2 : v <= 250.4 ? 3 : 4;
@@ -67,7 +67,7 @@ function show(o = {}) {
      <div class="fhb-c"><h4>Hutan Desa dipantau</h4><div class="fhb-big" id="fhbHD">–</div><p id="fhbHDt"></p></div>
     </div>
     <button class="fhb-go" id="fhbGo">Pilih Hutan Desa yang dipantau <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></button>
-    <p class="fhb-src">Peta 3D: Sentinel-2 cloudless 2025 (EOX) & elevasi AWS Terrain Tiles · Cuaca: ECMWF IFS (Open-Meteo) · Udara: Copernicus CAMS · Titik panas: NASA FIRMS · Wilayah: BPS/BIG & Kepmendagri 2025. Lokasi hanya dipakai di HP ini.</p>
+    <p class="fhb-src">Peta 3D: citra Esri World Imagery & Sentinel-2 cloudless 2025 (EOX), elevasi AWS Terrain Tiles · Cuaca: ECMWF IFS (Open-Meteo) · Udara: Copernicus CAMS · Titik panas: NASA FIRMS · Wilayah: BPS/BIG & Kepmendagri 2025. Lokasi hanya dipakai di HP ini.</p>
    </div>`;
   document.body.appendChild(el);
   const $ = s => el.querySelector(s);
@@ -78,13 +78,17 @@ function show(o = {}) {
   // peta 3D
   let center = DEF, marker = null;
   loadML().then(() => {
-    MAP = new maplibregl.Map({ container: 'fhbMap', center: [DEF.lon, DEF.lat], zoom: 11.2, pitch: 64, bearing: -20, maxPitch: 75, interactive: false, attributionControl: { compact: true }, fadeDuration: 0,
-      style: { version: 8, sources: { eox: { type: 'raster', tiles: [EOX], tileSize: 256, maxzoom: 14, attribution: 'Sentinel-2 cloudless 2025 © EOX (CC BY-NC-SA 4.0)' }, dem: { type: 'raster-dem', tiles: [DEM], tileSize: 256, encoding: 'terrarium', maxzoom: 13, attribution: 'AWS Terrain Tiles' } },
-        layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#0b2a20' } }, { id: 'eox', type: 'raster', source: 'eox' }, { id: 'hs', type: 'hillshade', source: 'dem', paint: { 'hillshade-exaggeration': 0.35, 'hillshade-shadow-color': '#04140d' } }],
-        terrain: { source: 'dem', exaggeration: 1.8 }, sky: { 'sky-color': '#0d2e45', 'horizon-color': '#9cc9e6', 'fog-color': '#0b2a20', 'sky-horizon-blend': 0.6, 'horizon-fog-blend': 0.5, 'fog-ground-blend': 0.6 } } });
+    MAP = new maplibregl.Map({ container: 'fhbMap', center: [DEF.lon, DEF.lat], zoom: 13.6, pitch: 58, bearing: -20, maxPitch: 70, interactive: false, attributionControl: { compact: true }, fadeDuration: 0,
+      style: { version: 8, sources: { eox: { type: 'raster', tiles: [EOX], tileSize: 256, maxzoom: 14, attribution: 'Sentinel-2 cloudless 2025 © EOX (CC BY-NC-SA 4.0)' },
+          esri: { type: 'raster', tiles: [ESRI], tileSize: 256, maxzoom: 18, attribution: 'Esri World Imagery · Maxar, Earthstar Geographics' },
+          dem: { type: 'raster-dem', tiles: [DEM], tileSize: 256, encoding: 'terrarium', maxzoom: 13, attribution: 'AWS Terrain Tiles' } },
+        layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#0b2a20' } }, { id: 'eox', type: 'raster', source: 'eox' },
+          { id: 'esri', type: 'raster', source: 'esri', minzoom: 11.5, paint: { 'raster-fade-duration': 0 } }],
+        terrain: { source: 'dem', exaggeration: 1.5 },
+        sky: { 'sky-color': '#7FB4DA', 'horizon-color': '#D9ECF7', 'fog-color': '#BFD9E8', 'sky-horizon-blend': 0.5, 'horizon-fog-blend': 0.9, 'fog-ground-blend': 0.95, 'atmosphere-blend': 0.6 } } });
     MAP.setPadding({ top: 140, bottom: Math.round(innerHeight * 0.48), left: 0, right: 0 });   // titik lokasi tampil di area kosong, di atas kartu informasi
     const pin = document.createElement('div'); pin.className = 'fhb-pin'; marker = new maplibregl.Marker({ element: pin }).setLngLat([center.lon, center.lat]).addTo(MAP);
-    const spin = () => { if (!MAP) return; MAP.setBearing((MAP.getBearing() + 0.06) % 360); RAF = requestAnimationFrame(spin); };
+    const spin = () => { if (!MAP) return; MAP.setBearing((MAP.getBearing() + 0.04) % 360); RAF = requestAnimationFrame(spin); };
     MAP.once('load', () => { RAF = requestAnimationFrame(spin); });
     if (center !== DEF) MAP.jumpTo({ center: [center.lon, center.lat] });
   }).catch(() => { $('#fhbMap').style.background = 'radial-gradient(120% 90% at 20% 10%,#1E7A58,#06140F)'; });
