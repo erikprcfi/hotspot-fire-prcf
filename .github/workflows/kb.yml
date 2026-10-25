@@ -1,0 +1,33 @@
+name: Basis pengetahuan Bara Api
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["scripts/kb_build.py", ".github/workflows/kb.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pantau-api
+  cancel-in-progress: false
+
+jobs:
+  kb:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pasang pdftotext
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+      - name: Unduh & olah peraturan resmi
+        run: python3 scripts/kb_build.py
+      - name: Simpan
+        run: |
+          git config user.name "pantau-api-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/bara
+          if git diff --cached --quiet; then echo "Tidak ada perubahan"; exit 0; fi
+          git commit -m "Basis pengetahuan Bara Api $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do git push && exit 0; git pull --no-rebase --no-edit -X ours origin main || true; sleep $((i*5)); done
+          exit 1
