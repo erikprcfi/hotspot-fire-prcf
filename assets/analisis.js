@@ -101,6 +101,7 @@ if (!document.getElementById('fhan-css')) {
   .fan-drop b{display:block;color:var(--fg,#111);font-size:14.5px;margin-bottom:4px}
   .fan-list button{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;padding:11px 2px;border:0;border-top:1px solid var(--line,#eee);background:none;color:inherit;font:inherit;cursor:pointer}
   .fan-list button:first-child{border-top:0}.fan-list small{display:block;color:var(--muted,#66756c);font-size:11.5px}.fan-st{flex:none;font-size:11px;font-weight:800;padding:4px 8px;border-radius:999px}
+  .fan-per{display:flex;align-items:center;gap:8px;margin:12px 0 6px;font-size:12.5px;font-weight:700;color:var(--muted,#6b766f)}.fan-per select{padding:8px 10px;border-radius:10px;border:1.5px solid var(--line,#dde3df);background:var(--surface,#fff);color:var(--fg,#111);font:600 13px var(--f,system-ui)}.fan-per small{font-weight:500}
   .fan-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.fan-tabs::-webkit-scrollbar{display:none}
   .fan-tabs button{flex:none;height:36px;padding:0 13px;border-radius:999px;border:1px solid var(--line,#dde3df);background:var(--surface,#fff);color:inherit;font:700 12.5px var(--f,system-ui);cursor:pointer}.fan-tabs button[aria-pressed=true]{background:#14563F;border-color:#14563F;color:#fff}
   .fan-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}.fan-kpi div{background:var(--surface-2,#f4f7f5);border-radius:14px;padding:10px 12px}.fan-kpi b{display:block;font:700 19px var(--f-data,ui-monospace,monospace)}.fan-kpi span{font-size:11.5px;color:var(--muted,#66756c)}
@@ -126,11 +127,14 @@ function viewer(el, R, back) {
   const K = R.kelas, tl = R.tutupan_lahan_ha, Y = R.tahun_tutupan, H = R.hutan, C = R.karbon, T = R.titik_panas || null, luas = R.luas_ha;
   const kn = k => (K.find(x => x.kode === k) || {}).nama || k, kw = k => (K.find(x => x.kode === k) || {}).warna || '#999';
   const net = C.fluks_bersih_per_tahun_tCO2e, sink = net < 0;
+  const yAll = Object.keys(H.kehilangan_per_tahun_ha).sort(); let RY = [yAll[0], yAll[yAll.length - 1]];
+  const inR = y => y >= RY[0] && y <= RY[1], rLbl = () => RY[0] === RY[1] ? RY[0] : RY[0] + '–' + RY[1], penuh = () => RY[0] === yAll[0] && RY[1] === yAll[yAll.length - 1];
   el.innerHTML = `<div class="fan">${back ? `<button class="fan-btn alt" data-back style="width:auto">← Kembali</button>` : ''}
    <div class="fan-hero"><h2>${esc(R.nama)}</h2><p>${esc(R.jenis || '')} · ${N(luas, 1)} ha · dihitung ${esc((R.dibuat_utc || '').slice(0, 10))}</p>
     ${R.wilayah && R.wilayah.length ? `<p>${esc([...new Set(R.wilayah.map(w => `${w.kab.replace('Kabupaten ', 'Kab. ')}, ${w.prov}`))].slice(0, 3).join(' · '))}</p>` : ''}</div>
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="fan-btn" data-pdf>Unduh laporan PDF</button><button class="fan-btn alt" data-csv>Unduh tabel CSV (Excel)</button></div>
    <div class="fan-map" id="fanMap"></div>
+   <div class="fan-per"><span>Periode</span><select data-y1>${yAll.map(y => `<option${y === RY[0] ? ' selected' : ''}>${y}</option>`).join('')}</select><span>–</span><select data-y2>${yAll.map(y => `<option${y === RY[1] ? ' selected' : ''}>${y}</option>`).join('')}</select><small>data tahunan</small></div>
    <div class="fan-tabs">${['Ringkasan', 'Tutupan lahan', 'Perubahan hutan', 'Karbon & iklim', 'Titik panas', 'Wilayah & sumber'].map((t, i) => `<button data-t="${i}" aria-pressed="${!i}">${t}</button>`).join('')}</div>
    <div id="fanBody"></div></div>`;
   if (back) el.querySelector('[data-back]').onclick = back;
@@ -156,21 +160,24 @@ function viewer(el, R, back) {
        <table><tr><th>Kelas</th><th>2000 (ha)</th><th>2020 (ha)</th><th>Perubahan</th></tr>${ks.map(k => { const a = tl['2000'][k] || 0, b = tl['2020'][k] || 0; return `<tr><td><span class="fan-sw" style="background:${kw(k)}"></span>${esc(kn(k))}</td><td>${N(a, 1)}</td><td>${N(b, 1)}</td><td style="color:${b - a < 0 ? '#B3261E' : '#1E7A3B'}">${b - a >= 0 ? '+' : ''}${N(b - a, 1)}</td></tr>`; }).join('')}</table>
        ${tr.length ? `<h3 style="margin-top:14px">Perubahan terbesar 2000 → 2020</h3><table>${tr.map(([k, v]) => { const [a, b] = k.split('>'); return `<tr><td>${esc(kn(a))} → ${esc(kn(b))}</td><td>${N(v, 1)} ha</td></tr>`; }).join('')}</table>` : ''}
        <p class="fan-src">GLAD Global Land Cover and Land Use Change 2000–2020 v2 (Potapov et al. 2022), 30 m. Kelas dikelompokkan dari legenda resmi GLAD. Lahan basah = permukaan basah/tergenang musiman (rawa, gambut, tepi sungai).</p></div>`; },
-    () => { const yrs = Object.keys(H.kehilangan_per_tahun_ha), v = yrs.map(y => H.kehilangan_per_tahun_ha[y]);
-      return `<div class="fan-card"><h3>Kehilangan tutupan pohon per tahun</h3>${bars(v, yrs.map(y => y.slice(2)), '#D9480F', 'ha')}
+    () => { const yrs = Object.keys(H.kehilangan_per_tahun_ha).filter(inR), v = yrs.map(y => H.kehilangan_per_tahun_ha[y]), sR = v.reduce((a, b) => a + b, 0);
+      return `<div class="fan-card"><h3>Kehilangan tutupan pohon per tahun · ${rLbl()}</h3>${bars(v, yrs.map(y => y.slice(2)), '#D9480F', 'ha')}
+       ${penuh() ? '' : `<div class="fan-kpi" style="margin-top:10px"><div><b>${N(sR, 1)} ha</b><span>hilang ${rLbl()}</span></div><div><b>${N(H.hutan_2000_ha ? 100 * sR / H.hutan_2000_ha : 0, 2)}%</b><span>dari hutan 2000</span></div></div>`}
        <div class="fan-kpi" style="margin-top:10px"><div><b>${N(H.hutan_2000_ha, 1)} ha</b><span>hutan 2000</span></div><div><b>${N(H.kehilangan_total_ha, 1)} ha</b><span>hilang 2001–2025</span></div><div><b>${N(H.hutan_tersisa_2025_ha, 1)} ha</b><span>tersisa 2025 (tanpa memperhitungkan pertumbuhan kembali)</span></div><div><b>${N(H.persen_hilang, 2)}%</b><span>dari hutan 2000</span></div></div>
        <p class="fan-src">Hansen/UMD/Google/USGS/NASA Global Forest Change v1.13 (2000–2025), piksel 30 m, hutan = tutupan tajuk tahun 2000 ≥ 30% (ambang GFW). Luas piksel geodesik.</p></div>`; },
-    () => { const e = C.emisi_per_tahun_kehilangan_tCO2e, yrs = Object.keys(e);
+    () => { const e = C.emisi_per_tahun_kehilangan_tCO2e, yrs = Object.keys(e).filter(inR), eR = yrs.reduce((a, y) => a + e[y], 0);
       return `<div class="fan-card"><h3>Karbon hutan & gas rumah kaca (2001–2025)</h3><div class="fan-kpi">
         <div><b>${N(C.emisi_bruto_total_tCO2e)}</b><span>emisi bruto total, tCO₂e</span></div><div><b>${N(C.serapan_bruto_total_tCO2)}</b><span>serapan bruto total, tCO₂</span></div>
         <div><b style="color:${sink ? '#1E7A3B' : '#B3261E'}">${N(C.fluks_bersih_total_tCO2e)}</b><span>fluks bersih total, tCO₂e (negatif = penyerap)</span></div><div><b>${N(net)}</b><span>fluks bersih per tahun, tCO₂e/th</span></div>
         <div><b>${N(C.stok_karbon_atas_tanah_2000_tC)}</b><span>stok karbon di atas tanah 2000, tC</span></div><div><b>${N(C.stok_karbon_total_2000_tC)}</b><span>stok karbon total 2000 (semua pool), tC</span></div>
         <div><b>${N(C.rerata_karbon_total_hutan_2000_tC_ha, 1)}</b><span>rerata karbon total hutan, tC/ha</span></div><div><b>${N(C.rerata_karbon_atas_tanah_hutan_2000_tC_ha, 1)}</b><span>rerata karbon atas tanah hutan, tC/ha</span></div></div>
-        <h3 style="margin-top:14px">Emisi bruto menurut tahun kehilangan</h3>${bars(yrs.map(y => e[y]), yrs.map(y => y.slice(2)), '#8E2A1E', 'tCO₂e')}
+        ${penuh() ? '' : `<div class="fan-kpi" style="margin-top:10px"><div><b>${N(eR)}</b><span>emisi bruto dari kehilangan hutan ${rLbl()}, tCO₂e</span></div></div>`}
+        <h3 style="margin-top:14px">Emisi bruto menurut tahun kehilangan · ${rLbl()}</h3>${bars(yrs.map(y => e[y]), yrs.map(y => y.slice(2)), '#8E2A1E', 'tCO₂e')}
         <p class="mut">Fluks bersih = emisi bruto − serapan bruto (cek konsistensi data: selisih ${N(C.cek_konsistensi_pct, 3)}%). Nilai per tahun = total 25 tahun ÷ 25, sama seperti GFW. 1 tC = 3,667 tCO₂.</p>
         <p class="fan-src">Model fluks karbon hutan Harris et al. 2021 (Nature Climate Change) dengan pembaruan Gibbs et al. 2025 (ESSD), versi 20260327 — versi yang tayang di Global Forest Watch & Global Nature Watch; emisi mencakup CO₂, CH₄, N₂O dari biomassa & tanah (termasuk gambut) pada wilayah hutan model. Stok karbon tahun 2000: Harris et al. 2021. Hasil model mengandung ketidakpastian; bukan pengganti inventarisasi karbon lapangan/MRV resmi.</p></div>`; },
-    () => { if (!T) return '<div class="fan-card"><p class="mut">Data titik panas tidak tersedia.</p></div>'; const yrs = Object.keys(T.per_tahun), S = Object.keys(T.per_tahun[yrs[0]] || {}), col = { 'VIIRS S-NPP': '#E8590C', 'VIIRS NOAA-20': '#F59F00', MODIS: '#C2255C' };
-      return `<div class="fan-card"><h3>Titik panas ${T.periode} · ${N(T.total)} deteksi</h3>${bars(yrs.map(y => S.reduce((a, s) => a + T.per_tahun[y][s], 0)), yrs, '#E8590C', 'titik')}
+    () => { if (!T) return '<div class="fan-card"><p class="mut">Data titik panas tidak tersedia.</p></div>'; const yrs = Object.keys(T.per_tahun).filter(inR), S = Object.keys(T.per_tahun[Object.keys(T.per_tahun)[0]] || {}), col = { 'VIIRS S-NPP': '#E8590C', 'VIIRS NOAA-20': '#F59F00', MODIS: '#C2255C' };
+      if (!yrs.length) return `<div class="fan-card"><p class="mut">Tidak ada data titik panas untuk ${rLbl()} (tersedia ${esc(T.periode)}).</p></div>`;
+      return `<div class="fan-card"><h3>Titik panas ${penuh() ? T.periode + ' · ' + N(T.total) : rLbl() + ' · ' + N(yrs.reduce((a, y) => a + S.reduce((b, k) => b + T.per_tahun[y][k], 0), 0))} deteksi</h3>${!penuh() && RY[0] < Object.keys(T.per_tahun)[0] ? `<p class="mut">Arsip titik panas untuk analisis ini tersedia ${esc(T.periode)}; tahun sebelumnya tidak dihitung.</p>` : ''}${bars(yrs.map(y => S.reduce((a, s) => a + T.per_tahun[y][s], 0)), yrs, '#E8590C', 'titik')}
        <table><tr><th>Tahun</th>${S.map(s => `<th>${s}</th>`).join('')}</tr>${yrs.map(y => `<tr><td>${y}</td>${S.map(s => `<td>${N(T.per_tahun[y][s])}</td>`).join('')}</tr>`).join('')}</table>
        ${T.terbaru.length ? `<h3 style="margin-top:14px">Deteksi terbaru</h3><table><tr><th>Tanggal (UTC)</th><th>Satelit</th><th>FRP MW</th></tr>${T.terbaru.slice(0, 12).map(r => `<tr><td>${r[0]} ${String(r[1]).padStart(4, '0').replace(/(\d\d)(\d\d)/, '$1:$2')}</td><td>${esc(r[2])}</td><td>${N(r[6], 1)}</td></tr>`).join('')}</table>` : ''}
        <p class="fan-src">${esc(T.catatan)} Sumber: arsip tahunan resmi NASA FIRMS untuk Indonesia (${T.arsip_dipakai.length} berkas).</p></div>`; },
@@ -181,7 +188,8 @@ function viewer(el, R, back) {
        <button class="fan-btn alt" data-dl style="margin-top:8px">Unduh hasil (JSON)</button></div>`];
   const show = i => { body.innerHTML = tabs[i](); el.querySelectorAll('.fan-tabs button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.t === i)));
     const d = body.querySelector('[data-dl]'); if (d) d.onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(R, null, 1)], { type: 'application/json' })); a.download = `analisis_${(R.nama || 'area').replace(/\W+/g, '_')}.json`; a.click(); }; };
-  el.querySelectorAll('.fan-tabs button').forEach(b => b.onclick = () => show(+b.dataset.t)); show(0);
+  let cur = 0; el.querySelectorAll('.fan-tabs button').forEach(b => b.onclick = () => { cur = +b.dataset.t; show(cur); }); show(0);
+  el.querySelectorAll('.fan-per select').forEach(x => x.onchange = () => { const a = el.querySelector('[data-y1]').value, b = el.querySelector('[data-y2]').value; RY = a <= b ? [a, b] : [b, a]; if (cur === 0 || cur === 1 || cur === 5) cur = 2; show(cur); });
 }
 
 
