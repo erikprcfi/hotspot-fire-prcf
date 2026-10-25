@@ -24,11 +24,15 @@ DOCS = [  # kode, judul resmi, tautan resmi (cermin situs pemerintah, dicoba ber
  ("Perpres-28-2023", "Peraturan Presiden Nomor 28 Tahun 2023 tentang Perencanaan Terpadu Percepatan Pengelolaan Perhutanan Sosial",
   ["https://peraturan.bpk.go.id/Details/249826", "https://jdih.kemenkoinfra.go.id/perpres-no-28-tahun-2023", "https://peraturan.go.id/files/perpres-no-28-tahun-2023.pdf"]),
  ("PermenLHK-32-2016", "Peraturan Menteri LHK Nomor P.32/MENLHK/SETJEN/KUM.1/3/2016 tentang Pengendalian Kebakaran Hutan dan Lahan",
-  ["https://peraturan.go.id/files/bn583-2016.pdf", "https://www.peraturan.go.id/files/bn583-2016.pdf"]),
+  ["https://peraturan.go.id/files/bn583-2016.pdf", "https://www.peraturan.go.id/files/bn583-2016.pdf",
+   "https://jdih.kalteng.go.id/storage/app/uploads/public/67a/af5/c2a/67aaf5c2ae52e988327205.pdf"]),
+ ("UU-32-2009", "Undang-Undang Nomor 32 Tahun 2009 tentang Perlindungan dan Pengelolaan Lingkungan Hidup",
+  ["https://jdih.esdm.go.id/storage/document/UU%2032%20Tahun%202009%20(PPLH).pdf", "https://jdih.kemenkeu.go.id/api/download/fulltext/2009/32TAHUN2009UU.htm"]),
  ("PermenLHK-4-2023", "Peraturan Menteri LHK Nomor 4 Tahun 2023 tentang Pengelolaan Perhutanan Sosial pada Kawasan Hutan dengan Pengelolaan Khusus",
   ["https://peraturan.bpk.go.id/Details/253766", "https://jdih.kemenkoinfra.go.id/permen-lhk-no-4-tahun-2023",
    "https://sipops.dlhk.nttprov.go.id/file/regulation/Permen%20LHK%20No.4%20Tahun%202023.pdf"]),
 ]
+CEK = {'UU-41-1999': 'NOMOR\\s+41\\s+TAHUN\\s+1999', 'PP-23-2021': 'NOMOR\\s+23\\s+TAHUN\\s+2021', 'PermenLHK-9-2021': 'NOMOR\\s+9\\s+TAHUN\\s+2021', 'Perpres-28-2023': 'NOMOR\\s+28\\s+TAHUN\\s+2023', 'PermenLHK-32-2016': 'P\\.?\\s*32\\s*/\\s*MENLHK', 'PermenLHK-4-2023': 'NOMOR\\s+4\\s+TAHUN\\s+2023', 'UU-32-2009': 'NOMOR\\s+32\\s+TAHUN\\s+2009'}   # identitas wajib ada di awal naskah (mencegah PDF lain ikut terambil)
 UA = {"User-Agent": "Mozilla/5.0 (FireHotspot-PRCF kb_build; +https://github.com/erikprcfi/hotspot-fire-prcf)"}
 import html as _html, urllib.parse
 def _get(url):
@@ -63,13 +67,30 @@ def rapikan(t):
     t = re.sub(r"\n\s*-\s*\d+\s*-\s*\n", "\n", t)   # nomor halaman "- 12 -"
     t = re.sub(r"\n{3,}", "\n\n", t)
     return t.strip()
+def bagian(t):
+    """Pisahkan batang tubuh, PENJELASAN, dan LAMPIRAN agar 'Pasal' di penjelasan/lampiran tidak tertukar dengan pasal batang tubuh."""
+    m = re.search(r"Ditetapkan\s+di", t)
+    if not m: return [("", t)]
+    cut = [(m.start(), "")]
+    for rx, lab in ((r"\n\s*PENJELASAN\s*\n?\s*ATAS\b", "Penjelasan "), (r"\n\s*LAMPIRAN\b", "Lampiran – ")):
+        for x in re.finditer(rx, t[m.start():]):
+            cut.append((m.start() + x.start(), lab)); break
+    cut.sort(); segs = [("", t[:cut[0][0]])]; lab = ""
+    for k, (pos, l) in enumerate(cut):
+        end = cut[k + 1][0] if k + 1 < len(cut) else len(t)
+        if l: lab = l
+        segs.append((lab, t[pos:end]))
+    return segs
 def potong(kode, judul, url, t):
-    parts = re.split(r"\n\s*(Pasal\s+\d+[A-Z]?)\s*\n", "\n" + t)
     out = []
-    head = parts[0].strip()
-    if head: out.append(("Pembukaan & ketentuan awal", head))
-    for i in range(1, len(parts) - 1, 2):
-        out.append((parts[i].replace("  ", " "), parts[i + 1].strip()))
+    for pref, seg in bagian(t):
+        if pref.startswith("Lampiran"):   # lampiran = format/contoh dokumen, tidak dipecah per pasal
+            out.append(("Lampiran (format/contoh)", seg.strip())); continue
+        parts = re.split(r"\n\s*(Pasal\s+\d+[A-Z]?)\s*\n", "\n" + seg)
+        head = parts[0].strip()
+        if head: out.append((pref + "bagian umum" if pref else ("Pembukaan & ketentuan awal" if not out else "Penutup"), head))
+        for i in range(1, len(parts) - 1, 2):
+            out.append((pref + re.sub(r"\s+", " ", parts[i]), parts[i + 1].strip()))
     res = []
     for ps, body in out:
         body = re.sub(r"\s*\n\s*", " ", body)
@@ -86,8 +107,9 @@ def main():
                 raw, u, jenis = unduh(u)
                 t = rapikan(teks(raw) if jenis == "pdf" else teks_html(raw))
                 if len(t) < 2000: raise ValueError("teks terlalu sedikit (pindaian gambar?)")
+                if not re.search(CEK[kode], re.sub(r"\s+", " ", t[:6000]).upper()): raise ValueError("naskah bukan " + kode)
                 ch = potong(kode, judul, u, t); kb += ch
-                sumber.append({"kode": kode, "judul": judul, "url": u, "sha256": hashlib.sha256(raw).hexdigest(), "ukuran": len(raw), "jenis": jenis, "potongan": len(ch), "jumlah_pasal": len({c["pasal"].split(" (")[0] for c in ch})})
+                sumber.append({"kode": kode, "judul": judul, "url": u, "sha256": hashlib.sha256(raw).hexdigest(), "ukuran": len(raw), "jenis": jenis, "potongan": len(ch), "jumlah_pasal": len({c["pasal"].split(" (")[0] for c in ch if c["pasal"].startswith("Pasal")})})
                 print("OK", kode, len(ch), "potongan"); ok = True; break
             except Exception as e:
                 print("gagal", kode, u, e)
