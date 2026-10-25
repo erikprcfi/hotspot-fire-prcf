@@ -173,13 +173,15 @@ svg{display:block}
 .small{font-size:12.5px}
 
 /* ---------- tab bar ---------- */
-.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;height:var(--tab);padding-bottom:env(safe-area-inset-bottom,0px);display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border-top:1px solid var(--line)}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;height:var(--tab);padding-bottom:env(safe-area-inset-bottom,0px);display:grid;grid-template-columns:repeat(6,1fr);background:var(--surface);border-top:1px solid var(--line)}
 .tabbar button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--faint)}
 .tabbar button svg{width:24px;height:24px}
 .tabbar button::before{content:"";position:absolute;top:-1px;left:22%;right:22%;height:3px;border-radius:0 0 3px 3px;background:var(--accent);transform:scaleX(0);transition:transform .25s}
 .tabbar button[aria-selected="true"]{color:var(--accent)}
 .tabbar button[aria-selected="true"]::before{transform:scaleX(1)}
-.tabbar .ic{display:grid;place-items:center;width:52px;height:30px;border-radius:15px;transition:background .25s}
+.tabbar .ic{display:grid;place-items:center;width:min(52px,100%);height:30px;border-radius:15px;transition:background .25s}
+.ai-mark{display:grid;place-items:center;min-width:28px;height:22px;padding:0 4px;border-radius:7px;border:2px solid currentColor;font:800 11px/1 var(--f,system-ui);letter-spacing:.04em}
+.tabbar button[aria-selected="true"] .ai-mark{background:var(--accent);border-color:var(--accent);color:#fff}
 .tabbar button[aria-selected="true"] .ic{background:var(--accent-soft)}
 
 /* ---------- home map ---------- */
@@ -428,7 +430,6 @@ body.is-off .offline{display:block}
   <span class="ab-logo"><img src="assets/logo_fh.svg" alt="Fire Hotspot" class="fh-logo" style="width:100%;height:100%;display:block"></span>
   <div class="ab-t" id="abT"><b id="abTitle">Fire Hotspot</b><small id="abSub">Hutan Desa Nanga Lauk</small></div>
   <span class="live off" id="live"><i></i><span>LIVE</span></span>
-  <button class="ab-act tap" id="abBara" aria-label="Bara Api – asisten AI"><svg width="20" height="22" viewBox="0 0 24 28" aria-hidden="true"><path d="M12 1.5c.7 3.7 3 5.6 5 7.8 1.9 2.1 3.2 4.5 3.2 7.3A8.2 8.2 0 0 1 12 24.8a8.2 8.2 0 0 1-8.2-8.2c0-2.7 1.2-4.7 2.7-6.3.2 1.6 1 2.9 2.3 3.6-.4-4.2 1-8.5 3.2-12.4z" fill="#FFB547"/><path d="M12 13.4c.5 1.6 1.9 2.5 1.9 4.3a2.2 2.2 0 0 1-1.9 2.4 2.3 2.3 0 0 1-2.3-2.3c0-1.7 1.1-2.8 2.3-4.4z" fill="#FFF3C4"/></svg></button>
   <button class="ab-act tap" id="abMe" aria-label="Profil saya" style="background:none;padding:0"></button>
   <button class="ab-act tap" id="abRefresh" aria-label="Muat ulang data"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg></button>
 </header>
@@ -478,7 +479,6 @@ body.is-off .offline{display:block}
 <!-- ================= DATA ================= -->
 <section class="view" id="v-data" data-title="Data" data-sub="Analisis titik panas sejak 2001">
   <div class="pad">
-    <button class="dcard g8 tap" data-page="bara"><span class="t">Bara Api · Asisten AI<small>Tanya perhutanan sosial, regulasi & karhutla · bahasa apa pun</small></span><span class="mock"></span></button>
     <button class="dcard g1 tap" data-page="sebaran"><span class="t">Sebaran Titik Panas<small id="dc1">Per zona, petak & satelit</small></span><span class="mock" id="mk1"></span></button>
     <button class="dcard g2 tap" data-page="grafik"><span class="t">Grafik dan Rekap<small id="dc2">Tren tahunan 2001–sekarang</small></span><span class="mock" id="mk2"></span></button>
     <button class="dcard g3 tap" data-page="cuaca"><span class="t">Cuaca &amp; Musim Api<small id="dc3">Curah hujan ERA5 & risiko</small></span><span class="mock" id="mk3"></span></button>
@@ -488,6 +488,9 @@ body.is-off .offline{display:block}
     <button class="dcard g6 tap" data-page="hutan"><span class="t">Tutupan Hutan<small id="dc6">Kehilangan pohon 2001–2025</small></span><span class="mock" id="mk6"></span></button>
   </div>
 </section>
+
+<!-- ================= BARA AI ================= -->
+<section class="view" id="v-ai" data-title="Bara AI" data-sub="Asisten AI · perhutanan sosial, regulasi, satwa"><div id="aiBox"></div></section>
 
 <!-- ================= LAPORAN ================= -->
 <section class="view" id="v-lap" data-title="Laporan" data-sub="Buat laporan PDF, Word & CSV">
@@ -576,6 +579,7 @@ body.is-off .offline{display:block}
 <nav class="tabbar" id="tabbar" role="tablist">
   <button role="tab" data-v="home" aria-selected="true"><span class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2l9 7.6V21a1 1 0 0 1-1 1h-5.5v-6.5h-5V22H4a1 1 0 0 1-1-1V10.8z"/></svg></span>Beranda</button>
   <button role="tab" data-v="fc" aria-selected="false"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 11.1 3.5 3.5 0 0 0 7 18z"/><path d="M9 21l1-2M13 21l1-2"/></svg></span>Prakiraan</button>
+  <button role="tab" data-v="ai" aria-selected="false" aria-label="Bara Api – asisten AI"><span class="ic"><b class="ai-mark">AI</b></span>Bara AI</button>
   <button role="tab" data-v="data" aria-selected="false"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 20v-6M10 20V9M15 20v-8M20 20V5"/><path d="M4 9l5-4 5 4 6-5" stroke-width="1.8"/></svg></span>Data</button>
   <button role="tab" data-v="lap" aria-selected="false"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></span>Laporan</button>
   <button role="tab" data-v="info" aria-selected="false"><span class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span>Lainnya</button>
@@ -590,7 +594,7 @@ body.is-off .offline{display:block}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="assets/bahasa.js?v=38"></script>
+<script src="assets/bahasa.js?v=39"></script>
 <script src="assets/nasa_layers.js?v=33"></script>
 <script src="assets/citra.js?v=33"></script>
 <script src="assets/akun.js?v=33"></script>
@@ -652,7 +656,7 @@ let G=null, STATUS=null, ALL=[], STATS=null, EVENTS=null, CUACA=null, FC=null, B
 let PER=store.get('per',7), SENF=store.get('sens',['MODIS','SNPP','N20','N21']), CMODE=store.get('cmode','conf');
 
 /* ---------- navigation ---------- */
-const views={home:'#v-home',fc:'#v-fc',data:'#v-data',lap:'#v-lap',info:'#v-info',unduh:'#v-info'};
+const views={home:'#v-home',fc:'#v-fc',ai:'#v-ai',data:'#v-data',lap:'#v-lap',info:'#v-info',unduh:'#v-info'};
 let CUR='home', BOOT=true; const BACK=[];
 function setBar(t,s,stack){$('#abTitle').innerHTML=t;$('#abSub').textContent=s||'';$('#appbar').classList.toggle('stack',!!stack);}
 function go(v,push=true){
@@ -663,6 +667,7 @@ function go(v,push=true){
   setBar(el.dataset.title,el.dataset.sub,false);if(v==='fc'&&FCMODE==='saya')setBar('Cuaca di lokasi saya','ECMWF · CAMS · FDRS',false);
   if(v==='home'&&MAP)setTimeout(()=>MAP.invalidateSize(),60);
   if(v==='data')loadHist();
+  if(v==='ai'&&window.FHBara&&!$('#aiBox').firstChild)FHBara.mount($('#aiBox'),{dock:true,akun:()=>{const u=window.FHAkun&&FHAkun.user();return u&&u.token?{id:u.id,token:u.token,nama:u.nama}:null;},data:baraData});
   if(push){const h=v==='home'?location.pathname+location.search:'#'+v;
     if(from==='home'&&v!=='home'&&!BOOT)history.pushState({tab:v},'',h);else history.replaceState({tab:v},'',h);}
 }
@@ -1088,7 +1093,6 @@ async function load(first){
   if(first){const deep=location.hash.length>1||new URLSearchParams(location.search).get('lokasi');const go0=()=>{if(SITES.length&&!deep){if(window.FHBeranda)FHBeranda.show({sapa:()=>{const n=window.FHAkun&&FHAkun.firstName&&FHAkun.firstName();return greet()+(n?', '+n+' 🌿':'');},pesan:semangat,hotspots:()=>ALL,ringkas:()=>{const S=SITES.map((x,k)=>siteStatus(k));return {n:SITES.length,aman:S.filter(o=>o.lvl==='ok').length,dekat:S.reduce((a,o)=>a+o.r25,0)};},onNext:()=>chooser(false)});else chooser(false);}};if(window.FHAkun)FHAkun.gate(go0);else go0();hideSplash();}
 }
 $('#abRefresh').onclick=async e=>{const b=e.currentTarget;b.style.transition='transform .8s';b.style.transform='rotate(360deg)';await load();setTimeout(()=>{b.style.transition='none';b.style.transform='';},850);};
-$('#abBara').onclick=()=>{const on=$('#page').classList.contains('on');if(on){back();setTimeout(()=>PAGES.bara(),300);}else PAGES.bara();};
 
 /* ---------- history (stats/events/weather) ---------- */
 let histP=null;
@@ -1138,7 +1142,7 @@ let REDRAW=null; function redrawCharts(){if(MAP)renderMap();if(REDRAW)REDRAW();d
 
 /* ---------- pages ---------- */
 const PAGES={
- bara(){openPage('Bara Api','Asisten AI · perhutanan sosial & regulasi','<div id="baraBox"></div>',()=>{if(window.FHBara)FHBara.mount($('#baraBox'),{akun:()=>{const u=window.FHAkun&&FHAkun.user();return u&&u.token?{id:u.id,token:u.token,nama:u.nama}:null;},data:baraData});});},
+ bara(){go('ai');},
  analisis(){openPage('Analisis area','Lahan · hutan · karbon · titik panas','<div id="anBox"></div>',()=>{if(window.FHAnalisis)FHAnalisis.mount($('#anBox'),{mode:'app',akun:()=>{const u=window.FHAkun&&FHAkun.user();return u&&u.token?{id:u.id,token:u.token,nama:u.nama}:null;}});});},
  sebaran(){
   let P=PER;
@@ -1312,7 +1316,7 @@ if('serviceWorker' in navigator){const HAD=!!navigator.serviceWorker.controller;
 <script src="assets/verifikasi.js?v=33"></script>
 <script src="assets/luring.js?v=33"></script>
 <script src="assets/analisis.js?v=33"></script>
-<script src="assets/bara.js?v=38"></script>
+<script src="assets/bara.js?v=39"></script>
 <script src="assets/peta_ecmwf.js?v=33"></script>
 <script src="assets/lokasi_saya.js?v=33"></script>
 <script src="assets/peta3d.js?v=31"></script>

@@ -206,7 +206,7 @@ const D = {
 'Kirim kode': 'Send code', 'Kirim ulang kode': 'Resend code', 'Kode verifikasi': 'Verification code', 'Lupa kata sandi?': 'Forgot password?', 'Masuk ke akun': 'Sign in to your account', 'Email': 'Email', 'Nomor HP': 'Phone number', 'Nama': 'Name', 'Alamat': 'Address', 'Umur': 'Age',
 'Titik panas': 'Hotspots', 'titik panas': 'hotspots', 'titik': 'hotspots', 'Status': 'Status', 'Hutan': 'Forest', 'Kehilangan': 'Loss', 'Tersisa': 'Remaining', 'Emisi': 'Emissions', 'Serapan': 'Removals', 'Karbon': 'Carbon', 'Tahun': 'Year', 'Bulan': 'Month', 'Minggu ini': 'This week',
 'Peta': 'Map', 'Grafik': 'Chart', 'Tabel': 'Table', 'Ringkasan': 'Summary', 'Unduh PDF': 'Download PDF', 'Unduh Word': 'Download Word', 'Unduh CSV': 'Download CSV', 'Memuat data…': 'Loading data…', 'Tidak ada data': 'No data', 'Tidak ada titik': 'No hotspots',
-'Bahasa': 'Language', 'Bahasa · Language': 'Bahasa · Language',
+'Bara AI': 'Bara AI', 'Asisten AI · perhutanan sosial, regulasi, satwa': 'AI assistant · social forestry, regulations, wildlife', 'Bahasa': 'Language', 'Bahasa · Language': 'Bahasa · Language',
 "Ambil foto": "Take photo",
 "Api aktif": "Active fire",
 "Bekas terbakar baru": "New burn scar",

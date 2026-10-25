@@ -46,6 +46,14 @@ if (!document.getElementById('fhbara-css')) {
   st.textContent = `.bara{display:flex;flex-direction:column;height:100%;min-height:calc(100vh - 140px);color:var(--fg,#111)}
   .bara-hd{display:flex;gap:12px;align-items:center;padding:14px;border-radius:20px;background:linear-gradient(135deg,#3A1404,#8E2A0E 55%,#E2621B);color:#fff}
   .bara-av{flex:none;width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:rgba(255,255,255,.14)}
+  .bara-ai{font:800 17px/1 var(--f,system-ui);letter-spacing:.04em;color:#fff}
+  .bara.dock{min-height:0;padding:14px 16px 0}
+  .bara.dock .bara-log{padding:16px 0 8px}
+  .bara.dock .bara-sg{padding:4px 0 calc(var(--bara-in,84px) + 14px)}
+  .bara.dock.has-hist .bara-log{padding-bottom:calc(var(--bara-in,84px) + 14px)}
+  .bara.dock .bara-in{position:fixed;left:0;right:0;bottom:var(--tab,64px);z-index:58;gap:10px;align-items:flex-end;padding:12px 16px 12px;background:var(--bg,#f4f6f4);border-top:1px solid var(--line,#e3e8e4);box-shadow:0 -6px 18px rgba(0,0,0,.08)}
+  .bara.dock .bara-in textarea{min-height:50px;padding:14px 16px;border-radius:18px;line-height:1.35}
+  .bara.dock .bara-in button{width:50px;height:50px;border-radius:18px}
   .bara-hd b{display:block;font-size:18px}.bara-hd small{display:block;font-size:12px;opacity:.85;line-height:1.4}
   .bara-log{flex:1;display:flex;flex-direction:column;gap:10px;padding:14px 2px}
   .bara-m{max-width:88%;padding:10px 13px;border-radius:18px;font-size:14.5px;line-height:1.5;word-wrap:break-word}
@@ -62,7 +70,7 @@ if (!document.getElementById('fhbara-css')) {
   .bara-note{font-size:11px;color:var(--muted,#6b766f);line-height:1.45;margin:8px 2px 0}.bara-x{margin-left:auto;background:rgba(255,255,255,.16);border:0;color:#fff;border-radius:10px;padding:7px 10px;font:700 11.5px var(--f,system-ui);cursor:pointer}`;
   document.head.appendChild(st);
 }
-const IKON = '<svg width="28" height="28" viewBox="0 0 24 28" aria-hidden="true"><path d="M12 1.5c.7 3.7 3 5.6 5 7.8 1.9 2.1 3.2 4.5 3.2 7.3A8.2 8.2 0 0 1 12 24.8a8.2 8.2 0 0 1-8.2-8.2c0-2.7 1.2-4.7 2.7-6.3.2 1.6 1 2.9 2.3 3.6-.4-4.2 1-8.5 3.2-12.4z" fill="#FFB547"/><path d="M12 13.4c.5 1.6 1.9 2.5 1.9 4.3a2.2 2.2 0 0 1-1.9 2.4 2.3 2.3 0 0 1-2.3-2.3c0-1.7 1.1-2.8 2.3-4.4z" fill="#FFF3C4"/></svg>';
+const IKON = '<b class="bara-ai">AI</b>';
 const T = {
   id: { sub: 'Asisten AI Fire Hotspot · perhutanan sosial, regulasi, karhutla, status satwa (IUCN/CITES) · semua bahasa', baru: 'Obrolan baru', ph: 'Tanya Bara Api… (bahasa apa pun)', kirim: 'Kirim',
     note: d => `Jawaban soal peraturan diambil dari teks resmi yang diunduh dari situs pemerintah${d} dan disertai rujukan pasal; status satwa/tumbuhan dari IUCN Red List, CITES (Species+) & Permen LHK P.106/2018. AI tetap bisa keliru: periksa rujukannya dan konfirmasi ke instansi resmi untuk keputusan penting. Jangan menulis data pribadi: pesan diproses layanan Google Gemini dan dicatat oleh PRCF untuk menjaga mutu & keamanan (UU PDP 27/2022).`,
@@ -88,7 +96,7 @@ function sapaan(r) {   // sapaan otomatis dari data aplikasi (tanpa AI, tanpa ku
 }
 function mount(el, o = {}) {
   const X = T[lang()];
-  el.innerHTML = `<div class="bara" data-notr><div class="bara-hd"><div class="bara-av">${IKON}</div><div style="min-width:0"><b>Bara Api</b><small>${X.sub}</small></div><button class="bara-x" data-clr>${X.baru}</button></div>
+  el.innerHTML = `<div class="bara${o.dock ? ' dock' : ''}" data-notr><div class="bara-hd"><div class="bara-av">${IKON}</div><div style="min-width:0"><b>Bara Api</b><small>${X.sub}</small></div><button class="bara-x" data-clr>${X.baru}</button></div>
     <p class="bara-note" data-note>${X.note('')}</p>
     <div class="bara-log" data-log></div><div class="bara-sg" data-sg></div>
     <div class="bara-in"><textarea rows="1" placeholder="${X.ph}" aria-label="${X.ph}" maxlength="2000"></textarea><button data-send aria-label="${X.kirim}"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20l18-8L3 4v6l12 2-12 2z"/></svg></button></div></div>`;
@@ -99,7 +107,9 @@ function mount(el, o = {}) {
       hist.map(m => m.r === 'u' ? `<div class="bara-m bara-u">${esc(m.t).replace(/\n/g, '<br>')}</div>` : `<div class="bara-m bara-a">${md(m.t)}${m.src && m.src.length ? `<div class="bara-src">${m.src.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener" title="${esc(s.judul)}">${s.n ? '[' + s.n + '] ' : ''}${esc(s.singkat)} · ${esc(chip(s.pasal))}</a>`).join('')}</div>` : ''}${m.err ? '' : `<div class="bara-meta">${esc(m.w || '')}</div>`}</div>`).join('') + (busy ? '<div class="bara-typing"><i></i><i></i><i></i></div>' : '');
     $('[data-sg]').innerHTML = hist.length ? '' : X.saran.map(s => `<button>${esc(s)}</button>`).join('');
     $('[data-sg]').querySelectorAll('button').forEach(b => b.onclick = () => kirim(b.textContent));
-    if (hist.length) requestAnimationFrame(() => { const sc = el.closest('.page') || document.getElementById('page') || document.scrollingElement; sc.scrollTop = sc.scrollHeight; });
+    el.firstElementChild.classList.toggle('has-hist', hist.length > 0);
+    const box = el.querySelector('.bara-in'); if (box) el.firstElementChild.style.setProperty('--bara-in', box.offsetHeight + 'px');
+    if (hist.length) requestAnimationFrame(() => { const sc = el.closest('.view') || el.closest('.page') || document.scrollingElement; sc.scrollTop = sc.scrollHeight; });
   };
   const muatData = async () => { try { DATA = o.data ? await o.data() : null; } catch (e) { DATA = null; } return DATA; };
   async function kirim(t) {
@@ -120,7 +130,7 @@ function mount(el, o = {}) {
     hist.push(ans); busy = false; btn.disabled = false; H.set(hist.filter(m => !m.err || m.r === 'u')); draw();
   }
   btn.onclick = () => kirim(); ta.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); kirim(); } };
-  ta.oninput = () => { ta.style.height = 'auto'; ta.style.height = Math.min(140, ta.scrollHeight) + 'px'; };
+  ta.oninput = () => { ta.style.height = 'auto'; ta.style.height = Math.min(140, ta.scrollHeight) + 'px'; el.firstElementChild.style.setProperty('--bara-in', el.querySelector('.bara-in').offsetHeight + 'px'); };
   $('[data-clr]').onclick = () => { hist = []; H.set(hist); draw(); };
   draw();
   muatData().then(d => { hi = sapaan(Object.assign({ n7: 0 }, d && d.ringkas, !d || !d.ringkas || !d.ringkas.nama ? { nama: o.akun && o.akun() && o.akun().nama ? o.akun().nama.split(' ')[0] : '' } : {})); draw(); });
