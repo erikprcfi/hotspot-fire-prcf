@@ -26,13 +26,16 @@ DOCS = [  # kode, judul resmi, tautan resmi (cermin situs pemerintah, dicoba ber
  ("PermenLHK-32-2016", "Peraturan Menteri LHK Nomor P.32/MENLHK/SETJEN/KUM.1/3/2016 tentang Pengendalian Kebakaran Hutan dan Lahan",
   ["https://peraturan.go.id/files/bn583-2016.pdf", "https://www.peraturan.go.id/files/bn583-2016.pdf",
    "https://jdih.kalteng.go.id/storage/app/uploads/public/67a/af5/c2a/67aaf5c2ae52e988327205.pdf"]),
+ ("PermenLHK-106-2018", "Peraturan Menteri LHK Nomor P.106/MENLHK/SETJEN/KUM.1/12/2018 tentang Jenis Tumbuhan dan Satwa yang Dilindungi",
+  ["https://jdih.kemenkoinfra.go.id/id/peraturan-menteri-lingkungan-hidup-dan-kehutanan-no-p106menlhksetjenkum1122018-tahun-2018",
+   "https://jdih.kemenkoinfra.go.id/en/peraturan-menteri-lingkungan-hidup-dan-kehutanan-no-p106menlhksetjenkum1122018-tahun-2018"]),
  ("UU-32-2009", "Undang-Undang Nomor 32 Tahun 2009 tentang Perlindungan dan Pengelolaan Lingkungan Hidup",
   ["https://jdih.esdm.go.id/storage/document/UU%2032%20Tahun%202009%20(PPLH).pdf", "https://jdih.kemenkeu.go.id/api/download/fulltext/2009/32TAHUN2009UU.htm"]),
  ("PermenLHK-4-2023", "Peraturan Menteri LHK Nomor 4 Tahun 2023 tentang Pengelolaan Perhutanan Sosial pada Kawasan Hutan dengan Pengelolaan Khusus",
   ["https://peraturan.bpk.go.id/Details/253766", "https://jdih.kemenkoinfra.go.id/permen-lhk-no-4-tahun-2023",
    "https://sipops.dlhk.nttprov.go.id/file/regulation/Permen%20LHK%20No.4%20Tahun%202023.pdf"]),
 ]
-CEK = {'UU-41-1999': 'NOMOR\\s+41\\s+TAHUN\\s+1999', 'PP-23-2021': 'NOMOR\\s+23\\s+TAHUN\\s+2021', 'PermenLHK-9-2021': 'NOMOR\\s+9\\s+TAHUN\\s+2021', 'Perpres-28-2023': 'NOMOR\\s+28\\s+TAHUN\\s+2023', 'PermenLHK-32-2016': 'P\\.?\\s*32\\s*/\\s*MENLHK', 'PermenLHK-4-2023': 'NOMOR\\s+4\\s+TAHUN\\s+2023', 'UU-32-2009': 'NOMOR\\s+32\\s+TAHUN\\s+2009'}   # identitas wajib ada di awal naskah (mencegah PDF lain ikut terambil)
+CEK = {'UU-41-1999': 'NOMOR\\s+41\\s+TAHUN\\s+1999', 'PP-23-2021': 'NOMOR\\s+23\\s+TAHUN\\s+2021', 'PermenLHK-9-2021': 'NOMOR\\s+9\\s+TAHUN\\s+2021', 'Perpres-28-2023': 'NOMOR\\s+28\\s+TAHUN\\s+2023', 'PermenLHK-32-2016': 'P\\.?\\s*32\\s*/\\s*MENLHK', 'PermenLHK-4-2023': 'NOMOR\\s+4\\s+TAHUN\\s+2023', 'UU-32-2009': 'NOMOR\\s+32\\s+TAHUN\\s+2009', 'PermenLHK-106-2018': 'P\\.?\\s*106\\s*/\\s*MENLHK'}   # identitas wajib ada di awal naskah (mencegah PDF lain ikut terambil)
 UA = {"User-Agent": "Mozilla/5.0 (FireHotspot-PRCF kb_build; +https://github.com/erikprcfi/hotspot-fire-prcf)"}
 import html as _html, urllib.parse
 def _get(url):
@@ -85,7 +88,7 @@ def potong(kode, judul, url, t):
     out = []
     for pref, seg in bagian(t):
         if pref.startswith("Lampiran"):   # lampiran = format/contoh dokumen, tidak dipecah per pasal
-            out.append(("Lampiran (format/contoh)", seg.strip())); continue
+            out.append(("Lampiran", seg.strip())); continue
         parts = re.split(r"\n\s*(Pasal\s+\d+[A-Z]?)\s*\n", "\n" + seg)
         head = parts[0].strip()
         if head: out.append((pref + "bagian umum" if pref else ("Pembukaan & ketentuan awal" if not out else "Penutup"), head))
