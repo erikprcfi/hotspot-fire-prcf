@@ -61,7 +61,7 @@ async function esriDate(lat, lon) { // tanggal rekam citra Esri di titik (dari l
   } catch (e) { return (cache[k] = null); }
 }
 async function info(kind, lat, lon, z) {
-  if (kind === 'terbaik') return Math.round(z) >= 15 ? info('esri', lat, lon) : 'Sentinel-2 bebas awan 2025 · 10 m (dekatkan untuk citra resolusi tinggi)';
+  if (kind === 'terbaik') return Math.round(z) >= 15 ? info('esri', lat, lon) : 'Sentinel-2 2025 · 10 m';
   if (kind === 's2026') return `Sentinel-2 10 m · komposit bebas awan ${periodeTxt()}`;
   if (kind === 'eox') return 'Sentinel-2 10 m · mosaik bebas awan 2025';
   if (kind === 'esri') { const d = await esriDate(lat, lon); return `Esri resolusi tinggi · direkam ${d || 'tanggal tidak tersedia'}`; }

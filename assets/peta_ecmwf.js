@@ -78,7 +78,7 @@ function mount(el, o = {}) {
   function label() {
     const t = times[ti], dh = Math.round((t - t0) / 36e5);
     $('.fhec-vt').innerHTML = `${fmtT.format(new Date(t))}<small>${fc(t)} · ${dh >= 0 ? 'T+' : 'T'}${dh} jam · model CAMS</small>`;
-    $('.fhec-ft').innerHTML = `<img alt="Legenda" src="${WMS}&request=GetLegend&layers=${LY[li].layer}&styles=${LY[li].style}&width=350&height=50" loading="lazy">${esc(LY[li].info)} Nilai lebih rendah dibiarkan transparan sehingga citra satelit asli terlihat. <b>Hasil model</b> (grid ±40 km), bukan alat ukur; asap dari kebakaran yang baru muncul bisa belum tercakup.<br>Sumber: Copernicus Atmosphere Monitoring Service (CAMS) melalui layanan peta publik ECMWF; nilai di titik: CAMS global via Open-Meteo.`;
+    $('.fhec-ft').innerHTML = `<img alt="Legenda" src="${WMS}&request=GetLegend&layers=${LY[li].layer}&styles=${LY[li].style}&width=350&height=50" loading="lazy"><p style="margin:6px 0 0">${esc(LY[li].info)} Nilai lebih rendah dibiarkan transparan sehingga citra satelit asli terlihat. <b>Hasil model</b> (grid ±40 km), bukan alat ukur; asap dari kebakaran yang baru muncul bisa belum tercakup.<br>Sumber: Copernicus Atmosphere Monitoring Service (CAMS) melalui layanan peta publik ECMWF; nilai di titik: CAMS global via Open-Meteo.</p>`;
     pv();
   }
   function pv() {

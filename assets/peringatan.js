@@ -11,7 +11,7 @@ const en = () => window.FHLang && FHLang.get() === 'en';
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const T = () => en() ? {
   judul: 'Automatic early warning', sub: 'Get notified without opening the app',
-  info: 'The PRCF server checks every 3 hours and alerts you when: (1) a new NASA FIRMS hotspot appears inside the village/Village Forest or within 5 km of the village boundary; (2) forecast fire danger (FDRS, BMKG/ECMWF) reaches High or Extreme within 3 days.',
+  info: 'Checked every 3 hours: new hotspots within 5 km of the village, and High/Extreme fire danger in the next 3 days.',
   pilih: 'Village Forests to watch', hp: 'Notifications on this phone', mail: 'Email to', simpan: 'Save', coba: 'Test notification',
   masuk: 'Sign in with a verified account to subscribe.', ok: 'Saved ✓ Early warnings are active.', off: 'Saved ✓ Early warnings are off.', gagal: 'Failed to save. Check your internet and try again.',
   izin: 'Notification permission was denied. Allow notifications for this app in your phone settings, then try again.', tidak: 'This browser does not support push notifications. Email alerts still work.',
@@ -19,7 +19,7 @@ const T = () => en() ? {
   ujiJ: '🔥 Test – Fire Hotspot', ujiI: 'Notifications work on this phone. Real alerts come from the PRCF server.', memuat: 'Loading subscription…', status: n => `${n} device(s) receiving notifications`
 } : {
   judul: 'Peringatan dini otomatis', sub: 'Diberi tahu tanpa perlu membuka aplikasi',
-  info: 'Server PRCF memeriksa setiap 3 jam dan memberi tahu bila: (1) ada titik panas baru NASA FIRMS di dalam desa/Hutan Desa atau ≤5 km dari batas desa; (2) prakiraan bahaya kebakaran (FDRS, BMKG/ECMWF) mencapai Tinggi atau Ekstrem dalam 3 hari ke depan.',
+  info: 'Diperiksa setiap 3 jam: titik panas baru ≤5 km dari desa dan bahaya kebakaran Tinggi/Ekstrem dalam 3 hari ke depan.',
   pilih: 'Hutan Desa yang dipantau', hp: 'Notifikasi di HP ini', mail: 'Email ke', simpan: 'Simpan', coba: 'Coba notifikasi',
   masuk: 'Masuk dengan akun terverifikasi untuk berlangganan.', ok: 'Tersimpan ✓ Peringatan dini aktif.', off: 'Tersimpan ✓ Peringatan dini dimatikan.', gagal: 'Gagal menyimpan. Periksa internet lalu coba lagi.',
   izin: 'Izin notifikasi ditolak. Izinkan notifikasi untuk aplikasi ini di pengaturan HP, lalu coba lagi.', tidak: 'Peramban ini tidak mendukung notifikasi push. Peringatan lewat email tetap berjalan.',

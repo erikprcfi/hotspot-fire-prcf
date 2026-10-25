@@ -206,7 +206,7 @@ const D = {
 'Kirim kode': 'Send code', 'Kirim ulang kode': 'Resend code', 'Kode verifikasi': 'Verification code', 'Lupa kata sandi?': 'Forgot password?', 'Masuk ke akun': 'Sign in to your account', 'Email': 'Email', 'Nomor HP': 'Phone number', 'Nama': 'Name', 'Alamat': 'Address', 'Umur': 'Age',
 'Titik panas': 'Hotspots', 'titik panas': 'hotspots', 'titik': 'hotspots', 'Status': 'Status', 'Hutan': 'Forest', 'Kehilangan': 'Loss', 'Tersisa': 'Remaining', 'Emisi': 'Emissions', 'Serapan': 'Removals', 'Karbon': 'Carbon', 'Tahun': 'Year', 'Bulan': 'Month', 'Minggu ini': 'This week',
 'Peta': 'Map', 'Grafik': 'Chart', 'Tabel': 'Table', 'Ringkasan': 'Summary', 'Unduh PDF': 'Download PDF', 'Unduh Word': 'Download Word', 'Unduh CSV': 'Download CSV', 'Memuat data…': 'Loading data…', 'Tidak ada data': 'No data', 'Tidak ada titik': 'No hotspots',
-'Bara Api': 'Bara Api', 'Asisten AI · perhutanan sosial, regulasi, satwa': 'AI assistant · social forestry, regulations, wildlife', 'Peringatan dini': 'Early warning', 'Bahasa': 'Language', 'Bahasa · Language': 'Bahasa · Language',
+'Bara Api': 'Bara Api', 'Asisten AI · perhutanan sosial, regulasi, satwa': 'AI assistant · social forestry, regulations, wildlife', 'Peringatan dini': 'Early warning', "Ringkasan": "Summary", "Alat": "Tools", "Analisis data": "Data analysis", "Status 7 hari": "7-day status", "Bahaya kebakaran": "Fire danger", "PM# · µg/m³": "PM# · µg/m³", "Peringatan": "Alerts", "Analisis SHP": "SHP analysis", "Tutupan hutan": "Forest cover", "Peta luring": "Offline map", "Pusat kendali & analisis": "Control centre & analysis", "Selengkapnya ›": "More ›", "Ringkas ‹": "Less ‹", "Sentinel-# # · # m": "Sentinel-# # · # m", "Titik panas ≤# km": "Hotspots ≤# km", 'Bahasa': 'Language', 'Bahasa · Language': 'Bahasa · Language',
 "Ambil foto": "Take photo",
 "Api aktif": "Active fire",
 "Bekas terbakar baru": "New burn scar",
@@ -380,7 +380,7 @@ function mulai() {
 function picker(el) {
   if (!el) return;
   el.innerHTML = `<div class="seg" data-notr style="display:flex;gap:6px;flex-wrap:wrap"><button class="chip" data-l="id" aria-pressed="${L === 'id'}">🇮🇩 Bahasa Indonesia</button><button class="chip" data-l="en" aria-pressed="${L === 'en'}">🇬🇧 English</button></div>
-    <p data-notr style="margin:8px 2px 0;font-size:11.5px;line-height:1.45;color:var(--muted,#6b766f)">${L === 'en' ? 'English is a manual translation of the interface. Official names, regulations and source data stay in their original language. Bara Api answers in the language you write in.' : 'Bahasa Inggris adalah terjemahan manual antarmuka. Nama resmi, peraturan & data sumber tetap dalam bahasa aslinya. Bara Api menjawab sesuai bahasa yang Anda tulis.'}</p>`;
+    <p data-notr style="margin:8px 2px 0;font-size:11.5px;line-height:1.45;color:var(--muted,#6b766f)">${L === 'en' ? 'Official names and source data stay in their original language.' : 'Nama resmi dan data sumber tetap dalam bahasa aslinya.'}</p>`;
   el.querySelectorAll('[data-l]').forEach(b => b.onclick = () => set(b.dataset.l));
 }
 function set(l) { l = l === 'en' ? 'en' : 'id'; try { localStorage.setItem(KEY, l); } catch (e) { } if (l !== L) location.reload(); }
