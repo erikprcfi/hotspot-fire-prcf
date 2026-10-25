@@ -233,6 +233,14 @@ def ingest_nrt(recs, prov):
         kept = 0
         sp_max = max((r["acq_date"] for r in recs.values() if r["status_data"] == "SP" and r["sensor"] == s["nama"]), default="")
         for r in rows:
+            try:   # salinan ringkas seluruh Indonesia (untuk "titik panas terdekat" dari lokasi pengguna di mana pun)
+                la, lo = float(r["latitude"]), float(r["longitude"])
+                if -11.5 <= la <= 6.5 and 94.5 <= lo <= 141.5:
+                    t = str(r["acq_time"]).zfill(4)
+                    mnt = int(datetime.datetime.strptime(r["acq_date"] + t, "%Y-%m-%d%H%M").replace(tzinfo=datetime.timezone.utc).timestamp() // 60)
+                    IDN.append([round(la, 4), round(lo, 4), mnt, list(SENSORS).index(sid), round(num(r.get("frp")), 1)])
+            except Exception:
+                pass
             if not in_bbox(r):
                 continue
             kept += 1
@@ -243,7 +251,19 @@ def ingest_nrt(recs, prov):
                 recs[nr["uid"]] = nr; new += 1
         rec["baris_di_kotak"] = kept
         prov.append(rec)
+    if IDN:   # dipecah per petak 1°×1° agar HP hanya memuat petak di sekitar pengguna
+        out = os.path.join(DATA, "titik_id"); os.makedirs(out, exist_ok=True)
+        tiles = defaultdict(list)
+        for row in IDN: tiles[f"{math.floor(row[0])}_{math.floor(row[1])}"].append(row)
+        for f in glob.glob(os.path.join(out, "*_*.json")):
+            if os.path.basename(f)[:-5] not in tiles: os.remove(f)
+        for k, L in tiles.items():
+            json.dump(L, open(os.path.join(out, k + ".json"), "w"), separators=(",", ":"))
+        json.dump({"diperbarui_utc": NOW_S, "sumber": "NASA FIRMS near real-time 7 hari (berkas Asia Tenggara), disaring ke wilayah Indonesia; tiap baris = [lat, lon, menit sejak 1970 UTC, sensor, FRP MW]",
+                   "sensor": [SENSORS[k]["nama"] for k in SENSORS], "ubin": {k: len(v) for k, v in tiles.items()}},
+                  open(os.path.join(out, "indeks.json"), "w"), separators=(",", ":"))
     return new
+IDN = []
 
 def ingest_sp(recs, prov, years, force=False):
     """Cek arsip tahunan NASA; bila ada versi baru, ganti catatan tahun-sensor tsb."""

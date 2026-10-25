@@ -49,7 +49,7 @@ function loadML() {
 }
 function zona() { const o = -new Date().getTimezoneOffset() / 60; return o === 7 ? 'WIB' : o === 8 ? 'WITA' : o === 9 ? 'WIT' : 'UTC' + (o >= 0 ? '+' : '') + o; }
 function dist(a, b, c, d) { const r = x => x * Math.PI / 180, h = Math.sin(r(c - a) / 2) ** 2 + Math.cos(r(a)) * Math.cos(r(c)) * Math.sin(r(d - b) / 2) ** 2; return 12742 * Math.asin(Math.min(1, Math.sqrt(h))); }
-let MAP = null, RAF = 0, TICK = 0, WID = null;
+let MAP = null, RAF = 0, TICK = 0, WID = null, REF = 0, VIS = null;
 function show(o = {}) {
   css(); if (document.getElementById('fhb')) return;
   const el = document.createElement('div'); el.id = 'fhb'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Beranda');
@@ -98,20 +98,28 @@ function show(o = {}) {
     $('#fhbCoord').textContent = `${lat.toFixed(5)}, ${lon.toFixed(5)}${acc != null ? ' · GPS ±' + (acc < 1000 ? Math.round(acc) + ' m' : N1(acc / 1000) + ' km') : ''}${src ? ' · ' + src : ''}`;
     if (window.FHWilayah) FHWilayah.lookup(lat, lon).then(w => { $('#fhbPlace').textContent = w ? FHWilayah.label(w) : 'Di luar wilayah administrasi Indonesia yang tercatat'; }).catch(() => { $('#fhbPlace').textContent = 'Lokasi Anda'; });
     else $('#fhbPlace').textContent = 'Lokasi Anda';
-    cuaca(lat, lon); udara(lat, lon); titik(lat, lon);
+    cuaca.n = 0; udara.n = 0; LAST = [lat, lon]; cuaca(lat, lon); udara(lat, lon); titik(lat, lon);
   };
   const cuaca = async (lat, lon) => { try { const j = await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&models=ecmwf_ifs025&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,is_day&timezone=auto`)).json(), c = j.current;
       $('#fhbIc').innerHTML = window.FHLokasi ? FHLokasi.icon(c.weather_code, c.is_day, 40) : ''; $('#fhbT').textContent = Math.round(c.temperature_2m) + '°C';
-      $('#fhbW').textContent = `${WMO[c.weather_code] || ''} · terasa ${Math.round(c.apparent_temperature)}° · RH ${Math.round(c.relative_humidity_2m)}% · angin ${N1(c.wind_speed_10m)} km/j dari ${ARAH[Math.round(c.wind_direction_10m / 45) % 8]}`; }
+      $('#fhbW').textContent = `${WMO[c.weather_code] || ''} · terasa ${Math.round(c.apparent_temperature)}° · RH ${Math.round(c.relative_humidity_2m)}% · angin ${N1(c.wind_speed_10m)} km/j dari ${ARAH[Math.round(c.wind_direction_10m / 45) % 8]} · ECMWF ${c.time.slice(11, 16)}`; }
     catch (e) { if (!cuaca.n) { cuaca.n = 1; return setTimeout(() => cuaca(lat, lon), 4000); } $('#fhbT').textContent = '–'; $('#fhbW').textContent = 'Cuaca belum dapat dimuat (perlu internet).'; } };
   const udara = async (lat, lon) => { try { const j = await (await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&current=pm2_5&hourly=pm2_5&past_days=1&forecast_days=1&timezone=auto&domains=cams_global`)).json();
       const H = j.hourly, nowL = j.current.time.slice(0, 13), i = Math.max(0, H.time.findIndex(t => t.slice(0, 13) >= nowL)), v = H.pm2_5.slice(Math.max(0, i - 23), i + 1).filter(x => x != null), m = v.reduce((a, b) => a + b, 0) / Math.max(1, v.length), k = ispu(m);
-      $('#fhbPM').innerHTML = `${Math.round(m)}<small style="font-size:12px;font-weight:500"> µg/m³</small>`; $('#fhbPMt').innerHTML = `PM2.5 rata-rata 24 jam<br><span class="fhb-pill" style="background:${KC[k]}">${KAT[k]}</span>`; }
+      $('#fhbPM').innerHTML = `${Math.round(m)}<small style="font-size:12px;font-weight:500"> µg/m³</small>`; $('#fhbPMt').innerHTML = `PM2.5 rata-rata 24 jam · CAMS<br><span class="fhb-pill" style="background:${KC[k]}">${KAT[k]}</span>`; }
     catch (e) { if (!udara.n) { udara.n = 1; return setTimeout(() => udara(lat, lon), 4000); } $('#fhbPM').textContent = '–'; $('#fhbPMt').textContent = 'Belum dapat dimuat.'; } };
-  const titik = (lat, lon) => { const H = (o.hotspots ? o.hotspots() : []) || []; const wk = H.filter(p => Date.now() - p.when <= 7 * 864e5 + 36e5).map(p => dist(lat, lon, p.la, p.lo)).sort((a, b) => a - b);
+  const titik = async (lat, lon) => {
+    if (window.FHTitikID) { try { const r = await FHTitikID.terdekat(lat, lon, { hari: 7 });
+        if (r.jarak_km == null) { $('#fhbHS').textContent = 'Nihil'; $('#fhbHSt').textContent = 'Tidak ada titik NASA dalam ±800 km · 7 hari'; return; }
+        const d = r.jarak_km, wk = new Date(r.titik.when + 7 * 36e5);
+        $('#fhbHS').innerHTML = `${d < 100 ? N1(d) : Math.round(d).toLocaleString('id-ID')}<small style="font-size:12px;font-weight:500"> km</small>`;
+        $('#fhbHSt').textContent = `${r.n25} titik ≤ 25 km · 7 hari · terdekat ${wk.getUTCDate()}/${wk.getUTCMonth() + 1} ${String(wk.getUTCHours()).padStart(2, '0')}.${String(wk.getUTCMinutes()).padStart(2, '0')} WIB`; return; } catch (e) { /* jatuh ke data Kapuas Hulu */ } }
+    const H = (o.hotspots ? o.hotspots() : []) || []; const wk = H.filter(p => Date.now() - p.when <= 7 * 864e5 + 36e5).map(p => dist(lat, lon, p.la, p.lo)).sort((a, b) => a - b);
     if (!H.length) { $('#fhbHS').textContent = '–'; $('#fhbHSt').textContent = 'Data titik panas sedang dimuat'; setTimeout(() => titik(lat, lon), 3000); return; }
     if (!wk.length) { $('#fhbHS').textContent = 'Nihil'; $('#fhbHSt').textContent = 'Tidak ada titik dalam 7 hari (wilayah pantauan Kapuas Hulu)'; return; }
     $('#fhbHS').innerHTML = `${wk[0] < 100 ? N1(wk[0]) : Math.round(wk[0]).toLocaleString('id-ID')}<small style="font-size:12px;font-weight:500"> km</small>`; $('#fhbHSt').textContent = `${wk.filter(d => d <= 25).length} titik ≤ 25 km · 7 hari · wilayah pantauan Kapuas Hulu`; };
+  let LAST = null; const segarkan = () => { if (!LAST || !document.getElementById('fhb')) return; cuaca.n = 0; udara.n = 0; cuaca(...LAST); udara(...LAST); titik(...LAST); };
+  REF = setInterval(segarkan, 10 * 6e4); VIS = () => { if (!document.hidden) segarkan(); }; document.addEventListener('visibilitychange', VIS);
   let saved = null; try { saved = JSON.parse(localStorage.getItem('fh_beranda_loc')); } catch (e) { }
   if (saved && saved.lat) pakai(saved.lat, saved.lon, saved.acc ?? null, 'lokasi terakhir');
   if (navigator.geolocation) { let best = null; const t0 = Date.now();
@@ -122,7 +130,7 @@ function show(o = {}) {
   } else if (!saved) pakai(DEF.lat, DEF.lon, null, 'GPS tidak tersedia');
 }
 function close(next) {
-  const el = document.getElementById('fhb'); if (!el) return; clearInterval(TICK); cancelAnimationFrame(RAF); if (WID != null) { navigator.geolocation.clearWatch(WID); WID = null; }
+  const el = document.getElementById('fhb'); if (!el) return; clearInterval(TICK); clearInterval(REF); if (VIS) document.removeEventListener('visibilitychange', VIS); cancelAnimationFrame(RAF); if (WID != null) { navigator.geolocation.clearWatch(WID); WID = null; }
   el.classList.add('out'); if (next) next();
   setTimeout(() => { try { if (MAP) MAP.remove(); } catch (e) { } MAP = null; el.remove(); }, 500);
 }

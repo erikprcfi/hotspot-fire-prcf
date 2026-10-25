@@ -167,8 +167,8 @@ function view(el, X, opt) {
   const C = X.E.current, name = X.label || placeName(X.R, '', X.W), dirI = Math.round((C.wind_direction_10m || 0) / 45) % 8;
   const D = X.E.daily, sr = D.sunrise && D.sunrise[0] ? D.sunrise[0].slice(11) : '', ss = D.sunset && D.sunset[0] ? D.sunset[0].slice(11) : '';
   const F = fdrs(X);
-  let near = '';
-  if (opt.hotspots && opt.hotspots.length) { const R = 6371, rad = x => x * Math.PI / 180; const dist = p => 2 * R * Math.asin(Math.sqrt(Math.sin(rad(p.la - X.lat) / 2) ** 2 + Math.cos(rad(X.lat)) * Math.cos(rad(p.la)) * Math.sin(rad(p.lo - X.lon) / 2) ** 2));
+  let near = window.FHTitikID ? '<div class="lx-card" id="lxNear"><h4>Titik panas di sekitar Anda · 7 hari</h4><p class="lx-note">Memuat data NASA FIRMS…</p></div>' : '';
+  if (!window.FHTitikID && opt.hotspots && opt.hotspots.length) { const R = 6371, rad = x => x * Math.PI / 180; const dist = p => 2 * R * Math.asin(Math.sqrt(Math.sin(rad(p.la - X.lat) / 2) ** 2 + Math.cos(rad(X.lat)) * Math.cos(rad(p.la)) * Math.sin(rad(p.lo - X.lon) / 2) ** 2));
     const inBox = X.lon >= 111.45 && X.lon <= 114.3 && X.lat >= 0 && X.lat <= 1.7;
     if (inBox) { const wk = opt.hotspots.filter(p => Date.now() - p.when <= 7 * 864e5 + 36e5).map(p => ({ p, d: dist(p) })).sort((a, b) => a.d - b.d);
       near = `<div class="lx-card"><h4>Titik panas di sekitar Anda · 7 hari</h4><div class="lx-two"><div><div class="lx-big">${wk.filter(x => x.d <= 25).length}</div><div class="lx-note" style="margin:0">titik ≤ 25 km</div></div><div><div class="lx-big">${wk.length ? N1(wk[0].d) : '–'}<small style="font-size:14px"> km</small></div><div class="lx-note" style="margin:0">titik terdekat</div></div></div><p class="lx-note">Basis data NASA FIRMS Fire Hotspot (Kapuas Hulu).</p></div>`; }
@@ -196,6 +196,9 @@ function view(el, X, opt) {
   el.querySelector('[data-a=map]').onclick = () => opt.onMap && opt.onMap(X.lat, X.lon);
   el.querySelector('[data-a=gps]').onclick = () => gps(el, opt, true);
   el.querySelector('[data-a=cari]').onclick = () => search(el, opt);
+  const nb = el.querySelector('#lxNear'); if (nb) FHTitikID.terdekat(X.lat, X.lon, { hari: 7 }).then(r => {
+    nb.innerHTML = `<h4>Titik panas di sekitar Anda · 7 hari</h4><div class="lx-two"><div><div class="lx-big">${r.n25}</div><div class="lx-note" style="margin:0">titik ≤ 25 km</div></div><div><div class="lx-big">${r.jarak_km == null ? '–' : r.jarak_km < 100 ? N1(r.jarak_km) : Math.round(r.jarak_km).toLocaleString('id-ID')}<small style="font-size:14px"> km</small></div><div class="lx-note" style="margin:0">titik terdekat${r.titik ? ' · ' + esc(r.titik.sensor) : ''}</div></div></div><p class="lx-note">NASA FIRMS near real-time, seluruh Indonesia (diperbarui otomatis tiap 3 jam).</p>`;
+  }).catch(() => { nb.innerHTML = '<h4>Titik panas di sekitar Anda · 7 hari</h4><p class="lx-note">Data belum dapat dimuat (perlu internet).</p>'; });
 }
 function search(el, opt) {
   if (opt.searchEl && window.FHCari) { opt.searchEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); const i = opt.searchEl.querySelector('input'); if (i) setTimeout(() => i.focus(), 300); return; }

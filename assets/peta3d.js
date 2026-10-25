@@ -46,6 +46,7 @@ function css() {
   .p3d .grp button svg{width:22px;height:22px}
   .p3d .grp button.on{background:#E2621B;color:#fff}
   .p3d .grp button:active{background:#EEF2EF}.p3d .grp button.on:active{background:#C9541A}
+  @keyframes p3ping{0%{transform:scale(.5);opacity:1}100%{transform:scale(1.6);opacity:0}}
   .p3d .grp button .lb{position:absolute;right:52px;top:50%;transform:translateY(-50%);background:rgba(10,16,14,.82);color:#fff;font:600 11px var(--f,sans-serif);padding:4px 8px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s}
   .p3d .grp button:hover .lb,.p3d .grp button:focus-visible .lb{opacity:1}
   .p3d #p3c svg{transition:transform .15s linear}
@@ -100,7 +101,7 @@ function pulse(t) {
   if (spin && !state.drag) map.setBearing(map.getBearing() + .06);
   raf = requestAnimationFrame(pulse);
 }
-function close() { cancelAnimationFrame(raf); if (map) { map.remove(); map = null; } if (root) { root.remove(); root = null; } document.body.style.overflow = state.ov || ''; if (state.onClose) state.onClose(); }
+function close() { cancelAnimationFrame(raf); if (map) { const m = map; map = null; try { m.stop(); m.off(); } catch (e) { } setTimeout(() => { try { m.remove(); } catch (e) { } }, 0); } if (root) { root.remove(); root = null; } document.body.style.overflow = state.ov || ''; if (state.onClose) state.onClose(); }
 
 async function open(opt) {
   css(); if (root) close();
@@ -109,7 +110,7 @@ async function open(opt) {
   root = document.createElement('div'); root.className = 'p3d'; root.setAttribute('role', 'dialog'); root.setAttribute('aria-label', 'Peta 3D');
   root.innerHTML = `<div id="p3map"></div><div class="load" id="p3load">Memuat globe 3D…</div>
    <div class="top"><button class="x" id="p3x" aria-label="Tutup">✕</button><div class="tt"><b>${S ? S.hd_nama : 'Kapuas Hulu'} · 3D</b><span id="p3sub">NASA FIRMS · relief 3D</span></div></div>
-   <div class="side"><div class="grp"><button id="p3zi" aria-label="Perbesar"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span class="lb">Perbesar</span></button><button id="p3zo" aria-label="Perkecil"><svg viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span class="lb">Perkecil</span></button><button id="p3c" aria-label="Arah utara"><svg viewBox="0 0 24 24"><path d="M12 3l4 9h-8z" fill="#E2421B"/><path d="M12 21l-4-9h8z" fill="currentColor" opacity=".55"/><circle cx="12" cy="12" r="1.6" fill="#fff"/></svg><span class="lb">Arah utara</span></button></div><div class="grp"><button id="p3p" aria-label="Tampilan 3D / datar"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M4 7.5L12 12l8-4.5M12 12v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="lb">Tampilan 3D / datar</span></button><button id="p3g" aria-label="Mode globe"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span class="lb">Mode globe</span></button><button id="p3s" aria-label="Putar otomatis"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lb">Putar otomatis</span></button><button id="p3h" aria-label="Kembali ke lokasi"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="lb">Kembali ke lokasi</span></button></div></div><div class="scale" id="p3sc"></div>
+   <div class="side"><div class="grp"><button id="p3zi" aria-label="Perbesar"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span class="lb">Perbesar</span></button><button id="p3zo" aria-label="Perkecil"><svg viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span class="lb">Perkecil</span></button><button id="p3c" aria-label="Arah utara"><svg viewBox="0 0 24 24"><path d="M12 3l4 9h-8z" fill="#E2421B"/><path d="M12 21l-4-9h8z" fill="currentColor" opacity=".55"/><circle cx="12" cy="12" r="1.6" fill="#fff"/></svg><span class="lb">Arah utara</span></button></div><div class="grp"><button id="p3p" aria-label="Tampilan 3D / datar"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M4 7.5L12 12l8-4.5M12 12v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="lb">Tampilan 3D / datar</span></button><button id="p3g" aria-label="Mode globe"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span class="lb">Mode globe</span></button><button id="p3s" aria-label="Putar otomatis"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lb">Putar otomatis</span></button><button id="p3me" aria-label="Lokasi saya (GPS)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="lb">Lokasi saya</span></button><button id="p3h" aria-label="Kembali ke Hutan Desa"><svg viewBox="0 0 24 24"><path d="M12 3l7 10h-4l4 6H5l4-6H5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="lb">Hutan Desa</span></button></div></div><div class="scale" id="p3sc"></div>
    <div class="bot"><div class="kpi" id="p3k"></div>
     <div class="chips">${[[1, '24 jam'], [3, '3 hari'], [7, '7 hari'], [30, '30 hari'], [0, 'Semua']].map(([d, n]) => `<button data-d="${d}">${n}</button>`).join('')}<span style="width:8px;flex:none"></span>
      ${[['esri', 'Citra jelas'], ['s2026', 'Sentinel-2 terbaru']].map(([k, n]) => `<button data-b="${k}">${n}</button>`).join('')}<span style="width:8px;flex:none"></span>${[['none', 'Tanpa lapisan'], ['true', 'Citra NASA kemarin'], ['co', 'Asap CO'], ['aod', 'Kabut asap AOD']].map(([k, n]) => `<button data-n="${k}">${n}</button>`).join('')}</div>
@@ -159,6 +160,27 @@ async function open(opt) {
   const sp = root.querySelector('#p3s'); sp.onclick = () => { spin = !spin; sp.classList.toggle('on', spin); };
   const pb = root.querySelector('#p3p'); pb.classList.add('on'); pb.onclick = () => { const on = map.getPitch() < 20; pb.classList.toggle('on', on); map.easeTo({ pitch: on ? 64 : 0, duration: 900 }); };
   root.querySelector('#p3h').onclick = () => map.flyTo({ center, zoom: S ? 10.2 : 8, pitch: 64, bearing: -24, duration: 2500 });
+  // Lokasi saya: GPS HP → terbang ke posisi pengguna + penanda berdenyut (lokasi hanya dipakai di HP ini)
+  let meMk = null, meW = null; const meB = root.querySelector('#p3me');
+  const pesan = t => { let e = root.querySelector('#p3msg'); if (!e) { e = document.createElement('div'); e.id = 'p3msg'; e.style.cssText = 'position:absolute;left:50%;top:84px;transform:translateX(-50%);z-index:5;max-width:86%;padding:10px 14px;border-radius:12px;background:rgba(10,16,14,.88);color:#fff;font:600 12.5px var(--f,sans-serif);text-align:center;transition:opacity .3s'; root.appendChild(e); }
+    e.textContent = t; e.style.opacity = 1; clearTimeout(e._t); e._t = setTimeout(() => e.style.opacity = 0, 4000); };
+  meB.onclick = () => {
+    if (!navigator.geolocation) return pesan('GPS tidak tersedia di perangkat ini.');
+    meB.classList.add('on'); pesan('Mencari posisi GPS Anda…');
+    if (meW != null) navigator.geolocation.clearWatch(meW);
+    let pertama = true;
+    meW = navigator.geolocation.watchPosition(p => {
+      if (!map) { navigator.geolocation.clearWatch(meW); meW = null; return; }
+      const c = p.coords, ll = [c.longitude, c.latitude];
+      if (!meMk) { const d = document.createElement('div'); d.innerHTML = '<span style="position:absolute;inset:-14px;border-radius:50%;background:rgba(59,130,246,.25);animation:p3ping 1.8s ease-out infinite"></span><span style="position:relative;display:block;width:18px;height:18px;border-radius:50%;background:#3B82F6;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4)"></span>'; d.style.position = 'relative';
+        meMk = new maplibregl.Marker({ element: d }).setLngLat(ll).addTo(map); } else meMk.setLngLat(ll);
+      if (pertama) { pertama = false; map.flyTo({ center: ll, zoom: 14, pitch: 60, duration: 2600, essential: true });
+        pesan(`Lokasi Anda · ±${c.accuracy < 1000 ? Math.round(c.accuracy) + ' m' : (c.accuracy / 1000).toFixed(1) + ' km'}${c.accuracy > 500 ? ' (aktifkan GPS untuk lebih akurat)' : ''}`); }
+      if (c.accuracy <= 20) { navigator.geolocation.clearWatch(meW); meW = null; }
+    }, e => { meB.classList.remove('on'); pesan(e.code === 1 ? 'Izin lokasi ditolak. Izinkan lokasi untuk aplikasi ini di pengaturan HP.' : 'Posisi GPS belum didapat. Coba di luar ruangan.'); },
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
+    setTimeout(() => { if (meW != null) { navigator.geolocation.clearWatch(meW); meW = null; } }, 30000);
+  };
   root.querySelector('#p3zi').onclick = () => map.zoomIn({ duration: 350 }); root.querySelector('#p3zo').onclick = () => map.zoomOut({ duration: 350 });
   root.querySelector('#p3c').onclick = () => map.easeTo({ bearing: 0, duration: 600 });
   const cmp = root.querySelector('#p3c svg'), sc = root.querySelector('#p3sc');
