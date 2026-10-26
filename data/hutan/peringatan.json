@@ -266,5 +266,5 @@
   }
  },
  "metode": "Peringatan kehilangan tutupan hutan terbaru (Sentinel-2) – Fire Hotspot PRCF\n============================================================================\nUntuk setiap lokasi (Hutan Desa + desa + radius 1 km), sebulan sekali:\n  * Hutan acuan = tutupan tajuk 2000 >= 30% dan BELUM hilang s.d. 2025 (Hansen/UMD GFC v1.13).\n  * Citra Sentinel-2 L2A (ESA Copernicus, Earth Search AWS): TERKINI = 90 hari terakhir,\n    ACUAN = 90 hari yang sama tahun lalu (musim sama, mengurangi efek musiman).\n  * Piksel berubah bila, di >= 2 citra terkini (atau 1 bila hanya 1 yang cerah):\n      NBR turun >= 0,27 dan SWIR2 naik >= 0,02 (pembukaan/kerusakan tajuk; bayangan & air tidak lolos),\n    serta NBR terkini <= 0,30 (tajuk benar-benar terbuka). Petak >= 0,5 ha.\n  * Wilayah cerah < 50% → ditandai \"tertutup awan\".\nHasil adalah INDIKASI perubahan tutupan dari citra 20 m (pembukaan lahan, tebangan, kebakaran,\nlongsor, dll.) dan memerlukan verifikasi lapangan.\nKeluaran: data/hutan/peringatan.json, data/hutan/peringatan.geojson",
- "diperbarui_utc": "2026-10-26T02:55:12Z"
+ "diperbarui_utc": "2026-10-26T04:50:48Z"
 }
