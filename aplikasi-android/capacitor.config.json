@@ -1,0 +1,15 @@
+{
+  "appId": "org.prcfindonesia.firehotspot",
+  "appName": "Fire Hotspot",
+  "webDir": "www",
+  "server": {
+    "url": "https://erikprcfi.github.io/hotspot-fire-prcf/app.html",
+    "errorPath": "offline.html",
+    "allowNavigation": ["erikprcfi.github.io"]
+  },
+  "android": {
+    "useLegacyBridge": true,
+    "allowMixedContent": false,
+    "backgroundColor": "#0B3B2C"
+  }
+}

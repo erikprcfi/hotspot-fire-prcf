@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Fire Hotspot</string>
+    <string name="title_activity_main">Fire Hotspot</string>
+    <string name="package_name">org.prcfindonesia.firehotspot</string>
+    <string name="custom_url_scheme">org.prcfindonesia.firehotspot</string>
+    <string name="capacitor_background_geolocation_notification_channel_name">Berbagi lokasi tim lapangan</string>
+    <string name="capacitor_background_geolocation_notification_icon">drawable/ic_tracking</string>
+    <string name="capacitor_background_geolocation_notification_color">#1E7A58</string>
+</resources>

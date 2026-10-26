@@ -37,7 +37,7 @@ const notify = () => subs.forEach(f => { try { f(U); } catch (e) { } });
 
 /* ---------- sinkronisasi ke database PRCF ---------- */
 let syncing = false;
-const dev = () => { const ua = navigator.userAgent; const m = /Android [\d.]+/.exec(ua) || /iPhone OS [\d_]+/.exec(ua) || /iPad; CPU OS [\d_]+/.exec(ua) || /Windows NT [\d.]+/.exec(ua) || /Mac OS X [\d_]+/.exec(ua); return (m ? m[0].replace(/_/g, '.') : 'Perangkat lain') + (/wv|standalone/.test(ua) || (window.matchMedia && matchMedia('(display-mode: standalone)').matches) ? ' · aplikasi terpasang' : ' · browser'); };
+const dev = () => { const ua = navigator.userAgent; const m = /Android [\d.]+/.exec(ua) || /iPhone OS [\d_]+/.exec(ua) || /iPad; CPU OS [\d_]+/.exec(ua) || /Windows NT [\d.]+/.exec(ua) || /Mac OS X [\d_]+/.exec(ua); return (m ? m[0].replace(/_/g, '.') : 'Perangkat lain') + (window.FHNative && FHNative.aktif ? ' · aplikasi Android (APK)' : '') + (window.FHNative && FHNative.aktif ? '' : /wv|standalone/.test(ua) || (window.matchMedia && matchMedia('(display-mode: standalone)').matches) ? ' · aplikasi terpasang' : ' · browser'); };
 async function mark(kind) { if (!U) return; if (!U.id) U.id = crypto.randomUUID(); if (kind === 'profil') U.kirimProfil = true; if (kind === 'foto') { U.kirimFoto = true; U.kirimProfil = true; } await put('akun', U); return flush(false); }
 async function flush(ping) {
   if (!ENDPOINT || syncing || !U || !U.setuju || !U.token || (navigator.onLine === false)) return;

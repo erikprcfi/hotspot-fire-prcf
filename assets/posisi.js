@@ -2,6 +2,8 @@
  * Selama aplikasi dibuka: GPS akurasi tinggi (watchPosition). Titik disimpan ke antrean bila berpindah ≥ max(25 m, akurasi)
  * atau tiap 5 menit, lalu dikirim ke database PRCF tiap 60 detik (sinyal hidup tiap 2 menit). Tanpa sinyal → antrean
  * tetap di HP dan dikirim saat online. Aplikasi ditutup/disembunyikan → GPS berhenti dan status "offline" dikirim.
+ * Aplikasi Android (Capacitor): GPS tetap berjalan walau layar mati/aplikasi di latar belakang (layanan latar depan dengan
+ * notifikasi tetap), data dikirim lewat jaringan asli; berhenti hanya bila aplikasi ditutup paksa atau berbagi lokasi dimatikan.
  * Simbol pin di bilah atas: hijau berdenyut = lokasi sedang dibagikan, kuning = mencari GPS, abu-abu dicoret = tidak dibagikan.
  */
 (function () {
@@ -9,6 +11,8 @@
 const QK = 'fh_posq', MAXQ = 2000;
 let LAGI = false, W = null, FIX = null, LASTQ = null, GPS = 'mencari', TM = null, SENDING = false, LASTSEND = 0, BAT = null, DOT = null;
 const A = () => window.FHAkun;
+const NAT = () => !!(window.FHNative && FHNative.aktif && FHNative.plugin('BackgroundGeolocation'));
+let WID = null;
 const rad = x => x * Math.PI / 180;
 const jarak = (a, b) => 2 * 6371000 * Math.asin(Math.sqrt(Math.sin(rad(b.la - a.la) / 2) ** 2 + Math.cos(rad(a.la)) * Math.cos(rad(b.la)) * Math.sin(rad(b.lo - a.lo) / 2) ** 2));
 const qGet = () => { try { return JSON.parse(localStorage.getItem(QK) || '[]'); } catch (e) { return []; } };
@@ -50,10 +54,23 @@ function onFix(p) {
   }
   ui(); if (first || Date.now() - LASTSEND > 6e4) kirim();
 }
+function natMulai() {   // Android: pelacakan latar belakang
+  const BG = FHNative.plugin('BackgroundGeolocation'), DV = FHNative.plugin('Perangkat');
+  const pasang = () => Promise.resolve(BG.addWatcher({ backgroundTitle: 'Fire Hotspot', backgroundMessage: 'Lokasi dibagikan ke admin PRCF', requestPermissions: true, stale: false, distanceFilter: 10 }, (l, e) => {
+    if (e) { GPS = e.code === 'NOT_AUTHORIZED' ? 'ditolak' : 'tidak'; ui(); kirim(); return; }
+    if (l) onFix({ timestamp: l.time || Date.now(), coords: { latitude: l.latitude, longitude: l.longitude, accuracy: l.accuracy, speed: l.speed } });
+  })).then(id => { WID = id; }).catch(() => { WID = null; });
+  WID = 'menunggu';
+  Promise.resolve(DV && DV.izinNotifikasi()).catch(() => { }).then(() => setTimeout(pasang, 600)).then(() => {
+    try { if (DV && !localStorage.getItem('fh_baterai')) { localStorage.setItem('fh_baterai', '1'); setTimeout(() => DV.bebasBaterai().catch(() => { }), 4000); } } catch (e) { } });
+}
+function natStop() { const BG = NAT() && FHNative.plugin('BackgroundGeolocation'); if (BG && WID && WID !== 'menunggu') BG.removeWatcher({ id: WID }).catch(() => { }); WID = null; }
 function onErr(e) { GPS = e && e.code === 1 ? 'ditolak' : e && e.code === 2 ? 'tidak' : GPS === 'ok' ? 'ok' : 'mencari'; ui(); if (e && e.code === 1) kirim(); }
 function mulai() {
-  ui(); if (!boleh() || document.hidden) return;
-  if (W == null && navigator.geolocation) { GPS = FIX ? GPS : 'mencari'; W = navigator.geolocation.watchPosition(onFix, onErr, { enableHighAccuracy: true, maximumAge: 5000, timeout: 60000 }); }
+  ui(); if (!boleh()) return;
+  if (NAT()) { if (!WID) natMulai(); }
+  else if (document.hidden) return;
+  else if (W == null && navigator.geolocation) { GPS = FIX ? GPS : 'mencari'; W = navigator.geolocation.watchPosition(onFix, onErr, { enableHighAccuracy: true, maximumAge: 5000, timeout: 60000 }); }
   else if (!navigator.geolocation) GPS = 'tidak';
   if (!TM) TM = setInterval(() => { if (!boleh()) return berhenti(true); const q = qGet(); if (q.length || Date.now() - LASTSEND >= 115e3) kirim(); }, 6e4);
   try { navigator.getBattery && navigator.getBattery().then(b => { BAT = Math.round(b.level * 100); b.onlevelchange = () => BAT = Math.round(b.level * 100); }).catch(() => { }); } catch (e) { }
@@ -61,6 +78,7 @@ function mulai() {
 }
 function berhenti(kirimOff) {
   if (W != null) { try { navigator.geolocation.clearWatch(W); } catch (e) { } W = null; }
+  natStop();
   clearInterval(TM); TM = null; if (kirimOff) beacon(); ui();
 }
 function muatan(status) {
@@ -69,7 +87,7 @@ function muatan(status) {
 }
 async function kirim() {
   if (SENDING) { LAGI = true; return; } if (!boleh() || navigator.onLine === false) return; SENDING = true; LAGI = false;
-  try { const b = muatan('online'), n = b.titik.length, j = await A().api(b, 25000);
+  try { const b = muatan('online'), n = b.titik.length, j = NAT() && FHNative.http ? await FHNative.http(A().endpoint(), Object.assign({ kunci: 'fh-prcf-2026-akun' }, b)) : await A().api(b, 25000);
     if (j && j.ok) { LASTSEND = Date.now(); if (n) { const q = qGet(); qSet(q.slice(n)); } }
   } catch (e) { } finally { SENDING = false; if (LAGI) { LAGI = false; if (qGet().length) setTimeout(kirim, 500); } }
 }
@@ -83,7 +101,7 @@ function init() {
   const a = A(); if (!a || SUDAH) return; SUDAH = true;
   let was = null;
   a.onChange(() => { const now = boleh(); if (now && !was) mulai(); else if (!now && was) { const u = a.user(); if (u && u.lokasiOn === false) { GPS = 'mati'; beacon(); } berhenti(false); } was = now; ui(); });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) berhenti(true); else mulai(); });
+  document.addEventListener('visibilitychange', () => { if (NAT()) { if (!document.hidden) { mulai(); kirim(); } return; } if (document.hidden) berhenti(true); else mulai(); });   // Android: tetap melacak di latar belakang
   window.addEventListener('pagehide', () => berhenti(true));
   window.addEventListener('online', () => kirim());
   was = boleh(); if (was) mulai(); else ui();

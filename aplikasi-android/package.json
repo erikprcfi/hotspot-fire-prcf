@@ -1,0 +1,15 @@
+{
+  "name": "fire-hotspot-prcf",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fire Hotspot – aplikasi Android (Capacitor) Yayasan PRCF Indonesia",
+  "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/cli": "8.5.3",
+    "@capacitor/core": "8.5.3",
+    "@capacitor/filesystem": "8.1.5",
+    "@capacitor/share": "8.0.3",
+    "@capacitor-community/background-geolocation": "1.3.1"
+  }
+}
