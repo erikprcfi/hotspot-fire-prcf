@@ -668,10 +668,10 @@ body.is-off .offline{display:block}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="assets/bahasa.js?v=46"></script>
+<script src="assets/bahasa.js?v=47"></script>
 <script src="assets/nasa_layers.js?v=33"></script>
 <script src="assets/citra.js?v=41"></script>
-<script src="assets/akun.js?v=33"></script>
+<script src="assets/akun.js?v=47"></script>
 <script>
 (function(){
 'use strict';
@@ -756,7 +756,7 @@ function back(){if(BACK.length)history.back();}
 $('#abBack').onclick=back;
 function meUI(){if(!window.FHAkun)return;const u=FHAkun.user();$('#abMe').innerHTML=FHAkun.avatar(34);$('#abMe').style.display=u?'':'none';
   $('#pfCard').style.display=u?'flex':'none';if(u)$('#pfCard').innerHTML=`${FHAkun.avatar(56)}<span style="flex:1;min-width:0"><b style="display:block;font-size:16px">${esc(u.nama)}</b><small class="muted" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(u.email)}</small><small style="color:var(--brand-3);font-weight:700">Lihat &amp; ubah profil</small></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="color:var(--faint)"><path d="M9 5l7 7-7 7"/></svg>`;}
-if(window.FHAkun){FHAkun.init({pushLayer,back,lokasi:()=>SITE?SITE.hd_nama:''});FHAkun.onChange(meUI);FHAkun.onChange(()=>{try{sapa();}catch(e){}});$('#abMe').onclick=()=>FHAkun.openProfile();$('#pfCard').onclick=()=>FHAkun.openProfile();}
+if(window.FHAkun){FHAkun.init({pushLayer,back,lokasi:()=>SITE?SITE.hd_nama:''});FHAkun.onChange(meUI);FHAkun.onChange(()=>{try{sapa();}catch(e){}});FHAkun.onChange(()=>{try{if(CUR==='dash')hubRender();}catch(e){}});window.FHSiteNama=()=>SITE?SITE.hd_nama:'';window.openPage=openPage;window.toastMsg=(...a)=>toastMsg(...a);$('#abMe').onclick=()=>FHAkun.openProfile();$('#pfCard').onclick=()=>FHAkun.openProfile();}
 function closeAll(){const n=BACK.length;if(!n)return;while(BACK.length)BACK.pop()();SKIP+=n;history.go(-n);}
 
 /* sheet */
@@ -1212,6 +1212,7 @@ const IC={
  cek:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6v3H9z"/><path d="M7 5H5v16h14V5h-2"/><path class="a-draw" d="M9 13l2 2 4-4"/></svg>',
  patroli:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="a-draw" d="M4 19c3-1 3-5 6-6s3 3 6 2 3-6 4-8" stroke-dasharray="2.5 2.5"/><circle cx="4" cy="19" r="1.8" fill="currentColor"/><path d="M20 3v6M20 3l-3 1.5L20 6" fill="currentColor"/></svg>',
  laporan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z" fill="currentColor" fill-opacity=".2"/><path d="M14 3v5h5"/><path class="a-draw" d="M9 12h7M9 16h5"/></svg>',
+ tim:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><path d="M2.5 19a5.5 5.5 0 0 1 11 0"/><g class="a-bob"><path d="M17.5 15.5s3.5-3 3.5-5.7a3.5 3.5 0 0 0-7 0c0 2.7 3.5 5.7 3.5 5.7z" fill="currentColor" fill-opacity=".25"/><circle cx="17.5" cy="9.8" r="1.2" fill="currentColor"/></g></svg>',
  unduh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><g class="a-bob"><path d="M12 4v10M7.5 9.5L12 14l4.5-4.5"/></g><path d="M5 20h14"/></svg>',
  luring:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z" fill="currentColor" fill-opacity=".2"/><path d="M9 4v14M15 6v14"/><path class="a-blink" d="M2 2l20 20" stroke="#FCA5A5" stroke-width="2.4" stroke-linecap="round"/></svg>',
  sistem:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path class="a-pulse-l" d="M2 12h4l2.5-6 4 12 2.5-6H22"/></svg>',
@@ -1231,7 +1232,7 @@ function hubGo(k){const P=x=>{if(!SITE)return chooser(true);const run=()=>PAGES[
     cuaca:()=>go('fc'),hujan:()=>P('cuaca'),udara:()=>P('udara'),
     lokasi:()=>{go('fc');setTimeout(()=>{const b=[...document.querySelectorAll('#v-fc button')].find(x=>/Lokasi saya/.test(x.textContent));if(b)b.click();},300);},
     hutan:()=>P('hutan'),bekas:()=>P('bekas'),analisis:()=>P('analisis'),grafik:()=>P('grafik'),
-    peringatan:()=>bukaSec('peringatan'),cek:()=>openVerif(null),patroli:()=>bukaSec('patroli'),laporan:()=>go('lap'),unduh:()=>bukaSec('unduh'),luring:()=>bukaSec('luring'),sistem:()=>bukaSec('sistem')})[k]();}
+    peringatan:()=>bukaSec('peringatan'),cek:()=>openVerif(null),patroli:()=>bukaSec('patroli'),laporan:()=>go('lap'),unduh:()=>bukaSec('unduh'),tim:()=>window.FHTim&&FHTim.open(),luring:()=>bukaSec('luring'),sistem:()=>bukaSec('sistem')})[k]();}
 function wxIkon(kode,hujan){const k=+kode||0;
   if(k>=95)return '<svg class="wx" viewBox="0 0 64 64"><g class="a-drift"><path d="M18 40h28a10 10 0 0 0 1-20 14 14 0 0 0-27 3 9 9 0 0 0-2 17z" fill="#CBD5E1"/></g><path class="a-blink" d="M33 40l-5 10h6l-4 10" stroke="#FDE047" stroke-width="3.5" fill="none" stroke-linejoin="round"/></svg>';
   if(k>=51||hujan>=1)return '<svg class="wx" viewBox="0 0 64 64"><g class="a-drift"><path d="M18 38h28a10 10 0 0 0 1-20 14 14 0 0 0-27 3 9 9 0 0 0-2 17z" fill="#E2E8F0"/></g><g class="a-rain" stroke="#7DD3FC" stroke-width="3" stroke-linecap="round"><path d="M24 44l-3 7M33 44l-3 7M42 44l-3 7"/></g></svg>';
@@ -1252,7 +1253,7 @@ function hubRender(){const el=$('#hub');if(!el)return;
       <div><small>Titik panas ≤25 km</small><strong>${st.r25}</strong></div>
       <div><small>Bahaya kebakaran</small><strong>${lv==null?'–':`<i style="background:${LC[lv]}"></i>${esc(KL[lv])}`}</strong></div>
       <div><small>PM2.5 · µg/m³</small><strong>${u?Math.round(u.pm25):'–'}<span style="font-size:12px;font-weight:600;opacity:.75"> ${u?esc(un||''):''}</span></strong></div></div></div>
-    ${HUB_G.map(([g,L])=>`<div class="hub-h">${g}</div><div class="hub-grid">${L.map(([k,n,c1,c2])=>`<button class="hub-t" data-hub="${k}"><span class="ic3" style="--c1:${c1};--c2:${c2}">${IC[k]}</span>${n}</button>`).join('')}</div>`).join('')}`;
+    ${(window.FHTim&&FHTim.admin()?[['Admin',[['tim','Tim lapangan','#38BDF8','#1D4ED8']]],...HUB_G]:HUB_G).map(([g,L])=>`<div class="hub-h">${g}</div><div class="hub-grid">${L.map(([k,n,c1,c2])=>`<button class="hub-t" data-hub="${k}"><span class="ic3" style="--c1:${c1};--c2:${c2}">${IC[k]}</span>${n}</button>`).join('')}</div>`).join('')}`;
   el.querySelectorAll('[data-hub]').forEach(b=>b.onclick=()=>b.dataset.hub==='pilih'?chooser(true):hubGo(b.dataset.hub));}
 /* ---------- catatan sumber/metode yang panjang: tampil 2 baris, ketuk untuk lengkap ---------- */
 function ringkasCatatan(root){(root||document).querySelectorAll('p,div,small,span').forEach(e=>{
@@ -1577,5 +1578,7 @@ if('serviceWorker' in navigator){const HAD=!!navigator.serviceWorker.controller;
 <script src="assets/lokasi_saya.js?v=46"></script>
 <script src="assets/peta3d.js?v=46"></script>
 <script src="assets/unduh.js?v=44"></script>
+<script src="assets/posisi.js?v=47"></script>
+<script src="assets/tim.js?v=47"></script>
 </body>
 </html>

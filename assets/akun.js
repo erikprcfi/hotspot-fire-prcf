@@ -19,7 +19,7 @@ async function api(body, ms = 30000) { const ctl = new AbortController(), tm = s
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const BLN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 const tglID = s => { if (!s) return ''; const [y, m, d] = s.split('-').map(Number); return `${d} ${BLN[m - 1]} ${y}`; };
-let U = null, OPT = {}; const subs = [];
+let U = null, OPT = {}, SESI = false; const subs = [];
 
 /* ---------- penyimpanan ---------- */
 function db() { return new Promise((ok, no) => { const r = indexedDB.open(DBN, 1); r.onupgradeneeded = () => r.result.createObjectStore(ST); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); }); }
@@ -58,7 +58,7 @@ async function flush(ping) {
 async function sendDelete() { if (!ENDPOINT || !U || !U.terkirim || !U.id) return; try { await api({ aksi: 'hapus', id: U.id, token: U.token }, 8000); } catch (e) { } }
 let NEXT = () => { };
 async function reset(why, msg) {   // akun dihapus dari HP: diblokir admin, tidak ada di database, atau sistem akun diperbarui
-  try { await del('akun'); await del('sesi'); } catch (e) { } U = null; notify(); document.querySelectorAll('.ak').forEach(x => x.remove());
+  try { await del('akun'); await del('sesi'); } catch (e) { } U = null; SESI = false; notify(); document.querySelectorAll('.ak').forEach(x => x.remove());
   if (why === 'blokir') { screen(hero('Akun diblokir', esc(msg || 'Akun ini diblokir oleh admin Yayasan PRCF Indonesia.')) + `<div class="ak-card"><p class="mut" style="font-size:14px">Hubungi Yayasan PRCF Indonesia bila menurut Anda ini keliru. Anda dapat mendaftar lagi dengan data yang benar.</p><button class="ak-btn" id="akRe">Daftar dengan data yang benar</button></div>`).querySelector('#akRe').onclick = e => { e.target.closest('.ak').remove(); registerScreen(NEXT); }; return; }
   registerScreen(NEXT, why === 'skema' ? 'Sistem akun diperbarui demi keamanan data. Semua pengguna diminta mendaftar ulang dan memverifikasi email. Data pemantauan tidak terpengaruh.' : why === 'ulang' ? 'Akun Anda tidak ditemukan di database PRCF. Silakan daftar ulang.' : '');
 }
@@ -133,7 +133,9 @@ function css() {
   .ak-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .ak-toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:9600;background:#0E1A14;color:#fff;padding:10px 16px;border-radius:12px;font-size:13.5px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.35);animation:akin .25s both}
   .ak-mini{width:34px;height:34px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:linear-gradient(150deg,#1E7A58,#0B3B2C);color:#fff;font:800 13px var(--f);box-shadow:0 0 0 2px rgba(255,255,255,.35);flex:none}
-  .ak-mini img{width:100%;height:100%;object-fit:cover}`;
+  .ak-mini img{width:100%;height:100%;object-fit:cover}
+  .ak-sw{flex:none;width:44px;height:26px;border-radius:13px;background:var(--line);position:relative;transition:background .2s}.ak-sw i{position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
+  .ak-sw.on{background:#1E7A58}.ak-sw.on i{transform:translateX(18px)}`;
   document.head.appendChild(s);
 }
 const IC = {
@@ -225,6 +227,12 @@ const hero = (h, p, cls = '') => `<div class="ak-hero ${cls}"><div class="lg"><i
 const privacy = `<div class="ak-note">${svg('shield', 18)}<span>Biodata dan foto disimpan di HP ini dan dikirim ke <b>database pengguna Yayasan PRCF Indonesia</b> untuk administrasi pengguna aplikasi. Data tidak dibagikan ke pihak lain. <b>Kata sandi tidak pernah dikirim</b>; di HP disimpan terenkripsi satu arah.</span></div>`;
 const SETUJU = 'Saya menyetujui biodata dan foto saya disimpan dan diolah oleh Yayasan PRCF Indonesia untuk administrasi pengguna aplikasi Fire Hotspot, sesuai UU No. 27 Tahun 2022 tentang Pelindungan Data Pribadi. Saya dapat mengubah atau menghapus akun kapan saja.';
 
+const SETUJU_LOK = 'Saya menyetujui lokasi GPS HP saya dikirim ke Yayasan PRCF Indonesia setiap kali aplikasi dibuka, untuk keselamatan dan koordinasi tim di lapangan. Lokasi hanya dapat dilihat admin PRCF dan riwayatnya dihapus otomatis setelah 30 hari (UU No. 27 Tahun 2022). Berbagi lokasi dapat dimatikan di Profil.';
+const lokChk = () => `<label class="ak-chk"><input type="checkbox" id="akLok"><span>${svg('pin', 16)} ${SETUJU_LOK}</span></label>`;
+function mintaGPS() { try { navigator.geolocation && navigator.geolocation.getCurrentPosition(() => { }, () => { }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 }); } catch (e) { } }
+function bindLok(root) { const c = root.querySelector('#akLok'); if (c) c.onchange = () => { if (c.checked) mintaGPS(); }; }
+const setujuLok = () => { U.lokasiSetuju = true; U.lokasiOn = true; U.lokasiSetujuT = new Date().toISOString(); };
+
 /* ---------- verifikasi email: kode 6 angka dikirim server ke email ---------- */
 function otpBox(root, email, id, onToken) {
   root.innerHTML = `<div class="ak-f"><div class="ak-note">${svg('mail', 18)}<span>Kode 6 angka dikirim ke <b>${esc(email)}</b>. Buka email Anda (periksa juga folder <b>Spam/Promosi</b>), lalu masukkan kodenya di sini.</span></div>
@@ -259,9 +267,9 @@ function registerScreen(onDone, notice) {
      <div data-s="2" hidden><h2>Verifikasi email</h2><p class="mut">Membuktikan email ini benar milik Anda.</p><div id="akOtp"></div><button class="ak-btn alt" id="akB1" style="margin-top:10px">Ubah biodata</button></div>
      <div data-s="3" hidden><h2>Keamanan akun</h2><p class="mut">Email terverifikasi ✓. Buat kata sandi.</p>
       <div class="ak-f">${field('pw', 'Kata sandi', 'lock', 'password', '', 'autocomplete="new-password"')}${field('pw2', 'Ulangi kata sandi', 'lock', 'password', '', 'autocomplete="new-password"')}
-       ${privacy}<label class="ak-chk"><input type="checkbox" id="akOk"><span>${SETUJU}</span></label>
+       ${privacy}<label class="ak-chk"><input type="checkbox" id="akOk"><span>${SETUJU}</span></label>${lokChk()}
        <button class="ak-btn" id="akDaftar">Daftar &amp; masuk</button></div></div></div>`);
-  pwMeter(d, 'pw');
+  pwMeter(d, 'pw'); bindLok(d);
   d.querySelector('#akFoto').onclick = async () => { const r = await photoMenu(); if (r === undefined) return; foto = r; d.querySelector('#akPh').innerHTML = foto ? `<img src="${foto}" alt="">` : svg('user', 44); };
   const step = n => { d.querySelectorAll('[data-s]').forEach(x => x.hidden = x.dataset.s !== String(n)); d.querySelectorAll('.ak-step i').forEach((x, k) => x.classList.toggle('on', k < n)); d.scrollTo({ top: 0, behavior: 'smooth' }); };
   const v = k => d.querySelector('#ak_' + k).value.trim();
@@ -278,15 +286,16 @@ function registerScreen(onDone, notice) {
     if (!check(d, ['pw'])) return;
     if (d.querySelector('#ak_pw2').value !== d.querySelector('#ak_pw').value) { setErr(d, 'pw2', 'Kata sandi tidak sama.'); return; } setErr(d, 'pw2', '');
     if (!d.querySelector('#akOk').checked) { toast('Centang persetujuan penyimpanan data'); return; }
+    if (!d.querySelector('#akLok').checked) { toast('Centang persetujuan berbagi lokasi'); return; }
     const b = d.querySelector('#akDaftar'); b.disabled = true; b.textContent = 'Menyimpan…';
     try {
       const h = await hashPw(d.querySelector('#ak_pw').value);
-      U = { skema: SKEMA, nama: v('nama').replace(/\s+/g, ' '), lahir: v('lahir'), alamat: v('alamat'), email: v('email').toLowerCase(), hp: normHP(v('hp')), foto, dibuat: new Date().toISOString(), diubah: new Date().toISOString(), pw: h, id, token, verifikasi: new Date().toISOString(), setuju: true, setujuT: new Date().toISOString() };
+      U = { skema: SKEMA, nama: v('nama').replace(/\s+/g, ' '), lahir: v('lahir'), alamat: v('alamat'), email: v('email').toLowerCase(), hp: normHP(v('hp')), foto, dibuat: new Date().toISOString(), diubah: new Date().toISOString(), pw: h, id, token, verifikasi: new Date().toISOString(), setuju: true, setujuT: new Date().toISOString() }; setujuLok();
       if (ENDPOINT) { const p = { aksi: 'daftar', id, token, lokasi: OPT.lokasi ? OPT.lokasi() : '', perangkat: dev(), versi: VERSI, profil: { nama: U.nama, lahir: U.lahir, alamat: U.alamat, email: U.email, hp: '+62 ' + fmtHP(U.hp).slice(1), dibuat: U.dibuat, diubah: U.diubah }, foto: foto ? foto.split(',')[1] : '' };
         const j = await api(p, 45000); if (!j.ok) { b.disabled = false; b.textContent = 'Daftar & masuk'; toast(j.diblokir ? 'Email ini diblokir admin PRCF' : 'Ditolak server: ' + (j.galat || 'periksa biodata')); if (!j.diblokir) step(1); return; }
         U.terkirim = true; U.pingT = Date.now(); U.sinkronT = new Date().toISOString(); }
       await put('akun', U); await put('sesi', { masuk: true, t: Date.now() }); try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) { }
-      d.remove(); notify(); toast(`Selamat datang, ${U.nama.split(' ')[0]}!`); onDone();
+      SESI = true; d.remove(); notify(); toast(`Selamat datang, ${U.nama.split(' ')[0]}!`); onDone();
     } catch (e) { console.error(e); b.disabled = false; b.textContent = 'Daftar & masuk'; toast('Gagal mendaftar: periksa internet lalu coba lagi'); }
   };
 }
@@ -295,20 +304,23 @@ function loginScreen(onDone) {
   const d = screen(hero(`Halo, ${esc((U.nama || '').split(' ')[0])}`, 'Masuk kembali dengan kata sandi akun Anda.', 'tall') +
     `<div class="ak-card"><div class="ak-av" style="margin:-70px auto 10px"><div class="ph">${avatarInner(U)}</div></div>
      <div class="ak-f">${field('email', 'Email', 'mail', 'email', U.email, 'autocomplete="username" inputmode="email" autocapitalize="off"')}${field('pw', 'Kata sandi', 'lock', 'password', '', 'autocomplete="current-password"')}
-     <button class="ak-btn" id="akIn">Masuk</button></div><button class="ak-link" id="akLupa">Lupa kata sandi?</button></div>`);
+     ${U.lokasiSetuju ? '' : lokChk()}<button class="ak-btn" id="akIn">Masuk</button></div><button class="ak-link" id="akLupa">Lupa kata sandi?</button></div>`); bindLok(d);
+  const lokOk = () => { const c = d.querySelector('#akLok'); if (c && !c.checked) { toast('Centang persetujuan berbagi lokasi'); return false; } return true; };
   const go = async () => {
     const em = d.querySelector('#ak_email').value.trim().toLowerCase(), pw = d.querySelector('#ak_pw').value, b = d.querySelector('#akIn');
     setErr(d, 'email', ''); setErr(d, 'pw', '');
     const L = (await get('kunciMasuk').catch(() => null)) || { n: 0, t: 0 };
     if (L.n >= 5 && Date.now() - L.t < 5 * 6e4) { setErr(d, 'pw', `Terlalu banyak percobaan. Coba lagi ${Math.ceil((5 * 6e4 - (Date.now() - L.t)) / 6e4)} menit lagi, atau pakai "Lupa kata sandi".`); return; }
     if (em !== U.email) { setErr(d, 'email', 'Email tidak terdaftar di perangkat ini.'); return; }
+    if (!lokOk()) return;
     b.disabled = true; b.textContent = 'Memeriksa…';
     const h = await hashPw(pw, U.pw.salt);
     if (h.hash !== U.pw.hash) { const n = (L.n >= 5 ? 0 : L.n) + 1; await put('kunciMasuk', { n, t: Date.now() }); setErr(d, 'pw', n >= 5 ? 'Kata sandi salah 5 kali. Akun dikunci 5 menit.' : `Kata sandi salah. Sisa percobaan: ${5 - n}.`); b.disabled = false; b.textContent = 'Masuk'; return; }
-    await put('kunciMasuk', { n: 0, t: 0 }); await put('sesi', { masuk: true, t: Date.now() }); d.remove(); notify(); onDone(); flush(true);
+    if (!U.lokasiSetuju) { setujuLok(); await put('akun', U); }
+    await put('kunciMasuk', { n: 0, t: 0 }); await put('sesi', { masuk: true, t: Date.now() }); SESI = true; d.remove(); notify(); onDone(); flush(true);
   };
   d.querySelector('#akIn').onclick = go; d.querySelector('#ak_pw').onkeydown = e => { if (e.key === 'Enter') go(); };
-  d.querySelector('#akLupa').onclick = () => resetPwSheet(() => { d.remove(); notify(); onDone(); flush(true); });
+  d.querySelector('#akLupa').onclick = () => { if (!lokOk()) return; resetPwSheet(async () => { if (!U.lokasiSetuju) { setujuLok(); await put('akun', U); } SESI = true; d.remove(); notify(); onDone(); flush(true); }); };
 }
 function resetPwSheet(done) {   // lupa kata sandi: buktikan kepemilikan email dengan kode, lalu buat kata sandi baru
   const sh = document.createElement('div'); sh.className = 'ak-sheet ak';
@@ -344,6 +356,7 @@ function openProfile() {
        <div class="ak-grp"><h3>Biodata</h3>${items.map(([k, l, ic, v]) => `<button class="ak-row" data-ed="${k}"><span class="ic">${svg(ic)}</span><span class="m"><small>${l}</small><b class="${v ? '' : 'empty'}">${esc(v || 'Belum diisi')}</b></span><span class="ch">${svg('edit', 18)}</span></button>`).join('')}</div>
        <div class="ak-grp"><h3>Keamanan</h3><button class="ak-row" id="pfPw"><span class="ic">${svg('lock')}</span><span class="m"><b>Ubah kata sandi</b><small>Terakhir diubah ${tglID((U.pwDiubah || U.dibuat).slice(0, 10))}</small></span><span class="ch">${svg('chev', 18)}</span></button>
         <button class="ak-row" id="pfPriv" style="align-items:flex-start"><span class="ic">${svg('shield')}</span><span class="m"><b>Privasi data</b><small style="font-weight:500;margin-top:2px;line-height:1.45">${U.setuju ? `Biodata dan foto tersinkron ke database pengguna Yayasan PRCF Indonesia${U.sinkronT ? ' (terakhir ' + tglID(U.sinkronT.slice(0, 10)) + ')' : ' (menunggu pengiriman)'}. Kata sandi tidak pernah dikirim. Menghapus akun juga menghapus biodata Anda di database.` : 'Biodata hanya tersimpan di HP ini. Ketuk untuk menyetujui pengiriman ke database PRCF.'}</small></span></button></div>
+       <div class="ak-grp"><button class="ak-row" id="pfLok"><span class="ic">${svg('pin')}</span><span class="m"><b>Bagikan lokasi</b><small>Hanya admin PRCF · riwayat 30 hari</small></span><span class="ak-sw${U.lokasiOn !== false && U.lokasiSetuju ? ' on' : ''}" aria-hidden="true"><i></i></span></button></div>
        <div class="ak-grp"><button class="ak-row" id="pfOut"><span class="ic">${svg('out')}</span><span class="m"><b>Keluar</b><small>Perlu kata sandi untuk masuk lagi</small></span></button>
         <button class="ak-row" id="pfDel" style="color:var(--crit)"><span class="ic" style="color:var(--crit);background:var(--crit-soft)">${svg('trash')}</span><span class="m"><b>Hapus akun dari perangkat</b></span></button></div>
        <p class="mut" style="text-align:center;font-size:11.5px;margin:4px 0 0">Fire Hotspot · Yayasan PRCF Indonesia</p></div>`;
@@ -351,9 +364,10 @@ function openProfile() {
     d.querySelector('#pfFoto').onclick = async () => { const r = await photoMenu(); if (r === undefined) return; U.foto = r; U.diubah = new Date().toISOString(); await put('akun', U); notify(); render(); mark('foto'); toast(r ? 'Foto profil diperbarui' : 'Foto profil dihapus'); };
     d.querySelectorAll('[data-ed]').forEach(b => b.onclick = () => editSheet(b.dataset.ed, render));
     d.querySelector('#pfPw').onclick = () => pwSheet(render);
+    d.querySelector('#pfLok').onclick = async () => { if (!U.lokasiSetuju || U.lokasiOn === false) { setujuLok(); mintaGPS(); } else U.lokasiOn = false; await put('akun', U); notify(); render(); };
     d.querySelector('#pfPriv').onclick = () => { if (!U.setuju) consentSheet(render); };
-    d.querySelector('#pfOut').onclick = () => confirmSheet('Keluar dari akun?', 'Anda perlu memasukkan kata sandi untuk masuk kembali.', 'Keluar', async () => { await put('sesi', { masuk: false, t: Date.now() }); closeProfile(true); notify(); loginScreen(() => { }); });
-    d.querySelector('#pfDel').onclick = () => confirmSheet('Hapus akun dari perangkat?', 'Biodata, foto dan kata sandi di HP ini akan dihapus permanen, dan biodata serta foto Anda di database PRCF ikut dihapus. Data pemantauan kebakaran tidak terpengaruh.', 'Hapus akun', async () => { await sendDelete(); await del('akun'); await del('sesi'); U = null; closeProfile(true); notify(); registerScreen(() => { }); });
+    d.querySelector('#pfOut').onclick = () => confirmSheet('Keluar dari akun?', 'Anda perlu memasukkan kata sandi untuk masuk kembali.', 'Keluar', async () => { await put('sesi', { masuk: false, t: Date.now() }); SESI = false; closeProfile(true); notify(); loginScreen(() => { }); });
+    d.querySelector('#pfDel').onclick = () => confirmSheet('Hapus akun dari perangkat?', 'Biodata, foto dan kata sandi di HP ini akan dihapus permanen, dan biodata serta foto Anda di database PRCF ikut dihapus. Data pemantauan kebakaran tidak terpengaruh.', 'Hapus akun', async () => { await sendDelete(); await del('akun'); await del('sesi'); U = null; SESI = false; closeProfile(true); notify(); registerScreen(() => { }); });
   };
   render();
   if (OPT.pushLayer) OPT.pushLayer(() => closeProfile(false));
@@ -399,9 +413,9 @@ async function gate(next) {
   if (U && U.skema !== SKEMA) { next(); return reset('skema'); }   // akun lama (tanpa verifikasi email) direset: wajib daftar ulang
   notify();
   if (!U) return registerScreen(next);
-  if (!sesi || !sesi.masuk) return loginScreen(next);
-  next(); flush(true);
+  if (!sesi || !sesi.masuk || !U.lokasiSetuju) return loginScreen(next);   // persetujuan lokasi belum ada → masuk ulang
+  SESI = true; next(); notify(); flush(true);
 }
 function avatar(px = 34) { return `<span class="ak-mini" style="width:${px}px;height:${px}px">${U ? avatarInner(U) : svg('user', Math.round(px * .55))}</span>`; }
-window.FHAkun = { init: o => { OPT = o || {}; css(); }, gate, openProfile, avatar, user: () => U, onChange: f => subs.push(f), firstName: () => U ? U.nama.split(' ')[0] : '' };
+window.FHAkun = { init: o => { OPT = o || {}; css(); }, gate, openProfile, avatar, user: () => U, masuk: () => SESI && !!U, api: (b, ms) => api(b, ms), endpoint: () => ENDPOINT, perangkat: () => dev(), onChange: f => subs.push(f), firstName: () => U ? U.nama.split(' ')[0] : '' };
 })();
