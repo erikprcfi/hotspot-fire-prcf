@@ -34,13 +34,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GAGAL: ${{ steps.cek.outcome == 'failure' }}
         run: |
-          JUDUL="Pemantauan sistem: ada bagian Fire Hotspot yang bermasalah"
-          NO=$(gh issue list --state open --search "in:title \"Pemantauan sistem\"" --json number -q '.[0].number')
+          R="$GITHUB_REPOSITORY"; JUDUL="Pemantauan sistem: ada bagian Fire Hotspot yang bermasalah"
+          NO=$(gh api "repos/$R/issues?state=open&per_page=100" -q '[.[] | select(.title | startswith("Pemantauan sistem"))][0].number // empty')
           cat laporan_pantau.md >> "$GITHUB_STEP_SUMMARY"
           if [ "$GAGAL" = "true" ]; then
-            if [ -n "$NO" ]; then gh issue comment "$NO" --body-file laporan_pantau.md
-            else gh issue create --title "$JUDUL" --body-file laporan_pantau.md; fi
+            if [ -n "$NO" ]; then gh api "repos/$R/issues/$NO/comments" -F body=@laporan_pantau.md > /dev/null
+            else gh api "repos/$R/issues" -f title="$JUDUL" -F body=@laporan_pantau.md > /dev/null; fi
             exit 1
           elif [ -n "$NO" ]; then
-            gh issue comment "$NO" --body-file laporan_pantau.md && gh issue close "$NO" --comment "Semua pemeriksaan kembali normal ✅"
+            gh api "repos/$R/issues/$NO/comments" -F body=@laporan_pantau.md > /dev/null
+            gh api "repos/$R/issues/$NO/comments" -f body="Semua pemeriksaan kembali normal ✅" > /dev/null
+            gh api -X PATCH "repos/$R/issues/$NO" -f state=closed > /dev/null
           fi
