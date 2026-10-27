@@ -1,0 +1,46 @@
+name: Pemantauan sistem
+
+# Memeriksa situs, kesegaran data, server database pengguna dan APK tiap 6 jam.
+# Bila ada masalah: membuka/memperbarui issue "Pemantauan sistem" (pemilik repositori menerima email dari GitHub).
+# Bila sudah normal kembali: issue ditutup otomatis.
+on:
+  schedule:
+    - cron: "43 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: pantau-sistem
+  cancel-in-progress: true
+
+jobs:
+  pantau:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Periksa sistem
+        id: cek
+        continue-on-error: true
+        run: python scripts/pantau.py
+      - name: Laporkan
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GAGAL: ${{ steps.cek.outcome == 'failure' }}
+        run: |
+          JUDUL="Pemantauan sistem: ada bagian Fire Hotspot yang bermasalah"
+          NO=$(gh issue list --state open --search "in:title \"Pemantauan sistem\"" --json number -q '.[0].number')
+          cat laporan_pantau.md >> "$GITHUB_STEP_SUMMARY"
+          if [ "$GAGAL" = "true" ]; then
+            if [ -n "$NO" ]; then gh issue comment "$NO" --body-file laporan_pantau.md
+            else gh issue create --title "$JUDUL" --body-file laporan_pantau.md; fi
+            exit 1
+          elif [ -n "$NO" ]; then
+            gh issue comment "$NO" --body-file laporan_pantau.md && gh issue close "$NO" --comment "Semua pemeriksaan kembali normal ✅"
+          fi
