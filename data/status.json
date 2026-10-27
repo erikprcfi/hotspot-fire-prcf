@@ -1,10 +1,10 @@
 {
- "terakhir_cek_utc": "2026-10-27T15:22:17Z",
- "titik_baru": 242,
+ "terakhir_cek_utc": "2026-10-27T22:14:58Z",
+ "titik_baru": 559,
  "arsip_tahunan_diperbarui": 0,
  "jumlah_catatan": 83188,
- "jumlah_sp": 71625,
- "jumlah_nrt": 11563,
+ "jumlah_sp": 72184,
+ "jumlah_nrt": 11004,
  "rentang": [
   "2001-02-25",
   "2026-10-25"
@@ -45,7 +45,7 @@
    "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Tue, 27 Oct 2026 14:59:48 GMT",
+   "last_modified": "Tue, 27 Oct 2026 21:54:53 GMT",
    "ukuran_byte": 5075921,
    "sha256": "5a6345d2ef5475809c7e58f7afa6b2b671beb07ad3cba2c6055e73b3bc9e4237",
    "baris_total": 61900,
@@ -58,7 +58,7 @@
    "doi": "10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Tue, 27 Oct 2026 14:47:10 GMT",
+   "last_modified": "Tue, 27 Oct 2026 21:43:34 GMT",
    "ukuran_byte": 6593050,
    "sha256": "c1b674ea52e52e08fed7f543dfb69ae60b311be74ef1fbf5a4758922cdb76b99",
    "baris_total": 79152,
@@ -71,7 +71,7 @@
    "doi": "10.5067/VIIRS/VJ214IMG_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Tue, 27 Oct 2026 14:52:13 GMT",
+   "last_modified": "Tue, 27 Oct 2026 21:47:35 GMT",
    "ukuran_byte": 5827553,
    "sha256": "9c054b10ae55b76ee582c0ee0a80be0d24de6b7bc635c39107cf85f75390f9b2",
    "baris_total": 69572,
@@ -84,7 +84,7 @@
    "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Tue, 27 Oct 2026 14:56:04 GMT",
+   "last_modified": "Tue, 27 Oct 2026 21:51:10 GMT",
    "ukuran_byte": 976005,
    "sha256": "49e1b83cf1937bca7d490b52f7678329aaa31663e96c314930e173965408200e",
    "baris_total": 12706,
@@ -102,23 +102,23 @@
   ],
   "SP VIIRS NOAA-20 375 m": [
    "2018-04-01",
-   "2026-06-26"
+   "2026-07-31"
   ],
   "SP VIIRS NOAA-21 375 m": [
    "2026-01-13",
-   "2026-06-27"
-  ],
-  "NRT VIIRS NOAA-21 375 m": [
-   "2026-07-02",
-   "2026-10-23"
-  ],
-  "NRT VIIRS NOAA-20 375 m": [
-   "2026-07-04",
-   "2026-10-25"
+   "2026-07-31"
   ],
   "NRT VIIRS S-NPP 375 m": [
    "2026-08-01",
    "2026-10-22"
+  ],
+  "NRT VIIRS NOAA-20 375 m": [
+   "2026-08-01",
+   "2026-10-25"
+  ],
+  "NRT VIIRS NOAA-21 375 m": [
+   "2026-08-01",
+   "2026-10-23"
   ],
   "NRT MODIS Terra/Aqua 1 km": [
    "2026-08-01",
@@ -127,12 +127,6 @@
  },
  "sistem": {
   "riwayat": [
-   {
-    "t": "2026-10-23T17:13:27Z",
-    "baru": 0,
-    "ok": 4,
-    "n": 4
-   },
    {
     "t": "2026-10-23T21:26:18Z",
     "baru": 0,
@@ -270,6 +264,12 @@
     "baru": 242,
     "ok": 4,
     "n": 4
+   },
+   {
+    "t": "2026-10-27T22:14:58Z",
+    "baru": 559,
+    "ok": 4,
+    "n": 4
    }
   ],
   "jadwal_cron_utc": "17 */3 * * *",
@@ -277,7 +277,7 @@
   "latensi_n": 11,
   "arsip_terverifikasi": 48,
   "hari_cuaca": 9430,
-  "jumlah_pembaruan_tercatat": 48
+  "jumlah_pembaruan_tercatat": 49
  },
  "sumber_doi": {
   "VIIRS_SNPP": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002",

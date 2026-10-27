@@ -1,5 +1,5 @@
 {
- "diperbarui_utc": "2026-10-27T15:22:17Z",
+ "diperbarui_utc": "2026-10-27T22:14:58Z",
  "lokasi": [
   "nangalauk",
   "batangtau",
@@ -163,7 +163,7 @@
    "n": 8917,
    "awal": "2026-01-13",
    "akhir": "2026-10-25",
-   "sha256": "b75cbec35ee25681d1637b6dc38d3122e7df04cba7e0c294e078388e4ed6569e"
+   "sha256": "898a7ab643282c711e7bf6aa970210c065f148b329948ccf489563511c1dd31c"
   }
  },
  "sumber": "NASA FIRMS (arsip final SP + near real-time NRT), wilayah Kabupaten Kapuas Hulu"
