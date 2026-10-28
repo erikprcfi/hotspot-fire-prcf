@@ -1,0 +1,58 @@
+{
+ "sumber": "Hansen/UMD/Google/USGS/NASA Global Forest Change GFC-2025-v1.13 (Hansen dkk. 2013, Science 342:850–853), CC BY 4.0",
+ "unduhan": [
+  "https://storage.googleapis.com/earthenginepartners-hansen/GFC-2025-v1.13/Hansen_GFC-2025-v1.13_lossyear_10N_110E.tif",
+  "https://storage.googleapis.com/earthenginepartners-hansen/GFC-2025-v1.13/Hansen_GFC-2025-v1.13_treecover2000_10N_110E.tif"
+ ],
+ "ambang_tutupan_2000_persen": 30,
+ "cakupan_bbox": [
+  111.48,
+  0.03,
+  114.28,
+  1.64
+ ],
+ "zoom": [
+  6,
+  12
+ ],
+ "warna": {
+  "2001": "#ffd666",
+  "2013": "#e24919",
+  "2025": "#6a040f"
+ },
+ "kehilangan_per_tahun_ha_kotak": {
+  "2001": 19742.1,
+  "2002": 16267.3,
+  "2003": 15852.0,
+  "2004": 20910.2,
+  "2005": 17784.5,
+  "2006": 25111.8,
+  "2007": 20968.4,
+  "2008": 31593.7,
+  "2009": 41326.4,
+  "2010": 23038.5,
+  "2011": 37585.4,
+  "2012": 61944.7,
+  "2013": 22735.9,
+  "2014": 39354.2,
+  "2015": 29318.4,
+  "2016": 42632.1,
+  "2017": 36651.2,
+  "2018": 37892.1,
+  "2019": 28651.9,
+  "2020": 17671.7,
+  "2021": 15861.6,
+  "2022": 12842.9,
+  "2023": 20793.8,
+  "2024": 21347.5,
+  "2025": 19415.5
+ },
+ "kehilangan_total_ha_kotak": 677293.8,
+ "sha256_jendela": {
+  "lossyear": "dc625caee9783f1b3763d0ae7bc0d83ec971c234197351ff269c46262d483270",
+  "treecover2000": "5d45811f8064a17c3fed91d5960729a4cc35e849c94c8a8cdd2a2a12b53dc07f"
+ },
+ "ubin_berisi": 867,
+ "ubin_kosong": 0,
+ "dibuat_utc": "2026-10-28T04:10Z"
+}
