@@ -33,18 +33,27 @@ th,td{text-align:left;vertical-align:top;padding:8px 8px;border-top:1px solid va
 a{color:var(--brand2)}
 footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
 .back{display:inline-block;margin-top:16px;color:#E9F2ED;opacity:.9;font-weight:600;text-decoration:none}
+html[data-lang="en"] [data-l="id"],html:not([data-lang="en"]) [data-l="en"]{display:none!important}
+header .in{position:relative}.lang{position:absolute;right:0;top:4px;display:flex;background:rgba(255,255,255,.12);border-radius:999px;padding:3px}
+.lang button{border:0;background:none;color:#E9F2ED;font:700 12.5px system-ui,sans-serif;padding:6px 11px;border-radius:999px;cursor:pointer}
+html:not([data-lang="en"]) .lang [data-set="id"],html[data-lang="en"] .lang [data-set="en"]{background:#fff;color:#0B3B2C}
 </style>
+<script>(function(){var q=new URLSearchParams(location.search).get('lang'),l=null;try{l=localStorage.getItem('fh_lang')}catch(e){}
+var L=(q==='en'||q==='id')?q:(l==='en'?'en':'id');document.documentElement.setAttribute('data-lang',L);document.documentElement.lang=L;
+document.title=L==='en'?'Privacy Policy · Fire Hotspot':'Kebijakan Privasi · Fire Hotspot';
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-set]');if(!b)return;var v=b.getAttribute('data-set');document.documentElement.setAttribute('data-lang',v);document.documentElement.lang=v;document.title=v==='en'?'Privacy Policy · Fire Hotspot':'Kebijakan Privasi · Fire Hotspot';});})();</script>
 </head>
 <body>
 <script>try{if(window.top!==window)document.body.classList.add('emb')}catch(e){document.body.classList.add('emb')}</script>
 <header><div class="in">
   <div class="lg"><img src="assets/logo_fh.svg" alt=""><div><b>Fire Hotspot</b><small>Yayasan PRCF Indonesia</small></div></div>
-  <h1>Kebijakan Privasi</h1>
-  <p>Berlaku sejak 27 Oktober 2026 · Disusun berdasarkan Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi (UU PDP).</p>
-  <a class="back" id="kembali" href="index.html">‹ Kembali</a>
+  <div class="lang" role="group" aria-label="Bahasa · Language"><button type="button" data-set="id">ID</button><button type="button" data-set="en">EN</button></div>
+  <h1><span data-l="id">Kebijakan Privasi</span><span data-l="en">Privacy Policy</span></h1>
+  <p><span data-l="id">Berlaku sejak 27 Oktober 2026 · Disusun berdasarkan Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi (UU PDP).</span><span data-l="en">Effective 27 October 2026 · Prepared under Indonesian Law No. 27 of 2022 on Personal Data Protection.</span></p>
+  <a class="back" id="kembali" href="index.html">‹ <span data-l="id">Kembali</span><span data-l="en">Back</span></a>
 <script>(function(){var k=document.getElementById('kembali'),r=document.referrer||'';try{if(r&&new URL(r).host===location.host){k.href=r;k.onclick=function(e){if(history.length>1){e.preventDefault();history.back();}};}}catch(e){}})();</script>
 </div></header>
-<main>
+<main data-l="id">
 <nav class="toc"><b>Isi</b><ol>
   <li><a href="#pengendali">Siapa kami</a></li><li><a href="#data">Data yang kami kumpulkan</a></li>
   <li><a href="#lokasi">Berbagi lokasi tim lapangan</a></li><li><a href="#tujuan">Tujuan & dasar pemrosesan</a></li>
@@ -146,5 +155,108 @@ Admin aplikasi Fire Hotspot: <a href="mailto:erik.prcfi@gmail.com">erik.prcfi@gm
 </section>
 <footer>© 2026 Yayasan PRCF Indonesia · Fire Hotspot</footer>
 </main>
+<main data-l="en" lang="en">
+<nav class="toc"><b>Contents</b><ol>
+  <li><a href="#en-who">Who we are</a></li><li><a href="#en-data">Data we collect</a></li>
+  <li><a href="#en-loc">Field team location sharing</a></li><li><a href="#en-purpose">Purposes &amp; legal basis</a></li>
+  <li><a href="#en-third">Third-party services</a></li><li><a href="#en-keep">Retention</a></li>
+  <li><a href="#en-sec">Security</a></li><li><a href="#en-rights">Your rights</a></li><li><a href="#en-contact">Contact &amp; changes</a></li>
+</ol></nav>
+
+<section id="en-who"><h2>1. Who we are</h2>
+<p><b>Fire Hotspot</b> (website, web app and Android app) is operated by <b>Yayasan Pelestari Ragamhayati dan Cipta Fondasi Indonesia (Yayasan PRCF Indonesia)</b>, Pontianak, West Kalimantan, as the <b>personal data controller</b>. The app monitors hotspots and forest fires in assisted Social Forestry areas and supports field patrol teams.</p>
+<p>Viewing maps and hotspot data on the website does not require an account. Personal data is only collected when you create an account in the app.</p>
+</section>
+
+<section id="en-data"><h2>2. Data we collect</h2>
+<div class="tw"><table>
+<tr><th>Type</th><th>Content</th><th>When</th></tr>
+<tr><td>Account details</td><td>Full name, date of birth (and age), address, email (verified with a code), phone/WhatsApp number, profile photo (optional)</td><td>When you register or edit your profile</td></tr>
+<tr><td>Usage data</td><td>Phone operating system &amp; version, app version, monitored Village Forest, last active time, number of app opens</td><td>When the app is opened</td></tr>
+<tr><td>Field team location</td><td>GPS coordinates, accuracy (metres), speed, battery level, time, online/offline status</td><td>Only if you agree to share your location (section 3)</td></tr>
+<tr><td>Field check reports</td><td>Hotspot check results, notes, photos, reporter GPS position &amp; accuracy, reporter name &amp; email</td><td>When you submit a report</td></tr>
+<tr><td>Bara Api (AI assistant)</td><td>Chat questions and answers. Photos of wildlife/plants are only passed to Google Gemini for analysis and are <b>not stored</b> by PRCF</td><td>When you use Bara Api</td></tr>
+<tr><td>Land analysis</td><td>Boundary files (SHP/zip) you upload and their analysis results</td><td>When you upload</td></tr>
+<tr><td>Early warning</td><td>Selected Village Forests, phone notification subscription, email alert preference</td><td>When you subscribe</td></tr>
+</table></div>
+<p class="note"><b>Your password is never sent</b> to any server. It is stored only on your phone as a one-way encrypted fingerprint (PBKDF2-SHA-256).</p>
+<p>App users must be at least 17 years old. We do not knowingly collect children’s data.</p>
+</section>
+
+<section id="en-loc"><h2>3. Field team location sharing</h2>
+<ul>
+<li><b>Consent:</b> location sharing is only active if you tick the consent box when registering or signing in. You can withdraw consent at any time in <b>Profile → Share location</b>.</li>
+<li><b>When it is sent:</b> in the web app, while the app is open on screen. In the Android app, while the app is running, including when the screen is off. Android always shows a persistent notification ("Location shared with PRCF admin") while tracking is active, and a pin symbol in the app’s top bar shows the status.</li>
+<li><b>Who can see it:</b> only designated Yayasan PRCF Indonesia admins. The server re-checks admin rights on every request. Other users cannot see your location.</li>
+<li><b>Purpose:</b> field team safety, fire patrol coordination and emergency assistance. Location data is not used for automated performance assessment and is not sold or shared for advertising.</li>
+<li><b>Retention:</b> location history is <b>deleted automatically after 30 days</b>.</li>
+</ul>
+</section>
+
+<section id="en-purpose"><h2>4. Purposes &amp; legal basis</h2>
+<ul>
+<li>Managing user accounts and preventing fake accounts (email verification, blocking by admins).</li>
+<li>Providing the features you request: early warning, field reports, land analysis, the Bara Api assistant.</li>
+<li>Safety and coordination of patrol teams (location).</li>
+<li>Maintaining service quality and security, including preventing misuse of the AI assistant.</li>
+<li>Conservation programme reporting as summaries or statistics without personal identity.</li>
+</ul>
+<p>The legal basis is your <b>consent</b> (Article 20(2)(a) of the Personal Data Protection Law), given by ticking the consent box when registering or signing in, and the <b>performance of an agreement</b> to provide the services you use.</p>
+</section>
+
+<section id="en-third"><h2>5. Third-party services &amp; storage outside Indonesia</h2>
+<p>We use the services below to run the app. Some of their servers are <b>outside Indonesia</b>, so data may be transferred outside Indonesian jurisdiction in accordance with Article 56 of the Personal Data Protection Law. These providers apply equivalent or higher data protection standards.</p>
+<div class="tw"><table>
+<tr><th>Service</th><th>Use</th><th>Data received</th></tr>
+<tr><td>Google (Sheets, Drive, Apps Script, Gmail)</td><td>User database, profile photos, team positions, reports, sending verification codes &amp; alert emails</td><td>Data in section 2</td></tr>
+<tr><td>Google Gemini API</td><td>Bara Api assistant</td><td>Questions and photos you send to Bara Api</td></tr>
+<tr><td>GitHub Pages</td><td>Hosting the website &amp; public hotspot data</td><td>IP address when the site is opened (provider technical logs); no account data</td></tr>
+<tr><td>Open-Meteo</td><td>Weather forecast at your location</td><td>Location coordinates without identity, only when you open "My location weather"</td></tr>
+<tr><td>Map &amp; imagery providers (Esri, EOX, OpenStreetMap, Microsoft Planetary Computer)</td><td>Map tiles &amp; satellite imagery</td><td>IP address and the map area displayed</td></tr>
+<tr><td>NASA FIRMS</td><td>Satellite hotspot data</td><td>No personal data (downloaded by our server)</td></tr>
+</table></div>
+<p>We <b>do not sell</b> personal data or use it for advertising.</p>
+</section>
+
+<section id="en-keep"><h2>6. Retention</h2>
+<ul>
+<li><b>Location history:</b> 30 days, then deleted automatically.</li>
+<li><b>Account details &amp; profile photo:</b> while your account is active. When you choose <b>Profile → Delete account</b>, your details, profile photo and all your location data are deleted from the PRCF database.</li>
+<li><b>Field check reports, Bara Api chat history and analysis results:</b> kept as programme records for as long as needed for reporting and service security. They can be deleted at your request.</li>
+<li><b>Data on your phone:</b> stored in app storage and removed when you delete your account or the app.</li>
+</ul>
+</section>
+
+<section id="en-sec"><h2>7. Security</h2>
+<ul>
+<li>All data is transmitted over encrypted connections (HTTPS).</li>
+<li>Each account has a secret token, so data cannot be sent on behalf of someone else.</li>
+<li>Database access is limited to managers appointed by Yayasan PRCF Indonesia.</li>
+<li>If a personal data protection failure occurs, we will notify affected users and the relevant authority within <b>3 × 24 hours</b>, as required by Article 46 of the Personal Data Protection Law.</li>
+</ul>
+</section>
+
+<section id="en-rights"><h2>8. Your rights</h2>
+<p>Under the Personal Data Protection Law (Articles 5–13), you have the right to:</p>
+<ul>
+<li>be informed about how your data is processed (this policy);</li>
+<li>access and correct your data (in the <b>Profile</b> menu, or by contacting us);</li>
+<li>request a copy of your data;</li>
+<li>request deletion of your data (<b>Profile → Delete account</b>, or by contacting us);</li>
+<li>withdraw consent, including location sharing (<b>Profile → Share location</b>);</li>
+<li>object to or request restriction of processing;</li>
+<li>lodge a complaint with the personal data protection authority.</li>
+</ul>
+<p>We will respond to requests within <b>3 × 24 hours</b> of receipt.</p>
+</section>
+
+<section id="en-contact"><h2>9. Contact &amp; changes to this policy</h2>
+<p><b>Yayasan PRCF Indonesia</b>, Pontianak, West Kalimantan.<br>
+Fire Hotspot app admin: <a href="mailto:erik.prcfi@gmail.com">erik.prcfi@gmail.com</a></p>
+<p>If this policy changes, we will update the date at the top of this page. For significant changes, such as new types of data, we will ask for your consent again in the app.</p>
+</section>
+<footer>© 2026 Yayasan PRCF Indonesia · Fire Hotspot</footer>
+</main>
+
 </body>
 </html>
