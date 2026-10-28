@@ -92,12 +92,12 @@
   }
  ],
  "cakupan": {
-  "SP MODIS Terra/Aqua 1 km": [
-   "2001-02-25",
-   "2026-07-31"
-  ],
   "SP VIIRS S-NPP 375 m": [
    "2012-01-29",
+   "2026-07-31"
+  ],
+  "SP MODIS Terra/Aqua 1 km": [
+   "2001-02-25",
    "2026-07-31"
   ],
   "SP VIIRS NOAA-20 375 m": [
