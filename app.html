@@ -669,7 +669,7 @@ body.is-off .offline{display:block}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="assets/bahasa.js?v=52"></script>
+<script src="assets/bahasa.js?v=53"></script>
 <script src="assets/nasa_layers.js?v=33"></script>
 <script src="assets/citra.js?v=41"></script>
 <script src="assets/akun.js?v=49"></script>
@@ -947,7 +947,7 @@ $('#fabWind').onclick=()=>windOn(!(WIND&&WIND.isOn()));$('#fabKompas').onclick=(
 $('#fabLayer').onclick=()=>{const cur=store.get('base','terbaik');
   openSheet(`<h3>Lapisan peta</h3><p class="sub">Peta dasar dan citra</p><div class="opts" id="lyB">${[['terbaik','Citra satelit jelas (disarankan)','Sentinel-2 bebas awan 2025 + resolusi tinggi saat diperbesar'],['esri','Citra resolusi tinggi saja','Esri 30–60 cm · tanggal rekam beda tiap lokasi'],['s2026','Sentinel-2 6 bulan terakhir','Paling baru, 10 m · bisa tertutup awan/asap'],['eox','Sentinel-2 bebas awan 2025','Mosaik tahunan EOX 10 m'],['topo','Topografi','Esri World Topo'],['osm','Jalan & pemukiman','OpenStreetMap']].map(([k,t,s])=>`<button class="optc" data-b="${k}" aria-pressed="${cur===k}"><span class="rd"></span><span><b>${t}</b><small>${s}</small></span></button>`).join('')}</div>
   <div class="lbl">Tambahan</div><div class="opts"><button class="optc" id="lyS2" aria-pressed="${MAP.hasLayer(base.s2)}"><span class="rd"></span><span><b>Citra Sentinel-2 10 Agustus 2026</b><small>Komposit warna asli, bebas awan, area desa</small></span></button></div>
-  <div class="lbl">Hasil analisa</div><div class="opts"><button class="optc" id="lyTCL" aria-pressed="${!!(TCL&&MAP.hasLayer(TCL))}"><span class="rd"></span><span><b>Kehilangan tutupan pohon 2001–2025</b><small>Hansen/UMD via Global Forest Watch (merah)</small></span></button><button class="optc" id="lyPH" aria-pressed="${!!(PHL&&MAP.hasLayer(PHL))}"><span class="rd"></span><span><b>Peringatan perubahan hutan (90 hari)</b><small>Indikasi pembukaan/kerusakan tajuk dari Sentinel-2</small></span></button><button class="optc" id="lyBT" aria-pressed="${!!(BTL&&MAP.hasLayer(BTL))}"><span class="rd"></span><span><b>Bekas terbakar (Sentinel-2)</b><small>Poligon indikasi bekas terbakar ≤ 5 km dari desa, sejak 2023</small></span></button></div>
+  <div class="lbl">Hasil analisa</div><div class="opts"><button class="optc" id="lyTCL" aria-pressed="${!!(TCL&&MAP.hasLayer(TCL))}"><span class="rd"></span><span><b>Kehilangan tutupan pohon 2001–2025</b><small>Hansen/UMD (merah)</small></span></button><button class="optc" id="lyPH" aria-pressed="${!!(PHL&&MAP.hasLayer(PHL))}"><span class="rd"></span><span><b>Peringatan perubahan hutan (90 hari)</b><small>Indikasi pembukaan/kerusakan tajuk dari Sentinel-2</small></span></button><button class="optc" id="lyBT" aria-pressed="${!!(BTL&&MAP.hasLayer(BTL))}"><span class="rd"></span><span><b>Bekas terbakar (Sentinel-2)</b><small>Poligon indikasi bekas terbakar ≤ 5 km dari desa, sejak 2023</small></span></button></div>
   <div class="lbl">Asap &amp; kebakaran · satelit NASA &amp; model Copernicus CAMS</div><div class="opts" id="lyN"><button class="optc" data-n="" aria-pressed="${!NASA.id}"><span class="rd"></span><span><b>Tidak ditampilkan</b></span></button>${FHNasa.LAYERS.map(l=>`<button class="optc" data-n="${l.id}" aria-pressed="${NASA.id===l.id}"><span class="rd"></span><span><b>${l.nm}</b><small>${l.desc}</small></span></button>`).join('')}</div>
   <p class="small muted" style="margin:6px 2px 0">Sumber: NASA GIBS (pengamatan satelit harian) dan Copernicus CAMS/ECMWF (model per 3 jam, termasuk prakiraan). Tekan ▶ di panel peta untuk memutar pergerakan asap</p>
   <div class="lbl">Legenda</div><div class="small" style="display:grid;gap:6px">
@@ -999,7 +999,7 @@ async function baraData(){   // seluruh data aplikasi yang relevan → konteks B
     if(BT&&BT.musim){const M=Object.values(BT.musim).filter(m=>m.lokasi===x.id);if(M.length)L.push('Bekas terbakar Sentinel-2 (≤5 km): '+M.map(m=>m.awal+'–'+m.akhir+' '+(m.status==='selesai'?f1(m.luas_ha)+' ha':m.status)).join('; ')+'.');}
   });
   if(SITE){try{const id=SITE.id;const a=AN_CACHE[id]||(AN_CACHE[id]=await J('data/analisis/'+id+'_hd.json'));const lc=a.tutupan_lahan_ha&&a.tutupan_lahan_ha['2020'],nm={};(a.kelas||[]).forEach(c=>nm[c.kode]=c.nama);
-    L.push('\n## Analisis lahan & karbon '+a.nama+' ('+f1(a.luas_ha)+' ha): tutupan lahan 2020 (GLAD) '+(lc?Object.entries(lc).filter(e=>e[1]>0.5).sort((x,y)=>y[1]-x[1]).map(e=>(nm[e[0]]||e[0])+' '+f1(e[1])+' ha').join(', '):'-')+'. Karbon '+a.karbon.periode+' (Harris/Gibbs, sama dengan Global Forest Watch): emisi bruto '+f1(a.karbon.emisi_bruto_total_tCO2e)+' tCO2e, serapan '+f1(a.karbon.serapan_bruto_total_tCO2)+' tCO2, fluks bersih '+f1(a.karbon.fluks_bersih_total_tCO2e)+' tCO2e (negatif = penyerap bersih). Wilayah: '+(a.wilayah||[]).map(w=>'Desa '+w.desa+' Kec. '+w.kec).join(', ')+'.');}catch(e){}}
+    L.push('\n## Analisis lahan & karbon '+a.nama+' ('+f1(a.luas_ha)+' ha): tutupan lahan 2020 (GLAD) '+(lc?Object.entries(lc).filter(e=>e[1]>0.5).sort((x,y)=>y[1]-x[1]).map(e=>(nm[e[0]]||e[0])+' '+f1(e[1])+' ha').join(', '):'-')+'. Karbon '+a.karbon.periode+' (Harris dkk. 2021; Gibbs dkk. 2025): emisi bruto '+f1(a.karbon.emisi_bruto_total_tCO2e)+' tCO2e, serapan '+f1(a.karbon.serapan_bruto_total_tCO2)+' tCO2, fluks bersih '+f1(a.karbon.fluks_bersih_total_tCO2e)+' tCO2e (negatif = penyerap bersih). Wilayah: '+(a.wilayah||[]).map(w=>'Desa '+w.desa+' Kec. '+w.kec).join(', ')+'.');}catch(e){}}
   return {teks:L.join('\n'),ringkas};
 }
 function siteStatus(k){const now=Date.now();const F=ALL.filter(p=>now-p.when<=7*864e5+36e5&&p.ls&&p.ls.length>k);const c=F.map(p=>p.ls[k]);
@@ -1476,7 +1476,7 @@ const PAGES={
       const al=P.luas_berubah_ha>0;return `<div style="display:flex;gap:12px;align-items:center"><span class="ico-sq" style="width:46px;height:46px;background:${al?'#D93025':'#2E9E5B'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="${al?'M12 3l9.5 17h-19L12 3zM12 10v4m0 3v.01':'M5 12l5 5 9-10'}"/></svg></span><div><b style="font-size:16px">${al?`${N1(P.luas_berubah_ha)} ha indikasi perubahan`:'Tidak ada indikasi perubahan'}</b><div class="small muted">${al?`${P.jumlah_petak} petak · ${N1(P.luas_berubah_di_hd_ha)} ha di dalam Hutan Desa`:'di hutan yang masih utuh'} · ${esc(P.periode_terkini[0])} s.d. ${esc(P.periode_terkini[1])}</div></div></div>
       <p class="small muted" style="margin:10px 0 0">Dibanding periode sama tahun lalu (${esc(P.periode_acuan[0])} s.d. ${esc(P.periode_acuan[1])}); hutan acuan ${N(Math.round(P.hutan_acuan_ha))} ha; wilayah cerah ${P.cerah_persen}%. Citra: ${esc((P.tanggal_terkini||[]).join(', '))}. Indikasi dari citra 20 m (pembukaan, tebangan, kebakaran, dll.), perlu verifikasi lapangan. Peta: lapisan "Peringatan perubahan hutan".</p>`;})()}</div>
     <div class="h2">Ringkasan per zona</div><div class="group">${Z.map(([k,n,c])=>{const z=L0[k];return `<div class="row"><span class="ico-sq" style="background:${c}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 11h-4l4 7H5l4-7H5z"/></svg></span><span class="m"><b>${n}</b><small>Hutan 2000: ${N(Math.round(z.hutan_2000_ha))} ha · hilang ${N1(z.kehilangan_total_ha)} ha (${N1(z.persen_hilang||0)}%) · tersisa ${N(Math.round(z.hutan_tersisa_2025_ha))} ha</small></span></div>`;}).join('')}</div>
-    <div class="h2">Sumber & definisi</div><div class="card prose small"><p>${esc(HUT.sumber)}.</p><p>${esc(HUT.definisi)}</p><p class="muted">Peta: aktifkan lapisan "Kehilangan tutupan pohon (GFW/UMD)" di menu lapisan peta Beranda.</p></div>`;};
+    <div class="h2">Sumber & definisi</div><div class="card prose small"><p>${esc(HUT.sumber)}.</p><p>${esc(HUT.definisi)}</p><p class="muted">Peta: aktifkan lapisan "Kehilangan tutupan pohon (Hansen/UMD)" di menu lapisan peta Beranda.</p></div>`;};
   const drawH=()=>{draw();const b=$('#hP');if(!b)return;b.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{if(c.dataset.p==='1'){$('#hX').hidden=!$('#hX').hidden;return;}R=null;drawH();});periodeBind('pdHt',{mode:['thn'],awal:'thn',min:'2001-01-01',max:'2025-12-31'},r=>{R=r;drawH();});};
   openPage('Tutupan Hutan',SITE.hd_nama+' · Hansen/UMD 2001–2025','',async()=>{if(!HUT){$('#pageBody').innerHTML='<div class="empty">Memuat…</div>';try{HUT=await J('data/hutan/kehilangan.json');}catch(e){HUT={lokasi:{}};}}if(!PH){try{PH=await J('data/hutan/peringatan.json');}catch(e){PH={lokasi:{}};}}drawH();});
  },
@@ -1557,7 +1557,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&STATUS&&D
 if('serviceWorker' in navigator){const HAD=!!navigator.serviceWorker.controller;navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{});let RL=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(RL||!HAD)return;RL=true;location.reload();});}
 })();
 </script>
-<script src="assets/laporan.js?v=33"></script>
+<script src="assets/laporan.js?v=53"></script>
 <script src="assets/riwayat_cuaca.js?v=33"></script>
 <script src="assets/udara.js?v=33"></script>
 <script src="assets/musiman.js?v=33"></script>
@@ -1572,13 +1572,13 @@ if('serviceWorker' in navigator){const HAD=!!navigator.serviceWorker.controller;
 <script>window.FH_VERIF_URL=window.FH_VERIF_URL||'https://script.google.com/macros/s/AKfycbwQz_--p7liI6ig1X6jsDCbdpElAJahItVrnVQqxkqBzLJLzvSJojk8eUSEHWzJgY-PoQ/exec';/* URL Apps Script penerima laporan verifikasi lapangan */</script>
 <script src="assets/verifikasi.js?v=33"></script>
 <script src="assets/luring.js?v=33"></script>
-<script src="assets/analisis.js?v=52"></script>
+<script src="assets/analisis.js?v=53"></script>
 <script src="assets/bara.js?v=41"></script>
 <script src="assets/peringatan.js?v=41"></script>
 <script src="assets/peta_ecmwf.js?v=41"></script>
 <script src="assets/lokasi_saya.js?v=46"></script>
 <script src="assets/peta3d.js?v=46"></script>
-<script src="assets/unduh.js?v=52"></script>
+<script src="assets/unduh.js?v=53"></script>
 <script src="assets/native.js?v=48"></script>
 <script src="assets/posisi.js?v=48"></script>
 <script src="assets/tim.js?v=47"></script>

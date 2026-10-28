@@ -1,6 +1,6 @@
 {
  "sumber": "Hansen/UMD/Google/USGS/NASA Global Forest Change GFC-2025-v1.13 (Hansen et al. 2013, Science 342:850–853), CC BY 4.0",
- "definisi": "Hutan = tutupan tajuk tahun 2000 >= 30% (ambang Global Forest Watch). Kehilangan = hilangnya tutupan pohon (penebangan, kebakaran, pembukaan, kerusakan alami); bukan selalu deforestasi permanen.",
+ "definisi": "Hutan = tutupan tajuk tahun 2000 >= 30%. Kehilangan = hilangnya tutupan pohon (penebangan, kebakaran, pembukaan, kerusakan alami); bukan selalu deforestasi permanen.",
  "dibuat_utc": "2026-10-23T22:59:57Z",
  "lokasi": {
   "nangalauk": {

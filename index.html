@@ -522,7 +522,7 @@ html:not([data-v="beranda"]) .hero-head{margin-bottom:14px}
   <section class="card sec src" id="sumber">
     <div class="sec-h"><div><div class="kick">Metodologi</div><h2>Sumber data, metode, dan validasi</h2></div></div>
     <div class="facts">
-      <div class="fact"><b>Sumber resmi NASA</b><p>Titik panas dari NASA FIRMS, sumber yang sama dengan Global Forest Watch. Arsip final (SP) 2001–2025 dan Near Real-Time untuk data terbaru; NRT otomatis diganti saat arsip final terbit.</p></div>
+      <div class="fact"><b>Sumber resmi NASA</b><p>Titik panas dari NASA FIRMS. Arsip final (SP) 2001–2025 dan Near Real-Time untuk data terbaru; NRT otomatis diganti saat arsip final terbit.</p></div>
       <div class="fact"><b>Nilai asli tidak diubah</b><p>Setiap unduhan dicatat URL, waktu, ukuran, dan sidik SHA-256. Riwayat perubahan seluruh data tersimpan permanen di repositori publik.</p></div>
       <div class="fact"><b>Konteks lokal</b><p>Setiap titik dianalisa terhadap batas Hutan Desa, desa, petak patroli 250 m, fungsi kawasan, tutupan lahan 2026, gambut, dan cuaca harian ERA5.</p></div>
     </div>
@@ -546,7 +546,7 @@ html:not([data-v="beranda"]) .hero-head{margin-bottom:14px}
 <script src="assets/nasa_layers.js?v=33"></script>
 <script src="assets/citra.js?v=33"></script>
 <script src="assets/peta3d.js?v=31"></script>
-<script src="assets/unduh.js?v=52"></script>
+<script src="assets/unduh.js?v=53"></script>
 <script>
 (async function(){
 const G=await (await fetch('data/geo.json',{cache:'no-cache'})).json(); G.img={url:'assets/s2_20260810.jpg',bounds:G.img_bounds};
@@ -632,7 +632,7 @@ map.on('overlayadd',e=>{if(e.layer===BTL&&!BTL._loaded){BTL._loaded=1;fetch('dat
 const TCL=L.tileLayer('https://tiles.globalforestwatch.org/umd_tree_cover_loss/latest/dynamic/{z}/{x}/{y}.png',{maxNativeZoom:12,maxZoom:18,opacity:.85,attribution:'Hansen/UMD/Google/USGS/NASA · Global Forest Watch'});
 const PHL=L.geoJSON(null,{style:{color:'#FF2EBD',weight:1.5,fillOpacity:.5},onEachFeature:(f,l)=>{const p=f.properties;l.bindPopup(`<div class="pop"><h3>Indikasi perubahan hutan</h3><table><tr><td>Lokasi</td><td>${esc(p.hd)}${p.di_hutan_desa?' (di dalam HD)':''}</td></tr><tr><td>Luas</td><td>${p.luas_ha} ha</td></tr><tr><td>Periode</td><td>${esc(p.periode)}</td></tr><tr><td>Dibanding</td><td>${esc(p.dibanding)}</td></tr></table><p style="font-size:11px;color:var(--muted)">${esc(p.metode)}. Perlu verifikasi lapangan.</p></div>`);}});
 map.on('overlayadd',e=>{if(e.layer===PHL&&!PHL._loaded){PHL._loaded=1;fetch('data/hutan/peringatan.geojson').then(r=>r.json()).then(g=>PHL.addData(g)).catch(()=>{});}});
-L.control.layers({'Citra satelit jelas (Sentinel-2 2025 + resolusi tinggi saat diperbesar)':terbaik,'Citra resolusi tinggi saja (Esri)':esri,['Sentinel-2 6 bulan terakhir (bisa tertutup awan/asap)']:s2026,'Sentinel-2 bebas awan 2025 (EOX)':eox,'OpenStreetMap':osm},{'Sentinel-2 10 Agu 2026':s2,'Bekas terbakar (Sentinel-2, sejak 2023)':BTL,'Kehilangan tutupan pohon 2001–2025 (GFW/UMD)':TCL,'Peringatan perubahan hutan 90 hari (Sentinel-2)':PHL},{position:'topright'}).addTo(map);
+L.control.layers({'Citra satelit jelas (Sentinel-2 2025 + resolusi tinggi saat diperbesar)':terbaik,'Citra resolusi tinggi saja (Esri)':esri,['Sentinel-2 6 bulan terakhir (bisa tertutup awan/asap)']:s2026,'Sentinel-2 bebas awan 2025 (EOX)':eox,'OpenStreetMap':osm},{'Sentinel-2 10 Agu 2026':s2,'Bekas terbakar (Sentinel-2, sejak 2023)':BTL,'Kehilangan tutupan pohon 2001–2025 (Hansen/UMD)':TCL,'Peringatan perubahan hutan 90 hari (Sentinel-2)':PHL},{position:'topright'}).addTo(map);
 const NASA=FHNasa.create(map); FHNasa.control(map,NASA,'topleft');
 {const C3=L.Control.extend({onAdd(){const b=L.DomUtil.create('button','leaflet-bar');b.type='button';b.title='Peta 3D & globe';b.textContent='3D';b.style.cssText='width:34px;height:34px;background:#fff;font:800 12px system-ui;color:#22382B;cursor:pointer';L.DomEvent.disableClickPropagation(b);b.onclick=()=>window.FH3D&&FH3D.open({sites:SITES,site:SITE,points:ALL});return b;}});new C3({position:'topleft'}).addTo(map);}
 const ptsL=L.layerGroup().addTo(map);
@@ -962,7 +962,7 @@ load(); setInterval(load,10*60*1000);
 setInterval(setStatus,60000);
 })();
 </script>
-<script src="assets/laporan.js?v=33"></script>
+<script src="assets/laporan.js?v=53"></script>
 <script src="assets/riwayat_cuaca.js?v=33"></script>
 <script src="assets/udara.js?v=33"></script>
 <script src="assets/meteogram.js?v=33"></script>
@@ -970,7 +970,7 @@ setInterval(setStatus,60000);
 <script src="assets/cari_lokasi.js?v=33"></script>
 <script src="assets/peta_ecmwf.js?v=33"></script>
 <script src="assets/lokasi_saya.js?v=33"></script>
-<script src="assets/analisis.js?v=52"></script>
+<script src="assets/analisis.js?v=53"></script>
 <script>if(document.documentElement.dataset.v==='analisis'&&window.FHAnalisis&&!window.__AN){window.__AN=1;FHAnalisis.mount(document.getElementById('anWeb'),{mode:'web'});}</script>
 <script>
 (function(){ /* pencarian lokasi di menu Prakiraan (website) */

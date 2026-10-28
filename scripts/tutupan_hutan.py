@@ -24,7 +24,7 @@ def main():
     from shapely.ops import unary_union
     geo = json.load(open(os.path.join(DATA, "geo.json")))
     res = {"sumber": f"Hansen/UMD/Google/USGS/NASA Global Forest Change {VER} (Hansen et al. 2013, Science 342:850–853), CC BY 4.0",
-           "definisi": "Hutan = tutupan tajuk tahun 2000 >= 30% (ambang Global Forest Watch). Kehilangan = hilangnya tutupan pohon (penebangan, kebakaran, pembukaan, kerusakan alami); bukan selalu deforestasi permanen.",
+           "definisi": "Hutan = tutupan tajuk tahun 2000 >= 30%. Kehilangan = hilangnya tutupan pohon (penebangan, kebakaran, pembukaan, kerusakan alami); bukan selalu deforestasi permanen.",
            "dibuat_utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "lokasi": {}}
     for s in geo["sites"]:
         hd = unary_union([shape(f["geometry"]) for f in s["hd"]["features"]]).buffer(0)

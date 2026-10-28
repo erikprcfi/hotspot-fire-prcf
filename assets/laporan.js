@@ -306,7 +306,7 @@ function sources(M) {
     ['Bekas terbakar', 'Sentinel-2 L2A (ESA Copernicus, Earth Search AWS Open Data); indeks dNBR menurut Key & Benson (2006), FIREMON. Hasil berupa indikasi yang perlu verifikasi lapangan.'],
     ['Tutupan hutan', 'Hansen, M.C. dkk. (2013) High-Resolution Global Maps of 21st-Century Forest Cover Change. Science 342:850–853; Global Forest Change v1.13 (2000–2025), CC BY 4.0.'],
     ['Tutupan & penggunaan lahan', 'Potapov, P. dkk. (2022) The Global 2000–2020 Land Cover and Land Use Change Dataset Derived From the Landsat Archive. Frontiers in Remote Sensing 3:856903; GLAD GLCLUC v2, 30 m, CC BY 4.0.'],
-    ['Karbon hutan', 'Harris, N.L. dkk. (2021) Global maps of twenty-first century forest carbon fluxes. Nature Climate Change 11:234–240; Gibbs, D.A. dkk. (2025) ESSD 17:1217–1243. Emisi bruto, serapan bruto & fluks bersih 2001–2025 versi 20260327 (sama dengan Global Forest Watch/Global Nature Watch); stok karbon 2000 versi 20230222. Data publik WRI/GFW (gfw2-data), CC BY 4.0.'],
+    ['Karbon hutan', 'Harris, N.L. dkk. (2021) Global maps of twenty-first century forest carbon fluxes. Nature Climate Change 11:234–240; Gibbs, D.A. dkk. (2025) ESSD 17:1217–1243. Emisi bruto, serapan bruto & fluks bersih 2001–2025 versi 20260327; stok karbon 2000 versi 20230222. Data publik World Resources Institute, CC BY 4.0.'],
     ['Metode analisis area', 'Semua raster dibaca pada grid asli 0,00025° tanpa resampling; piksel masuk bila pusatnya di dalam batas; luas piksel geodesik. Kode: scripts/analisis_inti.py di https://github.com/erikprcfi/hotspot-fire-prcf (sama untuk area dampingan dan SHP unggahan).'],
     ['Bahaya kebakaran', 'Van Wagner, C.E. (1987) Development and Structure of the Canadian Forest Fire Weather Index System; de Groot dkk. (2006) Fire Danger Rating System Indonesia (dipakai BMKG). Input cuaca ERA5 (Copernicus C3S) dan analisis ECMWF.'],
     ['Keterbatasan', 'Satelit mendeteksi panas saat melintas (beberapa kali sehari); api kecil, singkat, atau di bawah tajuk dan saat tertutup awan dapat tidak terdeteksi. Luas terbakar perlu diukur dengan analisa citra (burn scar) atau lapangan.'],
@@ -444,7 +444,7 @@ function extraBlocks(M) {
       if (L.after) b.p.push('Catatan: data Hansen GFC v1.13 tersedia sampai tahun 2025; perubahan setelah 2025 dipantau dengan peringatan perubahan tutupan Sentinel-2 di aplikasi.');
     } else b.p.push('Periode yang dipilih berada di luar cakupan data tahunan Hansen GFC (2001–2025). Perubahan tutupan terbaru dipantau melalui peringatan perubahan tutupan Sentinel-2 di aplikasi.');
     B.push(b); }
-  // Analisis lahan & karbon (setara GFW/GNW) – data tahunan, cakupan tetap
+  // Analisis lahan & karbon (Hansen/UMD, GLAD, Harris dkk.) – data tahunan, cakupan tetap
   const AN = ex.an, Z = AN ? [['Hutan Desa', AN.hd], ['Wilayah desa', AN.desa]] : [];
   { const b = { h: 'Tutupan & penggunaan lahan 2000–2020 (GLAD)', p: [], t: [] };
     if (AN) {
@@ -456,7 +456,7 @@ function extraBlocks(M) {
     B.push(b); }
   { const b = { h: 'Karbon hutan & emisi gas rumah kaca 2001–2025', p: [], t: [] };
     if (AN) {
-      b.p.push(`Sumber: ${AN.hd.sumber.fluks_karbon}; ${AN.hd.sumber.stok_karbon}. Emisi bruto mencakup CO2, CH4 dan N2O dari biomassa dan tanah (termasuk gambut) akibat hilangnya tutupan pohon; serapan bruto = penyerapan CO2 oleh hutan yang tetap/tumbuh; fluks bersih = emisi - serapan (negatif = penyerap karbon bersih). Nilai per tahun = total 25 tahun ÷ 25, sama dengan cara Global Forest Watch. Ini hasil model global dengan ketidakpastian; bukan pengganti inventarisasi karbon/MRV lapangan.`);
+      b.p.push(`Sumber: ${AN.hd.sumber.fluks_karbon}; ${AN.hd.sumber.stok_karbon}. Emisi bruto mencakup CO2, CH4 dan N2O dari biomassa dan tanah (termasuk gambut) akibat hilangnya tutupan pohon; serapan bruto = penyerapan CO2 oleh hutan yang tetap/tumbuh; fluks bersih = emisi - serapan (negatif = penyerap karbon bersih). Nilai per tahun = total 25 tahun ÷ 25. Ini hasil model global dengan ketidakpastian; bukan pengganti inventarisasi karbon/MRV lapangan.`);
       b.t.push({ cap: 'Ringkasan karbon', rows: [['Indikator', ...Z.map(([n]) => n)],
         ['Luas area (ha)', ...Z.map(([, A]) => fmt1(A.luas_ha))], ['Hutan tahun 2000, tajuk ≥30% (ha)', ...Z.map(([, A]) => fmt1(A.hutan.hutan_2000_ha))], ['Kehilangan tutupan pohon 2001–2025 (ha)', ...Z.map(([, A]) => fmt1(A.hutan.kehilangan_total_ha))],
         ['Emisi bruto total (tCO2e)', ...Z.map(([, A]) => fmt(A.karbon.emisi_bruto_total_tCO2e))], ['Serapan bruto total (tCO2)', ...Z.map(([, A]) => fmt(A.karbon.serapan_bruto_total_tCO2))], ['Fluks bersih total (tCO2e)', ...Z.map(([, A]) => fmt(A.karbon.fluks_bersih_total_tCO2e))],

@@ -1,7 +1,7 @@
 """
 Pekerja antrean ANALISIS SHP – Fire Hotspot PRCF (dijalankan GitHub Actions tiap ±5 menit)
 Mengambil SHP (GeoJSON WGS84) yang diunggah pengguna terverifikasi dari Google Apps Script PRCF, menghitungnya dengan
-scripts/analisis_inti.py (cara yang sama dengan 6 Hutan Desa, setara GFW/GNW), lalu mengirim hasil kembali (privat, hanya pemilik).
+scripts/analisis_inti.py (cara yang sama dengan 6 Hutan Desa), lalu mengirim hasil kembali (privat, hanya pemilik).
 Butuh env: ANALISIS_KEY (kunci pekerja dari Apps Script), AKUN_URL (URL aplikasi web Apps Script database pengguna).
 """
 import os, sys, json, datetime, urllib.request, traceback

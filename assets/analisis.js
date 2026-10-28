@@ -1,10 +1,10 @@
-/* Analisis area – Fire Hotspot PRCF (setara fitur analisis area Global Forest Watch / Global Nature Watch)
+/* Analisis area – Fire Hotspot PRCF (analisis area dengan dataset resmi)
  * - Area dampingan PRCF (6 Hutan Desa + 6 desa): hasil siap pakai di data/analisis/*.json
  * - SHP unggahan (zip: .shp .shx .dbf .prj): dibaca & divalidasi di perangkat, dikirim oleh PENGGUNA TERVERIFIKASI ke database PRCF,
  *   dihitung otomatis di server (GitHub Actions, scripts/analisis_inti.py — cara hitung sama persis dengan area dampingan),
  *   hasilnya hanya dapat dibuka pemiliknya.
  * Isi analisis: tutupan & penggunaan lahan 2000–2020 (GLAD GLCLUC), perubahan hutan 2001–2025 (Hansen/UMD GFC v1.13),
- * emisi/serapan/fluks bersih GRK hutan 2001–2025 & stok karbon 2000 (Harris et al. 2021; Gibbs et al. 2025 – versi GFW/GNW),
+ * emisi/serapan/fluks bersih GRK hutan 2001–2025 & stok karbon 2000 (Harris et al. 2021; Gibbs et al. 2025, versi 20260327),
  * titik panas 2016–2025 (arsip NASA FIRMS), wilayah administrasi (BPS/BIG + Kepmendagri 2025).
  * Pemakaian: FHAnalisis.mount(el, { mode: 'app' | 'web', akun: () => ({id, token, nama}) | null, base: '' })
  */
@@ -150,7 +150,7 @@ function viewer(el, R, back) {
        <div><b>${N((tl['2020'].pohon || 0) + (tl['2020'].basah_pohon || 0), 1)} ha</b><span>tutupan pohon 2020 (GLAD)</span></div><div><b>${N(C.stok_karbon_total_2000_tC)} tC</b><span>stok karbon total tahun 2000</span></div>
        <div><b>${N(C.emisi_bruto_per_tahun_tCO2e)}</b><span>emisi bruto rata-rata, tCO₂e/tahun</span></div><div><b>${N(C.serapan_bruto_per_tahun_tCO2)}</b><span>serapan bruto rata-rata, tCO₂/tahun</span></div>
        <div><b style="color:${sink ? '#1E7A3B' : '#B3261E'}">${N(net)}</b><span>fluks bersih tCO₂e/tahun → ${sink ? 'PENYERAP karbon bersih' : 'SUMBER emisi bersih'}</span></div>${T ? `<div><b>${N(T.total)}</b><span>titik panas ${T.periode}</span></div>` : ''}</div>
-       <p class="mut">Semua angka dihitung langsung dari dataset resmi yang juga dipakai Global Forest Watch / Global Nature Watch (lihat tab "Wilayah & sumber"). Kehilangan tutupan pohon mencakup penebangan, kebakaran & kerusakan alami, tidak selalu deforestasi permanen.</p></div>`,
+       <p class="mut">Semua angka dihitung langsung dari dataset resmi (lihat tab "Wilayah & sumber"). Kehilangan tutupan pohon mencakup penebangan, kebakaran & kerusakan alami, tidak selalu deforestasi permanen.</p></div>`,
     () => { const ks = K.map(k => k.kode).filter(k => Y.some(y => (tl[String(y)][k] || 0) > 0.05));
       const W = 640, bh = 22; let s = `<svg viewBox="0 0 ${W} ${Y.length * (bh + 8) + 4}" style="width:100%;height:auto">`;
       Y.forEach((y, i) => { let x = 48; s += `<text x="0" y="${i * (bh + 8) + 15}" font-size="12" fill="#7a867f">${y}</text>`; ks.forEach(k => { const w = (W - 50) * (tl[String(y)][k] || 0) / luas; if (w > 0) s += `<rect x="${x}" y="${i * (bh + 8)}" width="${w}" height="${bh}" fill="${kw(k)}"><title>${kn(k)} ${y}: ${N(tl[String(y)][k], 1)} ha</title></rect>`; x += w; }); });
@@ -164,7 +164,7 @@ function viewer(el, R, back) {
       return `<div class="fan-card"><h3>Kehilangan tutupan pohon per tahun · ${rLbl()}</h3>${bars(v, yrs.map(y => y.slice(2)), '#D9480F', 'ha')}
        ${penuh() ? '' : `<div class="fan-kpi" style="margin-top:10px"><div><b>${N(sR, 1)} ha</b><span>hilang ${rLbl()}</span></div><div><b>${N(H.hutan_2000_ha ? 100 * sR / H.hutan_2000_ha : 0, 2)}%</b><span>dari hutan 2000</span></div></div>`}
        <div class="fan-kpi" style="margin-top:10px"><div><b>${N(H.hutan_2000_ha, 1)} ha</b><span>hutan 2000</span></div><div><b>${N(H.kehilangan_total_ha, 1)} ha</b><span>hilang 2001–2025</span></div><div><b>${N(H.hutan_tersisa_2025_ha, 1)} ha</b><span>tersisa 2025 (tanpa memperhitungkan pertumbuhan kembali)</span></div><div><b>${N(H.persen_hilang, 2)}%</b><span>dari hutan 2000</span></div></div>
-       <p class="fan-src">Hansen/UMD/Google/USGS/NASA Global Forest Change v1.13 (2000–2025), piksel 30 m, hutan = tutupan tajuk tahun 2000 ≥ 30% (ambang GFW). Luas piksel geodesik.</p></div>`; },
+       <p class="fan-src">Hansen/UMD/Google/USGS/NASA Global Forest Change v1.13 (2000–2025), piksel 30 m, hutan = tutupan tajuk tahun 2000 ≥ 30% . Luas piksel geodesik.</p></div>`; },
     () => { const e = C.emisi_per_tahun_kehilangan_tCO2e, yrs = Object.keys(e).filter(inR), eR = yrs.reduce((a, y) => a + e[y], 0);
       return `<div class="fan-card"><h3>Karbon hutan & gas rumah kaca (2001–2025)</h3><div class="fan-kpi">
         <div><b>${N(C.emisi_bruto_total_tCO2e)}</b><span>emisi bruto total, tCO₂e</span></div><div><b>${N(C.serapan_bruto_total_tCO2)}</b><span>serapan bruto total, tCO₂</span></div>
@@ -173,8 +173,8 @@ function viewer(el, R, back) {
         <div><b>${N(C.rerata_karbon_total_hutan_2000_tC_ha, 1)}</b><span>rerata karbon total hutan, tC/ha</span></div><div><b>${N(C.rerata_karbon_atas_tanah_hutan_2000_tC_ha, 1)}</b><span>rerata karbon atas tanah hutan, tC/ha</span></div></div>
         ${penuh() ? '' : `<div class="fan-kpi" style="margin-top:10px"><div><b>${N(eR)}</b><span>emisi bruto dari kehilangan hutan ${rLbl()}, tCO₂e</span></div></div>`}
         <h3 style="margin-top:14px">Emisi bruto menurut tahun kehilangan · ${rLbl()}</h3>${bars(yrs.map(y => e[y]), yrs.map(y => y.slice(2)), '#8E2A1E', 'tCO₂e')}
-        <p class="mut">Fluks bersih = emisi bruto − serapan bruto (cek konsistensi data: selisih ${N(C.cek_konsistensi_pct, 3)}%). Nilai per tahun = total 25 tahun ÷ 25, sama seperti GFW. 1 tC = 3,667 tCO₂.</p>
-        <p class="fan-src">Model fluks karbon hutan Harris et al. 2021 (Nature Climate Change) dengan pembaruan Gibbs et al. 2025 (ESSD), versi 20260327 — versi yang tayang di Global Forest Watch & Global Nature Watch; emisi mencakup CO₂, CH₄, N₂O dari biomassa & tanah (termasuk gambut) pada wilayah hutan model. Stok karbon tahun 2000: Harris et al. 2021. Hasil model mengandung ketidakpastian; bukan pengganti inventarisasi karbon lapangan/MRV resmi.</p></div>`; },
+        <p class="mut">Fluks bersih = emisi bruto − serapan bruto (cek konsistensi data: selisih ${N(C.cek_konsistensi_pct, 3)}%). Nilai per tahun = total 25 tahun ÷ 25. 1 tC = 3,667 tCO₂.</p>
+        <p class="fan-src">Model fluks karbon hutan Harris et al. 2021 (Nature Climate Change) dengan pembaruan Gibbs et al. 2025 (ESSD), versi 20260327 (data publik WRI, CC BY 4.0); emisi mencakup CO₂, CH₄, N₂O dari biomassa & tanah (termasuk gambut) pada wilayah hutan model. Stok karbon tahun 2000: Harris et al. 2021. Hasil model mengandung ketidakpastian; bukan pengganti inventarisasi karbon lapangan/MRV resmi.</p></div>`; },
     () => { if (!T) return '<div class="fan-card"><p class="mut">Data titik panas tidak tersedia.</p></div>'; const yrs = Object.keys(T.per_tahun).filter(inR), S = Object.keys(T.per_tahun[Object.keys(T.per_tahun)[0]] || {}), col = { 'VIIRS S-NPP': '#E8590C', 'VIIRS NOAA-20': '#F59F00', MODIS: '#C2255C' };
       if (!yrs.length) return `<div class="fan-card"><p class="mut">Tidak ada data titik panas untuk ${rLbl()} (tersedia ${esc(T.periode)}).</p></div>`;
       return `<div class="fan-card"><h3>Titik panas ${penuh() ? T.periode + ' · ' + N(T.total) : rLbl() + ' · ' + N(yrs.reduce((a, y) => a + S.reduce((b, k) => b + T.per_tahun[y][k], 0), 0))} deteksi</h3>${!penuh() && RY[0] < Object.keys(T.per_tahun)[0] ? `<p class="mut">Arsip titik panas untuk analisis ini tersedia ${esc(T.periode)}; tahun sebelumnya tidak dihitung.</p>` : ''}${bars(yrs.map(y => S.reduce((a, s) => a + T.per_tahun[y][s], 0)), yrs, '#E8590C', 'titik')}
@@ -256,7 +256,7 @@ async function pdfHasil(R) {
   H1('Perubahan hutan 2001-2025'); P(R.sumber.kehilangan_pohon, 8.3, [90, 100, 95]);
   const ys = Object.keys(Hh.kehilangan_per_tahun_ha); IMG(barCanvas('Kehilangan tutupan pohon per tahun (ha)', ys.map(v => v.slice(2)), ys.map(v => Hh.kehilangan_per_tahun_ha[v]), '#D9480F', 'ha'), CW);
   TAB([['Tahun', 'Kehilangan (ha)', 'Emisi bruto (tCO2e)'], ...ys.map(v => [v, fmt1(Hh.kehilangan_per_tahun_ha[v]), fmtI(C.emisi_per_tahun_kehilangan_tCO2e[v])]), ['Jumlah', fmt1(Hh.kehilangan_total_ha), fmtI(Object.values(C.emisi_per_tahun_kehilangan_tCO2e).reduce((p, c) => p + c, 0))]], 7.6);
-  H1('Karbon hutan & gas rumah kaca'); P(`${R.sumber.fluks_karbon}. ${R.sumber.stok_karbon}. Fluks bersih = emisi bruto - serapan bruto (negatif = penyerap). Nilai per tahun = total 25 tahun / 25 (cara Global Forest Watch). Hasil model global dengan ketidakpastian; bukan pengganti MRV/inventarisasi karbon lapangan.`, 8.3, [90, 100, 95]);
+  H1('Karbon hutan & gas rumah kaca'); P(`${R.sumber.fluks_karbon}. ${R.sumber.stok_karbon}. Fluks bersih = emisi bruto - serapan bruto (negatif = penyerap). Nilai per tahun = total 25 tahun / 25. Hasil model global dengan ketidakpastian; bukan pengganti MRV/inventarisasi karbon lapangan.`, 8.3, [90, 100, 95]);
   TAB([['Indikator', 'Total 2001-2025', 'Per tahun'], ['Emisi bruto (tCO2e)', fmtI(C.emisi_bruto_total_tCO2e), fmtI(C.emisi_bruto_per_tahun_tCO2e)], ['Serapan bruto (tCO2)', fmtI(C.serapan_bruto_total_tCO2), fmtI(C.serapan_bruto_per_tahun_tCO2)], ['Fluks bersih (tCO2e)', fmtI(C.fluks_bersih_total_tCO2e), fmtI(C.fluks_bersih_per_tahun_tCO2e)]]);
   TAB([['Stok karbon tahun 2000', 'Nilai'], ['Karbon di atas tanah (tC)', fmtI(C.stok_karbon_atas_tanah_2000_tC)], ['Karbon total, semua pool (tC)', fmtI(C.stok_karbon_total_2000_tC)], ['Rerata karbon total hutan (tC/ha)', fmt1(C.rerata_karbon_total_hutan_2000_tC_ha)], ['Rerata karbon atas tanah hutan (tC/ha)', fmt1(C.rerata_karbon_atas_tanah_hutan_2000_tC_ha)]]);
   if (T) { H1(`Titik panas ${T.periode}`); P(`${T.catatan} Sumber: ${R.sumber.titik_panas}.`, 8.3, [90, 100, 95]); const ty = Object.keys(T.per_tahun), S = Object.keys(T.per_tahun[ty[0]]);

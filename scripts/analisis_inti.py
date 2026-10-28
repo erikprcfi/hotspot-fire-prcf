@@ -1,15 +1,15 @@
 """
-Inti analisis area (poligon) – Fire Hotspot PRCF, setara Global Forest Watch / Global Nature Watch (WRI)
+Inti analisis area (poligon) – Fire Hotspot PRCF, dataset resmi UMD & WRI
 =======================================================================================================
 Dipakai untuk 6 Hutan Desa (scripts/karbon_lahan.py) DAN untuk SHP yang diunggah pengguna (scripts/analisis_antrean.py),
 sehingga cara hitungnya identik. Semua dihitung langsung dari raster/arsip resmi (tanpa estimasi buatan):
  - Tutupan & penggunaan lahan 2000/2005/2010/2015/2020: GLAD GLCLUC 2000–2020 v2 (Potapov et al. 2022), 30 m
  - Hutan 2000 & kehilangan tutupan pohon 2001–2025: Hansen/UMD GFC-2025-v1.13 (Hansen et al. 2013); hutan = tajuk >= 30 %
- - Emisi bruto, serapan bruto, fluks bersih GRK hutan 2001–2025: Harris et al. 2021 + Gibbs et al. 2025, versi 20260327 (= GFW/GNW)
+ - Emisi bruto, serapan bruto, fluks bersih GRK hutan 2001–2025: Harris et al. 2021 + Gibbs et al. 2025, versi 20260327
  - Stok karbon tahun 2000 (atas tanah & total): Harris et al. 2021, versi 20230222
  - Titik panas 2016–2025: arsip tahunan resmi NASA FIRMS (VIIRS S-NPP, VIIRS NOAA-20, MODIS) untuk Indonesia
 Raster di grid 0,00025° (ubin 10°), jendela dibulatkan ke piksel utuh (tanpa resampling), luas piksel geodesik,
-piksel masuk poligon bila pusat piksel di dalam poligon (aturan rasterisasi yang sama dengan GFW).
+piksel masuk poligon bila pusat piksel di dalam poligon.
 """
 import os, io, csv, json, math, urllib.request
 import numpy as np
@@ -32,7 +32,7 @@ KELAS = [("pohon", "Tutupan pohon (hutan)", (25, 48), "#2D712D"), ("basah_pohon"
 TAHUN_LC = [2000, 2005, 2010, 2015, 2020]
 SUMBER = {"tutupan_lahan": "GLAD Global Land Cover and Land Use Change 2000–2020 v2 (Potapov et al. 2022, Front. Remote Sens.), 30 m, CC BY 4.0",
           "kehilangan_pohon": "Hansen/UMD/Google/USGS/NASA Global Forest Change GFC-2025-v1.13 (Hansen et al. 2013, Science), 30 m, CC BY 4.0",
-          "fluks_karbon": "Forest GHG emissions, removals & net flux 2001–2025 (Harris et al. 2021, Nat. Clim. Change; Gibbs et al. 2025, ESSD), versi 20260327 – sama dengan Global Forest Watch/Global Nature Watch, CC BY 4.0",
+          "fluks_karbon": "Forest GHG emissions, removals & net flux 2001–2025 (Harris et al. 2021, Nat. Clim. Change; Gibbs et al. 2025, ESSD), versi 20260327, data publik World Resources Institute, CC BY 4.0",
           "stok_karbon": "Stok karbon hutan tahun 2000 (Harris et al. 2021), versi 20230222, CC BY 4.0",
           "titik_panas": "NASA FIRMS arsip tahunan (VIIRS S-NPP VNP14IMG, VIIRS NOAA-20 VJ114IMG, MODIS MCD14ML) untuk Indonesia"}
 
