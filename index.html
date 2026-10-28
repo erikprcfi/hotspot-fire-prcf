@@ -510,7 +510,7 @@ html:not([data-v="beranda"]) .hero-head{margin-bottom:14px}
   </section>
 
   <section class="card sec" id="analisis">
-    <div class="sec-h"><div><div class="kick">Analisis area</div><h2>Tutupan lahan, perubahan hutan, karbon &amp; titik panas</h2><p>Setara analisis area Global Forest Watch / Global Nature Watch. Pilih area dampingan PRCF atau unggah SHP (zip) area Anda – dihitung otomatis dari dataset resmi.</p></div></div>
+    <div class="sec-h"><div><div class="kick">Analisis area</div><h2>Tutupan lahan, perubahan hutan, karbon &amp; titik panas</h2><p>Analisis area dengan data resmi University of Maryland (Hansen/GLAD) &amp; Harris dkk. Pilih area dampingan PRCF atau unggah SHP (zip) area Anda – dihitung otomatis dari dataset resmi.</p></div></div>
     <div id="anWeb" style="max-width:980px"></div>
   </section>
 
@@ -546,7 +546,7 @@ html:not([data-v="beranda"]) .hero-head{margin-bottom:14px}
 <script src="assets/nasa_layers.js?v=33"></script>
 <script src="assets/citra.js?v=33"></script>
 <script src="assets/peta3d.js?v=31"></script>
-<script src="assets/unduh.js?v=33"></script>
+<script src="assets/unduh.js?v=52"></script>
 <script>
 (async function(){
 const G=await (await fetch('data/geo.json',{cache:'no-cache'})).json(); G.img={url:'assets/s2_20260810.jpg',bounds:G.img_bounds};
@@ -970,7 +970,7 @@ setInterval(setStatus,60000);
 <script src="assets/cari_lokasi.js?v=33"></script>
 <script src="assets/peta_ecmwf.js?v=33"></script>
 <script src="assets/lokasi_saya.js?v=33"></script>
-<script src="assets/analisis.js?v=33"></script>
+<script src="assets/analisis.js?v=52"></script>
 <script>if(document.documentElement.dataset.v==='analisis'&&window.FHAnalisis&&!window.__AN){window.__AN=1;FHAnalisis.mount(document.getElementById('anWeb'),{mode:'web'});}</script>
 <script>
 (function(){ /* pencarian lokasi di menu Prakiraan (website) */

@@ -35,7 +35,7 @@ const DATA = {
     ket: 'Poligon Hutan Desa (sesuai SK), batas desa, dan cincin radius 5 km & 25 km dari batas desa yang dipakai untuk menghitung zona.' },
   kh: { nm: 'Titik panas seluruh Kapuas Hulu', fmt: ['shp', 'kml', 'geojson', 'csv'], wil: false, tahun: 'tahun', geom: 'Point',
     ket: 'Semua deteksi di Kabupaten Kapuas Hulu untuk tahun terpilih, dengan atribut lengkap.' },
-  analisis: { nm: 'Analisis lahan, hutan & karbon (setara GFW/GNW)', fmt: ['csv', 'shp', 'geojson', 'kml'], wil: false, tahun: 'tetap', tetap: 'Data tahunan resmi: lahan 2000–2020, hutan & karbon 2001–2025, titik panas 2016–2025', geom: 'Polygon',
+  analisis: { nm: 'Analisis lahan, hutan & karbon (data Hansen/UMD & Harris dkk.)', fmt: ['csv', 'shp', 'geojson', 'kml'], wil: false, tahun: 'tetap', tetap: 'Data tahunan resmi: lahan 2000–2020, hutan & karbon 2001–2025, titik panas 2016–2025', geom: 'Polygon',
     ket: 'CSV: tabel lengkap per indikator (tutupan lahan per kelas & tahun, kehilangan hutan & emisi per tahun, serapan, fluks bersih, stok karbon, titik panas per tahun & sensor, wilayah) untuk Hutan Desa dan wilayah desa. SHP/GeoJSON/KML: poligon Hutan Desa & desa dengan atribut ringkasan. Sumber: GLAD GLCLUC, Hansen GFC v1.13, Harris/Gibbs (versi GFW 20260327), NASA FIRMS.' },
   arsip: { nm: 'Arsip asli NASA FIRMS (tanpa olahan)', fmt: ['csv'], wil: false, tahun: 'tahun', geom: null,
     ket: 'File CSV asli NASA FIRMS per tahun untuk kotak Kapuas Hulu, persis seperti diunduh (sidik SHA-256 tercatat di jejak audit).' },

@@ -287,7 +287,7 @@ function webLogin(box, done) {
 function mount(el, o = {}) {
   const base = o.base || '';
   const akun = () => o.mode === 'web' ? WS.get() : (o.akun ? o.akun() : null);
-  el.innerHTML = `<div class="fan"><div class="fan-hero"><h2>Analisis lahan, hutan & karbon</h2><p>Setara analisis area Global Forest Watch / Global Nature Watch: tutupan lahan 2000–2020, perubahan hutan 2001–2025, emisi & serapan karbon, stok karbon, titik panas. Data resmi, dihitung dari raster aslinya.</p></div>
+  el.innerHTML = `<div class="fan"><div class="fan-hero"><h2>Analisis lahan, hutan & karbon</h2><p>Analisis area dengan data resmi University of Maryland (Hansen/GLAD) &amp; Harris dkk.: tutupan lahan 2000–2020, perubahan hutan 2001–2025, emisi & serapan karbon, stok karbon, titik panas. Data resmi, dihitung dari raster aslinya.</p></div>
     <div class="fan-card"><h3>Area dampingan PRCF</h3><div class="fan-list" data-pr><p class="mut">Memuat…</p></div></div>
     <div class="fan-card"><h3>Unggah SHP area Anda</h3><p class="mut">Format <b>.zip</b> berisi .shp, .shx, .dbf dan .prj (WGS 1984 atau UTM), tipe poligon, luas maks. 250.000 ha, di Indonesia. Hanya untuk pengguna dengan email terverifikasi; setiap unggahan tercatat atas nama Anda.</p><div data-up style="margin-top:10px"></div></div>
     <div class="fan-card"><h3>Analisis saya</h3><div class="fan-list" data-my><p class="mut">Masuk untuk melihat.</p></div></div>
