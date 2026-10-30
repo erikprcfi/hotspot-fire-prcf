@@ -370,8 +370,8 @@ html:not([data-v="beranda"]) .hero-head{margin-bottom:14px}
 .qa a:hover{border-color:var(--brand-2)}.qa a i{font-style:normal;font-size:18px}
 </style>
 <script>(function(){var V=["beranda", "peta", "prakiraan", "status-sistem", "riwayat", "buat-laporan", "unduh", "analisis", "sumber"];var h=(location.hash||'').slice(1);document.documentElement.dataset.v=V.indexOf(h)>=0?h:'beranda';})();</script>
-<script src="assets/bahasa.js?v=55"></script>
-<script src="assets/kamus_en.js?v=55"></script>
+<script src="assets/bahasa.js?v=56"></script>
+<script src="assets/kamus_en.js?v=56"></script>
 </head>
 <body>
 <div class="topbar"><div class="wrap">
@@ -548,10 +548,10 @@ html:not([data-v="beranda"]) .hero-head{margin-bottom:14px}
 
 <script>(function(){var b=document.getElementById('langBtn');if(!b||!window.FHLang)return;var en=FHLang.get()==='en';b.textContent=en?'ID':'EN';b.title=en?'Ganti ke Bahasa Indonesia':'Switch to English';b.onclick=function(){FHLang.set(en?'id':'en');};})();</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="assets/nasa_layers.js?v=55"></script>
-<script src="assets/citra.js?v=55"></script>
-<script src="assets/peta3d.js?v=55"></script>
-<script src="assets/unduh.js?v=55"></script>
+<script src="assets/nasa_layers.js?v=56"></script>
+<script src="assets/citra.js?v=56"></script>
+<script src="assets/peta3d.js?v=56"></script>
+<script src="assets/unduh.js?v=56"></script>
 <script>
 (async function(){
 const G=await (await fetch('data/geo.json',{cache:'no-cache'})).json(); G.img={url:'assets/s2_20260810.jpg',bounds:G.img_bounds};
@@ -967,15 +967,15 @@ load(); setInterval(load,10*60*1000);
 setInterval(setStatus,60000);
 })();
 </script>
-<script src="assets/laporan.js?v=55"></script>
-<script src="assets/riwayat_cuaca.js?v=55"></script>
-<script src="assets/udara.js?v=55"></script>
-<script src="assets/meteogram.js?v=55"></script>
-<script src="assets/wilayah.js?v=55"></script>
-<script src="assets/cari_lokasi.js?v=55"></script>
-<script src="assets/peta_ecmwf.js?v=55"></script>
-<script src="assets/lokasi_saya.js?v=55"></script>
-<script src="assets/analisis.js?v=55"></script>
+<script src="assets/laporan.js?v=56"></script>
+<script src="assets/riwayat_cuaca.js?v=56"></script>
+<script src="assets/udara.js?v=56"></script>
+<script src="assets/meteogram.js?v=56"></script>
+<script src="assets/wilayah.js?v=56"></script>
+<script src="assets/cari_lokasi.js?v=56"></script>
+<script src="assets/peta_ecmwf.js?v=56"></script>
+<script src="assets/lokasi_saya.js?v=56"></script>
+<script src="assets/analisis.js?v=56"></script>
 <script>if(document.documentElement.dataset.v==='analisis'&&window.FHAnalisis&&!window.__AN){window.__AN=1;FHAnalisis.mount(document.getElementById('anWeb'),{mode:'web'});}</script>
 <script>
 (function(){ /* pencarian lokasi di menu Prakiraan (website) */
@@ -989,7 +989,7 @@ setInterval(setStatus,60000);
   document.getElementById('fcwBack').onclick=()=>{lok.hidden=true;fcw.hidden=false;body.innerHTML='';};
 })();
 </script>
-<script src="assets/musiman.js?v=55"></script>
+<script src="assets/musiman.js?v=56"></script>
 <div class="chz" id="chz" hidden role="dialog" aria-labelledby="chzT"><div class="chz-box">
   <div class="chz-head"><img class="org-l" src="assets/logo_prcf.jpg" alt="Yayasan PRCF Indonesia"><div class="eyebrow">Fire Hotspot · Kabupaten Kapuas Hulu</div><h2 id="chzT">Pilih Hutan Desa yang ingin dipantau</h2><p>Status dihitung dari titik panas satelit NASA FIRMS 7 hari terakhir terhadap batas desa dan Hutan Desa masing-masing.</p></div>
   <div class="chz-grid" id="chzGrid"></div>
