@@ -109,6 +109,7 @@ function analisisCSV(L) {   // format panjang: satu baris per area × kategori �
     for (const [y, o] of Object.entries(a.titik_panas.per_tahun)) for (const [sen, v] of Object.entries(o)) R.push([nm, 'Titik panas', 'Deteksi ' + sen, y, v, 'titik', S.titik_panas]);
     for (const w of a.wilayah || []) R.push([nm, 'Wilayah', `${w.desa}, Kec. ${w.kec}, ${w.kab}, ${w.prov}`, '', w.persen_desa_tercakup, '% desa tercakup', 'BPS/BIG (COD-AB 2020), Kepmendagri 2025']);
   }
+  if (EN()) { R[0] = R[0].map(FHLang.kolom); for (let i = 1; i < R.length; i++) R[i] = R[i].map(FHLang.nilai); }
   return R.map(r => r.map(q).join(',')).join('\n');
 }
 function toCSV(F) {
@@ -171,7 +172,32 @@ async function toSHPzip(F, base, type) {
   z.file(base + '.shp', p.shp); z.file(base + '.shx', p.shx); z.file(base + '.dbf', p.dbf); z.file(base + '.prj', PRJ); z.file(base + '.cpg', 'UTF-8');
   return z.generateAsync({ type: 'blob', compression: 'DEFLATE' });
 }
-function save(blob, name) { const u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(u); a.remove(); }, 3000); }
+/* ---------- versi English: nama kolom, isi atribut & nama file ---------- */
+const EN = () => !!(window.FHLang && FHLang.get() === 'en');
+const NAMA_EN = [['laporan_titik_panas', 'hotspot_report'], ['data_titik_panas', 'hotspot_data'], ['titik_panas', 'hotspots'], ['kejadian_api', 'fire_events'], ['bekas_terbakar', 'burned_areas'], ['peringatan_hutan', 'forest_alerts'], ['batas_wilayah', 'boundaries'],
+  ['analisis_lahan_karbon', 'land_carbon_analysis'], ['firms_arsip', 'firms_archive'], ['semua_tahun', 'all_years'], ['semua_musim', 'all_seasons'], ['musim_', 'season_'], ['90hari', '90days'], ['cakupan_piksel', 'pixel_footprint'], ['_titik', '_points'], ['_sd_', '_to_'], ['_desa_', '_village_'], ['_desa.', '_village.']];
+const namaFile = n => EN() ? NAMA_EN.reduce((x, [a, b]) => x.split(a).join(b), n) : n;
+const enProps = F => { if (EN()) F.forEach(f => { f.properties = FHLang.atribut(f.properties); }); return F; };
+// SHP siap pakai dari server: kolom & isi DBF diterjemahkan di HP (geometri tidak diubah)
+async function dbfEnglish(blob, base) {
+  await loadJS(JSZIP); const z = await JSZip.loadAsync(blob), out = new JSZip(), dec = new TextDecoder('utf-8'), enc = new TextEncoder();
+  for (const nm of Object.keys(z.files)) {
+    const f = z.files[nm]; if (f.dir) continue; const ext = nm.slice(nm.lastIndexOf('.')), nb = namaFile(base) + ext;
+    if (ext.toLowerCase() !== '.dbf') { out.file(nb, await f.async('uint8array')); continue; }
+    const b = await f.async('uint8array'), dv = new DataView(b.buffer, b.byteOffset, b.byteLength), n = dv.getInt32(4, true), hl = dv.getInt16(8, true), rl = dv.getInt16(10, true);
+    const flds = []; for (let o = 32; o < hl - 1; o += 32) { let e = o; while (e < o + 11 && b[e]) e++; flds.push({ c: dec.decode(b.subarray(o, e)), t: String.fromCharCode(b[o + 11]), w: b[o + 16], dec: b[o + 17] }); }
+    const rows = []; for (let i = 0; i < n; i++) { let o = hl + rl * i + 1; const r = []; for (const fd of flds) { r.push(dec.decode(b.subarray(o, o + fd.w)).trim()); o += fd.w; } rows.push(r); }
+    const nf = flds.map((fd, j) => { const vals = fd.t === 'C' ? rows.map(r => FHLang.t(r[j])) : rows.map(r => r[j]); rows.forEach((r, i) => r[j] = vals[i]);
+      return { ...fd, c: FHLang.kolom(fd.c).slice(0, 10), w: fd.t === 'C' ? Math.min(254, Math.max(1, ...vals.map(v => enc.encode(v).length))) : fd.w }; });
+    const nrl = 1 + nf.reduce((a, fd) => a + fd.w, 0), nhl = 32 + 32 * nf.length + 1, o2 = new Uint8Array(nhl + nrl * n + 1), d2 = new DataView(o2.buffer);
+    o2.set(b.subarray(0, 32)); d2.setInt16(8, nhl, true); d2.setInt16(10, nrl, true);
+    nf.forEach((fd, i) => { const o = 32 + 32 * i; o2.set(enc.encode(fd.c), o); o2[o + 11] = fd.t.charCodeAt(0); o2[o + 16] = fd.w; o2[o + 17] = fd.dec; }); o2[nhl - 1] = 0x0d;
+    rows.forEach((r, i) => { let o = nhl + nrl * i; o2[o++] = 0x20; nf.forEach((fd, j) => { const v = enc.encode(r[j]); const cell = new Uint8Array(fd.w).fill(0x20); if (fd.t === 'C') cell.set(v.subarray(0, fd.w)); else cell.set(v.subarray(0, fd.w), Math.max(0, fd.w - v.length)); o2.set(cell, o); o += fd.w; }); });
+    o2[o2.length - 1] = 0x1a; out.file(nb, o2);
+  }
+  return out.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+}
+function save(blob, name) { name = namaFile(name); const u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(u); a.remove(); }, 3000); }
 
 /* ---------- antarmuka ---------- */
 function css() {
@@ -225,7 +251,7 @@ function mount(el, opt) {
     const R = $('#dlxR'), mn = c.years[0] + '-01-01'; R.hidden = st.tahun !== 'rentang'; R.querySelectorAll('input').forEach(i => { i.min = mn; i.max = hariIni; i.value = st[i.dataset.r]; });
     const f = sel('fmt'); f.innerHTML = D.fmt.map(k => `<option value="${k}">${FMT[k]}</option>`).join(''); if (!D.fmt.includes(st.fmt)) st.fmt = D.fmt[0]; f.value = st.fmt; f.disabled = D.fmt.length < 2;
     const nm = fname(c).name, pre = prebuilt(c);
-    $('#dlxInfo').innerHTML = `<b>${esc(D.nm)}</b>${esc(D.ket)}${st.data === 'titik' && st.tahun === String(thisYear) ? ' Tahun berjalan berisi data Near Real-Time; sebagian bulan menunggu arsip final NASA.' : ''}${(st.data === 'titik' || st.data === 'kejadian') && !c.nl ? ' Petak patroli, fungsi kawasan, tutupan lahan dan gambut hanya tersedia untuk Nanga Lauk.' : ''}<small>Nama file: ${esc(st.data === 'arsip' ? st.tahun + '.csv' : pre || nm)}</small>`;
+    $('#dlxInfo').innerHTML = `<b>${esc(D.nm)}</b>${esc(D.ket)}${st.data === 'titik' && st.tahun === String(thisYear) ? ' Tahun berjalan berisi data Near Real-Time; sebagian bulan menunggu arsip final NASA.' : ''}${(st.data === 'titik' || st.data === 'kejadian') && !c.nl ? ' Petak patroli, fungsi kawasan, tutupan lahan dan gambut hanya tersedia untuk Nanga Lauk.' : ''}<small>Nama file: ${esc(namaFile(st.data === 'arsip' ? `firms_arsip_kapuashulu_${st.tahun}.csv` : pre || nm))}</small>`;
     $('#dlxMsg').textContent = ''; $('#dlxMsg').className = '';
   }
   el.querySelectorAll('select').forEach(s => s.onchange = () => { st[s.dataset.k] = s.value; refresh(); });
@@ -233,10 +259,12 @@ function mount(el, opt) {
   $('#dlxBtn').onclick = async () => {
     const c = ctx(), btn = $('#dlxBtn'), msg = $('#dlxMsg'); msg.className = ''; btn.disabled = true;
     try {
-      if (st.data === 'arsip') { const a = document.createElement('a'); a.href = `data/archive/${st.tahun}.csv`; a.download = `firms_arsip_kapuashulu_${st.tahun}.csv`; document.body.appendChild(a); a.click(); a.remove(); msg.textContent = 'Unduhan dimulai.'; return; }
-      const pre = prebuilt(c); if (pre) { const a = document.createElement('a'); a.href = 'data/export/' + pre; a.download = pre; document.body.appendChild(a); a.click(); a.remove(); msg.textContent = 'Unduhan dimulai (file siap pakai dari server).'; return; }
+      if (st.data === 'arsip') { const a = document.createElement('a'); a.href = `data/archive/${st.tahun}.csv`; a.download = namaFile(`firms_arsip_kapuashulu_${st.tahun}.csv`); document.body.appendChild(a); a.click(); a.remove(); msg.textContent = 'Unduhan dimulai.'; return; }
+      const pre = EN() && st.data !== 'kejadian_poligon' ? null : prebuilt(c);
+      if (pre && EN()) { msg.textContent = 'Menyusun data…'; const r = await fetch('data/export/' + pre); if (!r.ok) throw new Error('HTTP ' + r.status); save(await dbfEnglish(await r.blob(), pre.replace(/_shp\.zip$/, '')), pre); msg.textContent = `Selesai: ${namaFile(pre)}`; return; }
+      if (pre) { const a = document.createElement('a'); a.href = 'data/export/' + pre; a.download = pre; document.body.appendChild(a); a.click(); a.remove(); msg.textContent = 'Unduhan dimulai (file siap pakai dari server).'; return; }
       msg.textContent = 'Menyusun data…';
-      const F = await build(st, c); const { base, name } = fname(c);
+      const F = enProps(await build(st, c)); let { base, name } = fname(c); base = namaFile(base); name = namaFile(name);
       if (!F.length) { msg.textContent = 'Tidak ada data untuk pilihan ini (0 fitur). Coba wilayah atau tahun lain.'; return; }
       let blob;
       if (st.fmt === 'csv' && st.data === 'analisis') blob = new Blob(['\ufeff' + analisisCSV(F.map(f => f._src))], { type: 'text/csv;charset=utf-8' });

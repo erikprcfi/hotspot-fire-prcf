@@ -83,7 +83,7 @@ function mount(el, o = {}) {
   }
   function pv() {
     const x = LY[li], box = $('.fhec-pv'); if (!PV || !PV[x.pv]) { box.innerHTML = ''; return; }
-    const v = PV[x.pv][ti]; box.innerHTML = v == null ? '' : `${x.pn}<b>${x.pu ? Math.round(v) : v.toFixed(2).replace('.', ',')}</b>${x.pu}`;
+    const v = PV[x.pv][ti]; box.innerHTML = v == null ? '' : `${x.pn}<b>${x.pu ? Math.round(v) : (window.FHLang ? FHLang.desimal(v.toFixed(2)) : v.toFixed(2).replace('.', ','))}</b>${x.pu}`;
   }
   function strip() {
     const x = LY[li], s = $('.fhec-strip'); if (!PV || !PV[x.pv]) { s.innerHTML = ''; return; }

@@ -73,7 +73,7 @@ function mount(el, o = {}) {
   inp.onchange = async () => { const f = inp.files[0]; inp.value = ''; if (!f || fotos.length >= 3) return; try { const d = await shrink(f); fotos.push(d); const im = document.createElement('img'); im.src = d; $('#vPh').insertBefore(im, $('#vPh label')); if (fotos.length >= 3) $('#vPh label').style.display = 'none'; } catch (e) { } };
   if (navigator.geolocation) wid = navigator.geolocation.watchPosition(g => { const c = g.coords; if (pos && pos.acc < c.accuracy) return; pos = { la: c.latitude, lo: c.longitude, acc: c.accuracy };
     const d = p ? dist(pos.la, pos.lo, p.la, p.lo) : null;
-    $('#vGps').innerHTML = `📍 Posisi Anda ${pos.la.toFixed(5)}, ${pos.lo.toFixed(5)} (±${Math.round(pos.acc)} m)${d != null ? `<br>Jarak ke titik: <b>${d < 1000 ? Math.round(d) + ' m' : (d / 1000).toFixed(1).replace('.', ',') + ' km'}</b>${d > 1000 ? ' <span class="fhv-warn">– Anda masih jauh dari titik; laporan tetap boleh dikirim, jarak ikut tercatat.</span>' : ''}` : ''}`;
+    $('#vGps').innerHTML = `📍 Posisi Anda ${pos.la.toFixed(5)}, ${pos.lo.toFixed(5)} (±${Math.round(pos.acc)} m)${d != null ? `<br>Jarak ke titik: <b>${d < 1000 ? Math.round(d) + ' m' : (window.FHLang ? FHLang.desimal((d / 1000).toFixed(1)) : (d / 1000).toFixed(1).replace('.', ',')) + ' km'}</b>${d > 1000 ? ' <span class="fhv-warn">– Anda masih jauh dari titik; laporan tetap boleh dikirim, jarak ikut tercatat.</span>' : ''}` : ''}`;
   }, () => { $('#vGps').textContent = 'GPS tidak tersedia – aktifkan lokasi agar posisi pelapor tercatat.'; }, { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 });
   send.onclick = async () => {
     send.disabled = true; send.textContent = 'Menyimpan…';

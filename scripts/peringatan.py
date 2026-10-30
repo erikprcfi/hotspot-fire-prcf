@@ -7,7 +7,7 @@ Dikirim ke pengguna terverifikasi yang berlangganan: notifikasi HP (Web Push) da
 Setiap peringatan dicatat di data/peringatan/terkirim.json agar tidak terkirim dua kali. Nilai data tidak diubah.
 Butuh env: ANALISIS_KEY, AKUN_URL.
 """
-import os, sys, json, datetime, urllib.request
+import re, os, sys, json, datetime, urllib.request
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import webpush
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -62,6 +62,7 @@ def tgl(d): return f'{d[8:10]}/{d[5:7]}/{d[:4]}'
 def angka(x, b): return f"{x:.1f}".replace(".", ",") if b == "id" else f"{x:.1f}"
 def teks(e, bhs):
     en = bhs == "en"; url = f'{APP}?lokasi={e["situs"]}'
+    if en: e = dict(e, hd=re.sub(r"^Hutan Desa (.+)$", r"\1 Village Forest", e["hd"]))
     if e["jenis"] == "titik":
         n = len(e["titik"]); dek = min(x["jarak"] for x in e["titik"])
         b = "en" if en else "id"

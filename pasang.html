@@ -51,6 +51,8 @@ body.pad .w{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 80px)}
 .bar{height:8px;border-radius:6px;background:rgba(255,255,255,.12);overflow:hidden;margin:14px 6px 0}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#FF8A3D,#E4572E);border-radius:6px;animation:pr 45s cubic-bezier(.1,.6,.3,1) forwards}@keyframes pr{to{width:95%}}
 .copy{display:flex;gap:8px;margin-top:10px}.copy input{flex:1;min-width:0;background:rgba(0,0,0,.25);border:1px solid var(--line);color:#fff;border-radius:12px;padding:10px;font:inherit;font-size:13px}.copy button{border:0;border-radius:12px;padding:0 14px;font:inherit;font-weight:800;background:#fff;color:#0B3B2C}
 </style>
+<script src="assets/bahasa.js?v=55"></script>
+<script src="assets/kamus_en.js?v=55"></script>
 </head>
 <body>
 <div class="w">
@@ -58,6 +60,8 @@ body.pad .w{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 80px)}
   <h1>Fire Hotspot</h1>
   <p class="sub">Titik panas satelit NASA, cuaca &amp; bahaya kebakaran: untuk Hutan Desa dan di lokasi Anda.</p>
   <div class="org"><img src="assets/logo_prcf.jpg" alt="">Yayasan PRCF Indonesia</div>
+  <p style="text-align:center;margin:8px 0 0"><button type="button" id="langBtn" data-notr style="font:800 12px inherit;color:#fff;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);padding:7px 12px;border-radius:999px;cursor:pointer" onclick="FHLang.set(FHLang.get()==='en'?'id':'en')"></button></p>
+  <script>document.getElementById('langBtn').textContent=window.FHLang&&FHLang.get()==='en'?'🇮🇩 Bahasa Indonesia':'🇬🇧 English';</script>
 
   <!-- Android / Chrome: tombol pasang otomatis -->
   <div id="vAndroid" class="hide">

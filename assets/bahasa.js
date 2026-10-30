@@ -338,14 +338,22 @@ function tanggal(s) {   // nama hari/bulan yang menempel pada angka
   o = o.replace(new RegExp('\\b(' + Object.keys(HR).join('|') + ')\\b(?=,?\\s+\\d)', 'g'), w => HR[w]);
   o = o.replace(new RegExp('(\\d\\s+)(' + Object.keys(BLN).join('|') + ')\\b', 'g'), (a, d, w) => d + BLN[w]).replace(new RegExp('\\b(' + Object.keys(BLN).join('|') + ')(?=\\s+\\d{4})', 'g'), w => BLN[w]);
   o = o.replace(new RegExp('(\\d\\s+)(' + Object.keys(BL).join('|') + ')\\b', 'g'), (a, d, w) => d + BL[w]);
+  const BLA = Object.keys(BL).concat(Object.keys(BLN)).join('|');
+  o = o.replace(new RegExp('\\b(' + Object.keys(BL).join('|') + ')\\b(?=\\s+\\d{4}|\\s*[–-]\\s*(?:' + BLA + ')\\b)', 'g'), w => BL[w]).replace(new RegExp('\\b(' + Object.keys(BLN).join('|') + ')\\b(?=\\s*[–-]\\s*(?:' + BLA + ')\\b)', 'g'), w => BLN[w]);
   return o.replace(/\bs\.d\.\s/g, 'to ').replace(/\bpukul\b/g, 'at');
 }
 const NUM = /\d+(?:[.,]\d+)*/g;
-function isi(tpl, nums) { if (/\{\d\}/.test(tpl)) return tpl.replace(/\{(\d)\}/g, (a, i) => nums[i - 1] ?? ''); let k = 0; return tpl.replace(/#/g, () => nums[k++] ?? '#'); }
+function isi(tpl, nums) { nums = nums.map(n => angka(n));  if (/\{\d\}/.test(tpl)) return tpl.replace(/\{(\d)\}/g, (a, i) => nums[i - 1] ?? ''); let k = 0; return tpl.replace(/#/g, () => nums[k++] ?? '#'); }
+const SITUS = /Nanga Lauk|Batang Tau|Nyuai Peningun|Pundjung Batara|Bumi Lestari|Bukit Belang|Sri Wangi|Nanga Jemah|Nanga Betung|Penepian Raya|Tanjung/g;
+const EMON = 'January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec', EDAY = 'Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Mon|Tue|Wed|Thu|Fri|Sat|Sun';
+const TOKRX = new RegExp('\\b(?:' + EMON + '|' + EDAY + ')\\b(?=,?\\s\\d)|(?<=\\d\\s)(?:' + EMON + ')\\b|\\b(?:' + EMON + ')\\b(?=\\s*[–-]\\s*(?:' + EMON + ')\\b)', 'g');
+function pola(s) { const nm = [], tk = []; let k = tanggal(s).replace(SITUS, m => (nm.push(m), '@')); SITUS.lastIndex = 0; k = k.replace(TOKRX, m => (tk.push(m), '§')); const nums = k.match(NUM) || []; return { k: k.replace(NUM, '#'), nums, nm, tk }; }
 function satu(s, dalam) {
   if (D[s] != null) return D[s];
   const nums = s.match(NUM) || [], key = s.replace(NUM, '#');
   if (nums.length && D[key] != null && /#|\{\d\}/.test(D[key])) return isi(D[key], nums);
+  const P = pola(s);   // nama lokasi dampingan → '@', hari/bulan di samping angka → '§'
+  if ((P.nm.length || P.tk.length) && D[P.k] != null) { let a = 0, b = 0; return isi(D[P.k], P.nums).replace(/@/g, () => P.nm[a++] ?? '@').replace(/§/g, () => P.tk[b++] ?? '§'); }
   for (const [re, f] of RX) { const m = s.match(re); if (m) return f(m); }
   if (dalam) return null;
   const tg = tanggal(s);
@@ -356,19 +364,111 @@ function satu(s, dalam) {
   if (s.includes('; ')) { const parts = s.split('; '), tr = parts.map(x => satu(x)); if (tr.some(x => x != null)) return parts.map((x, i) => tr[i] ?? x).join('; '); }
   return tg !== s ? tg : null;
 }
+/* ---------- cadangan: potongan kalimat (F) & kata (W), dipakai bila kalimat utuh tidak ada di kamus ---------- */
+const F = {}, W = {};   // diisi oleh assets/kamus_en.js
+let FRX = null, WRX = null, IDRX = null; const CACHE = new Map();
+const ASAL = new Map(); let AUDIT = false; try { AUDIT = localStorage.getItem('fh_audit') === '1'; } catch (e) { }   // uji: tanpa cadangan per kata
+const esc = x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const HURUF = /\p{L}/u;
+let F2 = {};
+function bangun() {
+  // kunci potongan disesuaikan dengan bentuk nama wilayah yang sudah diterjemahkan, plus versi tanpa awalan nama di ujung
+  F2 = {};
+  for (const k in F) { const v = F[k]; F2[k] = v; const kn = nama(k); if (kn !== k) F2[kn] = v;
+    const m = k.match(/^(.*?)[\s(]*(Hutan Desa|Desa|Kelurahan|Kabupaten|Kab\.|Kecamatan|Kec\.|Provinsi)$/);
+    if (m && /\p{L}{2}/u.test(m[1]) && !(m[1].trim() in F)) F2[m[1].trim()] = v.replace(/[\s(]*(Village Forest|village forest|village|Village|Regency|regency|District|district|Province|province)$/, '').trim(); }
+  const ks = Object.keys(F2).sort((a, b) => b.length - a.length);
+  FRX = ks.length ? new RegExp(ks.map(k => (HURUF.test(k[0]) ? '(?<![\\p{L}\\p{N}])' : '') + esc(k) + (HURUF.test(k[k.length - 1]) ? '(?![\\p{L}\\p{N}])' : '')).join('|'), 'gu') : null;
+  const ws = Object.keys(W).sort((a, b) => b.length - a.length);
+  WRX = ws.length ? new RegExp('(?<![\\p{L}\\p{N}_/.-])(' + ws.map(esc).join('|') + ')(?![\\p{L}\\p{N}_])', 'giu') : null;
+  IDRX = ws.length ? new RegExp('(?<![\\p{L}])(' + ws.map(esc).join('|') + ')(?![\\p{L}])', 'iu') : /$^/;
+}
+// nama wilayah resmi → bentuk English (nama dirinya tetap)
+const NM = "[A-Z][a-z'’-]+(?: (?:[A-Z][a-z'’-]+|[IVX]+))*";
+const PROV = { 'Kalimantan Barat': 'West Kalimantan', 'Kalimantan Tengah': 'Central Kalimantan', 'Kalimantan Timur': 'East Kalimantan', 'Kalimantan Selatan': 'South Kalimantan', 'Kalimantan Utara': 'North Kalimantan', 'Sumatera Utara': 'North Sumatra', 'Sumatera Barat': 'West Sumatra', 'Sumatera Selatan': 'South Sumatra', 'Jawa Barat': 'West Java', 'Jawa Tengah': 'Central Java', 'Jawa Timur': 'East Java', 'Sulawesi Selatan': 'South Sulawesi', 'Sulawesi Tengah': 'Central Sulawesi', 'Sulawesi Utara': 'North Sulawesi', 'Sulawesi Tenggara': 'Southeast Sulawesi', 'Sulawesi Barat': 'West Sulawesi', 'Nusa Tenggara Barat': 'West Nusa Tenggara', 'Nusa Tenggara Timur': 'East Nusa Tenggara', 'Papua Barat': 'West Papua', 'Daerah Istimewa Yogyakarta': 'Special Region of Yogyakarta', 'Kepulauan Riau': 'Riau Islands', 'Kepulauan Bangka Belitung': 'Bangka Belitung Islands' };
+const PRX = new RegExp('\\b(' + Object.keys(PROV).join('|') + ')\\b', 'g');
+function nama(s) {
+  return s.replace(PRX, m => PROV[m])
+    .replace(new RegExp('\\bHutan Desa (' + NM + ')', 'g'), (a, n) => n + ' Village Forest')
+    .replace(new RegExp('\\b(?:Desa|Kelurahan) (' + NM + ')', 'g'), (a, n) => n + ' Village')
+    .replace(new RegExp('\\b(?:Kecamatan|Kec\\.) ?(' + NM + ')', 'g'), (a, n) => n + ' District')
+    .replace(new RegExp('\\b(?:Kabupaten|Kab\\.) ?(' + NM + ')', 'g'), (a, n) => n + ' Regency')
+    .replace(new RegExp('\\b(?:Provinsi|Prov\\.) ?(' + NM + ')', 'g'), (a, n) => n + ' Province')
+    .replace(new RegExp('\\bKota (' + NM + ')', 'g'), (a, n) => n + ' City');
+}
+// angka berformat Indonesia yang tertulis di teks: 0,25 → 0.25 · 12.345 → 12,345
+const angka = s => s.replace(/(?<![\d.,])(\d+),(\d{1,2})(?![\d])/g, '$1.$2').replace(/(?<![\d.,\w])(\d{1,3})((?:\.\d{3})+)(?![\d.]|,\d)/g, (a, x, y) => x + y.replace(/\./g, ','));
+const kap = (asal, en) => asal[0] === asal[0].toUpperCase() && asal[0] !== asal[0].toLowerCase() ? (asal === asal.toUpperCase() && asal.length > 1 ? en.toUpperCase() : en[0].toUpperCase() + en.slice(1)) : en;
+const SAT = { hari: ['day', 'days'], jam: ['hour', 'hours'], menit: ['minute', 'minutes'], detik: ['second', 'seconds'], bulan: ['month', 'months'], tahun: ['year', 'years'], minggu: ['week', 'weeks'], pekan: ['week', 'weeks'], titik: ['hotspot', 'hotspots'], deteksi: ['detection', 'detections'], kejadian: ['event', 'events'], halaman: ['page', 'pages'], baris: ['row', 'rows'], pesan: ['message', 'messages'], anggota: ['member', 'members'], lokasi: ['site', 'sites'], musim: ['season', 'seasons'], orang: ['person', 'people'], kali: ['time', 'times'], petak: ['block', 'blocks'], berkas: ['file', 'files'], citra: ['image', 'images'], desa: ['village', 'villages'], sensor: ['sensor', 'sensors'], satelit: ['satellite', 'satellites'], sumber: ['source', 'sources'], pengguna: ['user', 'users'], foto: ['photo', 'photos'] };
+const SATRX = new RegExp('(?<![\\p{L}\\p{N}.,])(\\d+(?:[.,]\\d+)?) (' + Object.keys(SAT).join('|') + ')(?![\\p{L}])', 'giu');
+function frasa(s, tanpaKata) {
+  if (FRX === null && WRX === null) bangun();
+  if (!IDRX.test(s)) return null;
+  const ck = (tanpaKata ? '\u0001' : '') + s;
+  if (CACHE.has(ck)) return CACHE.get(ck);
+  let o = nama(s);
+  if (FRX) o = o.replace(FRX, m => F2[m]);
+  o = angka(o);
+  o = o.replace(SATRX, (a, n, u) => { const e = SAT[u.toLowerCase()]; return n + ' ' + (/^1$/.test(n) ? e[0] : e[1]); });
+  if (WRX && !AUDIT && !tanpaKata) o = o.replace(WRX, (m, g, i, all) => {
+    const e = W[m] ?? W[m.toLowerCase()]; if (e == null) return m;
+    if (/^\p{Lu}\p{Ll}/u.test(m)) {   // bagian nama diri bertingkat (mis. "Sungai Kakap") dibiarkan
+      const nx = all.slice(i + m.length).match(/^ (\p{Lu}[\p{Ll}'’-]+)/u), pv = all.slice(0, i).match(/(\p{Lu}[\p{Ll}'’-]+) $/u);
+      if ((nx && W[nx[1].toLowerCase()] == null) || (pv && W[pv[1].toLowerCase()] == null && !/^(Village|Forest|District|Regency|Province|City)$/.test(pv[1]))) return m;
+    }
+    return kap(m, e); });
+  o = tanggal(o);
+  if (CACHE.size > 5000) CACHE.clear();
+  CACHE.set(ck, o); return o;
+}
 function t(s) {
   if (L !== 'en' || s == null) return s;
-  const str = String(s), m = str.match(/^(\s*)([\s\S]*?)(\s*)$/), core = m[2].replace(/\s+/g, ' ');
+  const str = String(s), m = str.match(/^(\s*)([\s\S]*?)(\s*)$/), core = m[2].replace(/[ \t]+/g, ' ');
   if (!core || !/[A-Za-z]{2}/.test(core)) return str;
+  if (core.includes('\n')) { const ls = core.split('\n'), tr = ls.map(x => t(x)); return tr.join('\n') === core ? str : m[1] + tr.join('\n') + m[3]; }
   let r = D[core] ?? satu(core, true);
+  if (r == null) { const f0 = frasa(core, true); if (f0 != null && f0 !== core) r = f0; }   // potongan kalimat utuh dulu
   if (r == null && core.includes(' · ')) { const parts = core.split(' · '); const tr = parts.map(x => satu(x)); if (tr.some(x => x != null)) r = parts.map((x, i) => tr[i] ?? x).join(' · '); }
   if (r == null) r = satu(core);
   if (r == null && core.includes(' – ')) { const parts = core.split(' – '); const tr = parts.map(x => satu(x)); if (tr.some(x => x != null)) r = parts.map((x, i) => tr[i] ?? x).join(' – '); }
+  const f = frasa(r == null ? core : r); if (f != null) r = f;
+  if (r != null) r = r.replace(/\b(\d{1,2})\.(\d{2})(?=\s?(?:WIB|UTC|WITA|WIT)\b)|(?<=\bat )(\d{1,2})\.(\d{2})\b/g, (x, a, b, c, d) => (a ?? c) + ':' + (b ?? d));   // jam 13.20 → 13:20
+  if (AUDIT && r != null && r !== core) ASAL.set(r.trim().replace(/\s+/g, ' '), core.trim());
   return r == null ? str : m[1] + r + m[3];
 }
+/* ---------- angka & tanggal: format Indonesia (1.234,5 · 14.20) → format English (1,234.5 · 14:20) ---------- */
+function lokal() {
+  const ganti = l => (l === 'id-ID' || l === 'id' || (Array.isArray(l) && l[0] && /^id/.test(l[0]))) ? 'en-GB' : l;
+  const bungkus = (o, k) => { const f = o[k]; o[k] = function (l, ...a) { return f.call(this, ganti(l), ...a); }; };
+  bungkus(Number.prototype, 'toLocaleString'); ['toLocaleString', 'toLocaleDateString', 'toLocaleTimeString'].forEach(k => bungkus(Date.prototype, k));
+  ['NumberFormat', 'DateTimeFormat', 'PluralRules', 'RelativeTimeFormat'].forEach(k => { const C = Intl[k]; if (!C) return; const N = function (l, ...a) { return new C(ganti(l), ...a); }; N.prototype = C.prototype; N.supportedLocalesOf = C.supportedLocalesOf; Intl[k] = N; });
+  // teks pada kanvas (grafik, peta cetak, laporan): diterjemahkan sebelum digambar & diukur
+  const CP = window.CanvasRenderingContext2D && CanvasRenderingContext2D.prototype;
+  if (CP) ['fillText', 'strokeText', 'measureText'].forEach(k => { const f = CP[k]; CP[k] = function (x, ...a) { return f.call(this, typeof x === 'string' ? t(x) : x, ...a); }; });
+  const OP = window.OffscreenCanvasRenderingContext2D && OffscreenCanvasRenderingContext2D.prototype;
+  if (OP) ['fillText', 'strokeText', 'measureText'].forEach(k => { const f = OP[k]; OP[k] = function (x, ...a) { return f.call(this, typeof x === 'string' ? t(x) : x, ...a); }; });
+  // dialog bawaan
+  ['alert', 'confirm', 'prompt'].forEach(k => { const f = window[k]; if (f) window[k] = function (x, ...a) { return f.call(this, typeof x === 'string' ? t(x) : x, ...a); }; });
+}
+if (L === 'en') lokal();
+// laporan PDF (jsPDF): semua teks yang dicetak ikut diterjemahkan
+function pdf(doc) {
+  if (L !== 'en' || !doc || doc.__en) return doc; doc.__en = true;
+  const tx = doc.text, sp = doc.splitTextToSize;
+  doc.text = function (x, ...a) { return tx.call(this, Array.isArray(x) ? x.map(v => typeof v === 'string' ? t(v) : v) : typeof x === 'string' ? t(x) : x, ...a); };
+  doc.splitTextToSize = function (x, ...a) { return sp.call(this, typeof x === 'string' ? t(x) : x, ...a); };
+  return doc;
+}
+// kolom & nilai tabel ekspor (CSV/GeoJSON/KML/SHP)
+const KOL = {};
+function kolom(k) { return L === 'en' && KOL[k] ? KOL[k] : k; }
+function nilai(v) { return L === 'en' && typeof v === 'string' ? t(v) : v; }
+function kunci(k) { if (KOL[k]) return KOL[k]; return k.split('_').map(w => { const e = W[w.toLowerCase()]; return e ? e.replace(/\s+/g, '_').toLowerCase() : w; }).join('_'); }
+function json(o) { if (L !== 'en') return o; if (Array.isArray(o)) return o.map(json); if (o && typeof o === 'object') { const r = {}; for (const k in o) r[kunci(k)] = json(o[k]); return r; } return typeof o === 'string' ? t(o) : o; }
+function atribut(o) { if (L !== 'en' || !o || typeof o !== 'object') return o; const r = {}; for (const k in o) r[kolom(k)] = nilai(o[k]); return r; }
 /* ---------- menerapkan ke layar ---------- */
 const SKIP = 'script,style,textarea,code,pre,[data-notr],.leaflet-control-attribution,.maplibregl-ctrl-attrib', SKIPA = 'script,style,[data-notr]';
-const ATR = ['placeholder', 'aria-label', 'title', 'data-title', 'data-sub'];
+const ATR = ['placeholder', 'aria-label', 'title', 'alt', 'data-title', 'data-sub'];
 let busy = false;
 function node(n) {
   if (n.nodeType === 3) { const p = n.parentElement; if (!p || p.closest(SKIP)) return; const v = t(n.nodeValue); if (v !== n.nodeValue) n.nodeValue = v; return; }
@@ -384,6 +484,7 @@ function node(n) {
 function mulai() {
   if (L !== 'en') return;
   node(document.body); document.title = t(document.title);
+  const tt = document.querySelector('title'); if (tt) new MutationObserver(() => { const v = t(document.title); if (v !== document.title) document.title = v; }).observe(tt, { childList: true, characterData: true, subtree: true });
   new MutationObserver(ms => { if (busy) return; busy = true; try { for (const m of ms) { if (m.type === 'characterData') node(m.target); else if (m.type === 'attributes') node(m.target); else m.addedNodes.forEach(node); } } finally { busy = false; } })
     .observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATR });
 }
@@ -394,6 +495,6 @@ function picker(el) {
   el.querySelectorAll('[data-l]').forEach(b => b.onclick = () => set(b.dataset.l));
 }
 function set(l) { l = l === 'en' ? 'en' : 'id'; try { localStorage.setItem(KEY, l); } catch (e) { } if (l !== L) location.reload(); }
-window.FHLang = { get: () => L, set, t, picker, kamus: D };
+window.FHLang = { asal: ASAL, pola, get: () => L, set, t, picker, kamus: D, frasa: F, kata: W, kolomEn: KOL, pdf, kolom, nilai, atribut, json, desimal: x => L === 'en' ? String(x) : String(x).replace('.', ','), tambah(o) { if (o.kamus) Object.assign(D, o.kamus); if (o.frasa) Object.assign(F, o.frasa); if (o.kata) Object.assign(W, o.kata); if (o.kolom) Object.assign(KOL, o.kolom); if (o.rx) RX.push(...o.rx); FRX = WRX = null; CACHE.clear(); if (L === 'en' && document.body && o.terapkan !== false) node(document.body); } };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mulai); else mulai();
 })();

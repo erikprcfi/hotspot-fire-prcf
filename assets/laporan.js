@@ -179,7 +179,7 @@ function weatherText(M) {
       out.push(`Tahun dengan titik panas terbanyak: ${top.map(t => `${t.y} (${fmt(t.all)} deteksi; hujan Juni–September ${Math.round(t.dry.sum / jjas * 100)}% dari rata-rata, kering beruntun ${t.dry.maxDry} hari)`).join('; ')}.`);
       const xs = ann.map(a => a.dry.sum), ys = ann.map(a => a.modis); const n = xs.length;
       if (n >= 5 && ys.some(v => v)) { const mx = xs.reduce((p, c) => p + c, 0) / n, my = ys.reduce((p, c) => p + c, 0) / n; let sxy = 0, sxx = 0, syy = 0; for (let i = 0; i < n; i++) { sxy += (xs[i] - mx) * (ys[i] - my); sxx += (xs[i] - mx) ** 2; syy += (ys[i] - my) ** 2; } const r = sxy / Math.sqrt(sxx * syy || 1);
-        out.push(`Hubungan curah hujan kemarau dengan jumlah titik panas (MODIS, ${n} tahun penuh): koefisien korelasi r = ${r.toFixed(2).replace('.', ',')}. ` + (r <= -0.5 ? 'Hubungannya kuat dan negatif: semakin kering musim kemarau, semakin banyak titik panas.' : r <= -0.3 ? 'Hubungannya sedang dan negatif: kemarau yang lebih kering cenderung disertai lebih banyak titik panas.' : 'Hubungannya lemah; faktor lain seperti pembukaan ladang dan kegiatan manusia ikut menentukan jumlah titik panas.')); }
+        out.push(`Hubungan curah hujan kemarau dengan jumlah titik panas (MODIS, ${n} tahun penuh): koefisien korelasi r = ${window.FHLang ? FHLang.desimal(r.toFixed(2)) : r.toFixed(2).replace('.', ',')}. ` + (r <= -0.5 ? 'Hubungannya kuat dan negatif: semakin kering musim kemarau, semakin banyak titik panas.' : r <= -0.3 ? 'Hubungannya sedang dan negatif: kemarau yang lebih kering cenderung disertai lebih banyak titik panas.' : 'Hubungannya lemah; faktor lain seperti pembukaan ladang dan kegiatan manusia ikut menentukan jumlah titik panas.')); }
     }
   } else {
     const pct = M.rn ? rs.sum / M.rn * 100 : null;
@@ -522,11 +522,12 @@ function preview(M, F, T) {
 }
 
 /* ---------------- PDF ---------------- */
-const pdfTxt = s => String(s ?? '').replace(/≤/g, '<=').replace(/≥/g, '>=').replace(/…/g, '...').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/µ/g, 'u').replace(/·/g, '-').replace(/→/g, '->').replace(/−/g, '-').replace(/₂/g, '2');
+const TR = x => (window.FHLang ? FHLang.t(x) : x);
+const pdfTxt = s => String(TR(String(s ?? ''))).replace(/≤/g, '<=').replace(/≥/g, '>=').replace(/…/g, '...').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/µ/g, 'u').replace(/·/g, '-').replace(/→/g, '->').replace(/−/g, '-').replace(/₂/g, '2');
 async function exportPDF(M, F, T) {
   await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
   await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');
-  const { jsPDF } = window.jspdf; const doc = new jsPDF({ unit: 'mm', format: 'a4' }); const PW = 210, ML = 16, CW = PW - 2 * ML; let y = 24;
+  const { jsPDF } = window.jspdf; const doc = new jsPDF({ unit: 'mm', format: 'a4' }); if (window.FHLang) FHLang.pdf(doc); const PW = 210, ML = 16, CW = PW - 2 * ML; let y = 24;
   const TOC = []; let sec = 0;
   const need = h => { if (y + h > 280) { doc.addPage('a4', 'portrait'); y = 24; } };
   const H1 = (t, num = true, keep = 16) => { need(keep); const tt = num ? `${++sec}. ${t}` : t; TOC.push([tt, doc.getNumberOfPages()]); doc.setFillColor(HEAD); doc.rect(ML, y - 4.6, 1.6, 6.2, 'F'); doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(HEAD); doc.text(pdfTxt(tt), ML + 4, y); y += 8; };
@@ -601,7 +602,7 @@ async function exportPDF(M, F, T) {
 /* ---------------- Word ---------------- */
 async function exportDOCX(M, F, T) {
   await loadScript('https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js');
-  const d = window.docx; const run = (t, o = {}) => new d.TextRun({ text: String(t ?? ''), font: 'Arial', size: o.size || 20, bold: o.bold, italics: o.it, color: o.color });
+  const d = window.docx; const run = (t, o = {}) => new d.TextRun({ text: String(TR(String(t ?? ''))), font: 'Arial', size: o.size || 20, bold: o.bold, italics: o.it, color: o.color });
   const P = (t, o = {}) => new d.Paragraph({ children: [run(t, o)], spacing: { after: 100 }, bullet: o.bullet ? { level: 0 } : undefined });
   let sec = 0; const H = (t, num = true) => new d.Paragraph({ heading: d.HeadingLevel.HEADING_1, children: [run(num ? `${++sec}. ${t}` : t, { bold: true, size: 26, color: '22382B' })], spacing: { before: 240, after: 120 }, border: { left: { style: d.BorderStyle.SINGLE, size: 18, color: '22382B', space: 6 } } });
   const CAPd = t => P(t, { size: 17, color: '5B6A61', bold: true });
@@ -626,7 +627,7 @@ async function exportDOCX(M, F, T) {
     P(''), CAPd('Angka kunci periode ini'), kpiT, P(''),
     P(`Verifikasi otomatis: ${M.checks.length - bad} dari ${M.checks.length} pemeriksaan konsistensi data sesuai${bad ? ' – lihat Lampiran B' : ''}.`, { size: 17, bold: true, color: bad ? 'B3261E' : '1E6B3E' }),
     P('Sumber data resmi: NASA FIRMS (titik panas), Copernicus ERA5 & ECMWF (cuaca), ESA Copernicus Sentinel-2 (bekas terbakar), Hansen/UMD Global Forest Change (tutupan pohon). Nilai asli sumber tidak diubah; metode dan jejak audit di Lampiran D.', { size: 15, color: '5B6A61' })];
-  const toc = [new d.Paragraph({ children: [run('Daftar isi', { bold: true, size: 30, color: '22382B' })], spacing: { after: 200 } }), new d.TableOfContents('Daftar isi', { hyperlink: true, headingStyleRange: '1-1' }),
+  const toc = [new d.Paragraph({ children: [run('Daftar isi', { bold: true, size: 30, color: '22382B' })], spacing: { after: 200 } }), new d.TableOfContents(TR('Daftar isi'), { hyperlink: true, headingStyleRange: '1-1' }),
     P('(Jika daftar isi kosong, klik kanan lalu pilih "Update Field" di Microsoft Word.)', { size: 15, color: '5B6A61', it: true })];
   const XB = extraBlocks(M);
   const main = [H('Ringkasan eksekutif'), ...M.summary.map(s => P(s, { bullet: true })), H('Cuaca dan kaitannya dengan titik panas'), ...M.weatherTxt.map(s => P(s)), ...BLKd(XB[0]),
@@ -643,7 +644,7 @@ async function exportDOCX(M, F, T) {
   const end = [H('Lampiran B. Verifikasi data', false), P('Pemeriksaan konsistensi otomatis atas data yang masuk ke laporan ini, dijalankan saat laporan dibuat.', { size: 17, color: '5B6A61' }), TB(T.cek, 16, true),
     H('Lampiran C. Kamus data', false), TB(T.kamus, 16), H('Lampiran D. Sumber data, metode & jejak audit', false), ...sources(M).map(([k, v]) => new d.Paragraph({ spacing: { after: 100 }, children: [run(k + '. ', { bold: true, size: 18 }), run(v, { size: 18 })] }))];
   const pg = { margin: { top: 1100, bottom: 1000, left: 1000, right: 1000 } };
-  const docx = new d.Document({ creator: 'Yayasan PRCF Indonesia – Fire Hotspot', title: M.title, features: { updateFields: true }, styles: { paragraphStyles: [{ id: 'Heading1', name: 'Heading 1', basedOn: 'Normal', next: 'Normal', quickFormat: true, run: { font: 'Arial', size: 26, bold: true, color: '22382B' }, paragraph: { outlineLevel: 0, spacing: { before: 240, after: 120 } } }] },
+  const docx = new d.Document({ creator: 'Yayasan PRCF Indonesia – Fire Hotspot', title: TR(M.title), features: { updateFields: true }, styles: { paragraphStyles: [{ id: 'Heading1', name: 'Heading 1', basedOn: 'Normal', next: 'Normal', quickFormat: true, run: { font: 'Arial', size: 26, bold: true, color: '22382B' }, paragraph: { outlineLevel: 0, spacing: { before: 240, after: 120 } } }] },
     sections: [{ properties: { page: pg }, children: cover }, { properties: { page: pg }, headers: { default: head() }, footers: { default: foot() }, children: toc },
       { properties: { page: pg }, headers: { default: head() }, footers: { default: foot() }, children: main },
       { properties: { page: { ...pg, size: { orientation: d.PageOrientation.LANDSCAPE } } }, headers: { default: head() }, footers: { default: foot() }, children: app },
@@ -655,11 +656,13 @@ async function exportDOCX(M, F, T) {
 function exportCSV(M) {
   const cols = ['waktu_wib', 'tanggal_utc', 'jam_utc', 'latitude', 'longitude', 'sensor', 'satelit', 'keyakinan', 'frp_mw', 'suhu_kecerahan_k', 'siang_malam', 'zona', 'jarak_desa_km', 'petak', 'fungsi_kawasan', 'tutupan_2026', 'gambut', 'status_data', 'id_kejadian', 'luas_piksel_ha_bukan_luas_terbakar', 'kabupaten', 'uid'];
   const q = v => { const s = String(v ?? ''); return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
-  const lines = [cols.join(',')].concat(M.rows.map(r => [r.wib, r.d, r.t, r.lat, r.lon, r.sen, r.sat, r.conf, r.frp, r.bt, r.dn, ZONES[r.z], r.km, r.pt, r.kw, r.tl, r.gb, r.st, r.ev, r.ha, r.kab, r.uid].map(q).join(',')));
+  const tv = window.FHLang ? FHLang.nilai : (v => v), kc = window.FHLang ? FHLang.kolom : (v => v);
+  const lines = [cols.map(kc).join(',')].concat(M.rows.map(r => [r.wib, r.d, r.t, r.lat, r.lon, r.sen, r.sat, r.conf, r.frp, r.bt, r.dn, ZONES[r.z], r.km, r.pt, r.kw, r.tl, r.gb, r.st, r.ev, r.ha, r.kab, r.uid].map(v => q(tv(v))).join(',')));
   dl(new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' }), fname(M, 'csv'));
 }
 function dl(blob, name) { const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(u); a.remove(); }, 2000); }
-function fname(M, ext) { return `laporan_titik_panas_${SITE ? SITE.id + '_' : ''}${M.wilKey}_${M.a}_sd_${M.b}.${ext}`.replace('laporan_titik_panas', ext === 'csv' ? 'data_titik_panas' : 'laporan_titik_panas'); }
+function fname(M, ext) { const n = fnameId(M, ext); return window.FHLang && FHLang.get() === 'en' ? n.replace('laporan_titik_panas', 'hotspot_report').replace('data_titik_panas', 'hotspot_data').replace('_sd_', '_to_').replace('_desa_', '_village_').replace('_kabupaten_', '_regency_') : n; }
+function fnameId(M, ext) { return `laporan_titik_panas_${SITE ? SITE.id + '_' : ''}${M.wilKey}_${M.a}_sd_${M.b}.${ext}`.replace('laporan_titik_panas', ext === 'csv' ? 'data_titik_panas' : 'laporan_titik_panas'); }
 
 /* ---------------- UI ---------------- */
 function presetRange(p) {
