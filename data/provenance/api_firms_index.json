@@ -1,19 +1,19 @@
 {
  "VIIRS_SNPP_2026": {
   "sp_sampai": "2026-07-31",
-  "nrt_sampai": "2026-10-29"
+  "nrt_sampai": "2026-10-30"
  },
  "VIIRS_NOAA20_2026": {
   "sp_sampai": "2026-07-31",
-  "nrt_sampai": "2026-10-29"
+  "nrt_sampai": "2026-10-30"
  },
  "VIIRS_NOAA21_2026": {
   "sp_sampai": "2026-07-31",
-  "nrt_sampai": "2026-10-29"
+  "nrt_sampai": "2026-10-30"
  },
  "MODIS_2026": {
   "sp_sampai": "2026-08-31",
-  "nrt_sampai": "2026-10-29"
+  "nrt_sampai": "2026-10-30"
  },
- "diperbarui_utc": "2026-10-30T01:00:50Z"
+ "diperbarui_utc": "2026-10-30T10:02:12Z"
 }
