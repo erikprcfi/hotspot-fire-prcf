@@ -139,7 +139,7 @@ function viewer(el, R, back) {
    <div id="fanBody"></div></div>`;
   if (back) el.querySelector('[data-back]').onclick = back;
   el.querySelector('[data-pdf]').onclick = async e => { const b = e.currentTarget, t = b.textContent; b.disabled = true; b.textContent = 'Menyusun PDF…'; try { const n = await pdfHasil(R); b.textContent = `PDF ${n} halaman diunduh ✓`; } catch (x) { b.textContent = 'Gagal: ' + x.message; } setTimeout(() => { b.disabled = false; b.textContent = t; }, 3000); };
-  el.querySelector('[data-csv]').onclick = () => { if (!window.FHUnduh || !FHUnduh.analisisCSV) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + FHUnduh.analisisCSV([R])], { type: 'text/csv;charset=utf-8' })); a.download = `${EN() ? 'analysis' : 'analisis'}_${(R.nama || 'area').replace(/\W+/g, '_')}.csv`; a.click(); };
+  el.querySelector('[data-csv]').onclick = () => { if (!window.FHUnduh || !FHUnduh.analisisCSV) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + FHUnduh.analisisCSV([R])], { type: 'text/csv;charset=utf-8' })); a.download = `${EN() ? 'analysis' : 'analisis'}_${((EN() ? FHLang.t(R.nama) : R.nama) || 'area').replace(/\W+/g, '_')}.csv`; a.click(); };
   if (window.L) setTimeout(() => { const m = L.map(el.querySelector('#fanMap'), { zoomControl: true, attributionControl: true, scrollWheelZoom: false });
     L.tileLayer('https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2025_3857/default/g/{z}/{y}/{x}.jpg', { maxNativeZoom: 14, maxZoom: 17, attribution: 'Sentinel-2 cloudless 2025 · EOX (CC BY-NC-SA 4.0)' }).addTo(m);
     const g = L.geoJSON(R.geometri, { style: { color: '#FFD84D', weight: 2.2, fillOpacity: 0 } }).addTo(m); m.fitBounds(g.getBounds(), { padding: [16, 16] }); }, 30);
@@ -187,7 +187,7 @@ function viewer(el, R, back) {
        <p class="mut">Metode: semua raster dibaca pada grid aslinya (0,00025° ≈ 30 m) tanpa resampling; piksel dihitung bila pusatnya di dalam poligon; luas piksel geodesik (elipsoid/bola WGS 84). Analisis area dampingan dan SHP unggahan memakai kode yang sama (scripts/analisis_inti.py, terbuka di GitHub).</p>
        <button class="fan-btn alt" data-dl style="margin-top:8px">Unduh hasil (JSON)</button></div>`];
   const show = i => { body.innerHTML = tabs[i](); el.querySelectorAll('.fan-tabs button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.t === i)));
-    const d = body.querySelector('[data-dl]'); if (d) d.onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(EN() ? FHLang.json(R) : R, null, 1)], { type: 'application/json' })); a.download = `${EN() ? 'analysis' : 'analisis'}_${(R.nama || 'area').replace(/\W+/g, '_')}.json`; a.click(); }; };
+    const d = body.querySelector('[data-dl]'); if (d) d.onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(EN() ? FHLang.json(R) : R, null, 1)], { type: 'application/json' })); a.download = `${EN() ? 'analysis' : 'analisis'}_${((EN() ? FHLang.t(R.nama) : R.nama) || 'area').replace(/\W+/g, '_')}.json`; a.click(); }; };
   let cur = 0; el.querySelectorAll('.fan-tabs button').forEach(b => b.onclick = () => { cur = +b.dataset.t; show(cur); }); show(0);
   el.querySelectorAll('.fan-per select').forEach(x => x.onchange = () => { const a = el.querySelector('[data-y1]').value, b = el.querySelector('[data-y2]').value; RY = a <= b ? [a, b] : [b, a]; if (cur === 0 || cur === 1 || cur === 5) cur = 2; show(cur); });
 }
@@ -267,7 +267,7 @@ async function pdfHasil(R) {
   H1('Verifikasi data'); TAB([['Pemeriksaan', 'Hasil', 'Status'], ...ck], 8);
   H1('Sumber data & metode'); Object.values(R.sumber).forEach(s => P('- ' + s, 8.6)); P('Metode: raster dibaca pada grid asli 0,00025 derajat (~30 m) tanpa resampling; piksel dihitung bila pusatnya di dalam batas; luas piksel geodesik. Analisis area dampingan dan SHP unggahan memakai kode yang sama: scripts/analisis_inti.py (github.com/erikprcfi/hotspot-fire-prcf).', 8.6);
   const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFontSize(7.5); doc.setTextColor(120); doc.text(asc(`Fire Hotspot - Yayasan PRCF Indonesia | ${R.nama} | Halaman ${i}/${n}`), ML, 292); }
-  doc.save(`${EN() ? 'analysis' : 'analisis'}_${(R.nama || 'area').replace(/\W+/g, '_')}.pdf`); return n;
+  doc.save(`${EN() ? 'analysis' : 'analisis'}_${((EN() ? FHLang.t(R.nama) : R.nama) || 'area').replace(/\W+/g, '_')}.pdf`); return n;
 }
 /* ---------------- sesi website (masuk dengan email terverifikasi) ---------------- */
 const WS = { get() { try { return JSON.parse(localStorage.getItem('fh_web_akun')); } catch (e) { return null; } }, set(v) { try { v ? localStorage.setItem('fh_web_akun', JSON.stringify(v)) : localStorage.removeItem('fh_web_akun'); } catch (e) { } } };

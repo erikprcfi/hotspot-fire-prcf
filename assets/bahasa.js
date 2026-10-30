@@ -397,7 +397,7 @@ function nama(s) {
     .replace(new RegExp('\\bKota (' + NM + ')', 'g'), (a, n) => n + ' City');
 }
 // angka berformat Indonesia yang tertulis di teks: 0,25 → 0.25 · 12.345 → 12,345
-const angka = s => s.replace(/(?<![\d.,])(\d+),(\d{1,2})(?![\d])/g, '$1.$2').replace(/(?<![\d.,\w])(\d{1,3})((?:\.\d{3})+)(?![\d.]|,\d)/g, (a, x, y) => x + y.replace(/\./g, ','));
+const angka = s => s.replace(/(?<![\d.,])(\d{1,3}(?:\.\d{3})+),(\d+)(?![\d])/g, (x, a, b) => a.replace(/\./g, ',') + '.' + b).replace(/(?<![\d.,])(\d+),(\d{1,2})(?![\d])/g, '$1.$2').replace(/(?<![\d.,\w])(\d{1,3})((?:\.\d{3})+)(?![\d.]|,\d)/g, (a, x, y) => x + y.replace(/\./g, ','));
 const kap = (asal, en) => asal[0] === asal[0].toUpperCase() && asal[0] !== asal[0].toLowerCase() ? (asal === asal.toUpperCase() && asal.length > 1 ? en.toUpperCase() : en[0].toUpperCase() + en.slice(1)) : en;
 const SAT = { hari: ['day', 'days'], jam: ['hour', 'hours'], menit: ['minute', 'minutes'], detik: ['second', 'seconds'], bulan: ['month', 'months'], tahun: ['year', 'years'], minggu: ['week', 'weeks'], pekan: ['week', 'weeks'], titik: ['hotspot', 'hotspots'], deteksi: ['detection', 'detections'], kejadian: ['event', 'events'], halaman: ['page', 'pages'], baris: ['row', 'rows'], pesan: ['message', 'messages'], anggota: ['member', 'members'], lokasi: ['site', 'sites'], musim: ['season', 'seasons'], orang: ['person', 'people'], kali: ['time', 'times'], petak: ['block', 'blocks'], berkas: ['file', 'files'], citra: ['image', 'images'], desa: ['village', 'villages'], sensor: ['sensor', 'sensors'], satelit: ['satellite', 'satellites'], sumber: ['source', 'sources'], pengguna: ['user', 'users'], foto: ['photo', 'photos'] };
 const SATRX = new RegExp('(?<![\\p{L}\\p{N}.,])(\\d+(?:[.,]\\d+)?) (' + Object.keys(SAT).join('|') + ')(?![\\p{L}])', 'giu');
@@ -425,6 +425,7 @@ function t(s) {
   if (L !== 'en' || s == null) return s;
   const str = String(s), m = str.match(/^(\s*)([\s\S]*?)(\s*)$/), core = m[2].replace(/[ \t]+/g, ' ');
   if (!core || !/[A-Za-z]{2}/.test(core)) return str;
+  { const nb = core.match(/^(\d+(?:\.\d+)*\.\s)(.+)$/); if (nb && D[core] == null) { const x = t(nb[2]); if (x !== nb[2]) return m[1] + nb[1] + x + m[3]; } }   // judul bernomor "4. Judul"
   if (core.includes('\n')) { const ls = core.split('\n'), tr = ls.map(x => t(x)); return tr.join('\n') === core ? str : m[1] + tr.join('\n') + m[3]; }
   let r = D[core] ?? satu(core, true);
   if (r == null) { const f0 = frasa(core, true); if (f0 != null && f0 !== core) r = f0; }   // potongan kalimat utuh dulu
