@@ -403,7 +403,7 @@ const SAT = { hari: ['day', 'days'], jam: ['hour', 'hours'], menit: ['minute', '
 const SATRX = new RegExp('(?<![\\p{L}\\p{N}.,])(\\d+(?:[.,]\\d+)?) (' + Object.keys(SAT).join('|') + ')(?![\\p{L}])', 'giu');
 function frasa(s, tanpaKata) {
   if (FRX === null && WRX === null) bangun();
-  if (!IDRX.test(s)) return null;
+  if (!IDRX.test(s)) { if (!FRX) return null; FRX.lastIndex = 0; const ada = FRX.test(s); FRX.lastIndex = 0; if (!ada) return null; }
   const ck = (tanpaKata ? '\u0001' : '') + s;
   if (CACHE.has(ck)) return CACHE.get(ck);
   let o = nama(s);
