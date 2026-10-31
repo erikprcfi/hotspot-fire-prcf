@@ -1060,7 +1060,7 @@
     "KJ-20260909-6A236",
     "KJ-20260913-1BADE"
    ],
-   "dicoba_utc": "2026-10-30T01:18:47Z"
+   "dicoba_utc": "2026-10-31T06:01:39Z"
   },
   "batangtau_2026-01-21": {
    "status": "tertutup awan",
@@ -1234,7 +1234,7 @@
    "kejadian": [
     "KJ-20260123-84E80"
    ],
-   "dicoba_utc": "2026-10-30T01:18:47Z"
+   "dicoba_utc": "2026-10-31T06:01:40Z"
   },
   "pundjung_2026-07-28": {
    "status": "tertutup awan",
@@ -1278,7 +1278,7 @@
     "KJ-20260831-B8FF9",
     "KJ-20260901-49E6B"
    ],
-   "dicoba_utc": "2026-10-30T01:18:57Z"
+   "dicoba_utc": "2026-10-31T06:01:50Z"
   },
   "bumilestari_2026-01-30": {
    "status": "belum ada citra sebelum",
@@ -1292,7 +1292,7 @@
    "kejadian": [
     "KJ-20260130-1B1F2"
    ],
-   "dicoba_utc": "2026-10-30T01:18:57Z"
+   "dicoba_utc": "2026-10-31T06:01:51Z"
   },
   "bumilestari_2026-07-11": {
    "status": "tertutup awan",
@@ -1314,7 +1314,7 @@
     "KJ-20260914-833D6",
     "KJ-20260914-16785"
    ],
-   "dicoba_utc": "2026-10-30T01:19:06Z"
+   "dicoba_utc": "2026-10-31T06:02:00Z"
   },
   "bukitbelang_2026-01-20": {
    "status": "belum ada citra sesudah",
@@ -1328,7 +1328,7 @@
    "kejadian": [
     "KJ-20260120-857A8"
    ],
-   "dicoba_utc": "2026-10-30T01:19:06Z"
+   "dicoba_utc": "2026-10-31T06:02:01Z"
   },
   "bukitbelang_2026-07-14": {
    "status": "tertutup awan",
@@ -1407,9 +1407,9 @@
     "KJ-20260902-06DFD",
     "KJ-20260902-9E090"
    ],
-   "dicoba_utc": "2026-10-30T01:19:23Z"
+   "dicoba_utc": "2026-10-31T06:02:20Z"
   }
  },
- "diperbarui_utc": "2026-10-30T22:22:20Z",
+ "diperbarui_utc": "2026-10-31T06:02:20Z",
  "metode": "Luas bekas terbakar otomatis dari citra Sentinel-2 – Fire Hotspot PRCF\n======================================================================\n\nUntuk setiap \"musim api\" (kejadian api berdekatan waktu, jeda > 75 hari = musim baru) yang\nberjarak <= 5 km dari salah satu lokasi Hutan Desa:\n\n  1. Citra Sentinel-2 L2A (ESA Copernicus; arsip COG publik AWS / Element 84 Earth Search):\n     komposit SEBELUM (75 hari sebelum api pertama) dan SESUDAH (3–45 hari setelah api terakhir, agar tanda hangus belum tertutup tumbuhan baru),\n     median per piksel dari maksimal 4 citra paling sedikit awan; awan, bayangan, & air dibuang\n     dengan lapisan klasifikasi SCL.\n  2. NBR = (B8A − B12) / (B8A + B12) pada 20 m; dNBR = NBR sebelum − NBR sesudah.\n  3. Piksel terbakar: dNBR ≥ 0,27 (kelas keparahan Key & Benson 2006, FIREMON/USGS:\n     0,27–0,44 rendah–sedang, 0,44–0,66 sedang–tinggi, ≥ 0,66 tinggi).\n  3b. Syarat tambahan per citra sesudah: SWIR2 naik >= 0,02 (membedakan dari bayangan/air), NBR sesudah <= 0,20\n      (permukaan hangus), konsisten di >= 2 citra sesudah bila tersedia, sebelum api NBR >= 0,3 (bervegetasi).\n  4. Hanya petak yang berada <= 1 km dari deteksi titik api NASA FIRMS pada musim tsb. dan\n     luasnya >= 0,5 ha yang dihitung (mengurangi salah deteksi panen/perubahan vegetasi lain).\n  5. Bila piksel cerah < 60% wilayah analisa → status \"tertutup awan\", dicoba ulang pada run berikutnya.\n\nKeluaran: data/bekas_terbakar/indeks.json, bekas_terbakar.geojson (WGS84),\ndata/export/bekas_terbakar_<lokasi>_shp.zip (UTM 49N), pratinjau sebelum/sesudah (PNG).\nHasil adalah INDIKASI dari citra satelit; perlu verifikasi lapangan."
 }
