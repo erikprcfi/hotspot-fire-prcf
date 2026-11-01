@@ -7,6 +7,11 @@ sehingga cara hitungnya identik. Semua dihitung langsung dari raster/arsip resmi
  - Hutan 2000 & kehilangan tutupan pohon 2001–2025: Hansen/UMD GFC-2025-v1.13 (Hansen et al. 2013); hutan = tajuk >= 30 %
  - Emisi bruto, serapan bruto, fluks bersih GRK hutan 2001–2025: Harris et al. 2021 + Gibbs et al. 2025, versi 20260327
  - Stok karbon tahun 2000 (atas tanah & total): Harris et al. 2021, versi 20230222
+ - Emisi karbon metode FREL (beda stok, IPCC Tier 2 sesuai FREL Indonesia 2022 / e-Learning KLHK "Menghitung Emisi Karbon Hutan"):
+     data aktivitas = kehilangan tutupan pohon Hansen per tahun; kelas awal = GLCLU epoch sebelum tahun kehilangan
+     (pohon > 25 m = hutan primer, 3–25 m = hutan sekunder; lahan kering vs lahan basah/rawa);
+     kehilangan di hutan primer = degradasi (primer → sekunder), di hutan sekunder = deforestasi (→ PLK bercampur semak / belukar rawa);
+     Emisi (tCO2e) = Luas (ha) × (stok awal − stok akhir) (tC/ha) × 44/12. Kepadatan karbon FREL 2022 (AGB+BGB × 0,47; hutan nilai Kalimantan).
  - Titik panas 2016–2025: arsip tahunan resmi NASA FIRMS (VIIRS S-NPP, VIIRS NOAA-20, MODIS) untuk Indonesia
 Raster di grid 0,00025° (ubin 10°), jendela dibulatkan ke piksel utuh (tanpa resampling), luas piksel geodesik,
 piksel masuk poligon bila pusat piksel di dalam poligon.
@@ -30,10 +35,26 @@ KELAS = [("pohon", "Tutupan pohon (hutan)", (25, 48), "#2D712D"), ("basah_pohon"
          ("air", "Perairan (sungai, danau)", (200, 211), "#1964EB"), ("tani", "Lahan pertanian (cropland)", (244, 244), "#FF7D00"),
          ("bangun", "Lahan terbangun / permukiman", (250, 250), "#4FC3C3"), ("es", "Salju/es", (241, 241), "#DDDDDD"), ("laut", "Laut", (254, 254), "#111133")]
 TAHUN_LC = [2000, 2005, 2010, 2015, 2020]
+# ---- FREL 2022: kepadatan karbon (Mg C/ha = tC/ha) – sama dengan perhitungan emisi 5 Hutan Desa (RC2) PRCF ----
+FREL_C = {"hlk_primer": 197.59, "hlk_sekunder": 135.15, "hr_primer": 163.47, "hr_sekunder": 123.69, "plk_semak": 36.45, "belukar_rawa": 11.24}
+FREL_NAMA = {"hlk_primer": "Hutan Lahan Kering Primer", "hlk_sekunder": "Hutan Lahan Kering Sekunder", "hr_primer": "Hutan Rawa Primer", "hr_sekunder": "Hutan Rawa Sekunder",
+             "plk_semak": "Pertanian Lahan Kering Bercampur Semak", "belukar_rawa": "Belukar Rawa"}
+# (kelas awal, kelas akhir, jenis perubahan)
+FREL_ATURAN = [("hlk_primer", "hlk_sekunder", "degradasi"), ("hlk_sekunder", "plk_semak", "deforestasi"), ("hr_primer", "hr_sekunder", "degradasi"), ("hr_sekunder", "belukar_rawa", "deforestasi")]
+FREL_SUMBER = ["KLHK (2022). Indonesia's Second Forest Reference Level (FREL 2022), Tabel 5 & 6 – kepadatan karbon per kelas penutupan lahan. https://redd.unfccc.int/files/2nd_frl_indonesia_final_submit.pdf",
+               "KLHK. e-Learning 'Menghitung Emisi Karbon Hutan' – rumus beda stok: Emisi = Luas × (stok awal − stok akhir) × 44/12.",
+               "Hansen, M.C. et al. (2013) Science 342 – Global Forest Change v1.13 (data aktivitas: tahun kehilangan tutupan pohon, tajuk 2000 ≥ 30%).",
+               "Potapov, P. et al. (2022) Front. Remote Sens. – GLAD GLCLUC 2000–2020 v2 (kelas awal & tinggi pohon untuk primer/sekunder, lahan kering/basah)."]
+def _frel_kelas(v):
+    """kode GLCLU → indeks aturan FREL (0..3) atau -1 bila bukan hutan. 48 = pohon lahan kering > 25 m, 25–47 = 3–25 m; 148 / 125–147 = lahan basah."""
+    out = np.full(v.shape, -1, np.int8)
+    out[v == 48] = 0; out[(v >= 25) & (v <= 47)] = 1; out[v == 148] = 2; out[(v >= 125) & (v <= 147)] = 3
+    return out
 SUMBER = {"tutupan_lahan": "GLAD Global Land Cover and Land Use Change 2000–2020 v2 (Potapov et al. 2022, Front. Remote Sens.), 30 m, CC BY 4.0",
           "kehilangan_pohon": "Hansen/UMD/Google/USGS/NASA Global Forest Change GFC-2025-v1.13 (Hansen et al. 2013, Science), 30 m, CC BY 4.0",
           "fluks_karbon": "Forest GHG emissions, removals & net flux 2001–2025 (Harris et al. 2021, Nat. Clim. Change; Gibbs et al. 2025, ESSD), versi 20260327, data publik World Resources Institute, CC BY 4.0",
           "stok_karbon": "Stok karbon hutan tahun 2000 (Harris et al. 2021), versi 20230222, CC BY 4.0",
+          "emisi_frel": "Emisi karbon metode FREL 2022 KLHK (beda stok, kepadatan karbon FREL 2022 × 44/12) dari kehilangan tutupan pohon Hansen GFC v1.13 & kelas awal GLCLU v2",
           "titik_panas": "NASA FIRMS arsip tahunan (VIIRS S-NPP VNP14IMG, VIIRS NOAA-20 VJ114IMG, MODIS MCD14ML) untuk Indonesia"}
 
 def _kls(a):
@@ -48,7 +69,37 @@ def _tiles(b):
             out.append((f"{abs(ty):02d}{'N' if ty >= 0 else 'S'}_{abs(tx):03d}{'E' if tx >= 0 else 'W'}", (tx, ty - 10, tx + 10, ty)))
     return out
 
-def hitung_raster(geom):
+KLHK_FREL = {2001: 0, 2002: 1, 2005: 2, 20051: 3}   # kode Penutupan Lahan KLHK → kelas FREL (HLK primer/sekunder, hutan rawa primer/sekunder)
+def muat_klhk(lokasi=None, bbox=None):
+    """Poligon penutupan lahan KLHK → {tahun: [(geom, kode), ...]}. Dari data/klhk/<lokasi>_<tahun>.geojson (6 Hutan Desa)
+    atau langsung dari layanan resmi KLHK untuk bbox (SHP unggahan). Kosong bila tidak tersedia."""
+    from shapely.geometry import shape
+    root = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "klhk"); out = {}
+    try:
+        if lokasi:
+            for f in sorted(os.listdir(root)):
+                m = __import__("re").match(rf"^{lokasi}_(\d{{4}})\.geojson$", f)
+                if m: out[int(m.group(1))] = [(shape(x["geometry"]), int(x["properties"]["kode"])) for x in json.load(open(os.path.join(root, f)))["features"]]
+        elif bbox:   # SHP unggahan: peta provinsi KLHK yang tersimpan (data/klhk/<prov>_<tahun>.geojson.gz), cadangan layanan KLHK
+            import gzip, re as _re
+            from shapely.geometry import box as _box
+            bb = _box(*bbox)
+            for f in sorted(os.listdir(root)):
+                m = _re.match(r"^[a-z]+_(\d{4})\.geojson\.gz$", f)
+                if not m: continue
+                for x in json.load(gzip.open(os.path.join(root, f), "rt"))["features"]:
+                    g = shape(x["geometry"])
+                    if g.intersects(bb): out.setdefault(int(m.group(1)), []).append((g.buffer(0), int(x["properties"]["kode"])))
+            if out: return out
+            import tutupan_klhk as T
+            for y, url in T.cari_layanan().items():
+                F = T.ambil(url, bbox)
+                if F: out[y] = [(shape(x["geometry"]).buffer(0), int(x["properties"]["kode"])) for x in F]
+    except Exception as e:
+        print("  peta KLHK tidak tersedia:", e)
+    return out
+
+def hitung_raster(geom, klhk=None):
     """geom: shapely (Multi)Polygon WGS84. Mengembalikan tutupan lahan, kehilangan hutan & karbon."""
     import rasterio
     from rasterio.windows import from_bounds
@@ -56,7 +107,8 @@ def hitung_raster(geom):
     from shapely.geometry import box, mapping
     nk = len(KELAS)
     A = {"luas": 0.0, "lc": {y: np.zeros(nk) for y in TAHUN_LC}, "mat": np.zeros((nk, nk)), "h2000": 0.0, "loss": np.zeros(26),
-         "emis": np.zeros(26), "emis_tot": 0.0, "ser": 0.0, "net": 0.0, "agc": 0.0, "tot": 0.0, "agc_f": 0.0, "tot_f": 0.0}
+         "emis": np.zeros(26), "frelA": {e: np.zeros(4) for e in TAHUN_LC}, "frelL": {e: np.zeros((5, 26)) for e in TAHUN_LC},
+         "kA": {t: np.zeros(4) for t in (klhk or {})}, "kL": {t: np.zeros((5, 26)) for t in (klhk or {})}, "kT": {t: {} for t in (klhk or {})}, "kC": {t: {} for t in (klhk or {})}, "emis_tot": 0.0, "ser": 0.0, "net": 0.0, "agc": 0.0, "tot": 0.0, "agc_f": 0.0, "tot_f": 0.0}
     for tile, tb in _tiles(geom.bounds):
         g = geom.intersection(box(*tb))
         if g.is_empty: continue
@@ -77,10 +129,33 @@ def hitung_raster(geom):
         pm = pix * m; forest = tc >= 30
         A["luas"] += float(pm.sum()); A["h2000"] += float((pm * forest).sum())
         for y in range(1, 26): A["loss"][y] += float((pm * (forest & (ly == y))).sum())
-        lc = {}
+        lc = {}; fk = {}
         for y in TAHUN_LC:
-            lc[y] = _kls(chk(*rd(GLC.format(y, tile)), f"GLCLU {y}"))
+            raw = chk(*rd(GLC.format(y, tile)), f"GLCLU {y}")
+            lc[y] = _kls(raw); fk[y] = _frel_kelas(raw)
             for i in range(nk): A["lc"][y][i] += float((pm * (lc[y] == i)).sum())
+        for e in TAHUN_LC:   # FREL: luas tiap kelas hutan pada epoch e + kehilangan per tahun menurut kelas epoch e (indeks 4 = bukan hutan)
+            k0 = fk[e]
+            for j in range(4): A["frelA"][e][j] += float((pm * (k0 == j)).sum())
+            hl = forest & m & (ly > 0)
+            if hl.any():
+                kk = np.where(k0 >= 0, k0, 4)[hl]; yy = ly[hl].astype(int); np.add.at(A["frelL"][e], (kk, yy), pix[hl])
+        for t, polys in (klhk or {}).items():   # FREL dengan kelas Penutupan Lahan RESMI KLHK tahun t
+            P = [(mapping(pg.intersection(g)), int(kd)) for pg, kd in polys if pg.intersects(g)]
+            if not P: continue
+            km = features.rasterize(P, out_shape=(H, W), transform=tr, fill=0, all_touched=False, dtype="int32")
+            for kd in np.unique(km[m]):
+                if kd: A["kT"][t][int(kd)] = A["kT"][t].get(int(kd), 0.0) + float((pm * (km == kd)).sum())
+            k0 = np.full((H, W), -1, np.int8)
+            for kd, j in KLHK_FREL.items(): k0[km == kd] = j
+            for j in range(4): A["kA"][t][j] += float((pm * (k0 == j)).sum())
+            hl = forest & m & (ly > 0)
+            if hl.any():
+                kk = np.where(k0 >= 0, k0, 4)[hl]; yy = ly[hl].astype(int); np.add.at(A["kL"][t], (kk, yy), pix[hl])
+                kc, pc = km[hl], pix[hl]   # kehilangan per tahun menurut KODE KLHK (untuk tutupan lahan tahunan sebelum/sesudah tahun peta)
+                for kd in np.unique(kc):
+                    if not kd: continue
+                    arr = A["kC"][t].setdefault(int(kd), np.zeros(26)); sel = kc == kd; np.add.at(arr, yy[sel], pc[sel])
         a0, a1 = lc[2000][m], lc[2020][m]; pw = pix[m]
         ok = (a0 >= 0) & (a1 >= 0); np.add.at(A["mat"], (a0[ok], a1[ok]), pw[ok])
         fl = {k: np.nan_to_num(chk(*rd(u.format(tile)), k).astype("float64")) * m for k, u in FLUX.items()}
@@ -90,6 +165,45 @@ def hitung_raster(geom):
         A["agc"] += float((st["agc"] * pm).sum()); A["tot"] += float((st["total"] * pm).sum())
         A["agc_f"] += float((st["agc"] * pm * forest).sum()); A["tot_f"] += float((st["total"] * pm * forest).sum())
     loss = {str(2000 + y): round(A["loss"][y], 2) for y in range(1, 26)}; lt = sum(loss.values())
+    k44 = 44 / 12
+    KL = bool(A["kA"]); SA, SL = (A["kA"], A["kL"]) if KL else (A["frelA"], A["frelL"])
+    def pilih(y0):   # peta KLHK tahun awal (atau tahun terdekat sebelumnya); bila belum ada peta KLHK ≤ tahun awal → GLCLU epoch sebelum tahun awal
+        k = [t for t in sorted(A["kA"]) if t <= y0]
+        if k: return k[-1], A["kA"], A["kL"], "KLHK"
+        g = [t for t in TAHUN_LC if t <= y0 - 1] or [TAHUN_LC[0]]
+        return g[-1], A["frelA"], A["frelL"], "GLCLU"
+    def periode(y0, y1):   # sama dengan sheet "Awal" templat perhitungan karbon PRCF
+        e, SA_, SL_, src = pilih(y0); L = SL_[e]
+        D = [SA_[e][j] - sum(L[j][y] for y in range(1, 26) if e < 2000 + y < y0) for j in range(4)]
+        E = [sum(L[j][y - 2000] for y in range(y0, y1 + 1)) for j in range(4)]
+        nh = sum(L[4][y - 2000] for y in range(y0, y1 + 1))
+        defo = E[1] + E[3]; degr = E[0] + E[2]
+        K = (E[1] * (FREL_C["hlk_sekunder"] - FREL_C["plk_semak"]) + E[3] * (FREL_C["hr_sekunder"] - FREL_C["belukar_rawa"])
+             + E[0] * (FREL_C["hlk_primer"] - FREL_C["hlk_sekunder"]) + E[2] * (FREL_C["hr_primer"] - FREL_C["hr_sekunder"]))
+        return {"periode": f"{y0}–{y1}", "epoch_kelas": e, "sumber_kelas": src, "deforestasi_ha": round(defo, 4), "degradasi_ha": round(degr, 4), "bukan_hutan_ha": round(nh, 4),
+                "emisi_tCO2e": round(K * k44, 2)}
+    frel = {"metode": "FREL 2022 – beda stok (stock-difference): Emisi (tCO2e) = Luas (ha) × (stok kelas awal − stok kelas akhir) (tC/ha) × 44/12. "
+                      + ("Kelas awal periode: Peta Penutupan Lahan resmi KLHK (1:250.000) tahun awal periode (atau tahun terdekat sebelumnya); luas awal = luas kelas pada peta itu dikurangi kehilangan antara tahun peta dan tahun awal. " if KL else "")
+                      + "Bila peta KLHK tidak tersedia: GLCLU epoch terakhir sebelum tahun awal periode (pohon > 25 m = primer, 3–25 m = sekunder; lahan kering / rawa); luas awal = luas kelas pada epoch itu dikurangi kehilangan sebelum tahun awal. "
+                      "Kehilangan di hutan primer = degradasi (→ sekunder); di hutan sekunder = deforestasi (→ PLK bercampur semak / belukar rawa). "
+                      "Kehilangan di piksel yang bukan hutan menurut GLCLU dicatat terpisah dan tidak dihitung sebagai emisi.",
+            "kepadatan_karbon_tC_ha": {k: {"nama": FREL_NAMA[k], "tC_ha": v} for k, v in FREL_C.items()},
+            "faktor_emisi": [{"awal": FREL_NAMA[a], "akhir": FREL_NAMA[b], "jenis": jn, "selisih_tC_ha": round(FREL_C[a] - FREL_C[b], 2), "tCO2e_ha": round((FREL_C[a] - FREL_C[b]) * k44, 2)} for a, b, jn in FREL_ATURAN],
+            "sumber_kelas": "KLHK" if KL else "GLCLU",
+            "aturan_tahun_peta": "tahun_awal" if KL else "sebelum_tahun_awal",
+            "dasar": {str(e): {"luas_ha": [round(float(v), 4) for v in SA[e]],
+                               "hilang_ha": {str(2000 + y): [round(float(SL[e][j][y]), 4) for j in range(5)] for y in range(1, 26) if SL[e][:, y].sum() > 0}} for e in sorted(SA)},
+            "dasar_glclu": {str(e): {"luas_ha": [round(float(v), 4) for v in A["frelA"][e]],
+                               "hilang_ha": {str(2000 + y): [round(float(A["frelL"][e][j][y]), 4) for j in range(5)] for y in range(1, 26) if A["frelL"][e][:, y].sum() > 0}} for e in TAHUN_LC} if KL else None,
+            "hilang_kode_ha": {str(t): {str(2000 + y): {str(kd): round(float(v[y]), 4) for kd, v in A["kC"][t].items() if v[y] > 0} for y in range(1, 26) if any(v[y] > 0 for v in A["kC"][t].values())} for t in sorted(A["kC"])} if KL else None,
+            "tutupan_klhk_ha": {str(t): {str(k): round(v, 2) for k, v in sorted(A["kT"][t].items(), key=lambda kv: -kv[1])} for t in sorted(A["kT"])} if KL else None,
+            "urutan_kelas": ["hlk_primer", "hlk_sekunder", "hr_primer", "hr_sekunder", "bukan_hutan"],
+            "periode_2020_2025": periode(2020, 2025), "periode_2001_2025": periode(2001, 2025),
+            "keterbatasan": ["Estimasi penginderaan jauh, bukan pengukuran lapangan; padanan kelas GLCLU → KLHK memakai proksi tinggi pohon, bukan peta penutupan lahan resmi KLHK.",
+                             "Kelas setelah kehilangan tidak terpetakan tahunan; dipakai aturan degradasi/deforestasi di atas.",
+                             "Tidak mencakup emisi dekomposisi/kebakaran gambut, degradasi ringan di bawah tajuk, dan serapan dari pertumbuhan kembali.",
+                             "Untuk angka resmi, kelas awal/akhir dapat diganti dengan peta Penutupan Lahan KLHK (SIGAP)."],
+            "sumber": FREL_SUMBER}
     mat = {f"{KELAS[i][0]}>{KELAS[j][0]}": round(float(A["mat"][i, j]), 1) for i in range(nk) for j in range(nk) if i != j and A["mat"][i, j] >= 0.5}
     return {
         "luas_ha": round(A["luas"], 1),
@@ -103,7 +217,8 @@ def hitung_raster(geom):
                    "cek_konsistensi_pct": round(100 * abs((A["emis_tot"] - A["ser"]) - A["net"]) / max(1.0, abs(A["net"])), 3),
                    "stok_karbon_atas_tanah_2000_tC": round(A["agc"]), "stok_karbon_total_2000_tC": round(A["tot"]),
                    "rerata_karbon_atas_tanah_hutan_2000_tC_ha": round(A["agc_f"] / A["h2000"], 1) if A["h2000"] else None,
-                   "rerata_karbon_total_hutan_2000_tC_ha": round(A["tot_f"] / A["h2000"], 1) if A["h2000"] else None}}
+                   "rerata_karbon_total_hutan_2000_tC_ha": round(A["tot_f"] / A["h2000"], 1) if A["h2000"] else None},
+        "emisi_frel": frel}
 
 FIRMS = {"VIIRS S-NPP": ("viirs-snpp", 2012), "VIIRS NOAA-20": ("viirs-jpss1", 2018), "MODIS": ("modis", 2001)}
 def _firms_csv(sp, y, cache):

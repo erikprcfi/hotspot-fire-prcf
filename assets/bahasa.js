@@ -425,6 +425,7 @@ function t(s) {
   if (L !== 'en' || s == null) return s;
   const str = String(s), m = str.match(/^(\s*)([\s\S]*?)(\s*)$/), core = m[2].replace(/[ \t]+/g, ' ');
   if (!core || !/[A-Za-z]{2}/.test(core)) return str;
+  { const bl = core.match(/^([•·]\s)(.+)$/); if (bl && D[core] == null) { const x = t(bl[2]); if (x !== bl[2]) return m[1] + bl[1] + x + m[3]; } }   // butir "• teks"
   { const nb = core.match(/^(\d+(?:\.\d+)*\.\s)(.+)$/); if (nb && D[core] == null) { const x = t(nb[2]); if (x !== nb[2]) return m[1] + nb[1] + x + m[3]; } }   // judul bernomor "4. Judul"
   if (core.includes('\n')) { const ls = core.split('\n'), tr = ls.map(x => t(x)); return tr.join('\n') === core ? str : m[1] + tr.join('\n') + m[3]; }
   let r = D[core] ?? satu(core, true);

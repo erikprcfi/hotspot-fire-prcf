@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
+<script>window.FH_WEB=/[?&]web=1/.test(location.search);if(window.FH_WEB)document.documentElement.classList.add("web");</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <title>Fire Hotspot</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -397,37 +398,116 @@ body.is-off .offline{display:block}
 .site-lbl{background:rgba(12,28,21,.78);color:#fff;font:700 11px var(--f);padding:3px 8px;border-radius:999px;white-space:nowrap;border:1px solid rgba(255,255,255,.25);transform:translate(-50%,-50%);display:inline-block}
 .prose b{font-weight:700}
 
-/* ===== Pusat kendali (premium) ===== */
-.hub{margin:2px 0 18px}
-.hub-hero{position:relative;overflow:hidden;border-radius:26px;padding:18px 18px 16px;color:#fff;background:radial-gradient(120% 140% at 0% 0%,#1E7A58 0%,#0B3B2C 55%,#06140F 100%);box-shadow:0 18px 40px -22px rgba(6,20,15,.9),inset 0 1px 0 rgba(255,255,255,.12)}
-.hub-hero::after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(242,104,60,.35),transparent 70%)}
-.hub-k{position:relative;z-index:1;display:flex;align-items:baseline;justify-content:space-between;gap:10px}
-.hub-k b{font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.8;font-weight:700}
-.hub-k span{font:600 11.5px var(--f-data);opacity:.75}
-.hub-site{position:relative;z-index:1;font-size:21px;font-weight:800;letter-spacing:-.01em;margin:6px 0 14px}
-.hub-kpi{position:relative;z-index:1;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.hub-kpi div{padding:12px 13px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(6px)}
-.hub-kpi small{display:block;font-size:11px;opacity:.75;font-weight:600}
-.hub-kpi strong{display:block;font-size:20px;font-weight:800;margin-top:3px;letter-spacing:-.01em}
-.hub-kpi i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
-.hub-h{display:flex;align-items:center;justify-content:space-between;margin:20px 4px 10px;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.hub-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 8px}
-.hub-t{display:flex;flex-direction:column;align-items:center;gap:7px;background:none;border:0;color:var(--fg);font:600 11.5px var(--f);text-align:center;line-height:1.2;cursor:pointer;padding:0}
-.hub-t .ic3{position:relative;width:58px;height:58px;border-radius:19px;display:grid;place-items:center;color:#fff;background:linear-gradient(155deg,var(--c1),var(--c2));
-  box-shadow:0 10px 18px -8px var(--c2),0 3px 0 0 color-mix(in srgb,var(--c2) 70%,#000),inset 0 1.5px 0 rgba(255,255,255,.35),inset 0 -6px 12px rgba(0,0,0,.18);transition:transform .15s}
-.hub-t .ic3::before{content:"";position:absolute;inset:3px 6px auto;height:45%;border-radius:15px 15px 40% 40%;background:linear-gradient(rgba(255,255,255,.32),rgba(255,255,255,0))}
-.hub-t .ic3 svg{position:relative;width:26px;height:26px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
-.hub-t .ic3 b{position:relative;font:800 15px/1 var(--f);letter-spacing:.03em;text-shadow:0 2px 2px rgba(0,0,0,.25)}
-.hub-t:active .ic3{transform:translateY(2px) scale(.97)}
-
-.hub-site{display:flex;align-items:center;gap:8px;border:0;background:none;color:#fff;padding:0;cursor:pointer;text-align:left}
-.hub-site span{font-size:14px;opacity:.7}
-.hub-wx{position:relative;z-index:1;display:flex;align-items:center;gap:14px;margin:-4px 0 14px}
-.hub-wx .wx{width:68px;height:68px;flex:none;filter:drop-shadow(0 8px 14px rgba(0,0,0,.35))}
-.hub-wx strong{display:block;font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1}.hub-wx strong small{font-size:16px;opacity:.7;font-weight:700}
-.hub-wx span{display:block;font-size:12.5px;opacity:.85;margin-top:4px}.hub-wind{display:flex!important;align-items:center;gap:6px}
-.hub-grid{grid-template-columns:repeat(4,1fr)}
-.hub-t .ic3 svg{overflow:visible}
+/* ===== Beranda (pusat kendali) – latar foto hutan, kartu kaca, data hidup ===== */
+.hub{margin:0 0 18px}
+.hx-stage{position:relative;isolation:isolate;margin:-16px -16px 0;padding:18px 16px 26px;color:#fff;overflow:hidden}
+.hx-bg{position:absolute;inset:0;z-index:-1;overflow:hidden;background:#06140F}
+.hx-img{position:absolute;inset:-6%;background:#0b2a1c center 45%/cover no-repeat;animation:hxKB 42s ease-in-out infinite alternate;will-change:transform,opacity;transition:opacity 2.4s ease}
+.hx-img.f0{background-image:url(assets/latar_hutan_900.webp)}.hx-img.f1{background-image:url(assets/latar_sungai_900.webp);animation-direction:alternate-reverse}.hx-img.f2{background-image:url(assets/latar_danau_900.webp);background-position:center 60%}.hx-img.f3{background-image:url(assets/latar_menara_900.webp);animation-direction:alternate-reverse}
+@media (min-width:900px){.hx-img.f0{background-image:url(assets/latar_hutan_1600.webp)}.hx-img.f1{background-image:url(assets/latar_sungai_1600.webp)}.hx-img.f2{background-image:url(assets/latar_danau_1600.webp)}.hx-img.f3{background-image:url(assets/latar_menara_1600.webp)}}
+.hx-img.off{opacity:0}
+.hx-dots{position:absolute;right:16px;bottom:14px;z-index:2;display:flex;gap:6px}.hx-dots button{width:8px;height:8px;padding:0;border-radius:4px;border:0;background:rgba(255,255,255,.4);cursor:pointer;transition:width .3s,background .3s}.hx-dots button.on{width:22px;background:#fff}
+.hx-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(3,16,10,.62) 0%,rgba(3,16,10,.28) 32%,rgba(3,16,10,.55) 70%,var(--bg) 100%),radial-gradient(90% 60% at 100% 0%,rgba(242,104,60,.18),transparent 70%)}
+.hx-glow{position:absolute;width:420px;height:420px;border-radius:50%;left:-120px;top:-160px;background:radial-gradient(circle,rgba(110,231,183,.22),transparent 65%);animation:hxGlow 14s ease-in-out infinite alternate}
+@keyframes hxKB{0%{transform:scale(1.04) translate3d(-1.5%,-1%,0)}100%{transform:scale(1.16) translate3d(1.5%,1.2%,0)}}
+@keyframes hxGlow{to{transform:translate(120px,60px) scale(1.2);opacity:.6}}
+.hx-wrap{max-width:1240px;margin:0 auto;display:grid;gap:14px}
+.hx-top{display:grid;gap:14px}
+.hx-glass{background:linear-gradient(160deg,rgba(255,255,255,.14),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.16);border-radius:24px;backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);box-shadow:0 20px 50px -28px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.14)}
+.hx-hero{padding:6px 2px 4px}
+.hx-eye{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font:700 11.5px var(--f);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.82)}
+.hx-live{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.14);font:700 11px var(--f-data);letter-spacing:.04em;text-transform:none}
+.hx-live i{width:7px;height:7px;border-radius:50%;background:#34D399;box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:hxPing 2s infinite}
+@keyframes hxPing{70%{box-shadow:0 0 0 8px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+.hx-site{display:flex;align-items:center;gap:10px;margin:10px 0 4px;padding:0;border:0;background:none;color:#fff;text-align:left;cursor:pointer;font:800 clamp(26px,6.4vw,46px)/1.05 var(--f);letter-spacing:-.025em;text-shadow:0 2px 24px rgba(0,0,0,.35)}
+.hx-site svg{flex:none;width:22px;height:22px;opacity:.75;transition:transform .2s}.hx-site:hover svg{transform:translateY(2px)}
+.hx-meta{font-size:13.5px;color:rgba(255,255,255,.82);line-height:1.5}
+.hx-status{display:flex;align-items:center;gap:12px;margin-top:16px;padding:12px 14px;border-radius:18px;background:rgba(0,0,0,.26);border:1px solid rgba(255,255,255,.14);max-width:560px}
+.hx-ring{position:relative;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--sc) 22%,transparent)}
+.hx-ring::before{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--sc);animation:hxRing 2.4s ease-out infinite}
+.hx-ring i{width:16px;height:16px;border-radius:50%;background:var(--sc);box-shadow:0 0 18px var(--sc)}
+@keyframes hxRing{from{transform:scale(.7);opacity:.9}to{transform:scale(1.35);opacity:0}}
+.hx-status b{display:block;font-size:19px;font-weight:800;letter-spacing:-.01em}.hx-status small{display:block;font-size:12.5px;color:rgba(255,255,255,.78);line-height:1.4}
+.hx-cta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.hx-btn{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);color:#fff;font:700 13.5px var(--f);cursor:pointer;backdrop-filter:blur(8px);transition:background .2s,transform .2s}
+.hx-btn svg{width:17px;height:17px}.hx-btn:hover{background:rgba(255,255,255,.2);transform:translateY(-1px)}
+.hx-btn.pri{background:#F2683C;border-color:#F2683C;box-shadow:0 10px 24px -10px rgba(242,104,60,.9)}.hx-btn.pri:hover{background:#E4572E}
+.hx-wx{padding:16px;width:100%}.hx-wx,.hx-wx *{text-align:left}.hx-day,.hx-day *{text-align:center}
+.hx-wx-now{display:flex;align-items:center;gap:14px}
+.hx-wx-now .wx{width:72px;height:72px;flex:none;filter:drop-shadow(0 8px 14px rgba(0,0,0,.35))}
+.hx-wx-now strong{display:block;font:800 40px/1 var(--f);letter-spacing:-.03em}.hx-wx-now strong small{font-size:18px;opacity:.7;font-weight:700}
+.hx-wx-now span{display:block;font-size:13px;color:rgba(255,255,255,.85);margin-top:5px}
+.hx-wx-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;font:700 11px var(--f);letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+.hx-days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.12)}
+.hx-day{display:grid;justify-items:center;gap:3px;font-size:11px;color:rgba(255,255,255,.75);padding:4px 0;border-radius:12px}
+.hx-day:first-child{background:rgba(255,255,255,.1);color:#fff}
+.hx-day .wx{width:28px;height:28px}.hx-day b{font-size:13px;color:#fff}.hx-day i{width:70%;height:4px;border-radius:2px}
+.hx-kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.hx-kpi{padding:13px 14px 12px;display:flex;flex-direction:column;gap:2px;min-height:118px;text-align:left;color:#fff;cursor:pointer;transition:transform .2s,border-color .2s}
+.hx-kpi:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.32)}
+.hx-kpi small{font-size:11.5px;font-weight:700;color:rgba(255,255,255,.75)}
+.hx-kpi strong{font:800 28px/1.1 var(--f);letter-spacing:-.02em;margin-top:2px}.hx-kpi strong em{font-style:normal;font-size:13px;font-weight:700;opacity:.75;margin-left:4px}
+.hx-kpi .k-sub{font-size:11.5px;color:rgba(255,255,255,.72);margin-top:auto;padding-top:6px}
+.hx-spark{display:flex;align-items:flex-end;gap:2px;height:26px;margin-top:6px}.hx-spark i{flex:1;min-height:2px;border-radius:2px 2px 0 0;background:rgba(255,255,255,.28)}.hx-spark i.on{background:#FB923C}
+.hx-lv{display:flex;gap:3px;margin-top:8px}.hx-lv i{flex:1;height:7px;border-radius:4px}
+.hx-gauge{position:relative;height:7px;border-radius:4px;margin-top:9px;background:linear-gradient(90deg,#22C55E 0 20%,#EAB308 20% 45%,#F97316 45% 70%,#DC2626 70% 88%,#7E22CE 88%)}
+.hx-gauge b{position:absolute;top:-4px;width:4px;height:15px;border-radius:2px;background:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.35);transform:translateX(-50%)}
+.hx-sec{max-width:1240px;margin:22px auto 0}
+.hx-h{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;min-height:84px;margin:0 0 10px;padding:12px 16px;border-radius:20px;color:#fff;background:#0b2a1c var(--img) center var(--pos,50%)/cover no-repeat;isolation:isolate}
+.hx-h::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(3,16,10,.82) 0%,rgba(3,16,10,.45) 55%,rgba(3,16,10,.1) 100%)}
+.hx-h b{font-size:17px;font-weight:800;letter-spacing:-.01em}.hx-h span{font-size:12.5px;color:rgba(255,255,255,.82);font-weight:600}
+.hx-h{width:100%;border:0;text-align:left;cursor:pointer;font:inherit;transition:transform .2s,box-shadow .2s}.hx-h:hover{box-shadow:0 14px 30px -18px rgba(0,0,0,.6)}
+.hx-h .chv{position:absolute;right:16px;top:50%;width:26px;height:26px;margin-top:-13px;padding:5px;border-radius:50%;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);transition:transform .3s}
+.hx-sec.open .hx-h .chv{transform:rotate(180deg)}.hx-h.plain .chv{background:var(--surface-2);color:var(--fg)}
+.hx-acc{display:grid;grid-template-rows:0fr;transition:grid-template-rows .32s cubic-bezier(.2,.8,.2,1)}.hx-acc>.hx-grid{overflow:hidden;min-height:0;padding:0 2px}
+.hx-sec.open .hx-acc{grid-template-rows:1fr}.hx-sec.open .hx-acc>.hx-grid{padding:2px 2px 4px;overflow:visible}
+.hx-sec{margin-top:12px}.hx-sec .hx-h{margin:0}.hx-sec.open .hx-h{margin-bottom:10px}
+.hx-h.plain{min-height:0;padding:0 2px;background:none;color:var(--muted)}.hx-h.plain::before{display:none}.hx-h.plain b{font-size:12px;letter-spacing:.13em;text-transform:uppercase}.hx-h.plain span{color:var(--faint)}
+@media (min-width:900px){.hx-h{min-height:110px;padding:16px 22px}.hx-h b{font-size:20px}}
+.hx-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.hx-t{position:relative;display:flex;align-items:center;gap:11px;min-height:66px;padding:11px 12px;border-radius:18px;background:var(--surface);border:1px solid var(--line);color:var(--fg);text-align:left;cursor:pointer;overflow:hidden;transition:transform .2s,box-shadow .2s,border-color .2s}
+.hx-t::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 0% 0%,color-mix(in srgb,var(--c1) 14%,transparent),transparent 60%);opacity:.8;pointer-events:none}
+.hx-t:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--c1) 55%,var(--line));box-shadow:0 14px 30px -18px color-mix(in srgb,var(--c2) 70%,transparent)}
+.hx-t:active{transform:scale(.98)}
+.hx-ic{position:relative;z-index:1;flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;color:#fff;background:linear-gradient(150deg,var(--c1),var(--c2));box-shadow:0 8px 16px -10px var(--c2),inset 0 1px 0 rgba(255,255,255,.3)}
+.hx-ic svg{width:22px;height:22px;overflow:visible}.hx-ic b{font:800 13px/1 var(--f);letter-spacing:.03em}
+.hx-tx{position:relative;z-index:1;min-width:0;display:grid;gap:1px}
+.hx-tx b{font-size:13.5px;font-weight:700;line-height:1.25}
+.hx-tx small{font-size:11.5px;color:var(--muted);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hx-tx small.v{color:var(--fg);font-weight:700}
+.hx-new{position:absolute;z-index:1;top:7px;right:8px;font:800 9px var(--f);letter-spacing:.08em;padding:2px 6px;border-radius:999px;background:#F2683C;color:#fff}
+.hub.anim .hx-in{animation:hxUp .7s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*40ms)}
+@keyframes hxUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.hx-foot{max-width:1240px;margin:26px auto 0;display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:space-between;font-size:11.5px;color:var(--faint)}
+@media (min-width:600px){.hx-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (min-width:900px){.hx-stage{padding:34px 32px 34px}.hx-top{grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);align-items:end}.hx-kpis{grid-template-columns:repeat(4,1fr)}
+  .hx-grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}.hx-t{min-height:74px;padding:13px 14px}.hx-sec{padding:0 16px}.hx-foot{padding:0 16px}}
+@media (prefers-reduced-motion:reduce){.hx-img,.hx-glow,.hx-ring::before,.hx-live i{animation:none!important}.hub.anim .hx-in{animation:none}}
+/* ===== Tata letak layar lebar (website/laptop): sidebar berlabel seperti dasbor web ===== */
+.side{display:none}
+@media (min-width:1024px){
+  :root{--tab:0px;--rail:264px}
+  .tabbar{display:none}
+  .side{position:fixed;top:var(--top);bottom:0;left:0;width:var(--rail);z-index:58;display:flex;flex-direction:column;background:var(--surface);border-right:1px solid var(--line)}
+  .side-q{margin:14px 14px 6px;position:relative}.side-q input{width:100%;box-sizing:border-box;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);padding:0 12px 0 36px;font:600 13.5px var(--f)}
+  .side-q svg{position:absolute;left:11px;top:11px;width:18px;height:18px;color:var(--faint)}
+  .side-nav{flex:1;overflow-y:auto;padding:4px 10px 16px;scrollbar-width:thin}
+  .side-g{display:flex;align-items:center;gap:8px;width:100%;margin:10px 0 2px;padding:8px 10px;border:0;border-radius:10px;background:none;font:800 10.5px var(--f);letter-spacing:.14em;text-transform:uppercase;color:var(--faint);text-align:left;cursor:pointer}
+  button.side-g:hover{background:var(--surface-2);color:var(--fg)}.side-g small{margin-left:auto;font:700 11px var(--f);letter-spacing:0;color:var(--faint)}.side-g .chv{width:15px;height:15px;transition:transform .25s}.side-g[aria-expanded=true] .chv{transform:rotate(180deg)}
+  .side-acc{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s ease}.side-acc>div{overflow:hidden;min-height:0}.side-acc.open{grid-template-rows:1fr}
+  .side-i{display:flex;align-items:center;gap:11px;width:100%;min-height:38px;padding:6px 10px;border-radius:11px;border:0;background:none;color:var(--fg);font:600 13.5px var(--f);text-align:left;cursor:pointer;transition:background .15s}
+  .side-i:hover{background:var(--surface-2)}.side-i[aria-current=page]{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+  .side-i .si{flex:none;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;color:#fff;background:linear-gradient(150deg,var(--c1),var(--c2))}.side-i .si svg{width:16px;height:16px;overflow:visible}.side-i .si b{font:800 10px var(--f)}
+  .side-i .nb{margin-left:auto;font:800 9px var(--f);letter-spacing:.06em;padding:2px 6px;border-radius:999px;background:#F2683C;color:#fff}
+  .side-f{padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);font-size:11.5px;color:var(--faint);display:grid;gap:4px}.side-f a{color:var(--muted)}
+  .view,.page{left:var(--rail)}
+  .view .pad,.page .pad{max-width:1240px;margin-left:auto;margin-right:auto;padding-left:28px;padding-right:28px}
+  #v-dash .pad{max-width:none;padding-left:0;padding-right:0;padding-top:0}
+  #v-dash .hx-stage{margin:0;padding:40px 40px 40px}#v-dash .hx-sec,#v-dash .hx-foot{padding:0 40px}
+  .page{transform:none;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}.page.on{opacity:1;visibility:visible}
+  .sheet{left:auto;right:0;top:var(--top);bottom:0;width:min(460px,40vw);max-height:none;border-radius:0;border-left:1px solid var(--line);transform:translateX(105%);padding:6px 22px 24px;box-shadow:-20px 0 50px -20px rgba(0,0,0,.35)}.sheet.on{transform:none}.sheet .grab{display:none}
+  .scrim{left:var(--rail)}
+}
 /* animasi ikon (dimatikan bila pengguna memilih kurangi gerak) */
 @keyframes aSpin{to{transform:rotate(360deg)}}@keyframes aBob{50%{transform:translateY(-2.5px)}}@keyframes aDrift{50%{transform:translateX(2.5px)}}
 @keyframes aRain{0%{transform:translateY(-3px);opacity:0}30%{opacity:1}100%{transform:translateY(4px);opacity:0}}
@@ -460,6 +540,7 @@ body.is-off .offline{display:block}
 .clampx{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
 .clampx.open{display:block;-webkit-line-clamp:unset}
 .clampx-t{display:inline-flex;align-items:center;gap:4px;margin:2px 0 6px;padding:0;border:0;background:none;color:var(--brand-3,#1E7A58);font:700 11.5px var(--f);cursor:pointer}
+html.web [data-noweb]{display:none!important}
 </style>
 </head>
 <body>
@@ -638,7 +719,8 @@ body.is-off .offline{display:block}
       <button class="row tap" data-sheet="metode"><span class="ico-sq" style="background:#1E7A58"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></span><span class="m"><b>Cara kerja &amp; validitas data</b><small>NASA FIRMS, pembaruan 3 jam, jejak audit</small></span><span class="chev">›</span></button>
       <button class="row tap" data-sheet="zona"><span class="ico-sq" style="background:#C2441F"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></span><span class="m"><b>Zona &amp; tingkat status</b><small>Aman, Waspada, Siaga</small></span><span class="chev">›</span></button>
       <a class="row tap" href="kebijakan-privasi.html" data-kp><span class="ico-sq" style="background:#0F766E"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/></svg></span><span class="m"><b>Kebijakan Privasi</b><small>UU PDP No. 27 Tahun 2022</small></span><span class="chev">›</span></a>
-      <a class="row tap" href="index.html?web=1"><span class="ico-sq" style="background:#3B5BB5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg></span><span class="m"><b>Buka versi website</b><small>Tampilan lengkap untuk laptop</small></span><span class="chev">›</span></a>
+      <a class="row tap" href="syarat.html"><span class="ico-sq" style="background:#7C3AED"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></span><span class="m"><b>Syarat Penggunaan &amp; Penafian</b><small>Bukan sistem resmi pemerintah</small></span><span class="chev">›</span></a>
+      <a class="row tap" href="index.html?web=1" data-noweb><span class="ico-sq" style="background:#3B5BB5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg></span><span class="m"><b>Buka versi website</b><small>Tampilan lengkap untuk laptop</small></span><span class="chev">›</span></a>
       <a class="row tap" href="https://github.com/erikprcfi/hotspot-fire-prcf" target="_blank" rel="noopener"><span class="ico-sq" style="background:#2A2F2C"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 9l-4 3 4 3M16 9l4 3-4 3M14 5l-4 14"/></svg></span><span class="m"><b>Kode &amp; jejak audit (GitHub)</b><small>Semua data dan riwayat terbuka</small></span><span class="chev">›</span></a>
     </div>
     <img src="assets/logo_prcf.jpg" alt="Yayasan PRCF Indonesia" style="height:54px;border-radius:6px;display:block;margin:22px auto 0">
@@ -660,6 +742,7 @@ body.is-off .offline{display:block}
   <button role="tab" data-v="info" aria-selected="false"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>Profil</button>
 </nav>
 
+<aside class="side" id="side" aria-label="Menu utama"></aside>
 <div class="scrim" id="scrim"></div>
 <div class="sheet" id="sheet" role="dialog"><div class="grab"></div><div id="sheetBody"></div></div>
 <div class="modal" id="rpModal">
@@ -669,11 +752,12 @@ body.is-off .offline{display:block}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="assets/bahasa.js?v=56"></script>
-<script src="assets/kamus_en.js?v=56"></script>
-<script src="assets/nasa_layers.js?v=56"></script>
-<script src="assets/citra.js?v=56"></script>
-<script src="assets/akun.js?v=56"></script>
+<script src="assets/bahasa.js?v=57"></script>
+<script src="assets/kamus_en.js?v=57"></script>
+<script src="assets/nasa_layers.js?v=57"></script>
+<script src="assets/citra.js?v=57"></script>
+<script src="assets/akun.js?v=57"></script>
+<script src="assets/web.js?v=57"></script>
 <script>
 (function(){
 'use strict';
@@ -738,11 +822,12 @@ function setBar(t,s,stack){$('#abTitle').innerHTML=t;$('#abSub').textContent=s||
 function go(v,push=true){
   if(!views[v])v='home';
   closeAll();
-  const from=CUR;CUR=v;$$('.view').forEach(e=>e.classList.remove('on'));const el=$(views[v]);el.classList.add('on');
+  const from=CUR;CUR=v;if(!BOOT&&from!==v)try{FHAlat.pakai('v_'+v);}catch(e){}$$('.view').forEach(e=>e.classList.remove('on'));const el=$(views[v]);el.classList.add('on');
   $$('#tabbar button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.v===v)));
   setBar(el.dataset.title,el.dataset.sub,false);if(v==='fc'&&FCMODE==='saya')setBar('Cuaca di lokasi saya','ECMWF · CAMS · FDRS',false);
   if(v==='home'&&MAP)setTimeout(()=>{MAP.invalidateSize();if(!MAPSEEN&&SITE){MAPSEEN=true;try{applySite(SITE.id,false);}catch(e){}}},60);
   if(v==='dash')hubRender();
+  try{sideMark();}catch(e){}
   if(v==='data')loadHist();
   if(v==='info'){const sec=INFOSEC||'pengaturan';INFOSEC=null;$$('#v-info [data-sec]').forEach(e=>e.hidden=e.dataset.sec!==sec);setBar(SECT[sec][0],SECT[sec][1],false);el.scrollTop=0;
     if(sec!=='pengaturan')$$('#tabbar button').forEach(b=>b.setAttribute('aria-selected','false'));if(sec==='peringatan')prMount();}
@@ -758,7 +843,7 @@ function back(){if(BACK.length)history.back();}
 $('#abBack').onclick=back;
 function meUI(){if(!window.FHAkun)return;const u=FHAkun.user();$('#abMe').innerHTML=FHAkun.avatar(34);$('#abMe').style.display=u?'':'none';
   $('#pfCard').style.display=u?'flex':'none';if(u)$('#pfCard').innerHTML=`${FHAkun.avatar(56)}<span style="flex:1;min-width:0"><b style="display:block;font-size:16px">${esc(u.nama)}</b><small class="muted" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(u.email)}</small><small style="color:var(--brand-3);font-weight:700">Lihat &amp; ubah profil</small></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="color:var(--faint)"><path d="M9 5l7 7-7 7"/></svg>`;}
-if(window.FHAkun){FHAkun.init({pushLayer,back,lokasi:()=>SITE?SITE.hd_nama:''});FHAkun.onChange(meUI);FHAkun.onChange(()=>{try{sapa();}catch(e){}});FHAkun.onChange(()=>{try{if(CUR==='dash')hubRender();}catch(e){}});window.FHSiteNama=()=>SITE?SITE.hd_nama:'';window.openPage=openPage;window.toastMsg=(...a)=>toastMsg(...a);$('#abMe').onclick=()=>FHAkun.openProfile();$('#pfCard').onclick=()=>FHAkun.openProfile();}
+if(window.FHAkun){FHAkun.init({pushLayer,back,lokasi:()=>SITE?SITE.hd_nama:''});FHAkun.onChange(meUI);FHAkun.onChange(()=>{try{sapa();}catch(e){}});FHAkun.onChange(()=>{try{if(CUR==='dash')hubRender();}catch(e){}});FHAkun.onChange(()=>{try{sideRender();}catch(e){}});window.FHSiteNama=()=>SITE?SITE.hd_nama:'';window.FHSiteObj=()=>SITE;window.FHApp={go:(...x)=>go(...x),hubGo:k=>hubGo(k),closeAll:()=>closeAll(),detail:p=>detail(p)};window.FHSites=()=>SITES;window.FHSiteIdx=()=>SI;window.FHAll=()=>ALL;window.openPage=openPage;window.toastMsg=(...a)=>toastMsg(...a);$('#abMe').onclick=()=>FHAkun.openProfile();$('#pfCard').onclick=()=>FHAkun.openProfile();}
 function closeAll(){const n=BACK.length;if(!n)return;while(BACK.length)BACK.pop()();SKIP+=n;history.go(-n);}
 
 /* sheet */
@@ -882,9 +967,12 @@ function detail(p){
     <button class="tap" id="hdW2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/></svg>Angin</button>
    </div>
    <button class="btn pri full tap" id="hdV" style="width:100%;margin-top:12px;background:#B3261E;border-color:#B3261E">${VERIF[p.k]?'✓ Sudah dicek: '+esc(VERIF[p.k])+' · tambah laporan':'Laporkan hasil cek lapangan'}</button>
+   <button class="btn full tap" id="hdT" style="width:100%;margin-top:10px"><span id="hdTs">Tindak lanjut kejadian</span></button>
    <a class="btn full tap" style="width:100%;margin-top:10px" href="https://firms.modaps.eosdis.nasa.gov/map/#d:${p.d}..${p.d};@${p.lo.toFixed(4)},${p.la.toFixed(4)},14.0z" target="_blank" rel="noopener">Verifikasi di NASA FIRMS ↗</a>`);
   $('#hdK').onclick=async e=>{const t=`${ll}\nhttps://www.google.com/maps?q=${p.la},${p.lo}`;try{if(navigator.share)await navigator.share({title:'Titik panas '+wibShort(p.when),text:t});else{await navigator.clipboard.writeText(ll);e.currentTarget.lastChild.textContent='Tersalin ✓';}}catch(x){}};
   $('#hdV').onclick=()=>openVerif(p);
+  $('#hdT').onclick=()=>window.FHTindak&&FHTindak.ubah(p,st=>{const e=$('#hdTs');if(e)e.textContent='Tindak lanjut: '+st;});
+  if(window.FHTindak&&window.FHAlat&&FHAlat.akun())FHTindak.status(p.k).then(v=>{const e=$('#hdTs');if(e&&v)e.textContent='Tindak lanjut: '+v.s+(v.p?' · '+v.p:'');});
   $('#hdC').onclick=()=>openKompas({lat:p.la,lon:p.lo,label:'Arah ke titik panas · '+wibShort(p.when)});
   $('#hdW2').onclick=()=>{closeAll();go('home');setTimeout(()=>{MAP.flyTo([p.la,p.lo],Math.max(MAP.getZoom(),9),{duration:.6});windOn(true);},150);};
   if(window.FHWilayah)FHWilayah.lookup(p.la,p.lo).then(w=>{const e=$('#hdW');if(e)e.textContent=w?FHWilayah.label(w):'di luar batas desa BPS';}).catch(()=>{const e=$('#hdW');if(e)e.textContent='–';});
@@ -1172,7 +1260,7 @@ async function load(first){
     STATUS=s; if(first)spMsg(`${N(s.jumlah_catatan)} deteksi tersinkron ✓`);
     renderMap(); statusCard(); liveChip(); sysPanel(); downloads(); dataMocks(); renderFC();
   }catch(e){console.error(e);if(first)spMsg('Tidak ada sinyal — memakai data tersimpan');liveChip();if(!G){$('#stTxt').textContent='Data belum tersedia. Sambungkan internet lalu ketuk ⟳.';}}
-  if(first){const deep=location.hash.length>1||new URLSearchParams(location.search).get('lokasi');const go0=()=>{if(SITES.length&&!deep){if(window.FHBeranda)FHBeranda.show({sapa:()=>{const n=window.FHAkun&&FHAkun.firstName&&FHAkun.firstName();return greet()+(n?', '+n+' 🌿':'');},pesan:semangat,hotspots:()=>ALL,ringkas:()=>{const S=SITES.map((x,k)=>siteStatus(k));return {n:SITES.length,aman:S.filter(o=>o.lvl==='ok').length,dekat:S.reduce((a,o)=>a+o.r25,0)};},onNext:()=>chooser(false)});else chooser(false);}};if(window.FHAkun)FHAkun.gate(go0);else go0();hideSplash();}
+  if(first){const deep=location.hash.length>1||new URLSearchParams(location.search).get('lokasi');const go0=()=>{if(window.FH_WEB){if(SITES.length&&!deep&&!store.get('site',null))chooser(false);}else if(SITES.length&&!deep){if(window.FHBeranda)FHBeranda.show({sapa:()=>{const n=window.FHAkun&&FHAkun.firstName&&FHAkun.firstName();return greet()+(n?', '+n+' 🌿':'');},pesan:semangat,hotspots:()=>ALL,ringkas:()=>{const S=SITES.map((x,k)=>siteStatus(k));return {n:SITES.length,aman:S.filter(o=>o.lvl==='ok').length,dekat:S.reduce((a,o)=>a+o.r25,0)};},onNext:()=>chooser(false)});else chooser(false);}};if(window.FHAkun)FHAkun.gate(go0);else go0();hideSplash();}
 }
 $('#abRefresh').onclick=async e=>{const b=e.currentTarget;b.style.transition='transform .8s';b.style.transform='rotate(360deg)';await load();setTimeout(()=>{b.style.transition='none';b.style.transform='';},850);};
 
@@ -1217,46 +1305,117 @@ const IC={
  tim:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><path d="M2.5 19a5.5 5.5 0 0 1 11 0"/><g class="a-bob"><path d="M17.5 15.5s3.5-3 3.5-5.7a3.5 3.5 0 0 0-7 0c0 2.7 3.5 5.7 3.5 5.7z" fill="currentColor" fill-opacity=".25"/><circle cx="17.5" cy="9.8" r="1.2" fill="currentColor"/></g></svg>',
  unduh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><g class="a-bob"><path d="M12 4v10M7.5 9.5L12 14l4.5-4.5"/></g><path d="M5 20h14"/></svg>',
  luring:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z" fill="currentColor" fill-opacity=".2"/><path d="M9 4v14M15 6v14"/><path class="a-blink" d="M2 2l20 20" stroke="#FCA5A5" stroke-width="2.4" stroke-linecap="round"/></svg>',
+ tutupan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M3 13l6-2 6 3 6-2" opacity=".7"/><path d="M9 4v14M15 6v14" opacity=".5"/></svg>',
+ karbon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.6-7.95A5.5 5.5 0 0 1 17 9a3.5 3.5 0 0 1 .5 6.96"/><text x="8.2" y="19.5" font-size="7.5" font-weight="800" fill="currentColor" stroke="none" font-family="sans-serif">CO₂</text></svg>',
+ indikator:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/><circle class="a-ping" cx="16" cy="9" r="2" fill="currentColor"/></svg>',
+ tindak:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.2"/><circle cx="5" cy="18" r="2.2"/><circle cx="19" cy="12" r="2.2" fill="currentColor"/><path class="a-draw" d="M7 6h4a3 3 0 0 1 3 3v0a3 3 0 0 0 3 3M7 18h4a3 3 0 0 0 3-3v0a3 3 0 0 1 3-3"/></svg>',
+ admin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="9" rx="2"/><rect x="13.5" y="3" width="7.5" height="5" rx="2"/><rect x="13.5" y="11" width="7.5" height="10" rx="2"/><rect x="3" y="15" width="7.5" height="6" rx="2"/></svg>',
  sistem:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path class="a-pulse-l" d="M2 12h4l2.5-6 4 12 2.5-6H22"/></svg>',
  satelit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><g class="a-orbit"><rect x="9.5" y="9.5" width="5" height="5" rx="1" fill="currentColor"/><path d="M8 12H3M21 12h-5" stroke-width="3"/></g><circle cx="12" cy="12" r="9.5" opacity=".35" stroke-dasharray="2 3"/></svg>'};
-const HUB_G=[
- ['Pemantauan',[['peta','Peta','#3B82F6','#1E3A8A'],['p3d','Peta 3D','#6366F1','#3730A3'],['sebaran','Sebaran titik','#F97316','#C2410C'],['kejadian','Kejadian api','#EF4444','#991B1B'],['angin','Angin','#22D3EE','#0E7490'],['kompas','Kompas','#A78BFA','#5B21B6'],['satelit','Lintasan satelit','#64748B','#1E293B'],['ai','Bara Api','#F59E0B','#C2410C']]],
- ['Cuaca & iklim',[['cuaca','Prakiraan','#60A5FA','#1D4ED8'],['hujan','Cuaca & musim api','#38BDF8','#0369A1'],['udara','Kualitas udara','#94A3B8','#475569'],['lokasi','Cuaca lokasi saya','#2DD4BF','#0F766E']]],
- ['Hutan & karbon',[['hutan','Tutupan hutan','#4ADE80','#166534'],['bekas','Bekas terbakar','#FB923C','#9A3412'],['analisis','Analisis lahan & karbon','#34D399','#047857'],['grafik','Grafik & rekap','#F472B6','#9D174D']]],
- ['Lapangan & data',[['peringatan','Peringatan dini','#F87171','#B91C1C'],['cek','Cek lapangan','#FB7185','#9F1239'],['patroli','Laporan patroli','#FBBF24','#B45309'],['laporan','Laporan PDF','#A3A3A3','#404040'],['unduh','Unduh data','#2DD4BF','#0F766E'],['luring','Peta luring','#FACC15','#A16207'],['sistem','Status sistem','#4ADE80','#15803D']]]];
 const SECT={pengaturan:['Profil','Akun & pengaturan'],peringatan:['Peringatan dini','Notifikasi HP & email'],unduh:['Unduh data','CSV · SHP · GeoJSON · KML'],patroli:['Laporan patroli','Temuan & cek lapangan'],luring:['Peta luring','Tanpa sinyal'],sistem:['Status sistem','Pembaruan · basis data · sumber NASA']};
 let INFOSEC=null;
 function bukaSec(sec){INFOSEC=sec;go('info');pushLayer(()=>go('dash',false));setBar(SECT[sec][0],SECT[sec][1],true);}
-function hubGo(k){const P=x=>{if(!SITE)return chooser(true);const run=()=>PAGES[x]&&PAGES[x]();if(['grafik','kejadian','cuaca'].includes(x)&&!(STATS&&EVENTS&&CUACA)){toastMsg('Memuat data…');Promise.resolve(loadHist()).then(run).catch(()=>toastMsg('Data belum dapat dimuat. Periksa internet.'));}else run();};
+function hubGo(k){try{FHAlat.pakai(k);}catch(e){}const P=x=>{if(!SITE)return chooser(true);const run=()=>PAGES[x]&&PAGES[x]();if(['grafik','kejadian','cuaca'].includes(x)&&!(STATS&&EVENTS&&CUACA)){toastMsg('Memuat data…');Promise.resolve(loadHist()).then(run).catch(()=>toastMsg('Data belum dapat dimuat. Periksa internet.'));}else run();};
   ({peta:()=>go('home'),p3d:()=>{go('home');setTimeout(()=>$('#fab3d').click(),250);},sebaran:()=>P('sebaran'),kejadian:()=>P('kejadian'),
     angin:()=>{go('home');setTimeout(()=>{if($('#fabWind').getAttribute('aria-pressed')!=='true')$('#fabWind').click();},250);},kompas:()=>openKompas(),ai:()=>go('ai'),
     satelit:()=>{const p=ALL.slice().sort((a,b)=>b.when-a.when)[0];if(p)detail(p);else go('home');},
     cuaca:()=>go('fc'),hujan:()=>P('cuaca'),udara:()=>P('udara'),
     lokasi:()=>{go('fc');setTimeout(()=>{const b=[...document.querySelectorAll('#v-fc button')].find(x=>/Lokasi saya/.test(x.textContent));if(b)b.click();},300);},
     hutan:()=>P('hutan'),bekas:()=>P('bekas'),analisis:()=>P('analisis'),grafik:()=>P('grafik'),
-    peringatan:()=>bukaSec('peringatan'),cek:()=>openVerif(null),patroli:()=>bukaSec('patroli'),laporan:()=>go('lap'),unduh:()=>bukaSec('unduh'),tim:()=>window.FHTim&&FHTim.open(),luring:()=>bukaSec('luring'),sistem:()=>bukaSec('sistem')})[k]();}
+    peringatan:()=>bukaSec('peringatan'),cek:()=>openVerif(null),patroli:()=>window.FHPatroli?FHPatroli.open():bukaSec('patroli'),tindak:()=>window.FHTindak&&FHTindak.open(),admin:()=>window.FHAdmin&&FHAdmin.open(),indikator:()=>window.FHIndikator&&FHIndikator.open(),karbon:()=>window.FHKarbon&&FHKarbon.open(),tutupan:()=>window.FHTutupan&&FHTutupan.open(),laporan:()=>go('lap'),unduh:()=>bukaSec('unduh'),tim:()=>window.FHTim&&FHTim.open(),luring:()=>bukaSec('luring'),sistem:()=>bukaSec('sistem')})[k]();}
 function wxIkon(kode,hujan){const k=+kode||0;
   if(k>=95)return '<svg class="wx" viewBox="0 0 64 64"><g class="a-drift"><path d="M18 40h28a10 10 0 0 0 1-20 14 14 0 0 0-27 3 9 9 0 0 0-2 17z" fill="#CBD5E1"/></g><path class="a-blink" d="M33 40l-5 10h6l-4 10" stroke="#FDE047" stroke-width="3.5" fill="none" stroke-linejoin="round"/></svg>';
   if(k>=51||hujan>=1)return '<svg class="wx" viewBox="0 0 64 64"><g class="a-drift"><path d="M18 38h28a10 10 0 0 0 1-20 14 14 0 0 0-27 3 9 9 0 0 0-2 17z" fill="#E2E8F0"/></g><g class="a-rain" stroke="#7DD3FC" stroke-width="3" stroke-linecap="round"><path d="M24 44l-3 7M33 44l-3 7M42 44l-3 7"/></g></svg>';
   if(k>=45)return '<svg class="wx" viewBox="0 0 64 64"><g stroke="#E2E8F0" stroke-width="4" stroke-linecap="round"><path class="a-flow" d="M12 24h40"/><path class="a-flow d2" d="M8 34h44"/><path class="a-flow d3" d="M14 44h36"/></g></svg>';
   if(k>=2)return '<svg class="wx" viewBox="0 0 64 64"><g class="a-spin" style="transform-origin:24px 24px"><circle cx="24" cy="24" r="9" fill="#FDE047"/><path d="M24 8v5M24 35v5M8 24h5M35 24h5M12.7 12.7l3.5 3.5M31.8 31.8l3.5 3.5M12.7 35.3l3.5-3.5M31.8 16.2l3.5-3.5" stroke="#FDE047" stroke-width="3" stroke-linecap="round"/></g><g class="a-drift"><path d="M24 50h24a9 9 0 0 0 1-18 12 12 0 0 0-23 2.5 8 8 0 0 0-2 15.5z" fill="#F1F5F9"/></g></svg>';
   return '<svg class="wx" viewBox="0 0 64 64"><g class="a-spin" style="transform-origin:32px 32px"><circle cx="32" cy="32" r="12" fill="#FDE047"/><path d="M32 8v7M32 49v7M8 32h7M49 32h7M15 15l5 5M44 44l5 5M15 49l5-5M44 20l5-5" stroke="#FDE047" stroke-width="3.5" stroke-linecap="round"/></g></svg>';}
+const HUB_G=[
+ ['Pemantauan','Titik panas & kebakaran',[['peta','Peta','#3B82F6','#1E3A8A'],['p3d','Peta 3D','#6366F1','#3730A3'],['sebaran','Sebaran titik','#F97316','#C2410C'],['kejadian','Kejadian api','#EF4444','#991B1B'],['angin','Angin','#22D3EE','#0E7490'],['kompas','Kompas','#A78BFA','#6D28D9'],['satelit','Lintasan satelit','#94A3B8','#334155'],['ai','Bara Api','#FB923C','#C2410C']]],
+ ['Cuaca & iklim','BMKG · ECMWF · CAMS',[['cuaca','Prakiraan','#60A5FA','#1D4ED8'],['hujan','Cuaca & musim api','#38BDF8','#0369A1'],['udara','Kualitas udara','#94A3B8','#475569'],['lokasi','Cuaca lokasi saya','#2DD4BF','#0F766E']]],
+ ['Hutan & karbon','Data satelit resmi',[['hutan','Tutupan hutan','#4ADE80','#166534'],['bekas','Bekas terbakar','#FB923C','#9A3412'],['analisis','Analisis lahan & karbon','#34D399','#047857'],['tutupan','Tutupan lahan (KLHK)','#84CC16','#365314'],['karbon','Emisi karbon (FREL)','#22C55E','#14532D'],['grafik','Grafik & rekap','#F472B6','#9D174D'],['indikator','Indikator program','#A3E635','#3F6212']]],
+ ['Lapangan & data','Tim patroli & pelaporan',[['peringatan','Peringatan dini','#F87171','#B91C1C'],['cek','Cek lapangan','#FB7185','#9F1239'],['patroli','Patroli & temuan','#FBBF24','#B45309'],['tindak','Tindak lanjut kejadian','#F43F5E','#881337'],['laporan','Laporan PDF','#A3A3A3','#404040'],['unduh','Unduh data','#2DD4BF','#0F766E'],['luring','Peta luring','#FACC15','#A16207'],['sistem','Status sistem','#4ADE80','#15803D']]]];
+const HUB_IMG={'Pemantauan':['sungai','55%'],'Cuaca & iklim':['danau','30%'],'Hutan & karbon':['hutan','45%'],'Lapangan & data':['menara','40%']};
+const HUB_ADMIN=['Admin','Khusus admin PRCF',[['tim','Tim lapangan','#38BDF8','#1D4ED8'],['admin','Dasbor admin','#818CF8','#3730A3']]];
+const HUB_BARU=['tutupan','karbon','indikator','tindak','admin'];
+const HUB_SUB={peta:'Titik panas terkini',p3d:'Medan & lereng',sebaran:'Kepadatan per zona',kejadian:'Riwayat sejak 2001',angin:'Arah asap & api',kompas:'Arah ke titik',satelit:'Jadwal satelit lewat',ai:'Asisten AI',
+  cuaca:'14 hari ke depan',hujan:'Curah hujan & musim',udara:'PM2.5 & asap',lokasi:'Di posisi Anda',hutan:'Kehilangan tutupan',bekas:'Citra Sentinel-2',analisis:'Karbon 2001–2025',tutupan:'Acuan peta KLHK · per tahun',karbon:'Rumus FREL · ekspor Excel',grafik:'Tren tahunan',indikator:'Ringkasan 6 Hutan Desa',
+  peringatan:'Notifikasi HP',cek:'Verifikasi titik',patroli:'Temuan & rekap jejak',tindak:'Status penanganan',laporan:'PDF · Word · CSV',unduh:'SHP · GeoJSON · KML',luring:'Tanpa sinyal',sistem:'Pembaruan tiap 3 jam',tim:'Posisi tim',admin:'Pengguna & pemakaian'};
+let HUB_OPEN=null,HUB_ANIM=true, HUB_HT=null, HUB_CLK=null;
+function hubHutan(id){if(!HUB_HT||HUB_HT.id!==id){HUB_HT={id,p:J('data/analisis/'+id+'_hd.json').catch(()=>null)};}return HUB_HT.p;}
+function hubSpark(k){const now=Date.now(),D=14,c=Array(D).fill(0);ALL.forEach(p=>{if(!p.ls||!(p.ls[k]<=25))return;const d=Math.floor((now-p.when)/864e5);if(d>=0&&d<D)c[D-1-d]++;});return c;}
+let HUB_SL=null,HUB_SI=0;
+function hubSlide(el){clearInterval(HUB_SL);const bg=el.querySelector('.hx-bg'),dots=el.querySelector('.hx-dots');if(!bg||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const first=bg.querySelector('.hx-img');const L=[first];setTimeout(()=>{for(let k=1;k<4;k++){const d=document.createElement('div');d.className='hx-img off f'+k;bg.insertBefore(d,bg.querySelector('.hx-glow'));L.push(d);}
+    dots.innerHTML=L.map((_,k)=>`<button aria-label="Foto ${k+1}" class="${k===0?'on':''}"></button>`).join('');
+    const show=k=>{HUB_SI=k;L.forEach((x,j)=>x.classList.toggle('off',j!==k));dots.querySelectorAll('button').forEach((b,j)=>b.classList.toggle('on',j===k));};
+    dots.querySelectorAll('button').forEach((b,j)=>b.onclick=()=>{show(j);clearInterval(HUB_SL);HUB_SL=setInterval(()=>show((HUB_SI+1)%L.length),9000);});
+    if(HUB_SI)show(HUB_SI);HUB_SL=setInterval(()=>{if(!document.body.contains(bg))return clearInterval(HUB_SL);show((HUB_SI+1)%L.length);},9000);},2500);}
 function hubRender(){const el=$('#hub');if(!el)return;
-  if(!SITE){el.innerHTML='<div class="hub-hero"><div class="hub-site">Fire Hotspot</div><p style="position:relative;z-index:1;margin:0;opacity:.8">Memuat data…</p></div>';return;}
+  if(!SITE){el.innerHTML='<div class="hx-stage"><div class="hx-bg"><div class="hx-img f0"></div><div class="hx-shade"></div></div><div class="hx-wrap"><div class="hx-site" style="cursor:default">Fire Hotspot</div><p class="hx-meta">Memuat data…</p></div></div>';return;}
   let st={txt:'–',inside:0,near:0,r25:0,lvl:'ok'};try{st=siteStatus(SI);}catch(e){}
-  const F=(FC&&FC.lokasi&&FC.lokasi[SITE.id])||{},KL=(FC&&FC.kelas)||['Rendah','Sedang','Tinggi','Ekstrem'],H=(F.hari||[])[0],lv=F.hari&&F.hari.length?Math.max(...F.hari.slice(0,7).map(h=>h.level||0)):null;
+  const F=(FC&&FC.lokasi&&FC.lokasi[SITE.id])||{},KL=(FC&&FC.kelas)||['Rendah','Sedang','Tinggi','Ekstrem'],HR=(F.hari||[]).slice(0,7),H=HR[0],lv=H?H.level||0:null;
   const u=F.udara&&F.udara.sekarang,un=u?(F.udara.kategori_nama||[])[u.kategori]:null,last=ALL.reduce((m,p)=>p.when>m?p.when:m,0);
-  const LC=['#4ADE80','#FACC15','#FB923C','#EF4444'],SC={ok:'#4ADE80',warn:'#FACC15',crit:'#EF4444'},n1=x=>(+x).toLocaleString('id-ID',{maximumFractionDigits:1});
-  el.innerHTML=`<div class="hub-hero"><div class="hub-k"><b>${esc(greet())}</b><span>${last?'NASA FIRMS · '+new Date(last).toLocaleString('id-ID',{timeZone:'Asia/Jakarta',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+' WIB':''}</span></div>
-    <button class="hub-site" data-hub="pilih">${esc(SITE.hd_nama)} <span>▾</span></button>
-    ${H?`<div class="hub-wx">${wxIkon(H.kode_cuaca,H.hujan)}<div><strong>${n1(H.tmaks)}°<small> / ${n1(H.tmin)}°</small></strong><span>${esc(H.cuaca)} · hujan ${n1(H.hujan)} mm</span>
-      <span class="hub-wind"><svg viewBox="0 0 40 14" width="34" height="12"><path class="a-flow" d="M1 4h26a4 4 0 1 0-4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="a-flow d2" d="M1 10h32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>angin maks ${n1(H.angin_maks)} km/jam</span></div></div>`:''}
-    <div class="hub-kpi"><div><small>Status 7 hari</small><strong><i style="background:${SC[st.lvl]||'#4ADE80'}"></i>${esc(st.txt)}</strong></div>
-      <div><small>Titik panas ≤25 km</small><strong>${st.r25}</strong></div>
-      <div><small>Bahaya kebakaran</small><strong>${lv==null?'–':`<i style="background:${LC[lv]}"></i>${esc(KL[lv])}`}</strong></div>
-      <div><small>PM2.5 · µg/m³</small><strong>${u?Math.round(u.pm25):'–'}<span style="font-size:12px;font-weight:600;opacity:.75"> ${u?esc(un||''):''}</span></strong></div></div></div>
-    ${(window.FHTim&&FHTim.admin()?[['Admin',[['tim','Tim lapangan','#38BDF8','#1D4ED8']]],...HUB_G]:HUB_G).map(([g,L])=>`<div class="hub-h">${g}</div><div class="hub-grid">${L.map(([k,n,c1,c2])=>`<button class="hub-t" data-hub="${k}"><span class="ic3" style="--c1:${c1};--c2:${c2}">${IC[k]}</span>${n}</button>`).join('')}</div>`).join('')}`;
-  el.querySelectorAll('[data-hub]').forEach(b=>b.onclick=()=>b.dataset.hub==='pilih'?chooser(true):hubGo(b.dataset.hub));}
+  const LC=['#4ADE80','#FACC15','#FB923C','#EF4444'],SC={ok:'#34D399',warn:'#FACC15',crit:'#EF4444'},n1=x=>(+x).toLocaleString('id-ID',{maximumFractionDigits:1});
+  const sp=hubSpark(SI),spm=Math.max(1,...sp),tot14=sp.reduce((a,b)=>a+b,0);
+  const ST={ok:`Tidak ada titik panas di dalam atau ≤5 km dari Hutan Desa dalam 7 hari terakhir.`,warn:`${st.near} titik panas ≤5 km dari Hutan Desa dalam 7 hari terakhir.`,crit:`${st.inside} titik panas di dalam Hutan Desa dalam 7 hari terakhir.`}[st.lvl];
+  const jam=()=>new Date().toLocaleTimeString('id-ID',{timeZone:'Asia/Jakarta',hour:'2-digit',minute:'2-digit'})+' WIB';
+  const hari=t=>new Date(t+'T12:00:00+07:00').toLocaleDateString('id-ID',{weekday:'short',timeZone:'Asia/Jakarta'});
+  const admin=window.FHTim&&FHTim.admin(), G=admin?[HUB_ADMIN,...HUB_G]:HUB_G; let ii=0; const I=(x='')=>`style="--i:${ii++};${x}"`;
+  const kpi=(k,t,v,sub,extra)=>`<button class="hx-kpi hx-glass hx-in" data-hub="${k}" ${I()}><small>${t}</small><strong>${v}</strong>${extra||''}<span class="k-sub">${sub}</span></button>`;
+  const pm=u?Math.round(u.pm25):null;
+  el.innerHTML=`<div class="hx-stage"><div class="hx-bg" aria-hidden="true"><div class="hx-img f0"></div><div class="hx-glow"></div><div class="hx-shade"></div></div><div class="hx-dots" aria-hidden="true"></div>
+   <div class="hx-wrap"><div class="hx-top">
+    <div class="hx-hero hx-in" ${I()}>
+      <div class="hx-eye"><span>${esc(greet())}</span><span class="hx-live"><i></i><span id="hxClock">${jam()}</span></span></div>
+      <button class="hx-site" data-hub="pilih" aria-label="Ganti Hutan Desa">${esc(SITE.hd_nama)}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="hx-meta">${esc([SITE.lphd,SITE.kec?'Kec. '+SITE.kec:'','Kapuas Hulu, Kalimantan Barat'].filter(Boolean).join(' · '))}${SITE.luas_hd_ha?` · ${n1(SITE.luas_hd_ha)} ha`:''}</div>
+      <div class="hx-status" style="--sc:${SC[st.lvl]||SC.ok}"><span class="hx-ring"><i></i></span><span><b>Status ${esc(st.txt)}</b><small>${ST}</small></span></div>
+      <div class="hx-cta"><button class="hx-btn pri" data-hub="peta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Buka peta</button><button class="hx-btn" data-hub="cuaca"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 11.1 3.5 3.5 0 0 0 7 18z"/></svg>Prakiraan</button><button class="hx-btn" data-hub="laporan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>Buat laporan</button></div>
+    </div>
+    ${H?`<button class="hx-wx hx-glass hx-in" data-hub="cuaca" ${I('color:#fff;cursor:pointer')}><div class="hx-wx-h"><span>Cuaca hari ini</span><span>BMKG · ECMWF</span></div>
+      <div class="hx-wx-now">${wxIkon(H.kode_cuaca,H.hujan)}<div><strong>${n1(H.tmaks)}°<small> / ${n1(H.tmin)}°</small></strong><span>${esc(H.cuaca)}</span><span>Hujan ${n1(H.hujan)} mm · angin maks ${n1(H.angin_maks)} km/jam</span></div></div>
+      <div class="hx-days">${HR.map(h=>`<div class="hx-day"><span>${esc(hari(h.tanggal))}</span>${wxIkon(h.kode_cuaca,h.hujan)}<b>${Math.round(h.tmaks)}°</b><i style="background:${LC[h.level||0]}" title="${esc(KL[h.level||0])}"></i></div>`).join('')}</div></button>`:''}
+   </div>
+   <div class="hx-kpis">
+    ${kpi('sebaran','Titik panas ≤25 km · 7 hari',`<span data-n="${st.r25}">${st.r25}</span>`,`${tot14} titik dalam 14 hari`,`<div class="hx-spark">${sp.map(v=>`<i class="${v?'on':''}" style="height:${Math.max(8,v/spm*100)}%"></i>`).join('')}</div>`)}
+    ${kpi('cuaca','Bahaya kebakaran hari ini',lv==null?'–':esc(KL[lv]),'Indeks FWI · 7 hari ke depan',`<div class="hx-lv">${HR.map(h=>`<i style="background:${LC[h.level||0]}"></i>`).join('')}</div>`)}
+    ${kpi('udara','Kualitas udara · PM2.5',pm==null?'–':`<span data-n="${pm}">${pm}</span><em>µg/m³</em>`,un?esc(un)+' · CAMS':'CAMS',pm==null?'':`<div class="hx-gauge"><b style="left:${Math.min(98,pm/250*100)}%"></b></div>`)}
+    ${kpi('hutan','Hutan tersisa di Hutan Desa','<span id="hxHut">–</span>','<span id="hxHutS">Hansen GFC 2001–2025</span>','<div class="hx-lv" id="hxHutB"></div>')}
+   </div></div></div>
+   ${G.map(([g,ds,L])=>{const im=HUB_IMG[g];const op=HUB_OPEN===g;return `<section class="hx-sec${op?' open':''}" data-g="${esc(g)}"><button type="button" class="hx-h hx-in${im?'':' plain'}" aria-expanded="${op}" ${I(im?`--img:url(assets/latar_${im[0]}_900.webp);--pos:${im[1]}`:'')}><b>${g}</b><span>${ds} · ${L.length} alat</span><svg class="chv" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="hx-acc"><div class="hx-grid">${L.map(([k,n,c1,c2])=>`<button class="hx-t hx-in" data-hub="${k}" ${I(`--c1:${c1};--c2:${c2}`)}><span class="hx-ic">${IC[k]||IC.grafik}</span><span class="hx-tx"><b>${n}</b><small data-sub="${k}">${HUB_SUB[k]||''}</small></span>${HUB_BARU.includes(k)?'<span class="hx-new">BARU</span>':''}</button>`).join('')}</div></div></section>`;}).join('')}
+   <div class="hx-foot"><span>${last?'NASA FIRMS · '+esc(new Date(last).toLocaleString('id-ID',{timeZone:'Asia/Jakarta',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))+' WIB':''}</span><span>Yayasan PRCF Indonesia · Fire Hotspot</span></div>`;
+  el.classList.toggle('anim',HUB_ANIM);HUB_ANIM=false;
+  el.querySelectorAll('[data-hub]').forEach(b=>b.onclick=()=>b.dataset.hub==='pilih'?chooser(true):hubGo(b.dataset.hub));
+  el.querySelectorAll('.hx-sec').forEach(sec=>{const h=sec.querySelector('.hx-h');h.onclick=()=>{const buka=!sec.classList.contains('open');
+    el.querySelectorAll('.hx-sec.open').forEach(x=>{x.classList.remove('open');x.querySelector('.hx-h').setAttribute('aria-expanded','false');});
+    if(buka){sec.classList.add('open');h.setAttribute('aria-expanded','true');HUB_OPEN=sec.dataset.g;setTimeout(()=>{const v=document.getElementById('v-dash'),r=sec.getBoundingClientRect();if(r.bottom>innerHeight-40||r.top<70)v.scrollBy({top:r.top-110,behavior:'smooth'});},320);}else HUB_OPEN=null;};});
+  /* nilai hidup di kartu */
+  const sub=(k,t)=>{const e=el.querySelector(`[data-sub="${k}"]`);if(e&&t){e.textContent=t;e.classList.add('v');}};
+  sub('peta',`${st.r25} titik ≤25 km · 7 hari`);if(H)sub('cuaca',`${n1(H.tmaks)}° · hujan ${n1(H.hujan)} mm`);if(pm!=null)sub('udara',`PM2.5 ${pm} · ${un||''}`);if(H)sub('angin',`maks ${n1(H.angin_maks)} km/jam`);
+  try{if(window.FHVerif)FHVerif.all().then(L=>{const n=(L||[]).filter(r=>!r.terkirim).length;if(n)sub('cek',`${n} laporan menunggu sinyal`);}).catch(()=>{});}catch(e){}
+  hubHutan(SITE.id).then(A=>{const h=A&&A.hutan;if(!h||!document.getElementById('hxHut'))return;$('#hxHut').innerHTML=`${n1(h.hutan_tersisa_2025_ha)}<em>ha</em>`;$('#hxHutS').textContent=`${n1(h.persen_hilang)}% hilang sejak 2000 · Hansen GFC`;
+    const ys=Object.entries(h.kehilangan_per_tahun_ha||{}).slice(-12),m=Math.max(.01,...ys.map(x=>x[1]));const hb=$('#hxHutB');if(hb)hb.outerHTML=`<div class="hx-spark">${ys.map(([y,v])=>`<i class="${v>0?'on':''}" title="${y}: ${n1(v)} ha" style="height:${Math.max(8,v/m*100)}%;${v>0?'background:#F87171':''}"></i>`).join('')}</div>`;
+    sub('hutan',`${n1(h.hutan_tersisa_2025_ha)} ha hutan tersisa`);if(A.karbon)sub('analisis',`Fluks bersih ${n1(A.karbon.fluks_bersih_per_tahun_tCO2e)} tCO₂e/thn`);});
+  hubSlide(el);
+  clearInterval(HUB_CLK);HUB_CLK=setInterval(()=>{const c=document.getElementById('hxClock');if(c)c.textContent=jam();else clearInterval(HUB_CLK);},20000);
+  if(el.classList.contains('anim'))el.querySelectorAll('[data-n]').forEach(e=>{const N=+e.dataset.n;if(!(N>1))return;const t0=performance.now();const f=t=>{const k=Math.min(1,(t-t0)/900);e.textContent=Math.round(N*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f);};requestAnimationFrame(f);});
+}
+/* ---------- sidebar website (layar lebar) ---------- */
+const SIDE_MAIN=[['dash','Beranda','#34D399','#047857','<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2l9 7.6V21a1 1 0 0 1-1 1h-5.5v-6.5h-5V22H4a1 1 0 0 1-1-1V10.8z"/></svg>'],['home','Peta','#3B82F6','#1E3A8A',null],['fc','Prakiraan','#60A5FA','#1D4ED8',null],['ai','Bara Api','#FB923C','#C2410C',null],['lap','Laporan','#A3A3A3','#404040',null]];
+const SIDE_ICK={home:'peta',fc:'cuaca',ai:'ai',lap:'laporan'};
+const SIDE_OPEN=new Set();
+function sideRender(){const el=$('#side');if(!el)return;const q=(el.querySelector('input')||{}).value||'';
+  const admin=window.FHTim&&FHTim.admin(),G=admin?[HUB_ADMIN,...HUB_G]:HUB_G,skip=['peta','cuaca','ai','laporan'];
+  const it=(v,k,n,c1,c2,ic,nb)=>`<button class="side-i" data-${v?'v':'k'}="${v||k}" style="--c1:${c1};--c2:${c2}"><span class="si">${ic||IC[SIDE_ICK[v]||k]||''}</span><span>${n}</span>${nb?'<span class="nb">BARU</span>':''}</button>`;
+  if(!el.dataset.on){el.dataset.on=1;el.innerHTML=`<label class="side-q"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" placeholder="Cari alat…" aria-label="Cari alat"></label><nav class="side-nav"></nav><div class="side-f"><a href="kebijakan-privasi.html">Kebijakan Privasi</a><a href="syarat.html">Syarat Penggunaan</a><span>© Yayasan PRCF Indonesia</span></div>`;
+    el.querySelector('input').oninput=()=>sideRender();}
+  const L=q.trim().toLowerCase(),m=n=>!L||n.toLowerCase().includes(L)||(window.FHLang&&String(FHLang.t(n)).toLowerCase().includes(L));
+  el.querySelector('.side-nav').innerHTML=`${SIDE_MAIN.filter(x=>m(x[1])).map(x=>it(x[0],null,x[1],x[2],x[3],x[4])).join('')}`+G.map(([g,ds,Li])=>{const R=Li.filter(x=>!skip.includes(x[0])&&m(x[1]));const op=!!L||SIDE_OPEN.has(g);return R.length?`<button type="button" class="side-g" data-g="${esc(g)}" aria-expanded="${op}"><span>${g}</span><small>${R.length}</small><svg class="chv" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="side-acc${op?' open':''}"><div>`+R.map(x=>it(null,x[0],x[1],x[2],x[3],null,HUB_BARU.includes(x[0]))).join('')+'</div></div>':'';}).join('')+`${m('Profil & pengaturan')?'<div class="side-g" style="cursor:default">Akun</div>'+it('info',null,'Profil & pengaturan','#94A3B8','#334155','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>'):''}`;
+  el.querySelectorAll('button.side-g').forEach(b=>b.onclick=()=>{const g=b.dataset.g;SIDE_OPEN.has(g)?SIDE_OPEN.delete(g):SIDE_OPEN.add(g);const op=SIDE_OPEN.has(g);b.setAttribute('aria-expanded',op);b.nextElementSibling.classList.toggle('open',op);});
+  el.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{closeAll();go(b.dataset.v);});
+  el.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{closeAll();setTimeout(()=>hubGo(b.dataset.k),closeAll.length?60:0);});
+  sideMark();}
+function sideMark(){const el=$('#side');if(!el)return;el.querySelectorAll('[data-v]').forEach(b=>b.toggleAttribute('aria-current',b.dataset.v===CUR));el.querySelectorAll('[aria-current]').forEach(b=>b.setAttribute('aria-current','page'));}
 /* ---------- catatan sumber/metode yang panjang: tampil 2 baris, ketuk untuk lengkap ---------- */
 function ringkasCatatan(root){(root||document).querySelectorAll('p,div,small,span').forEach(e=>{
   if(e.dataset.rk||e.closest('[data-norg],.bara-log,.hd-top,.hub,.pr-chips,table,svg,.leaflet-container,.maplibregl-map')||e.querySelector('button,input,select,textarea,table,svg,canvas,img,.card,.group'))return;
@@ -1552,36 +1711,46 @@ for(const g of $$('[data-for]'))for(const b of g.querySelectorAll('[data-v]'))b.
 window.addEventListener('load',()=>setTimeout(sync,50));
 
 /* ---------- start ---------- */
+try{sideRender();}catch(e){}
+{const AL=new URLSearchParams(location.search).get('alat');if(AL){let n=0;const t=setInterval(()=>{if(SITE||++n>40){clearInterval(t);if(SITE)try{hubGo(AL);}catch(e){}}},250);}}
 const h0=location.hash.replace('#','');go(views[h0]?h0:'dash');BOOT=false;
 load(true);setInterval(()=>{if(navigator.onLine)load();},10*60*1000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&STATUS&&Date.now()-new Date(STATUS.terakhir_cek_utc)>30*6e4)load();});
 if('serviceWorker' in navigator){const HAD=!!navigator.serviceWorker.controller;navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{});let RL=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(RL||!HAD)return;RL=true;location.reload();});}
 })();
 </script>
-<script src="assets/laporan.js?v=56"></script>
-<script src="assets/riwayat_cuaca.js?v=56"></script>
-<script src="assets/udara.js?v=56"></script>
-<script src="assets/musiman.js?v=56"></script>
-<script src="assets/wilayah.js?v=56"></script>
-<script src="assets/meteogram.js?v=56"></script>
-<script src="assets/cari_lokasi.js?v=56"></script>
-<script src="assets/lintasan.js?v=56"></script>
-<script src="assets/angin.js?v=56"></script>
-<script src="assets/kompas.js?v=56"></script>
-<script src="assets/titik_id.js?v=56"></script>
-<script src="assets/beranda.js?v=56"></script>
+<script src="assets/laporan.js?v=57"></script>
+<script src="assets/riwayat_cuaca.js?v=57"></script>
+<script src="assets/udara.js?v=57"></script>
+<script src="assets/musiman.js?v=57"></script>
+<script src="assets/wilayah.js?v=57"></script>
+<script src="assets/meteogram.js?v=57"></script>
+<script src="assets/cari_lokasi.js?v=57"></script>
+<script src="assets/lintasan.js?v=57"></script>
+<script src="assets/angin.js?v=57"></script>
+<script src="assets/kompas.js?v=57"></script>
+<script src="assets/titik_id.js?v=57"></script>
+<script src="assets/beranda.js?v=57"></script>
 <script>window.FH_VERIF_URL=window.FH_VERIF_URL||'https://script.google.com/macros/s/AKfycbwQz_--p7liI6ig1X6jsDCbdpElAJahItVrnVQqxkqBzLJLzvSJojk8eUSEHWzJgY-PoQ/exec';/* URL Apps Script penerima laporan verifikasi lapangan */</script>
-<script src="assets/verifikasi.js?v=56"></script>
-<script src="assets/luring.js?v=56"></script>
-<script src="assets/analisis.js?v=56"></script>
-<script src="assets/bara.js?v=56"></script>
-<script src="assets/peringatan.js?v=56"></script>
-<script src="assets/peta_ecmwf.js?v=56"></script>
-<script src="assets/lokasi_saya.js?v=56"></script>
-<script src="assets/peta3d.js?v=56"></script>
-<script src="assets/unduh.js?v=56"></script>
-<script src="assets/native.js?v=56"></script>
-<script src="assets/posisi.js?v=56"></script>
-<script src="assets/tim.js?v=56"></script>
+<script src="assets/verifikasi.js?v=57"></script>
+<script src="assets/luring.js?v=57"></script>
+<script src="assets/analisis.js?v=57"></script>
+<script src="assets/bara.js?v=57"></script>
+<script src="assets/peringatan.js?v=57"></script>
+<script src="assets/peta_ecmwf.js?v=57"></script>
+<script src="assets/lokasi_saya.js?v=57"></script>
+<script src="assets/peta3d.js?v=57"></script>
+<script src="assets/unduh.js?v=57"></script>
+<script src="assets/native.js?v=57"></script>
+<script src="assets/posisi.js?v=57"></script>
+<script src="assets/tim.js?v=57"></script>
+<script src="assets/alat.js?v=57"></script>
+<script src="assets/patroli.js?v=57"></script>
+<script src="assets/tindak.js?v=57"></script>
+<script src="assets/admin.js?v=57"></script>
+<script src="assets/indikator.js?v=57"></script>
+<script src="assets/model_klhk.js?v=57"></script>
+<script src="assets/karbon.js?v=57"></script>
+<script src="assets/tutupan.js?v=57"></script>
 </body>
 </html>

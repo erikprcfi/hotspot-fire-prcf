@@ -140,6 +140,7 @@ async function buildModel(a, b, wilKey, sensor) {
   M.title = `Laporan Titik Panas ${W.nama}`;
   M.periodeTxt = `${tglID(a)} – ${tglID(b)}`;
   M.summary = summary(M); M.weatherTxt = weatherText(M);
+  try { M.karbon = window.FHKarbon && SITE ? await FHKarbon.ringkas(SITE.id, +a.slice(0, 4), +b.slice(0, 4)) : null; } catch (e) { M.karbon = null; }
   M.ex = await extras(M); M.summary.push(...extraSummary(M)); M.checks = verify(M); M.dibuat = new Date().toLocaleString('id-ID');
   return M;
 }
@@ -479,6 +480,13 @@ function extraBlocks(M) {
     if (AN) { b.p.push(`Desa/kelurahan yang beririsan dengan batas (batas BPS/BIG, OCHA COD-AB 2020; nama Kepmendagri No. 300.2.2-2430 Tahun 2025).`);
       for (const [nm, A] of Z) if (A.wilayah && A.wilayah.length) b.t.push({ cap: nm, rows: [['Desa/Kelurahan', 'Kecamatan', 'Kabupaten/Kota', 'Provinsi', '% desa tercakup'], ...A.wilayah.slice(0, 15).map(w => [w.desa, w.kec, w.kab, w.prov, fmt1(w.persen_desa_tercakup)])] }); }
     B.push(b); }
+  B[7] = null;
+  if (M.karbon) { const K = M.karbon, b = { h: `Emisi karbon hutan metode FREL (${K.periode})`, p: [], t: [] };
+    b.p.push(`Perhitungan beda stok sesuai templat perhitungan karbon PRCF: Emisi (Mg CO2) = [luas deforestasi × (stok hutan − stok lahan terdeforestasi) + luas degradasi × (stok primer − stok sekunder)] × 44/12, kepadatan karbon FREL 2022. Tahun data aktivitas: ${K.y0}–${K.y1} (tahun kalender laporan).`);
+    b.p.push(`Deforestasi ${fmt1(K.defo)} ha, degradasi ${fmt1(K.degr)} ha; kehilangan tutupan pohon di areal bukan hutan ${fmt1(K.nh)} ha (tidak dihitung sebagai emisi). Emisi skenario awal ${fmt(Math.round(K.emisi_thn))} Mg CO2 (ΣK × 44/12); manfaat iklim ${fmt(Math.round(K.manfaat_thn))} Mg CO2/thn; sertifikat dapat dijual ${fmt(Math.round(K.jual_thn))} Mg CO2/thn; luas hutan terlindungi ${fmt1(K.terlindungi)} ha.`);
+    b.t.push({ cap: 'Luas & pengurangan cadangan karbon per tipe hutan (sheet Awal)', rows: [['Tipe hutan', `Luas ${K.y0} (ha)`, 'Deforestasi (ha)', 'Degradasi (ha)', `Luas ${K.y1} (ha)`, 'Pengurangan C (Mg C)'], ...K.baris.map(r => [r[0], fmt1(r[1]), r[2].toFixed(4).replace('.', ','), r[3].toFixed(4).replace('.', ','), fmt1(r[4]), fmt1(r[5])])],
+      note: 'Rincian lengkap (Parameter, Awal, Manfaat, per hektare) dan berkas Excel dengan rumus hidup tersedia di menu Emisi karbon (FREL). ' + K.metode.slice(0, 3).join(' ') });
+    B[7] = b; }
   return B;
 }
 function kpis(M) {
@@ -516,6 +524,7 @@ function preview(M, F, T) {
   ${h(`Kejadian api di desa & radius 5 km (${M.events.length})`)}${T.ev.length > 1 ? htmlTable(T.ev, 15) : '<p>Tidak ada kejadian.</p>'}
   ${blk(XB[1])}${blk(XB[2])}
   ${XB[3] ? blk(XB[3]) + (F.lc ? img(F.lc) : '') + blk(XB[4]) + (F.em ? img(F.em) : '') + blk(XB[5]) + blk(XB[6]) : ''}
+  ${XB[7] ? blk(XB[7]) : ''}
   <h4>Lampiran A. Detail deteksi di desa & radius 5 km (${M.near.length})</h4>${T.detail.length > 1 ? htmlTable(T.detail, 30) : '<p>Tidak ada deteksi.</p>'}
   <h4>Lampiran B. Verifikasi data</h4>${htmlTable(T.cek)}
   <h4>Lampiran C–D. Kamus data, sumber data & jejak audit</h4><p class="rp-note">Lihat file PDF/Word.</p></div>`;
@@ -576,6 +585,7 @@ async function exportPDF(M, F, T) {
   if (T.ev.length > 1) { if (M.events.length > CAP_EVENTS) P(`Ditampilkan ${CAP_EVENTS} kejadian (diurutkan dari zona terdekat). Seluruh kejadian ada di file CSV.`, 8.5, MUTED); TAB(T.ev, 7); } else P('Tidak ada kejadian pada periode ini.');
   BLK(XB[1]); BLK(XB[2]);
   if (XB[3]) { BLK(XB[3]); if (F.lc) IMGp(F.lc, CW); BLK(XB[4]); if (F.em) IMGp(F.em, CW); BLK(XB[5]); BLK(XB[6]); }
+  if (XB[7]) BLK(XB[7]);
   doc.addPage('a4', 'landscape'); y = 24; const ML2 = 12;
   TOC.push([`Lampiran A. Detail deteksi di Hutan Desa, desa & radius 5 km (${M.near.length})`, doc.getNumberOfPages()]);
   doc.setFont('helvetica', 'bold'); doc.setFontSize(12.5); doc.setTextColor(HEAD); doc.text(pdfTxt(TOC[TOC.length - 1][0]), ML2, y); y += 5;
@@ -639,6 +649,7 @@ async function exportDOCX(M, F, T) {
   if (T.ev.length > 1) { if (M.events.length > CAP_EVENTS) main.push(P(`Ditampilkan ${CAP_EVENTS} kejadian (zona terdekat lebih dulu). Seluruh kejadian ada di file CSV.`, { size: 17, color: '5B6A61' })); main.push(TB(T.ev, 14)); } else main.push(P('Tidak ada kejadian pada periode ini.'));
   main.push(...BLKd(XB[1]), ...BLKd(XB[2]));
   if (XB[3]) { main.push(...BLKd(XB[3])); if (F.lc) main.push(await img(F.lc, 16.5)); main.push(...BLKd(XB[4])); if (F.em) main.push(await img(F.em, 16.5)); main.push(...BLKd(XB[5]), ...BLKd(XB[6])); }
+  if (XB[7]) main.push(...BLKd(XB[7]));
   const app = [H(`Lampiran A. Detail deteksi di Hutan Desa, desa & radius 5 km (${M.near.length})`, false)]; if (T.detailNote) app.push(P(T.detailNote, { size: 17, color: '5B6A61' }));
   app.push(T.detail.length > 1 ? TB(T.detail, 13) : P('Tidak ada deteksi pada periode ini.'));
   const end = [H('Lampiran B. Verifikasi data', false), P('Pemeriksaan konsistensi otomatis atas data yang masuk ke laporan ini, dijalankan saat laporan dibuat.', { size: 17, color: '5B6A61' }), TB(T.cek, 16, true),
