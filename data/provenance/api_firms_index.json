@@ -1,7 +1,7 @@
 {
  "VIIRS_SNPP_2026": {
   "sp_sampai": "2026-07-31",
-  "nrt_sampai": "2026-10-31"
+  "nrt_sampai": "2026-11-01"
  },
  "VIIRS_NOAA20_2026": {
   "sp_sampai": "2026-07-31",
@@ -15,5 +15,5 @@
   "sp_sampai": "2026-08-31",
   "nrt_sampai": "2026-11-01"
  },
- "diperbarui_utc": "2026-11-01T06:05:18Z"
+ "diperbarui_utc": "2026-11-01T13:25:12Z"
 }
