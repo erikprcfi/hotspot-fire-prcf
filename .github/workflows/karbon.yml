@@ -1,0 +1,56 @@
+name: Tutupan lahan KLHK & emisi karbon FREL
+
+on:
+  schedule:
+    - cron: "37 4 5 * *"   # bulanan: peta KLHK & data Hansen tahunan baru
+  workflow_dispatch:
+    inputs:
+      hanya_klhk:
+        description: "Hanya unduh peta KLHK (tanpa hitung ulang karbon)"
+        required: false
+        default: "tidak"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: karbon-frel
+  cancel-in-progress: false
+
+jobs:
+  karbon:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Cache arsip FIRMS
+        uses: actions/cache@v4
+        with:
+          path: /tmp/firms_cache
+          key: firms-indonesia-2016-2025-v1
+      - name: Pasang pustaka
+        run: pip install shapely==2.0.6 pyproj==3.7.0 rasterio==1.4.3 numpy
+      - name: Unduh peta penutupan lahan resmi KLHK
+        run: python scripts/tutupan_klhk.py
+      - name: Hitung ulang analisis lahan & emisi karbon FREL (6 Hutan Desa)
+        if: github.event.inputs.hanya_klhk != 'ya'
+        run: python scripts/karbon_lahan.py
+      - name: Uji perhitungan karbon (rumus templat PRCF & konsistensi data)
+        if: github.event.inputs.hanya_klhk != 'ya'
+        run: python scripts/uji_karbon.py
+      - name: Simpan
+        run: |
+          git config user.name "pantau-api-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/klhk data/analisis
+          if git diff --cached --quiet; then echo "Tidak ada perubahan"; exit 0; fi
+          git commit -m "Tutupan lahan KLHK & emisi karbon FREL $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do
+            git push && exit 0
+            git pull --no-rebase --no-edit -X ours origin main || true
+            sleep 5
+          done
+          exit 1
