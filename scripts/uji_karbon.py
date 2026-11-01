@@ -145,6 +145,28 @@ try:
     for k, v in hasilpy.items(): cek(f"emisi {k} Python vs aplikasi", J.get(k, -1), v, 1e-9)
 except FileNotFoundError: pass
 print(f"4. Model tutupan lahan tahunan KLHK + emisi per periode ({len(hasilpy)} kombinasi lokasi×periode): {'LULUS' if len(gagal) == n0 else 'GAGAL'}")
+# 5. Data per Hutan Desa terpisah: tiap berkas hanya memuat Hutan Desa itu sendiri (tidak ada angka gabungan 6 HD)
+n0 = len(gagal); GEO = json.load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "geo.json")))
+for s_ in GEO["sites"]:
+    p_ = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "analisis", f"{s_['id']}_hd.json")
+    if not os.path.exists(p_): gagal.append(f"{s_['id']}: berkas analisis tidak ada"); continue
+    R_ = json.load(open(p_)); F_ = R_.get("emisi_frel") or {}
+    if R_.get("nama") != s_["hd_nama"]: gagal.append(f"{s_['id']}: nama berkas {R_.get('nama')} ≠ {s_['hd_nama']}")
+    for t_, K_ in (F_.get("tutupan_klhk_ha") or {}).items():
+        if abs(sum(K_.values()) - R_["luas_ha"]) > max(0.5, R_["luas_ha"] * 0.002): gagal.append(f"{s_['id']} {t_}: luas KLHK {sum(K_.values()):.2f} ≠ luas HD {R_['luas_ha']}")
+    for t_, Y_ in (F_.get("hilang_kode_ha") or {}).items():
+        tot_ = sum(sum(v.values()) for v in Y_.values())
+        if tot_ > R_["luas_ha"] * 1.001: gagal.append(f"{s_['id']}: kehilangan {tot_:.2f} ha > luas HD")
+print(f"5. Data terpisah per Hutan Desa ({len(GEO['sites'])} HD, tanpa angka gabungan): {'LULUS' if len(gagal) == n0 else 'GAGAL'}")
+# 6. Peta tutupan lahan tahunan (unduhan SHP) = model tahunan KLHK (tabel alat) untuk tiap Hutan Desa & tiap tahun
+n0 = len(gagal)
+try:
+    r = subprocess.run(["node", os.path.join(ROOT, "scripts", "uji", "tutupan_shp.js"), ROOT], capture_output=True, text=True, timeout=300)
+    if r.returncode: gagal.append("node SHP: " + r.stderr[:300])
+    else:
+        J6 = json.loads(r.stdout.strip().splitlines()[-1]); gagal += J6["gagal"]
+        print(f"6. Peta SHP tahunan vs model ({J6['uji']} pemeriksaan kelas×tahun×HD, selisih maks {J6['maks']:.2f} ha – garis poligon vs piksel 30 m): {'LULUS' if len(gagal) == n0 else 'GAGAL'}")
+except FileNotFoundError: pass
 if gagal:
     print("\n".join(gagal[:50])); sys.exit(1)
 print("SEMUA UJI LULUS")

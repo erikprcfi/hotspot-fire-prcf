@@ -87,23 +87,27 @@ function peta(el, garis, titik) {
   if (B.length) m.fitBounds(L.latLngBounds(B).pad(.2), { maxZoom: 16 }); else { const s = window.FHSiteObj && FHSiteObj(); m.setView(s && s.pusat ? s.pusat : [0.96, 112.6], 12); }
   MAPS.push(m); setTimeout(() => m.invalidateSize(), 300); return m;
 }
+/* temuan milik Hutan Desa yang sedang dibuka: kolom hd sama; temuan lama tanpa kolom hd → Hutan Desa dengan pusat terdekat */
+function diHD(t) { const s = window.FHSiteObj && FHSiteObj(); if (!s) return true; if (t.hd) return t.hd === s.hd_nama;
+  const S = window.FHSites ? FHSites() : [s], J = x => x.pusat ? X().jarak(t.la, t.lo, x.pusat[0], x.pusat[1]) : 1e9; return S.reduce((a, b) => J(b) < J(a) ? b : a, s).id === s.id; }
 async function daftar(box) {
   const A = X(); box.innerHTML = '<div class="fa"><div class="fa-card"><p class="fa-note">Memuat temuan…</p></div></div>';
   const lokal = (await Q().all().catch(() => [])).map(r => Object.assign({ t: r.data.waktu_ms, nfoto: r.nfoto, lokal: !r.terkirim }, r.data));
   let srv = [], admin = false, semua = box.dataset.semua === '1', galat = '';
   if (A.akun()) { try { const j = await A.api({ aksi: 'patroli_daftar', semua: semua ? 1 : 0 }, 30000); if (j.ok) { srv = j.temuan || []; admin = j.admin; } else galat = j.galat; } catch (e) { galat = 'Tidak ada koneksi – menampilkan temuan di HP ini.'; } }
   const peta_ = {}; srv.forEach(t => peta_[t.uid] = t); lokal.forEach(t => { if (!peta_[t.uid] || t.lokal) peta_[t.uid] = Object.assign({}, peta_[t.uid] || {}, t); });
-  const L_ = Object.values(peta_).sort((a, b) => b.t - a.t), per = {}; L_.forEach(t => per[t.jenis] = (per[t.jenis] || 0) + 1);
+  const HDN = window.FHSiteNama ? FHSiteNama() : '', L_ = Object.values(peta_).filter(diHD).sort((a, b) => b.t - a.t), per = {}; L_.forEach(t => per[t.jenis] = (per[t.jenis] || 0) + 1);
   box.innerHTML = `<div class="fa">
    ${admin ? `<div class="fa-tabs" style="position:static"><button data-s="0" aria-selected="${!semua}">Temuan saya</button><button data-s="1" aria-selected="${semua}">Semua tim (admin)</button></div>` : ''}
    ${galat ? `<p class="fa-err">${esc(galat)}</p>` : ''}
+   <p class="fa-note">Hanya temuan di ${esc(HDN || 'Hutan Desa ini')}. Ganti Hutan Desa di Beranda untuk melihat lokasi lain.</p>
    <div class="fa-kpi"><div><small>Total temuan</small><b>${L_.length}</b></div><div><small>30 hari terakhir</small><b>${L_.filter(t => Date.now() - t.t <= 30 * 864e5).length}</b></div><div><small>Menunggu sinyal</small><b>${L_.filter(t => t.lokal).length}</b></div><div><small>Jenis temuan</small><b>${Object.keys(per).length}</b></div></div>
    <div class="fa-map" id="pMap"></div>
    <div class="fa-row"><button class="fa-btn" id="pCsv">Unduh CSV</button><button class="fa-btn" id="pGeo">Unduh GeoJSON</button></div>
    <div class="fa-card"><div class="fa-list">${L_.length ? L_.slice(0, 300).map(t => `<div class="fa-it"><span class="d" style="background:${WARNA[t.jenis] || '#999'}"></span><span class="m"><b>${esc(t.jenis)}</b><small>${esc([t.rincian, t.jumlah, t.spesies].filter(Boolean).join(' · '))}</small><small>${esc(A.wib(t.t))} · ${t.la.toFixed(5)}, ${t.lo.toFixed(5)}${t.pelapor ? ' · ' + esc(t.pelapor) : ''} · ${t.nfoto || 0} foto</small></span><span class="fa-pill" style="background:${t.lokal ? '#FEF3C7' : '#DCFCE7'};color:${t.lokal ? '#92400E' : '#166534'}">${t.lokal ? 'Menunggu sinyal' : 'Terkirim ✓'}</span></div>`).join('') : '<p class="fa-note">Belum ada temuan. Catat temuan pertama di tab "Catat temuan".</p>'}</div></div></div>`;
   box.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { box.dataset.semua = b.dataset.s; daftar(box); });
   setTimeout(() => peta(box.querySelector('#pMap'), [], L_), 60);
-  const nama = A.EN() ? 'patrol_findings' : 'temuan_patroli', H = ['waktu_wib', 'jenis', 'rincian', 'jumlah', 'nama_jenis', 'tindakan', 'catatan', 'lintang', 'bujur', 'hutan_desa', 'pelapor', 'jumlah_foto'];
+  const nama = (A.EN() ? 'patrol_findings_' : 'temuan_patroli_') + String(HDN).replace(/^Hutan Desa\s*/, '').replace(/\W+/g, '_'), H = ['waktu_wib', 'jenis', 'rincian', 'jumlah', 'nama_jenis', 'tindakan', 'catatan', 'lintang', 'bujur', 'hutan_desa', 'pelapor', 'jumlah_foto'];
   const row = t => [A.wib(t.t), t.jenis, t.rincian, t.jumlah, t.spesies, t.tindakan, t.catatan, t.la, t.lo, t.hd, t.pelapor || '', t.nfoto || 0];
   const tr = v => A.EN() && window.FHLang ? FHLang.t(String(v ?? '')) : v;
   box.querySelector('#pCsv').onclick = () => { A.dl(new Blob([A.csv([H.map(h => A.EN() && window.FHLang ? FHLang.kolom(h) : h), ...L_.map(t => row(t).map(tr))])], { type: 'text/csv' }), nama + '.csv'); A.pakai('patroli_unduh'); };
@@ -141,7 +145,7 @@ async function rekap(box) {
     try { const [j, t] = await Promise.all([A.api({ aksi: 'posisi_jalur', target, dari, sampai: smp }, 60000), A.api({ aksi: 'patroli_daftar', dari, sampai: smp, semua: target !== u.id ? 1 : 0 }, 30000).catch(() => null)]);
       if (!j.ok) { out.innerHTML = `<div class="fa-card"><p class="fa-err">${esc(j.galat || 'Gagal')}</p></div>`; return; }
       const nama = target === u.id ? u.nama : (TIM.find(x => x.id === target) || {}).nama || '';
-      const tem = t && t.ok ? (t.temuan || []).filter(x => target === u.id || x.pelapor === nama) : [];
+      const tem = t && t.ok ? (t.temuan || []).filter(x => (target === u.id || x.pelapor === nama) && diHD(x)) : [];
       const R = Object.assign(olah(j.titik || [], tem), { nama, dari, smp, hd: window.FHSiteNama ? FHSiteNama() : '' });
       tampil(out, R); A.pakai('patroli_rekap');
     } catch (e) { out.innerHTML = '<div class="fa-card"><p class="fa-err">Tidak ada koneksi. Rekap memerlukan internet.</p></div>'; }

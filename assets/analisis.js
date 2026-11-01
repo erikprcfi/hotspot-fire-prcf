@@ -309,14 +309,15 @@ function mount(el, o = {}) {
   const base = o.base || '';
   const akun = () => o.mode === 'web' ? WS.get() : (o.akun ? o.akun() : null);
   el.innerHTML = `<div class="fan"><div class="fan-hero"><h2>Analisis lahan, hutan & karbon</h2><p>Analisis area dengan data resmi University of Maryland (Hansen/GLAD) &amp; Harris dkk.: tutupan lahan 2000–2020, perubahan hutan 2001–2025, emisi & serapan karbon, stok karbon, titik panas. Data resmi, dihitung dari raster aslinya.</p></div>
-    <div class="fan-card"><h3>Area dampingan PRCF</h3><div class="fan-list" data-pr><p class="mut">Memuat…</p></div></div>
+    <div class="fan-card"><h3>${o.situs ? 'Hutan Desa & desa ini' : 'Area dampingan PRCF'}</h3><div class="fan-list" data-pr><p class="mut">Memuat…</p></div></div>
     <div class="fan-card"><h3>Unggah SHP area Anda</h3><p class="mut">Format <b>.zip</b> berisi .shp, .shx, .dbf dan .prj (WGS 1984 atau UTM), tipe poligon, luas maks. 250.000 ha, di Indonesia. Hanya untuk pengguna dengan email terverifikasi; setiap unggahan tercatat atas nama Anda.</p><div data-up style="margin-top:10px"></div></div>
     <div class="fan-card"><h3>Analisis saya</h3><div class="fan-list" data-my><p class="mut">Masuk untuk melihat.</p></div></div>
     <div data-vw hidden></div></div>`;
   const $ = s => el.querySelector(s), main = el.querySelector('.fan');
   const open = R => { const v = $('[data-vw]'); [...main.children].forEach(c => { if (c !== v) c.hidden = true; }); v.hidden = false; viewer(v, R, () => { v.hidden = true; v.innerHTML = ''; [...main.children].forEach(c => { if (c !== v) c.hidden = false; }); el.scrollIntoView({ block: 'start' }); }); el.scrollIntoView({ block: 'start' }); };
   fetch(base + 'data/analisis/indeks.json', { cache: 'no-cache' }).then(r => r.json()).then(J => {
-    $('[data-pr]').innerHTML = J.area.map(a => `<button data-id="${esc(a.id)}"><span><b>${esc(a.nama)}</b><small>${N(a.luas_ha, 1)} ha</small></span><span>›</span></button>`).join('');
+    const AR = o.situs ? J.area.filter(a => String(a.id).startsWith(o.situs + '_')) : J.area;
+    $('[data-pr]').innerHTML = AR.map(a => `<button data-id="${esc(a.id)}"><span><b>${esc(a.nama)}</b><small>${N(a.luas_ha, 1)} ha</small></span><span>›</span></button>`).join('');
     $('[data-pr]').querySelectorAll('button').forEach(b => b.onclick = async () => { b.disabled = true; try { open(await (await fetch(base + `data/analisis/${b.dataset.id}.json`)).json()); } catch (e) { alert('Gagal memuat (perlu internet).'); } b.disabled = false; });
   }).catch(() => { $('[data-pr]').innerHTML = '<p class="mut">Gagal memuat daftar (perlu internet).</p>'; });
   async function myList() {

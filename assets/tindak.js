@@ -79,7 +79,7 @@ async function tampil(w, filt) {
   w.querySelector('#tlCsv').onclick = () => { const H = ['waktu_deteksi_wib', 'satelit', 'lintang', 'bujur', 'jarak_hutan_desa_km', 'status', 'petugas', 'ditugaskan_wib', 'dicek_wib', 'ditangani_wib', 'selesai_wib', 'catatan'];
     const tr = v => A.EN() && window.FHLang ? FHLang.t(String(v ?? '')) : v;
     const R = L.map(p => { const v = D.status[p.k] || {}, w2 = v.w || {}; return [A.wib(p.when), sat(p), p.la, p.lo, p.ls[si], S(p.k), v.p || '', w2.tugas || '', w2.cek || '', w2.tangani || '', w2.selesai || '', v.c || ''].map(tr); });
-    A.dl(new Blob([A.csv([H.map(h => A.EN() && window.FHLang ? FHLang.kolom(h) : h), ...R])], { type: 'text/csv' }), (A.EN() ? 'fire_follow_up' : 'tindak_lanjut') + '.csv'); };
+    A.dl(new Blob([A.csv([H.map(h => A.EN() && window.FHLang ? FHLang.kolom(h) : h), ...R])], { type: 'text/csv' }), (A.EN() ? 'fire_follow_up_' : 'tindak_lanjut_') + String(window.FHSiteNama ? FHSiteNama() : '').replace(/^Hutan Desa\s*/, '').replace(/\W+/g, '_') + '.csv'); };
 }
 window.FHTindak = { open, ubah, status, ST };
 })();

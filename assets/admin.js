@@ -24,6 +24,7 @@ async function isi(w) {
   const P = D.pengguna, n1 = A.n1, r = D.respon_jam;
   w.innerHTML = `<div class="fa-kpi"><div><small>Akun aktif</small><b>${n1(P.aktif, 0)}</b></div><div><small>Aktif 24 jam</small><b>${n1(P.a1, 0)}</b></div><div><small>Aktif 7 hari</small><b>${n1(P.a7, 0)}</b></div><div><small>Aktif 30 hari</small><b>${n1(P.a30, 0)}</b></div></div>
    <div class="fa-kpi"><div><small>Online sekarang</small><b>${n1(P.online, 0)}</b></div><div><small>Total membuka aplikasi</small><b>${n1(P.buka, 0)}</b></div><div><small>Akun diblokir</small><b>${n1(P.diblokir, 0)}</b></div><div><small>Akun dihapus pengguna</small><b>${n1(P.dihapus, 0)}</b></div></div>
+   <div class="fa-card" id="adU"></div>
    <div class="fa-2"><div class="fa-card"><h4>Pendaftar per bulan</h4>${kolom(D.daftar_bulanan, '#1E7A58')}</div><div class="fa-card"><h4>Fitur dibuka per hari (30 hari)</h4>${kolom(D.fitur_harian, '#6366F1')}</div></div>
    <div class="fa-2"><div class="fa-card"><h4>Fitur paling sering dipakai (30 hari)</h4>${bars((D.fitur || []).slice(0, 15), '#6366F1', k => NAMA[k] || k)}</div>
     <div class="fa-card"><h4>Perangkat</h4>${bars(D.perangkat || [], '#0EA5E9')}<h4 style="margin-top:14px">Versi aplikasi</h4>${bars(D.versi || [], '#64748B')}</div></div>
@@ -35,7 +36,29 @@ async function isi(w) {
    <div class="fa-kpi"><div><small>Pertanyaan Bara Api (30 hari)</small><b>${n1(D.bara30, 0)}</b></div><div><small>Analisis SHP (30 hari)</small><b>${n1(D.analisis30, 0)}</b></div></div>
    <p class="fa-note">Diperbarui ${esc(A.wib(D.dibuat))}. Pemakaian fitur dihitung per hari tanpa identitas pengguna (UU 27/2022). Data lengkap ada di Google Sheets database pengguna PRCF.</p>
    <button class="fa-btn" id="adR">Muat ulang</button>`;
+  akun(w.querySelector('#adU'), D);
   w.querySelector('#adR').onclick = () => { w.innerHTML = '<div class="fa-card"><p class="fa-note">Memuat…</p></div>'; isi(w); };
+}
+/* v10: siapa saja akun aktif – nama, email, Hutan Desa dipantau, terakhir aktif, online, perangkat, versi (tanpa tanggal lahir, alamat & nomor HP) */
+function akun(box, D) {
+  const A = X(), L = D.daftar_pengguna;
+  if (!L) { box.innerHTML = '<h4>Daftar akun</h4><p class="fa-note">Nama akun tampil setelah kode Apps Script v10 ditempel (Deploy → Kelola deployment → Edit → Versi baru).</p>'; return; }
+  const now = Date.now(), H = 864e5, F = { semua: () => true, a1: u => u.status === 'Aktif' && now - u.aktif_ms <= H, a7: u => u.status === 'Aktif' && now - u.aktif_ms <= 7 * H, a30: u => u.status === 'Aktif' && now - u.aktif_ms <= 30 * H, online: u => u.online, blokir: u => u.status === 'Diblokir' };
+  const NM = { semua: 'Semua akun aktif', a1: 'Aktif 24 jam', a7: 'Aktif 7 hari', a30: 'Aktif 30 hari', online: 'Online sekarang', blokir: 'Diblokir' };
+  let f = 'semua', q = '';
+  const lama = t => { if (!t) return '–'; const m = (now - t) / 6e4; return m < 60 ? Math.max(1, Math.round(m)) + ' menit lalu' : m < 1440 ? Math.round(m / 60) + ' jam lalu' : Math.round(m / 1440) + ' hari lalu'; };
+  const pilih = () => L.filter(u => (f === 'semua' ? u.status === 'Aktif' : F[f](u)) && (!q || (u.nama + ' ' + u.email + ' ' + u.hd).toLowerCase().includes(q)));
+  const gambar = () => { const R = pilih();
+    box.querySelector('#adUL').innerHTML = R.length ? `<table class="fa-tbl"><tr><th>#</th><th>Nama</th><th>Email</th><th>Hutan Desa dipantau</th><th>Terakhir aktif</th><th>Perangkat</th><th>Versi</th><th>Buka aplikasi</th><th>Terdaftar</th></tr>${R.map((u, i) => `<tr><td class="n">${i + 1}</td><td><b>${esc(u.nama || '–')}</b>${u.online ? ' <span class="fa-pill" style="background:#16A34A;color:#fff">online</span>' : ''}${u.status === 'Diblokir' ? ' <span class="fa-pill" style="background:#B91C1C;color:#fff">diblokir</span>' : ''}</td><td>${esc(u.email)}${u.verif === 'Ya' ? '' : ' <small style="color:#B45309">(belum verifikasi)</small>'}</td><td>${esc(window.FHLang ? FHLang.t(u.hd || '–') : (u.hd || '–'))}</td><td title="${esc(u.aktif)} WIB">${esc(lama(u.aktif_ms))}</td><td>${esc(u.perangkat || '–')}</td><td>${esc(u.versi || '–')}</td><td class="n">${A.n1(u.buka, 0)}</td><td>${esc(u.daftar.slice(0, 10))}</td></tr>`).join('')}</table>` : '<p class="fa-note">Tidak ada akun pada pilihan ini.</p>';
+    box.querySelector('#adUn').textContent = R.length + ' akun'; box.querySelectorAll('[data-f]').forEach(b => b.setAttribute('aria-selected', b.dataset.f === f)); };
+  box.innerHTML = `<h4>Daftar akun · <span id="adUn"></span></h4><div class="fa-tabs" style="position:static;flex-wrap:wrap">${Object.keys(NM).map(k => `<button data-f="${k}">${NM[k]} (${L.filter(u => k === 'semua' ? u.status === 'Aktif' : F[k](u)).length})</button>`).join('')}</div>
+    <div class="fa-row" style="margin:8px 0"><input id="adUq" placeholder="Cari nama, email atau Hutan Desa" style="flex:1;min-width:180px"><button class="fa-btn" id="adUcsv">Unduh CSV</button></div><div class="fa-scroll" id="adUL"></div>
+    <p class="fa-note">Hanya untuk admin PRCF. Ditampilkan data seperlunya (tanpa tanggal lahir, alamat & nomor HP); akun yang dihapus pemiliknya tidak ditampilkan (UU 27/2022).</p>`;
+  box.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { f = b.dataset.f; gambar(); });
+  box.querySelector('#adUq').oninput = e => { q = e.target.value.trim().toLowerCase(); gambar(); };
+  box.querySelector('#adUcsv').onclick = () => { const H_ = ['nama', 'email', 'email_terverifikasi', 'hutan_desa', 'terakhir_aktif_wib', 'online', 'perangkat', 'versi', 'jumlah_buka', 'terdaftar_wib', 'status'];
+    A.dl(new Blob([A.csv([H_, ...pilih().map(u => [u.nama, u.email, u.verif, u.hd, u.aktif, u.online ? 'ya' : 'tidak', u.perangkat, u.versi, u.buka, u.daftar, u.status])])], { type: 'text/csv' }), 'akun_fire_hotspot_' + f + '.csv'); };
+  gambar();
 }
 window.FHAdmin = { open };
 })();

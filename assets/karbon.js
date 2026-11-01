@@ -259,10 +259,9 @@ async function ringkas(id, y0, y1) {
 function open() {
   const A = X(); if (!A || !window.openPage) return; css(); A.pakai('karbon');
   const S = window.FHSites ? FHSites() : [], cur = window.FHSiteObj && FHSiteObj(), Y = []; for (let y = Y_MAX; y >= Y_MIN; y--) Y.push(y);
-  if (window.FHModelKLHK) FHModelKLHK.citra().then(C => { if (!C || !(C.tahun > Y_MAX) || !Object.values(C.lokasi || {}).some(x => x.status === 'selesai')) return; Y_MAX = C.tahun; ['#kbY0', '#kbY1'].forEach(id => { const e = document.querySelector(id); if (e && ![...e.options].some(o => +o.value === C.tahun)) e.insertAdjacentHTML('afterbegin', `<option value="${C.tahun}">${C.tahun} (citra)</option>`); }); });
-  openPage('Emisi karbon (FREL)', 'Per Hutan Desa · pilih periode & tahun', `<div class="fa" id="kbW">
-    <div class="fa-card"><h5>Lokasi</h5><div class="kb-lok">${S.map(s => `<label><input type="checkbox" value="${esc(s.id)}" checked>${esc(s.hd_nama)}</label>`).join('')}</div>
-     <div class="fa-row" style="margin-top:10px"><button class="fa-btn" id="kbAll">Semua</button><button class="fa-btn" id="kbOne">Hanya ${esc(cur ? cur.hd_nama : '')}</button></div>
+  if (window.FHModelKLHK) FHModelKLHK.citra().then(C => { const cc = C && cur && C.lokasi && C.lokasi[cur.id]; if (!C || !(C.tahun > 2025) || !cc || cc.status !== 'selesai') return; if (C.tahun > Y_MAX) Y_MAX = C.tahun; ['#kbY0', '#kbY1'].forEach(id => { const e = document.querySelector(id); if (e && ![...e.options].some(o => +o.value === C.tahun)) e.insertAdjacentHTML('afterbegin', `<option value="${C.tahun}">${C.tahun} (citra)</option>`); }); });
+  openPage('Emisi karbon (FREL)', (cur ? cur.hd_nama : 'Hutan Desa') + ' · pilih periode & tahun', `<div class="fa" id="kbW">
+    <div class="fa-card"><h5>Hutan Desa</h5><div style="font-size:18px;font-weight:800">${esc(cur ? cur.hd_nama : '–')}</div><p class="fa-note">${esc(cur ? [cur.lphd, cur.kec ? 'Kec. ' + cur.kec : '', 'Kab. Kapuas Hulu'].filter(Boolean).join(' · ') : '')} · semua angka, laporan & ekspor di halaman ini hanya untuk Hutan Desa ini. Ganti Hutan Desa di Beranda untuk melihat lokasi lain.</p>
      <h5 style="margin-top:14px">Periode</h5><div class="fa-chips" id="kbPre" style="--c:#15803D">${[['2020', '2025', '2020–2025'], ['2025', '2025', '2025'], ['2021', '2025', '5 tahun terakhir'], ['2016', '2025', '10 tahun terakhir'], ['2001', '2025', '2001–2025']].map(([a, b, t], i) => `<button type="button" data-a="${a}" data-b="${b}" aria-pressed="${!i}">${t}</button>`).join('')}</div>
      <div class="fa-row" style="margin-top:10px"><label>Tahun awal<select id="kbY0">${Y.map(y => `<option ${y === 2020 ? 'selected' : ''}>${y}</option>`).join('')}</select></label><label>Tahun akhir<select id="kbY1">${Y.map(y => `<option ${y === 2025 ? 'selected' : ''}>${y}</option>`).join('')}</select></label></div>
      <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700;font-size:13px">Parameter proyek (templat PRCF)</summary><div class="fa-row" style="margin-top:10px">
@@ -270,11 +269,9 @@ function open() {
       <label>Penyangga risiko (%)<input type="number" id="kbBuf" value="13.5" min="0" max="100" step="0.1"></label><label>Lama periode proyek (thn)<input type="number" id="kbProj" placeholder="= periode acuan" min="1" max="100"></label></div></details>
      <button class="fa-btn pri full" id="kbGo" style="--c:#15803D;margin-top:14px">Hitung emisi karbon</button></div><div id="kbOut"></div></div>`, () => {
     const w = document.getElementById('kbW'), $ = s => w.querySelector(s);
-    $('#kbAll').onclick = () => w.querySelectorAll('.kb-lok input').forEach(i => i.checked = true);
-    $('#kbOne').onclick = () => w.querySelectorAll('.kb-lok input').forEach(i => i.checked = !!cur && i.value === cur.id);
     $('#kbPre').querySelectorAll('button').forEach(b => b.onclick = () => { $('#kbPre').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); $('#kbY0').value = b.dataset.a; $('#kbY1').value = b.dataset.b; go(); });
     const go = async () => { let y0 = +$('#kbY0').value, y1 = +$('#kbY1').value; if (y0 > y1) [y0, y1] = [y1, y0];
-      const lokasi = [...w.querySelectorAll('.kb-lok input:checked')].map(i => i.value); if (!lokasi.length) return A.toast('Pilih minimal satu Hutan Desa.');
+      if (!cur) return A.toast('Pilih Hutan Desa di Beranda.'); const lokasi = [cur.id];
       const pr = (id, d) => { const v = parseFloat($(id).value); return Number.isFinite(v) ? v / 100 : d; };
       $('#kbOut').innerHTML = '<div class="fa-card"><p class="fa-note">Menghitung…</p></div>';
       try { const H = await hitung({ lokasi, y0, y1, eff: pr('#kbEff', .9), leak: pr('#kbLeak', .05), buf: pr('#kbBuf', .135), proj: parseInt($('#kbProj').value) || 0 }); window.__kb = H; ui(w, H); }

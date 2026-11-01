@@ -42,6 +42,8 @@ jobs:
         if: github.event.inputs.hanya_klhk != 'ya'
         continue-on-error: true
         run: python scripts/citra_tahunan.py
+      - name: Peta tutupan lahan tahunan (vektor, unduhan SHP)
+        run: python scripts/tutupan_tahunan.py
       - name: Uji perhitungan karbon (rumus templat PRCF & konsistensi data)
         if: github.event.inputs.hanya_klhk != 'ya'
         run: python scripts/uji_karbon.py

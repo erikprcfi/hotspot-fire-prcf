@@ -752,12 +752,12 @@ html.web [data-noweb]{display:none!important}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="assets/bahasa.js?v=57"></script>
-<script src="assets/kamus_en.js?v=57"></script>
-<script src="assets/nasa_layers.js?v=57"></script>
-<script src="assets/citra.js?v=57"></script>
-<script src="assets/akun.js?v=57"></script>
-<script src="assets/web.js?v=57"></script>
+<script src="assets/bahasa.js?v=58"></script>
+<script src="assets/kamus_en.js?v=58"></script>
+<script src="assets/nasa_layers.js?v=58"></script>
+<script src="assets/citra.js?v=58"></script>
+<script src="assets/akun.js?v=58"></script>
+<script src="assets/web.js?v=58"></script>
 <script>
 (function(){
 'use strict';
@@ -1073,7 +1073,7 @@ async function baraData(){   // seluruh data aplikasi yang relevan → konteks B
   if(STATUS)L.push('Basis data titik panas: '+f1(STATUS.jumlah_catatan)+' deteksi NASA FIRMS (rentang '+(STATUS.rentang||[]).join(' s.d. ')+'), diperbarui otomatis tiap 3 jam; cek terakhir '+wib(STATUS.terakhir_cek_utc)+'.');
   L.push('Titik panas 7 hari terakhir di dataset Kapuas Hulu: '+W.length+'; deteksi terakhir '+(last?wib(last):'-')+'.');
   const fcLoc=FC&&FC.lokasi||{},ringkas={sapa:greet(),nama:(window.FHAkun&&FHAkun.firstName&&FHAkun.firstName())||'',situs:SITE?SITE.hd_nama:'',n7:W.length,last:last?wib(last):''};
-  SITES.forEach((x,k)=>{const st=siteStatus(k),F=fcLoc[x.id]||{},H=(HUT&&HUT.lokasi&&HUT.lokasi[x.id])||null,P=(STATS&&STATS.per_lokasi&&STATS.per_lokasi[x.id])||null;
+  SITES.forEach((x,k)=>{if(k!==SI)return;const st=siteStatus(k),F=fcLoc[x.id]||{},H=(HUT&&HUT.lokasi&&HUT.lokasi[x.id])||null,P=(STATS&&STATS.per_lokasi&&STATS.per_lokasi[x.id])||null;
     L.push('\n## '+x.hd_nama+' (Desa '+(x.desa_nama||'-')+', Kec. '+(x.kec||'-')+'; '+(/^LPHD/.test(x.lphd||'')?'':'LPHD ')+(x.lphd||'-')+'; SK '+(x.sk||'-')+(x.sk_tgl?' tgl '+x.sk_tgl:'')+'; luas HD '+f1(x.luas_hd_ha||x.luas_sk)+' ha; luas desa '+f1(x.luas_desa_ha)+' ha)');
     if(k===SI){ringkas.status=st.txt;ringkas.inside=st.inside;ringkas.r25=st.r25;}
     L.push('Status 7 hari: '+st.txt+' – '+st.inside+' titik di dalam desa/HD, '+st.near+' titik ≤5 km, '+st.r25+' titik ≤25 km.');
@@ -1096,7 +1096,7 @@ function siteStatus(k){const now=Date.now();const F=ALL.filter(p=>now-p.when<=7*
   return {lvl:inside?'crit':near?'warn':'ok',txt:inside?'Siaga':near?'Waspada':'Aman',inside,near,r25};}
 function applySite(id,fly){
   const k=Math.max(0,SITES.findIndex(x=>x.id===id));SI=k;SITE=SITES[k]||null;if(!SITE)return;
-  store.set('site',SITE.id);window.FH_SITE=SITE.id;if(typeof luringUI==='function')setTimeout(luringUI,0);if(window.PantauLaporan&&PantauLaporan.reset)PantauLaporan.reset();
+  store.set('site',SITE.id);window.FH_SITE=SITE.id;{const ah=window.FH_ALAT_HD;if(ah&&$('#page').classList.contains('on')){setTimeout(()=>{closeAll();setTimeout(()=>hubGo(ah),420);},0);}}if(typeof luringUI==='function')setTimeout(luringUI,0);if(window.PantauLaporan&&PantauLaporan.reset)PantauLaporan.reset();
   ZLBL[1]='Desa '+SITE.desa_nama;
   $('#v-home').dataset.sub=SITE.hd_nama+' ▾';$$('.view').forEach(v=>{if(v.id!=='v-home')v.dataset.sub=(v.dataset.base||(v.dataset.base=v.dataset.sub));});
   if(!$('#appbar').classList.contains('stack'))$('#abSub').textContent=(CUR==='home'?SITE.hd_nama+' ▾':$(views[CUR]).dataset.sub);
@@ -1188,7 +1188,7 @@ function renderFC(){
   const i0=chartPts.findIndex(p=>p.fc);if(i0>0)ch+=`<line x1="${x(i0-.5)}" x2="${x(i0-.5)}" y1="${t}" y2="${H-b}" stroke="${css('--muted')}" stroke-dasharray="3 3"/><text x="${x(i0-.5)+4}" y="${t+9}">prakiraan →</text>`;
   ch+=`<polyline fill="none" stroke="${css('--fg')}" stroke-width="2" points="${chartPts.map((p,i)=>`${x(i)},${y(p.f)}`).join(' ')}"/>`;
   chartPts.forEach((p,i)=>{if(i%7===0||i===n-1){const dn=dName(p.d);ch+=`<text x="${x(i)}" y="${H-5}" text-anchor="middle">${dn.t}</text>`;}});ch+='</svg>';
-  const others=SITES.filter(z=>fcSite(z.id)).map(z=>({z,r:riskOf(z.id)})).filter(o=>o.r);
+  const others=[];void SITES.filter(z=>fcSite(z.id)).map(z=>({z,r:riskOf(z.id)})).filter(o=>o.r);
   box.innerHTML=`
   <div class="fc-hero" style="background:${grad}"><div class="ey">Peringatan dini bahaya kebakaran · 7 hari</div><div class="lv">${LVN[mx].toUpperCase()}</div>
    <div style="font-size:13px;font-weight:600;opacity:.95">${esc(SITE.hd_nama)} · tingkat tertinggi ${mx?`pada ${pn.l}, ${pn.t}`:'sepanjang minggu'}</div>
@@ -1315,7 +1315,8 @@ const IC={
 const SECT={pengaturan:['Profil','Akun & pengaturan'],peringatan:['Peringatan dini','Notifikasi HP & email'],unduh:['Unduh data','CSV · SHP · GeoJSON · KML'],patroli:['Laporan patroli','Temuan & cek lapangan'],luring:['Peta luring','Tanpa sinyal'],sistem:['Status sistem','Pembaruan · basis data · sumber NASA']};
 let INFOSEC=null;
 function bukaSec(sec){INFOSEC=sec;go('info');pushLayer(()=>go('dash',false));setBar(SECT[sec][0],SECT[sec][1],true);}
-function hubGo(k){try{FHAlat.pakai(k);}catch(e){}const P=x=>{if(!SITE)return chooser(true);const run=()=>PAGES[x]&&PAGES[x]();if(['grafik','kejadian','cuaca'].includes(x)&&!(STATS&&EVENTS&&CUACA)){toastMsg('Memuat data…');Promise.resolve(loadHist()).then(run).catch(()=>toastMsg('Data belum dapat dimuat. Periksa internet.'));}else run();};
+const HD_ALAT=['patroli','tindak','indikator','karbon','tutupan','analisis','hutan','bekas','grafik'];
+function hubGo(k){try{FHAlat.pakai(k);}catch(e){}window.FH_ALAT_HD=HD_ALAT.includes(k)?k:null;const P=x=>{if(!SITE)return chooser(true);const run=()=>PAGES[x]&&PAGES[x]();if(['grafik','kejadian','cuaca'].includes(x)&&!(STATS&&EVENTS&&CUACA)){toastMsg('Memuat data…');Promise.resolve(loadHist()).then(run).catch(()=>toastMsg('Data belum dapat dimuat. Periksa internet.'));}else run();};
   ({peta:()=>go('home'),p3d:()=>{go('home');setTimeout(()=>$('#fab3d').click(),250);},sebaran:()=>P('sebaran'),kejadian:()=>P('kejadian'),
     angin:()=>{go('home');setTimeout(()=>{if($('#fabWind').getAttribute('aria-pressed')!=='true')$('#fabWind').click();},250);},kompas:()=>openKompas(),ai:()=>go('ai'),
     satelit:()=>{const p=ALL.slice().sort((a,b)=>b.when-a.when)[0];if(p)detail(p);else go('home');},
@@ -1338,7 +1339,7 @@ const HUB_IMG={'Pemantauan':['sungai','55%'],'Cuaca & iklim':['danau','30%'],'Hu
 const HUB_ADMIN=['Admin','Khusus admin PRCF',[['tim','Tim lapangan','#38BDF8','#1D4ED8'],['admin','Dasbor admin','#818CF8','#3730A3']]];
 const HUB_BARU=['tutupan','karbon','indikator','tindak','admin'];
 const HUB_SUB={peta:'Titik panas terkini',p3d:'Medan & lereng',sebaran:'Kepadatan per zona',kejadian:'Riwayat sejak 2001',angin:'Arah asap & api',kompas:'Arah ke titik',satelit:'Jadwal satelit lewat',ai:'Asisten AI',
-  cuaca:'14 hari ke depan',hujan:'Curah hujan & musim',udara:'PM2.5 & asap',lokasi:'Di posisi Anda',hutan:'Kehilangan tutupan',bekas:'Citra Sentinel-2',analisis:'Karbon 2001–2025',tutupan:'Acuan peta KLHK · per tahun',karbon:'Rumus FREL · ekspor Excel',grafik:'Tren tahunan',indikator:'Ringkasan 6 Hutan Desa',
+  cuaca:'14 hari ke depan',hujan:'Curah hujan & musim',udara:'PM2.5 & asap',lokasi:'Di posisi Anda',hutan:'Kehilangan tutupan',bekas:'Citra Sentinel-2',analisis:'Karbon 2001–2025',tutupan:'Acuan peta KLHK · per tahun',karbon:'Rumus FREL · ekspor Excel',grafik:'Tren tahunan',indikator:'Ringkasan Hutan Desa ini',
   peringatan:'Notifikasi HP',cek:'Verifikasi titik',patroli:'Temuan & rekap jejak',tindak:'Status penanganan',laporan:'PDF · Word · CSV',unduh:'SHP · GeoJSON · KML',luring:'Tanpa sinyal',sistem:'Pembaruan tiap 3 jam',tim:'Posisi tim',admin:'Pengguna & pemakaian'};
 let HUB_OPEN=null,HUB_ANIM=true, HUB_HT=null, HUB_CLK=null;
 function hubHutan(id){if(!HUB_HT||HUB_HT.id!==id){HUB_HT={id,p:J('data/analisis/'+id+'_hd.json').catch(()=>null)};}return HUB_HT.p;}
@@ -1519,7 +1520,7 @@ const PAGES={
   openPage('Kualitas Udara','CAMS · '+SITE.hd_nama,'',muat);
  },
  bara(){go('ai');},
- analisis(){openPage('Analisis area','Lahan · hutan · karbon · titik panas','<div id="anBox"></div>',()=>{if(window.FHAnalisis)FHAnalisis.mount($('#anBox'),{mode:'app',akun:()=>{const u=window.FHAkun&&FHAkun.user();return u&&u.token?{id:u.id,token:u.token,nama:u.nama}:null;}});});},
+ analisis(){openPage('Analisis area',(SITE?SITE.hd_nama+' · ':'')+'lahan · hutan · karbon','<div id="anBox"></div>',()=>{if(window.FHAnalisis)FHAnalisis.mount($('#anBox'),{mode:'app',situs:SITE?SITE.id:'',akun:()=>{const u=window.FHAkun&&FHAkun.user();return u&&u.token?{id:u.id,token:u.token,nama:u.nama}:null;}});});},
  sebaran(){
   let P=PERX?-1:PER,X=PERX,XP=PERX?RPTS:[];
   const html=()=>{const now=Date.now();const F=(P===-1?XP:ALL).filter(p=>zIdx(p)<=4&&(P<=0||now-p.when<=P*864e5+36e5)).sort((a,b)=>b.when-a.when);
@@ -1719,38 +1720,39 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&STATUS&&D
 if('serviceWorker' in navigator){const HAD=!!navigator.serviceWorker.controller;navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{});let RL=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(RL||!HAD)return;RL=true;location.reload();});}
 })();
 </script>
-<script src="assets/laporan.js?v=57"></script>
-<script src="assets/riwayat_cuaca.js?v=57"></script>
-<script src="assets/udara.js?v=57"></script>
-<script src="assets/musiman.js?v=57"></script>
-<script src="assets/wilayah.js?v=57"></script>
-<script src="assets/meteogram.js?v=57"></script>
-<script src="assets/cari_lokasi.js?v=57"></script>
-<script src="assets/lintasan.js?v=57"></script>
-<script src="assets/angin.js?v=57"></script>
-<script src="assets/kompas.js?v=57"></script>
-<script src="assets/titik_id.js?v=57"></script>
-<script src="assets/beranda.js?v=57"></script>
+<script src="assets/laporan.js?v=58"></script>
+<script src="assets/riwayat_cuaca.js?v=58"></script>
+<script src="assets/udara.js?v=58"></script>
+<script src="assets/musiman.js?v=58"></script>
+<script src="assets/wilayah.js?v=58"></script>
+<script src="assets/meteogram.js?v=58"></script>
+<script src="assets/cari_lokasi.js?v=58"></script>
+<script src="assets/lintasan.js?v=58"></script>
+<script src="assets/angin.js?v=58"></script>
+<script src="assets/kompas.js?v=58"></script>
+<script src="assets/titik_id.js?v=58"></script>
+<script src="assets/beranda.js?v=58"></script>
 <script>window.FH_VERIF_URL=window.FH_VERIF_URL||'https://script.google.com/macros/s/AKfycbwQz_--p7liI6ig1X6jsDCbdpElAJahItVrnVQqxkqBzLJLzvSJojk8eUSEHWzJgY-PoQ/exec';/* URL Apps Script penerima laporan verifikasi lapangan */</script>
-<script src="assets/verifikasi.js?v=57"></script>
-<script src="assets/luring.js?v=57"></script>
-<script src="assets/analisis.js?v=57"></script>
-<script src="assets/bara.js?v=57"></script>
-<script src="assets/peringatan.js?v=57"></script>
-<script src="assets/peta_ecmwf.js?v=57"></script>
-<script src="assets/lokasi_saya.js?v=57"></script>
-<script src="assets/peta3d.js?v=57"></script>
-<script src="assets/unduh.js?v=57"></script>
-<script src="assets/native.js?v=57"></script>
-<script src="assets/posisi.js?v=57"></script>
-<script src="assets/tim.js?v=57"></script>
-<script src="assets/alat.js?v=57"></script>
-<script src="assets/patroli.js?v=57"></script>
-<script src="assets/tindak.js?v=57"></script>
-<script src="assets/admin.js?v=57"></script>
-<script src="assets/indikator.js?v=57"></script>
-<script src="assets/model_klhk.js?v=57"></script>
-<script src="assets/karbon.js?v=57"></script>
-<script src="assets/tutupan.js?v=57"></script>
+<script src="assets/verifikasi.js?v=58"></script>
+<script src="assets/luring.js?v=58"></script>
+<script src="assets/analisis.js?v=58"></script>
+<script src="assets/bara.js?v=58"></script>
+<script src="assets/peringatan.js?v=58"></script>
+<script src="assets/peta_ecmwf.js?v=58"></script>
+<script src="assets/lokasi_saya.js?v=58"></script>
+<script src="assets/peta3d.js?v=58"></script>
+<script src="assets/unduh.js?v=58"></script>
+<script src="assets/native.js?v=58"></script>
+<script src="assets/posisi.js?v=58"></script>
+<script src="assets/tim.js?v=58"></script>
+<script src="assets/alat.js?v=58"></script>
+<script src="assets/patroli.js?v=58"></script>
+<script src="assets/tindak.js?v=58"></script>
+<script src="assets/admin.js?v=58"></script>
+<script src="assets/indikator.js?v=58"></script>
+<script src="assets/model_klhk.js?v=58"></script>
+<script src="assets/karbon.js?v=58"></script>
+<script src="assets/tutupan.js?v=58"></script>
+<script src="assets/shp.js?v=58"></script>
 </body>
 </html>
