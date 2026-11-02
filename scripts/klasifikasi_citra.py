@@ -121,6 +121,19 @@ def label(hu, hd, shape_, tr, lok):
         lab = np.where(inside, lp, lab); src = np.where(inside & (lp > 0), 2, np.where(inside, 0, src)).astype("uint8")
     return lab, src
 
+KELOMPOK = {2001: "Hutan", 2002: "Hutan", 2004: "Hutan", 20041: "Hutan", 2005: "Hutan", 20051: "Hutan", 2006: "Hutan", 50011: "Lahan basah bukan hutan", 20071: "Lahan basah bukan hutan", 20094: "Lahan basah bukan hutan", 5001: "Tubuh air"}
+KEL = lambda k: KELOMPOK.get(int(k), "Lahan kering bukan hutan")
+L4 = ["Hutan", "Lahan basah bukan hutan", "Tubuh air", "Lahan kering bukan hutan"]
+def metrik_kelompok(info):
+    """akurasi pada 4 kelompok kelas (dipakai di aplikasi bila akurasi kelas rinci rendah) – dihitung dari matriks kesalahan kelas rinci"""
+    K = info["matriks_kesalahan"]["kelas"]; cm = np.array(info["matriks_kesalahan"]["baris_acuan_kolom_prediksi"]); m = np.zeros((4, 4), int)
+    for i, a in enumerate(K):
+        for j, b in enumerate(K): m[L4.index(KEL(a)), L4.index(KEL(b))] += cm[i, j]
+    info["kelompok"] = {"kelas": L4, "anggota": {g: [int(k) for k in K if KEL(k) == g] for g in L4}, "matriks": m.tolist(), "akurasi_keseluruhan": round(float(np.trace(m) / m.sum()), 3),
+        "akurasi_pembuat": {g: round(float(m[i, i] / m[i].sum()), 3) if m[i].sum() else None for i, g in enumerate(L4)}, "akurasi_pengguna": {g: round(float(m[i, i] / m[:, i].sum()), 3) if m[:, i].sum() else None for i, g in enumerate(L4)},
+        "catatan": "Aplikasi menampilkan hasil pada 4 kelompok ini karena akurasi kelas rinci (mis. semak vs pertanian campur semak, permukiman, tanah terbuka) masih rendah – peta KLHK 1:250.000 sebagai label latih juga kasar."}
+    return info
+
 def main():
     from sklearn.ensemble import RandomForestClassifier
     from sklearn.metrics import confusion_matrix, cohen_kappa_score
@@ -167,7 +180,7 @@ def main():
             "akurasi_keseluruhan": oa, "kappa": round(kap, 3), "akurasi_hutan_bukan_hutan": round(float(hf.mean()), 3), "akurasi_pembuat": pa, "akurasi_pengguna": ua,
             "matriks_kesalahan": {"kelas": [int(k) for k in K], "baris_acuan_kolom_prediksi": cm.tolist()}, "akurasi_per_sumber_label": per_src,
             "kepentingan_fitur": {NAMAF[i]: round(float(v), 4) for i, v in sorted(enumerate(rf.feature_importances_), key=lambda z: -z[1])}}
-    json.dump(info, open(os.path.join(OUT, "model.json"), "w"), ensure_ascii=False, indent=1)
+    metrik_kelompok(info); json.dump(info, open(os.path.join(OUT, "model.json"), "w"), ensure_ascii=False, indent=1)
     print("akurasi", oa, "kappa", round(kap, 3), "hutan/bukan", info["akurasi_hutan_bukan_hutan"], per_src, flush=True)
     for s in geo:   # peta tiap tahun di dalam Hutan Desa
         if s["id"] not in REG: continue

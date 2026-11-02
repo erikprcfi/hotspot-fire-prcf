@@ -59,7 +59,7 @@ async function unduh(s, d, M, y0, y1, fmt) {
   if (A.EN()) nama = nama.replace(/^tutupan_lahan/, 'land_cover').replace(/^perubahan_tutupan/, 'land_cover_change').replace(/^lahan_kritis/, 'critical_land').replace(/^batas/, 'boundary');
   if (fmt === 'geojson') A.dl(new Blob([JSON.stringify({ type: 'FeatureCollection', name: nama, features: F })], { type: 'application/geo+json' }), nama + '.geojson');
   else if (fmt === 'csv') { const K = Object.keys(F[0].properties); A.dl(new Blob([A.csv([K, ...F.map(f => K.map(k => f.properties[k]))])], { type: 'text/csv' }), nama + '.csv'); }
-  else { if (!window.FHShp) await A.lib('assets/shp.js?v=61'); A.dl(await FHShp.zip([{ nama, fitur: F, kolom }], { [`BACA_${nama}.txt`]: baca.join('\r\n') }), nama + '.zip'); }
+  else { if (!window.FHShp) await A.lib('assets/shp.js?v=62'); A.dl(await FHShp.zip([{ nama, fitur: F, kolom }], { [`BACA_${nama}.txt`]: baca.join('\r\n') }), nama + '.zip'); }
   A.pakai('unduhpeta_unduh');
 }
 window.FHUnduhPeta = { open, unduh };

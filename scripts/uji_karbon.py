@@ -252,6 +252,21 @@ if os.path.isdir(LKD):
         for k, v in ref.items():
             if abs(R9["kelas_ha"].get(k, 0) - v) > max(0.05, 0.0005 * v): gagal.append(f"lahan kritis {s_['id']} {k}: aplikasi {R9['kelas_ha'].get(k, 0):.4f} ≠ SHP sumber {v:.4f}")
     print(f"9. Lahan kritis per Hutan Desa (kelas, luas, poligon, silang tutupan{', cek SHP sumber' if SRC9 else ''}): {'LULUS' if len(gagal) == n0 else 'GAGAL'}")
+# 10. Klasifikasi citra (bila ada): metrik konsisten dengan matriks kesalahan, luas kelas + tak terpetakan = luas HD
+n0 = len(gagal); KD = os.path.join(ROOT, "data", "klasifikasi")
+if os.path.exists(os.path.join(KD, "model.json")):
+    Mo = json.load(open(os.path.join(KD, "model.json"))); cm = Mo["matriks_kesalahan"]["baris_acuan_kolom_prediksi"]; tot = sum(map(sum, cm))
+    if tot != Mo["sampel_uji"]: gagal.append(f"klasifikasi: Σ matriks {tot} ≠ sampel uji {Mo['sampel_uji']}")
+    if abs(sum(cm[i][i] for i in range(len(cm))) / tot - Mo["akurasi_keseluruhan"]) > 0.0006: gagal.append("klasifikasi: akurasi keseluruhan tidak sesuai matriks")
+    for s_ in json.load(open(os.path.join(ROOT, "data", "geo.json")))["sites"]:
+        fk = os.path.join(KD, f"{s_['id']}.json")
+        if not os.path.exists(fk): continue
+        A10 = json.load(open(os.path.join(ROOT, "data", "lahan_kritis", f"{s_['id']}.json")))["luas_area_ha"] if os.path.exists(os.path.join(ROOT, "data", "lahan_kritis", f"{s_['id']}.json")) else None
+        for y, v in json.load(open(fk))["tahun"].items():
+            if v.get("status") != "selesai" or A10 is None: continue
+            t10 = sum(v["luas_ha"].values()) + v["tak_terpetakan_ha"]
+            if abs(t10 - A10) > max(2.0, 0.01 * A10): gagal.append(f"klasifikasi {s_['id']} {y}: luas {t10:.1f} ≠ luas HD {A10:.1f}")
+    print(f"10. Klasifikasi citra Sentinel-2 (akurasi {Mo['akurasi_keseluruhan']*100:.1f}%, kappa {Mo['kappa']}): {'LULUS' if len(gagal) == n0 else 'GAGAL'}")
 if gagal:
     print("\n".join(gagal[:50])); sys.exit(1)
 print("SEMUA UJI LULUS")

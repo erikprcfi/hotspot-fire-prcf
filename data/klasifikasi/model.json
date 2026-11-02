@@ -1,0 +1,368 @@
+{
+ "dibuat_utc": "2026-11-02T14:46:18Z",
+ "metode": "KLASIFIKASI TUTUPAN LAHAN dari citra Sentinel-2 (dilatih dari Peta Penutupan Lahan KLHK/Kemenhut 2025 + peta PRCF ber-groundcheck)\n==============================================================================================================================\nTujuan: mesin belajar rona/warna (reflektans 6 kanal), indeks vegetasi/air/kelembapan, tekstur (keragaman & rerata lokal 5×5 piksel)\ndan bentang (ketinggian & lereng Copernicus DEM 30 m) tiap kelas tutupan lahan, lalu memetakan tutupan lahan tiap tahun secara mandiri.\nHasilnya PEMBANDING independen untuk peta resmi (bukan pengganti) – akurasi diuji pada blok wilayah yang tidak dipakai melatih.\n\nData:\n - Citra: Sentinel-2 L2A (ESA Copernicus, Earth Search AWS), grid 20 m UTM 49N, median semua citra cerah dalam setahun\n   (masker awan/bayangan SCL diperlebar 60 m; dipakai piksel SCL vegetasi/tanah/air).\n - Label latih: Peta Penutupan Lahan 2025 Kab. Kapuas Hulu (data/klhk/kapuashulu_2025.geojson.gz) di wilayah 6 Hutan Desa + penyangga 3 km;\n   di dalam Hutan Desa Nanga Lauk dipakai peta PRCF 2025 (lebih rinci, ber-groundcheck). Poligon dikikis 60 m agar sampel tidak di tepi kelas.\n - Model: Random Forest (scikit-learn, 300 pohon, bobot kelas seimbang). Validasi: blok 2 km × 2 km dibagi acak 70% latih / 30% uji\n   (validasi spasial – sampel uji tidak bertetangga dengan sampel latih). Dilaporkan akurasi keseluruhan, kappa, akurasi pembuat & pengguna per kelas.\nKeluaran: data/klasifikasi/model.json (metrik, matriks kesalahan, jumlah sampel), data/klasifikasi/<lokasi>.json (luas kelas di dalam\nHutan Desa per tahun + persen piksel cerah). Pemakaian: python scripts/klasifikasi_citra.py [tahun_latih=2025] [tahun_lain ...]",
+ "tahun_latih": 2025,
+ "fitur": [
+  "biru",
+  "hijau",
+  "merah",
+  "nir",
+  "swir1",
+  "swir2",
+  "ndvi",
+  "ndwi",
+  "mndwi",
+  "nbr",
+  "ndmi",
+  "tinggi",
+  "lereng",
+  "sd_ndvi",
+  "sd_nir",
+  "rt_ndvi"
+ ],
+ "kelas": [
+  2001,
+  2002,
+  2007,
+  2012,
+  2014,
+  5001,
+  20051,
+  20071,
+  20091,
+  20092,
+  20141,
+  50011
+ ],
+ "sampel_per_kelas": {
+  "2001": 5000,
+  "2002": 10751,
+  "2007": 10323,
+  "2012": 3732,
+  "2014": 3123,
+  "5001": 1474,
+  "20051": 5000,
+  "20071": 5000,
+  "20091": 2500,
+  "20092": 13278,
+  "20141": 3003,
+  "50011": 2500
+ },
+ "sampel_latih": 45648,
+ "sampel_uji": 20036,
+ "akurasi_keseluruhan": 0.514,
+ "kappa": 0.447,
+ "akurasi_hutan_bukan_hutan": 0.911,
+ "akurasi_pembuat": {
+  "2001": 0.809,
+  "2002": 0.81,
+  "2007": 0.407,
+  "2012": 0.106,
+  "2014": 0.161,
+  "5001": 0.991,
+  "20051": 0.877,
+  "20071": 0.876,
+  "20091": 0.168,
+  "20092": 0.409,
+  "20141": 0.0,
+  "50011": 0.911
+ },
+ "akurasi_pengguna": {
+  "2001": 0.722,
+  "2002": 0.689,
+  "2007": 0.349,
+  "2012": 0.422,
+  "2014": 0.294,
+  "5001": 0.963,
+  "20051": 0.75,
+  "20071": 0.602,
+  "20091": 0.394,
+  "20092": 0.501,
+  "20141": 0.0,
+  "50011": 0.592
+ },
+ "matriks_kesalahan": {
+  "kelas": [
+   2001,
+   2002,
+   2007,
+   2012,
+   2014,
+   5001,
+   20051,
+   20071,
+   20091,
+   20092,
+   20141,
+   50011
+  ],
+  "baris_acuan_kolom_prediksi": [
+   [
+    860,
+    185,
+    0,
+    0,
+    11,
+    0,
+    0,
+    0,
+    2,
+    5,
+    0,
+    0
+   ],
+   [
+    303,
+    2585,
+    125,
+    0,
+    24,
+    0,
+    2,
+    0,
+    44,
+    108,
+    1,
+    0
+   ],
+   [
+    0,
+    79,
+    1192,
+    11,
+    38,
+    0,
+    65,
+    386,
+    12,
+    793,
+    14,
+    336
+   ],
+   [
+    0,
+    0,
+    11,
+    214,
+    264,
+    1,
+    80,
+    0,
+    0,
+    202,
+    1248,
+    0
+   ],
+   [
+    7,
+    46,
+    153,
+    154,
+    192,
+    0,
+    1,
+    14,
+    158,
+    347,
+    120,
+    0
+   ],
+   [
+    0,
+    0,
+    0,
+    0,
+    0,
+    465,
+    0,
+    0,
+    0,
+    4,
+    0,
+    0
+   ],
+   [
+    0,
+    11,
+    0,
+    0,
+    0,
+    0,
+    994,
+    77,
+    0,
+    39,
+    8,
+    5
+   ],
+   [
+    0,
+    0,
+    0,
+    0,
+    0,
+    10,
+    27,
+    1018,
+    0,
+    48,
+    0,
+    59
+   ],
+   [
+    0,
+    170,
+    596,
+    33,
+    5,
+    5,
+    0,
+    1,
+    244,
+    395,
+    1,
+    0
+   ],
+   [
+    21,
+    676,
+    1334,
+    95,
+    115,
+    2,
+    156,
+    148,
+    159,
+    1958,
+    122,
+    0
+   ],
+   [
+    0,
+    0,
+    0,
+    0,
+    3,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0
+   ],
+   [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    48,
+    0,
+    9,
+    0,
+    581
+   ]
+  ]
+ },
+ "akurasi_per_sumber_label": {
+  "KLHK 2025": {
+   "n_uji": 18753,
+   "akurasi": 0.485
+  },
+  "PRCF 2025 (Nanga Lauk)": {
+   "n_uji": 1283,
+   "akurasi": 0.943
+  }
+ },
+ "kepentingan_fitur": {
+  "tinggi": 0.2907,
+  "rt_ndvi": 0.0633,
+  "lereng": 0.0605,
+  "nir": 0.0602,
+  "swir2": 0.0581,
+  "swir1": 0.0574,
+  "sd_ndvi": 0.0552,
+  "nbr": 0.0538,
+  "ndmi": 0.0524,
+  "sd_nir": 0.0517,
+  "merah": 0.0479,
+  "biru": 0.042,
+  "hijau": 0.0301,
+  "ndwi": 0.027,
+  "ndvi": 0.026,
+  "mndwi": 0.0239
+ },
+ "kelompok": {
+  "kelas": [
+   "Hutan",
+   "Lahan basah bukan hutan",
+   "Tubuh air",
+   "Lahan kering bukan hutan"
+  ],
+  "anggota": {
+   "Hutan": [
+    2001,
+    2002,
+    20051
+   ],
+   "Lahan basah bukan hutan": [
+    20071,
+    50011
+   ],
+   "Tubuh air": [
+    5001
+   ],
+   "Lahan kering bukan hutan": [
+    2007,
+    2012,
+    2014,
+    20091,
+    20092,
+    20141
+   ]
+  },
+  "matriks": [
+   [
+    4940,
+    82,
+    0,
+    367
+   ],
+   [
+    27,
+    1706,
+    10,
+    57
+   ],
+   [
+    0,
+    0,
+    465,
+    4
+   ],
+   [
+    1301,
+    885,
+    8,
+    10184
+   ]
+  ],
+  "akurasi_keseluruhan": 0.863,
+  "akurasi_pembuat": {
+   "Hutan": 0.917,
+   "Lahan basah bukan hutan": 0.948,
+   "Tubuh air": 0.991,
+   "Lahan kering bukan hutan": 0.823
+  },
+  "akurasi_pengguna": {
+   "Hutan": 0.788,
+   "Lahan basah bukan hutan": 0.638,
+   "Tubuh air": 0.963,
+   "Lahan kering bukan hutan": 0.96
+  },
+  "catatan": "Aplikasi menampilkan hasil pada 4 kelompok ini karena akurasi kelas rinci (mis. semak vs pertanian campur semak, permukiman, tanah terbuka) masih rendah – peta KLHK 1:250.000 sebagai label latih juga kasar."
+ }
+}
