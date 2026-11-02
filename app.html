@@ -1325,7 +1325,7 @@ function hubGo(k){try{FHAlat.pakai(k);}catch(e){}window.FH_ALAT_HD=HD_ALAT.inclu
     cuaca:()=>go('fc'),hujan:()=>P('cuaca'),udara:()=>P('udara'),
     lokasi:()=>{go('fc');setTimeout(()=>{const b=[...document.querySelectorAll('#v-fc button')].find(x=>/Lokasi saya/.test(x.textContent));if(b)b.click();},300);},
     hutan:()=>P('hutan'),bekas:()=>P('bekas'),analisis:()=>P('analisis'),grafik:()=>P('grafik'),
-    peringatan:()=>bukaSec('peringatan'),cek:()=>openVerif(null),patroli:()=>window.FHPatroli?FHPatroli.open():bukaSec('patroli'),tindak:()=>window.FHTindak&&FHTindak.open(),admin:()=>window.FHAdmin&&FHAdmin.open(),indikator:()=>window.FHIndikator&&FHIndikator.open(),karbon:()=>window.FHKarbon&&FHKarbon.open(),tutupan:()=>window.FHTutupan&&FHTutupan.open(),lahankritis:()=>window.FHLahanKritis&&FHLahanKritis.open(),unduhpeta:()=>window.FHUnduhPeta&&FHUnduhPeta.open(),laporan:()=>go('lap'),unduh:()=>bukaSec('unduh'),tim:()=>window.FHTim&&FHTim.open(),luring:()=>bukaSec('luring'),sistem:()=>bukaSec('sistem')})[k]();}
+    peringatan:()=>bukaSec('peringatan'),cek:()=>openVerif(null),patroli:()=>window.FHSmart&&FHSmart.bisa()?FHSmart.open():window.FHPatroli?FHPatroli.open():bukaSec('patroli'),tindak:()=>window.FHTindak&&FHTindak.open(),admin:()=>window.FHAdmin&&FHAdmin.open(),indikator:()=>window.FHIndikator&&FHIndikator.open(),karbon:()=>window.FHKarbon&&FHKarbon.open(),tutupan:()=>window.FHTutupan&&FHTutupan.open(),lahankritis:()=>window.FHLahanKritis&&FHLahanKritis.open(),unduhpeta:()=>window.FHUnduhPeta&&FHUnduhPeta.open(),laporan:()=>go('lap'),unduh:()=>bukaSec('unduh'),tim:()=>window.FHTim&&FHTim.open(),luring:()=>bukaSec('luring'),sistem:()=>bukaSec('sistem')})[k]();}
 function wxIkon(kode,hujan){const k=+kode||0;
   if(k>=95)return '<svg class="wx" viewBox="0 0 64 64"><g class="a-drift"><path d="M18 40h28a10 10 0 0 0 1-20 14 14 0 0 0-27 3 9 9 0 0 0-2 17z" fill="#CBD5E1"/></g><path class="a-blink" d="M33 40l-5 10h6l-4 10" stroke="#FDE047" stroke-width="3.5" fill="none" stroke-linejoin="round"/></svg>';
   if(k>=51||hujan>=1)return '<svg class="wx" viewBox="0 0 64 64"><g class="a-drift"><path d="M18 38h28a10 10 0 0 0 1-20 14 14 0 0 0-27 3 9 9 0 0 0-2 17z" fill="#E2E8F0"/></g><g class="a-rain" stroke="#7DD3FC" stroke-width="3" stroke-linecap="round"><path d="M24 44l-3 7M33 44l-3 7M42 44l-3 7"/></g></svg>';
@@ -1749,6 +1749,7 @@ if('serviceWorker' in navigator){const HAD=!!navigator.serviceWorker.controller;
 <script src="assets/tim.js?v=62"></script>
 <script src="assets/alat.js?v=62"></script>
 <script src="assets/patroli.js?v=62"></script>
+<script src="assets/smart.js?v=63"></script>
 <script src="assets/tindak.js?v=62"></script>
 <script src="assets/admin.js?v=62"></script>
 <script src="assets/indikator.js?v=62"></script>
