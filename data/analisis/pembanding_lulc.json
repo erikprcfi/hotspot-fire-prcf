@@ -1,0 +1,269 @@
+{
+ "sumber": "Impact Observatory, Microsoft & Esri – 10m Annual Land Use Land Cover (9-class) V2, Sentinel-2 10 m, CC BY 4.0 (Microsoft Planetary Computer: io-lulc-annual-v02)",
+ "metode": "Pembanding INDEPENDEN tutupan lahan tahunan per Hutan Desa – Fire Hotspot PRCF\n==============================================================================\nSumber: Impact Observatory, Microsoft & Esri – \"10m Annual Land Use Land Cover (9-class) V2\" (io-lulc-annual-v02),\nklasifikasi citra Sentinel-2 10 m per tahun (2017–tahun terakhir yang dirilis), lisensi CC BY 4.0, dibaca dari Microsoft Planetary Computer.\nGunanya: memeriksa silang tren alat \"Tutupan lahan (KLHK)\" (acuan KLHK 2020 + kehilangan tutupan pohon Hansen) dengan peta yang dibuat\nsetiap tahun secara terpisah. Kelasnya berbeda dengan KLHK (9 kelas global), dan hasil per tahun dapat naik-turun karena awan/banjir musiman\n(akurasi global ±75–85%), jadi dipakai sebagai pembanding, bukan pengganti peta resmi KLHK. Luas dihitung dari piksel 10 m (UTM) yang\npusatnya di dalam batas Hutan Desa.\nKeluaran: data/analisis/pembanding_lulc.json",
+ "dibuat_utc": "2026-11-02T03:43:17Z",
+ "kelas": {
+  "1": "Air",
+  "2": "Pohon",
+  "4": "Vegetasi tergenang",
+  "5": "Tanaman pertanian",
+  "7": "Terbangun",
+  "8": "Tanah terbuka",
+  "9": "Salju/es",
+  "10": "Awan",
+  "11": "Semak/padang rumput"
+ },
+ "lokasi": {
+  "nangalauk": {
+   "hutan_desa": "Hutan Desa Nanga Lauk",
+   "tahun": {
+    "2017": {
+     "Air": 50.16,
+     "Pohon": 961.84,
+     "Vegetasi tergenang": 390.88,
+     "Awan": 14.42,
+     "Semak/padang rumput": 13.52
+    },
+    "2018": {
+     "Air": 96.4,
+     "Pohon": 1130.96,
+     "Vegetasi tergenang": 193.21,
+     "Tanah terbuka": 0.03,
+     "Semak/padang rumput": 10.22
+    },
+    "2019": {
+     "Air": 67.54,
+     "Pohon": 887.23,
+     "Vegetasi tergenang": 408.07,
+     "Semak/padang rumput": 67.98
+    },
+    "2020": {
+     "Air": 99.34,
+     "Pohon": 984.66,
+     "Vegetasi tergenang": 330.51,
+     "Tanah terbuka": 0.9,
+     "Awan": 1.03,
+     "Semak/padang rumput": 14.38
+    },
+    "2021": {
+     "Air": 94.91,
+     "Pohon": 865.43,
+     "Vegetasi tergenang": 431.94,
+     "Awan": 0.09,
+     "Semak/padang rumput": 38.45
+    },
+    "2022": {
+     "Air": 80.71,
+     "Pohon": 880.44,
+     "Vegetasi tergenang": 469.36,
+     "Semak/padang rumput": 0.31
+    },
+    "2023": {
+     "Air": 73.28,
+     "Pohon": 814.39,
+     "Vegetasi tergenang": 499.98,
+     "Semak/padang rumput": 43.17
+    }
+   }
+  },
+  "batangtau": {
+   "hutan_desa": "Hutan Desa Batang Tau",
+   "tahun": {
+    "2017": {
+     "Pohon": 328.97,
+     "Semak/padang rumput": 7.45
+    },
+    "2018": {
+     "Pohon": 326.74,
+     "Semak/padang rumput": 9.68
+    },
+    "2019": {
+     "Pohon": 336.41,
+     "Semak/padang rumput": 0.01
+    },
+    "2020": {
+     "Pohon": 335.48,
+     "Semak/padang rumput": 0.94
+    },
+    "2021": {
+     "Pohon": 336.19,
+     "Awan": 0.23
+    },
+    "2022": {
+     "Pohon": 336.42
+    },
+    "2023": {
+     "Pohon": 336.42
+    }
+   }
+  },
+  "nyuai": {
+   "hutan_desa": "Hutan Desa Nyuai Peningun",
+   "tahun": {
+    "2017": {
+     "Air": 0.73,
+     "Pohon": 4357.55,
+     "Semak/padang rumput": 17.81
+    },
+    "2018": {
+     "Air": 1.01,
+     "Pohon": 4358.14,
+     "Semak/padang rumput": 16.94
+    },
+    "2019": {
+     "Air": 0.27,
+     "Pohon": 4373.14,
+     "Semak/padang rumput": 2.68
+    },
+    "2020": {
+     "Air": 1.03,
+     "Pohon": 4363.14,
+     "Semak/padang rumput": 11.92
+    },
+    "2021": {
+     "Air": 1.42,
+     "Pohon": 4361.03,
+     "Awan": 8.95,
+     "Semak/padang rumput": 4.69
+    },
+    "2022": {
+     "Air": 1.64,
+     "Pohon": 4349.67,
+     "Awan": 1.79,
+     "Semak/padang rumput": 22.99
+    },
+    "2023": {
+     "Air": 1.16,
+     "Pohon": 4366.56,
+     "Semak/padang rumput": 8.37
+    }
+   }
+  },
+  "pundjung": {
+   "hutan_desa": "Hutan Desa Pundjung Batara",
+   "tahun": {
+    "2017": {
+     "Pohon": 1966.68,
+     "Semak/padang rumput": 8.37
+    },
+    "2018": {
+     "Pohon": 1969.92,
+     "Terbangun": 0.03,
+     "Semak/padang rumput": 5.1
+    },
+    "2019": {
+     "Pohon": 1974.24,
+     "Terbangun": 0.01,
+     "Semak/padang rumput": 0.8
+    },
+    "2020": {
+     "Pohon": 1974.1,
+     "Semak/padang rumput": 0.95
+    },
+    "2021": {
+     "Pohon": 1971.78,
+     "Terbangun": 0.5,
+     "Awan": 0.01,
+     "Semak/padang rumput": 2.76
+    },
+    "2022": {
+     "Pohon": 1972.2,
+     "Semak/padang rumput": 2.85
+    },
+    "2023": {
+     "Pohon": 1969.85,
+     "Semak/padang rumput": 5.2
+    }
+   }
+  },
+  "bumilestari": {
+   "hutan_desa": "Hutan Desa Bumi Lestari",
+   "tahun": {
+    "2017": {
+     "Air": 340.48,
+     "Pohon": 370.03,
+     "Vegetasi tergenang": 437.29,
+     "Tanah terbuka": 92.87,
+     "Awan": 0.29,
+     "Semak/padang rumput": 47.07
+    },
+    "2018": {
+     "Air": 386.28,
+     "Pohon": 360.24,
+     "Vegetasi tergenang": 497.12,
+     "Tanah terbuka": 0.36,
+     "Semak/padang rumput": 44.03
+    },
+    "2019": {
+     "Air": 384.56,
+     "Pohon": 372.4,
+     "Vegetasi tergenang": 449.24,
+     "Semak/padang rumput": 81.83
+    },
+    "2020": {
+     "Air": 436.01,
+     "Pohon": 349.06,
+     "Vegetasi tergenang": 502.86,
+     "Awan": 0.01,
+     "Semak/padang rumput": 0.09
+    },
+    "2021": {
+     "Air": 422.48,
+     "Pohon": 346.25,
+     "Vegetasi tergenang": 519.13,
+     "Semak/padang rumput": 0.17
+    },
+    "2022": {
+     "Air": 475.3,
+     "Pohon": 353.47,
+     "Vegetasi tergenang": 458.99,
+     "Semak/padang rumput": 0.27
+    },
+    "2023": {
+     "Air": 423.17,
+     "Pohon": 356.65,
+     "Vegetasi tergenang": 482.9,
+     "Semak/padang rumput": 25.31
+    }
+   }
+  },
+  "bukitbelang": {
+   "hutan_desa": "Hutan Desa Bukit Belang",
+   "tahun": {
+    "2017": {
+     "Pohon": 3512.76,
+     "Tanaman pertanian": 0.07,
+     "Awan": 65.17,
+     "Semak/padang rumput": 39.76
+    },
+    "2018": {
+     "Pohon": 3590.97,
+     "Semak/padang rumput": 26.79
+    },
+    "2019": {
+     "Pohon": 3611.6,
+     "Semak/padang rumput": 6.16
+    },
+    "2020": {
+     "Pohon": 3589.56,
+     "Awan": 3.78,
+     "Semak/padang rumput": 24.42
+    },
+    "2021": {
+     "Pohon": 3596.7,
+     "Awan": 1.83,
+     "Semak/padang rumput": 19.23
+    },
+    "2022": {
+     "Pohon": 3591.02,
+     "Awan": 7.83,
+     "Semak/padang rumput": 18.91
+    },
+    "2023": {
+     "Pohon": 3606.09,
+     "Semak/padang rumput": 11.67
+    }
+   }
+  }
+ }
+}

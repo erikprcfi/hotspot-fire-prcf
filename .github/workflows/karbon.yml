@@ -42,6 +42,9 @@ jobs:
         if: github.event.inputs.hanya_klhk != 'ya'
         continue-on-error: true
         run: python scripts/citra_tahunan.py
+      - name: Pembanding independen tutupan lahan tahunan (Sentinel-2 10 m, Impact Observatory/Esri)
+        continue-on-error: true
+        run: python scripts/pembanding_lulc.py
       - name: Peta tutupan lahan tahunan (vektor, unduhan SHP)
         run: python scripts/tutupan_tahunan.py
       - name: Uji perhitungan karbon (rumus templat PRCF & konsistensi data)
