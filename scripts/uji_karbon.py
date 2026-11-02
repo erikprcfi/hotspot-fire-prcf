@@ -167,6 +167,57 @@ try:
         J6 = json.loads(r.stdout.strip().splitlines()[-1]); gagal += J6["gagal"]
         print(f"6. Peta SHP tahunan vs model ({J6['uji']} pemeriksaan kelas×tahun×HD, selisih maks {J6['maks']:.2f} ha – garis poligon vs piksel 30 m): {'LULUS' if len(gagal) == n0 else 'GAGAL'}")
 except FileNotFoundError: pass
+# 7. Peta tahunan PRCF Nanga Lauk: hasil impor aplikasi = Tabel 1 & 2 laporan PRCF (toleransi pembulatan 0,005 ha)
+n0 = len(gagal); REF = json.load(open(os.path.join(ROOT, "scripts", "uji", "prcf_laporan.json"))); LK = json.load(open(os.path.join(ROOT, "data", "tutupan_lokal", "nangalauk.json")))
+for nm, vals in REF["tabel1"].items():
+    for i, v in enumerate(vals):
+        y = str(REF["tahun_awal"] + i); got = LK["luas"].get(y, {}).get(str(REF["kode"][nm]), 0)
+        if abs(got - v) > 0.0051: gagal.append(f"PRCF {y} {nm}: aplikasi {got:.4f} ≠ laporan {v}")
+mx = {(a, b): v for a, b, v in LK["matriks"]["2006-2026"]}
+for a, b, v in REF["tabel2"]:
+    got = mx.get((REF["kode"][a], REF["kode"][b]), 0)
+    if abs(got - v) > 0.0051: gagal.append(f"PRCF matriks {a}→{b}: aplikasi {got:.4f} ≠ laporan {v}")
+print(f"7. Peta tahunan PRCF Nanga Lauk = Tabel 1 (21 tahun × 6 kelas) & Tabel 2 laporan PRCF: {'LULUS' if len(gagal) == n0 else 'GAGAL'}")
+
+# 8. Tutupan lahan ↔ emisi karbon satu basis (sumber PRCF): hitung ulang INDEPENDEN dari SHP asli (shapely, UTM 49N) untuk SETIAP periode
+#    y0–y1 (2007–2026) lalu bandingkan dengan modul aplikasi (FHModelKLHK → FHTutupan.hitung & FHKarbon.hitungHD)
+n0 = len(gagal)
+try:
+    import shapefile, re as _re
+    from shapely.geometry import shape as _shape
+    from shapely.ops import unary_union as _uu
+    KD = REF["kode"]; HUT = {2001, 2002, 2004, 20041, 2005, 20051, 2006}; PM = {}
+    for f in sorted(glob.glob(os.path.join(ROOT, "data", "sumber", "prcf_nanga_lauk", "TL_HD*Final.shp"))):
+        y = int(_re.search(r"TL_HD(\d{4})", f).group(1)); d = {}
+        for sh, rec in zip(shapefile.Reader(f).shapes(), shapefile.Reader(f).records()):
+            k = KD[str(rec[0]).strip()]; g = _shape(sh.__geo_interface__).buffer(0); d[k] = _uu([d[k], g]) if k in d else g
+        PM[y] = d
+    YS = sorted(PM); luasP = {y: {k: g.area / 1e4 for k, g in PM[y].items()} for y in YS}
+    defo = {}   # (tahun, kelas hutan asal) → ha hutan → bukan hutan
+    for y in YS[1:]:
+        for ka, ga in PM[y - 1].items():
+            if ka not in HUT: continue
+            for kb, gb in PM[y].items():
+                if kb in HUT or not ga.intersects(gb): continue
+                defo[(y, ka)] = defo.get((y, ka), 0) + ga.intersection(gb).area / 1e4
+    r = subprocess.run(["node", os.path.join(ROOT, "scripts", "uji", "prcf_js.js"), ROOT], capture_output=True, text=True, timeout=300)
+    if r.returncode: gagal.append("node PRCF: " + r.stderr[:300])
+    else:
+        J8 = json.loads(r.stdout.strip().splitlines()[-1]); nper = 0
+        if J8["utama"] != "prcf": gagal.append(f"sumber utama Nanga Lauk = {J8['utama']} (harus prcf)")
+        Cc = {k: v * 0.47 for k, v in {"hlks": 287.55, "hrs": 263.17, "plk": 77.56, "br": 23.91}.items()}
+        for key, v in J8["per"].items():
+            a, b = map(int, key.split("|")); nper += 1
+            D1, D3 = luasP[a - 1].get(2002, 0), luasP[a - 1].get(20051, 0)
+            E1 = sum(defo.get((y, 2002), 0) for y in range(a, b + 1)); E3 = sum(defo.get((y, 20051), 0) for y in range(a, b + 1))
+            d3 = (E1 * (Cc["hlks"] - Cc["plk"]) + E3 * (Cc["hrs"] - Cc["br"])) * 44 / 12
+            for nm_, x, yv, tol in (("D HLK sekunder", v["D"][1], D1, 0.001), ("D HR sekunder", v["D"][3], D3, 0.001), ("E HLK sekunder", v["E"][1], E1, 0.0005), ("E HR sekunder", v["E"][3], E3, 0.0005),
+                                    ("emisi d3", v["d3"], d3, 0.5), ("tutupan deforestasi = karbon E", v["t_def"], sum(v["E"]), 1e-9), ("tutupan degradasi = karbon F", v["t_deg"], sum(v["F"]), 1e-9),
+                                    ("tutupan hutan awal = karbon ΣD", v["t_hutan_awal"], sum(v["D"]), 1e-6), ("regenerasi tutupan = karbon", v["t_reg"], v["tumbuh"], 1e-9)):
+                if abs(x - yv) > tol: gagal.append(f"PRCF {a}-{b} {nm_}: aplikasi {x:.4f} ≠ {yv:.4f}")
+        print(f"8. Tutupan lahan ↔ emisi karbon satu basis (PRCF, {nper} periode, hitung ulang independen dari SHP asli): {'LULUS' if len(gagal) == n0 else 'GAGAL'}")
+except ImportError as e:
+    gagal.append(f"uji 8 butuh pustaka: {e}")
 if gagal:
     print("\n".join(gagal[:50])); sys.exit(1)
 print("SEMUA UJI LULUS")

@@ -1,0 +1,12 @@
+{"sumber": "Yayasan PRCF Indonesia – Nanga Lauk Village Forest Conservation Project, Landcover Analysis 2006–2026 (final): Table 1 (luas per kelas per tahun, ha) & Table 2 (matriks 2006→2026, ha)",
+ "kode": {"Air/Danau/Sungai": 5001, "Hutan Lahan Kering Sekunder": 2002, "Hutan Rawa Sekunder": 20051, "Lahan Terbuka": 2014, "Pertanian Lahan Kering Campur Semak": 20092, "Semak Belukar Rawa": 20071},
+ "tabel1": {
+  "Air/Danau/Sungai": [366.16,321.83,316.24,316.24,316.24,316.24,316.24,307.87,307.87,277.38,277.38,277.38,271.78,271.78,271.78,272.45,167.87,167.87,139.14,139.14,139.14],
+  "Hutan Lahan Kering Sekunder": [42.87,42.87,42.87,42.87,42.87,42.87,42.87,42.87,42.87,42.87,42.87,42.87,42.87,42.87,42.87,42.87,42.87,42.87,42.87,42.87,42.87],
+  "Hutan Rawa Sekunder": [488.34,488.34,488.34,488.34,488.34,488.34,488.34,494.24,494.24,494.24,494.24,494.24,494.24,494.24,494.24,494.24,501.83,501.83,501.83,501.59,501.47],
+  "Lahan Terbuka": [54.04,18.42,18.42,18.42,18.42,18.42,18.42,6.66,6.66,6.66,6.66,6.66,6.66,3.04,3.04,3.04,1.22,1.22,1.22,1.51,1.63],
+  "Pertanian Lahan Kering Campur Semak": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.29,0.29,0.29,0.29,0.29],
+  "Semak Belukar Rawa": [479.37,559.32,564.90,564.90,564.90,564.90,564.90,579.14,579.14,609.63,609.63,609.63,615.23,618.85,618.85,618.18,716.70,716.70,745.42,745.37,745.37]},
+ "tahun_awal": 2006,
+ "tabel2": [["Air/Danau/Sungai","Air/Danau/Sungai",135.05],["Air/Danau/Sungai","Semak Belukar Rawa",231.11],["Hutan Lahan Kering Sekunder","Hutan Lahan Kering Sekunder",42.87],["Hutan Rawa Sekunder","Hutan Rawa Sekunder",487.68],["Hutan Rawa Sekunder","Lahan Terbuka",0.36],["Hutan Rawa Sekunder","Pertanian Lahan Kering Campur Semak",0.29],["Lahan Terbuka","Air/Danau/Sungai",0.38],["Lahan Terbuka","Lahan Terbuka",1.22],["Lahan Terbuka","Semak Belukar Rawa",52.44],["Semak Belukar Rawa","Air/Danau/Sungai",3.71],["Semak Belukar Rawa","Hutan Rawa Sekunder",13.79],["Semak Belukar Rawa","Lahan Terbuka",0.05],["Semak Belukar Rawa","Semak Belukar Rawa",461.82]],
+ "deforestasi_2006_2026": 0.65, "regenerasi_2006_2026": 13.79}

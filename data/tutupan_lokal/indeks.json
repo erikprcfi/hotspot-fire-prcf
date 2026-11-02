@@ -1,0 +1,13 @@
+{
+ "lokasi": {
+  "nangalauk": {
+   "id": "prcf",
+   "nama": "Peta tahunan PRCF 2006–2026 (interpretasi Landsat + groundcheck)",
+   "nama_en": "PRCF annual maps 2006–2026 (Landsat interpretation + ground check)",
+   "singkat": "Peta tahunan PRCF",
+   "singkat_en": "PRCF annual maps",
+   "tahun_min": 2006,
+   "tahun_maks": 2026
+  }
+ }
+}

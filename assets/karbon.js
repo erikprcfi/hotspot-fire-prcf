@@ -8,9 +8,9 @@
  *   Manfaat   : D3 = ΣK × 44/12, C3 = D3 × periode proyek, D4 = D3×(1−keefektifan), D5 = (D3−D4)×kebocoran, D6 = D3−D4−D5,
  *               D7 = D6×penyangga, D8 = D6−D7; luas terlindungi = ΣC×keefektifan; luas dicegah = ΣE (atau ΣF)×(keefektifan−kebocoran);
  *               per hektare: Awal = K/C×44/12, Proyek = Awal×(1−keef.), Kebocoran = (Awal−Proyek)×kebocoran, Manfaat, Penyangga, Dapat dijual.
- * Data aktivitas per Hutan Desa dihitung oleh scripts/analisis_inti.py (data/analisis/<id>_hd.json → emisi_frel.dasar):
- *   kelas awal dari GLAD GLCLU (epoch terakhir sebelum tahun awal; pohon > 25 m = primer, 3–25 m = sekunder; lahan kering / rawa),
- *   kehilangan tutupan pohon tahunan Hansen GFC v1.13 menurut kelas itu. Tidak ada angka yang dikarang.
+ * Data aktivitas (luas awal D, deforestasi E, degradasi F) berasal dari BASIS DATA TUTUPAN LAHAN yang sama dengan alat Tutupan lahan
+ * (assets/model_klhk.js → FHModelKLHK.muat): peta tahunan lokal yang sudah di-groundcheck (mis. PRCF Nanga Lauk 2006–2026) bila ada,
+ * selain itu model KLHK 2020 + Hansen GFC v1.13. Sumber yang dipakai tertulis di layar & semua ekspor. Tidak ada angka yang dikarang.
  * Ekspor: Excel (.xlsx, rumus hidup, tata letak templat), Word & PDF. Ringkasannya juga dapat disertakan di laporan umum (FHKarbon.ringkas).
  */
 (function () {
@@ -61,12 +61,19 @@ function total(H, P) {   // kolom TOTAL (rumus templat: M3 = periode proyek × 4
   t.m11 = C * P.eff; t.m12 = E * P.proj * (P.eff - P.leak); t.n12 = t.m12 / P.proj; t.m13 = F * P.proj * (P.eff - P.leak); t.n13 = t.m13 / P.proj; t.K = K; t.C = C; t.E = E; t.F = F;
   return t;
 }
+/* o = { lokasi: [id], y0, y1, eff, leak, buf, proj?, sumber? } – sumber = id sumber tutupan lahan (bawaan: sumber utama Hutan Desa itu) */
 async function hitung(o) {
-  const S = (window.FHSites ? FHSites() : []).filter(s => o.lokasi.includes(s.id)), P = param(o);
-  const [D, CI] = await Promise.all([Promise.all(S.map(s => muat(s.id).catch(() => null))), window.FHModelKLHK ? window.FHModelKLHK.citra() : null]);
-  const HD = S.map((s, i) => { const a = D[i] && awalHD(D[i], o.y0, o.y1, CI && CI.lokasi && CI.lokasi[s.id]); return a ? { id: s.id, nama: s.hd_nama, a, h: hitungHD(a, P), src: D[i] } : { id: s.id, nama: s.hd_nama, kosong: true }; });
+  const S = (window.FHSites ? FHSites() : []).filter(s => o.lokasi.includes(s.id)), MK = window.FHModelKLHK;
+  const HD = await Promise.all(S.map(async s => {
+    let M = null; try { M = MK ? await MK.muat(s.id, o.sumber) : null; } catch (e) { M = null; }
+    if (M && M.info && M.info.lokal && !o.sumber && o.y1 < M.yMin + 1) { try { M = await MK.muat(s.id, 'klhk'); } catch (e) { } }   // periode di luar cakupan peta lokal → sumber pembanding
+    if (M) { const lok = !!(M.info && M.info.lokal), y0 = Math.min(M.yMax, Math.max(lok ? M.yMin + 1 : Y_MIN, o.y0)), y1 = Math.min(M.yMax, Math.max(y0, o.y1));
+      if (y0 !== o.y0 || y1 !== o.y1) { o.y0 = y0; o.y1 = y1; o.disesuaikan = true; }
+      const a = M.awal(o.y0, o.y1); a.info = M.info; a.M = M; return { id: s.id, nama: s.hd_nama, a, info: M.info, M }; }
+    const R = await muat(s.id).catch(() => null), a = R && awalHD(R, o.y0, o.y1); return a ? { id: s.id, nama: s.hd_nama, a, info: MK ? MK.SUMBER_KLHK : null } : { id: s.id, nama: s.hd_nama, kosong: true }; }));
+  const P = param(o); HD.forEach(x => { if (!x.kosong) x.h = hitungHD(x.a, P); });
   const ok = HD.filter(x => !x.kosong);
-  return { o, P, HD: ok, kosong: HD.filter(x => x.kosong).map(x => x.nama), T: total(ok.map(x => x.h), P) };
+  return { o, P, HD: ok, info: ok[0] && ok[0].info, kosong: HD.filter(x => x.kosong).map(x => x.nama), T: total(ok.map(x => x.h), P) };
 }
 
 /* ---------- tampilan ---------- */
@@ -100,9 +107,12 @@ function ui(w, H) {
     <tr><td>Luas degradasi yang dapat dicegah selama periode proyek</td>${H.HD.map(x => `<td class="n">${nf(x.h.m.c13)}</td><td class="n">${nf(x.h.m.d13)}</td>`).join('')}<td class="n">${nf(T.m13)}</td><td class="n">${nf(T.n13)}</td></tr></table>`;
   const tHa = H.HD.map(d => `<h5 style="margin:14px 0 6px">Tipe hutan – ${esc(d.nama)}</h5><table class="kb-t"><tr><th rowspan="2">Tipe hutan</th><th colspan="3">Emisi GRK Tahunan per hektare (Mg CO₂ ha⁻¹)</th><th colspan="3">Pengurangan emisi tahunan per hektare (Mg CO₂ ha⁻¹)</th></tr><tr><th>Awal</th><th>Proyek</th><th>Kebocoran</th><th>Manfaat</th><th>Penyangga Risiko</th><th>Dapat Dijual</th></tr>
     ${d.h.ha.map((v, j) => `<tr><td>${KELAS[j]}</td>${v.map(x => `<td class="n">${nf(x, 4)}</td>`).join('')}</tr>`).join('')}</table>`).join('');
-  const tTh = `<table class="kb-t"><tr><th>Hutan Desa</th><th>Tahun</th>${KELAS.map(k => `<th>${k} (ha)</th>`).join('')}<th>Bukan hutan (ha)</th><th>Emisi (tCO₂e)</th></tr>${H.HD.map(d => d.a.tahun.map(t => { const P_ = P.C, e = (t[1] * (P_.hlk_primer - P_.hlk_sekunder) + t[2] * (P_.hlk_sekunder - P_.plk_semak) + t[3] * (P_.hr_primer - P_.hr_sekunder) + t[4] * (P_.hr_sekunder - P_.belukar_rawa)) * KC;
-      return `<tr><td>${esc(d.nama)}</td><td>${t[0]}</td>${t.slice(1, 5).map(v => `<td class="n">${nf(v, 4)}</td>`).join('')}<td class="n">${nf(t[5], 4)}</td><td class="n">${nf(e, 1)}</td></tr>`; }).join('')).join('')}</table>`;
-  w.querySelector('#kbOut').innerHTML = `<div class="fa-kpi"><div><small>Emisi skenario awal ${per}</small><b>${nf(T.m3 / P.proj * 1, 0)}</b><small>Mg CO₂ (ΣK × 44/12)</small></div><div><small>Manfaat iklim (Mg CO₂ thn⁻¹)</small><b>${nf(T.n6, 0)}</b></div><div><small>Sertifikat dapat dijual (Mg CO₂ thn⁻¹)</small><b>${nf(T.n8, 0)}</b></div><div><small>Luas hutan terlindungi</small><b>${nf(T.m11, 1)} ha</b></div></div>
+  const lok = !!(H.info && H.info.lokal);
+  const tTh = `<table class="kb-t"><tr><th>Hutan Desa</th><th>Tahun</th>${KELAS.map(k => `<th>${k} (ha)</th>`).join('')}<th>${lok ? 'Regenerasi bukan hutan → hutan (ha, tidak dihitung)' : 'Kehilangan pohon di bukan hutan (ha)'}</th><th>Emisi (tCO₂e)</th></tr>${H.HD.map(d => d.a.tahun.map(t => { const e = emisiTahun(t, P);
+      return `<tr><td>${esc(d.nama)}</td><td>${t[0]}</td>${t.slice(1, 5).map(v => `<td class="n">${nf(v, 4)}</td>`).join('')}<td class="n">${nf(lok && d.M ? d.M.aktivitas(t[0]).tumbuh || 0 : t[5], 4)}</td><td class="n">${nf(e, 1)}</td></tr>`; }).join('')).join('')}</table>`;
+  const I = H.info || {};
+  w.querySelector('#kbOut').innerHTML = `<div class="fa-card" style="border-left:4px solid ${lok ? '#15803D' : '#B45309'}"><small style="font-weight:800;color:var(--muted)">SUMBER DATA TUTUPAN LAHAN</small><div style="font-weight:800">${esc(I.nama || '')}</div><p class="fa-note">Data aktivitas sama dengan alat Tutupan lahan (satu basis data).${o.disesuaikan ? ` Periode disesuaikan dengan ketersediaan peta: <b>${per}</b>${lok ? ` (peta ${o.y0 - 1} = kondisi awal)` : ''}.` : ''}</p></div>
+    <div class="fa-kpi"><div><small>Emisi skenario awal ${per}</small><b>${nf(T.m3 / P.proj * 1, 0)}</b><small>Mg CO₂ (ΣK × 44/12)</small></div><div><small>Manfaat iklim (Mg CO₂ thn⁻¹)</small><b>${nf(T.n6, 0)}</b></div><div><small>Sertifikat dapat dijual (Mg CO₂ thn⁻¹)</small><b>${nf(T.n8, 0)}</b></div><div><small>Luas hutan terlindungi</small><b>${nf(T.m11, 1)} ha</b></div></div>
     ${H.kosong.length ? `<p class="fa-err">Data FREL belum tersedia untuk: ${esc(H.kosong.join(', '))}.</p>` : ''}
     <div class="fa-row"><button class="fa-btn pri" style="--c:#15803D" id="kbXl">Excel (.xlsx)</button><button class="fa-btn pri" style="--c:#1D4ED8" id="kbDoc">Word</button><button class="fa-btn pri" style="--c:#B3261E" id="kbPdf">PDF</button></div>
     ${sec('kbS0', 'Tutupan lahan (dasar perhitungan)', 'Kelas awal tiap Hutan Desa – dihitung lebih dulu sebelum emisi', tutupan(H))}
@@ -111,18 +121,32 @@ function ui(w, H) {
     ${sec('kbS3', 'Manfaat', 'Emisi awal, proyek, kebocoran, manfaat & sertifikat', `<div class="fa-scroll">${tMan}</div>`)}
     ${sec('kbS4', 'Per hektare', 'Emisi & pengurangan emisi tahunan per hektare', `<div class="fa-scroll">${tHa}</div>`)}
     ${sec('kbS5', 'Rincian per tahun', 'Kehilangan tutupan pohon menurut kelas & emisi tiap tahun', `<div class="fa-scroll">${tTh}</div>`)}
-    ${sec('kbS6', 'Metode & sumber', 'Rumus, data & keterbatasan', `<p class="fa-note"><b>Rumus:</b> Emisi (Mg CO₂) = Σ [Luas deforestasi × (stok hutan − stok lahan terdeforestasi) + Luas degradasi × (stok primer − stok sekunder)] × 44/12 (metode beda stok, FREL 2022 / e-Learning KLHK "Menghitung Emisi Karbon Hutan").</p>${METODE.map(m => `<p class="fa-note">• ${esc(m)}</p>`).join('')}`)}`;
+    ${sec('kbS6', 'Metode & sumber', 'Rumus, data & keterbatasan', `<p class="fa-note"><b>Rumus:</b> Emisi (Mg CO₂) = Σ [Luas deforestasi × (stok hutan − stok lahan terdeforestasi) + Luas degradasi × (stok primer − stok sekunder)] × 44/12 (metode beda stok, FREL 2022 / e-Learning KLHK "Menghitung Emisi Karbon Hutan").</p>${metodeK(H).map(m => `<p class="fa-note">• ${esc(m)}</p>`).join('')}`)}
+    <div class="fa-card"><button class="fa-btn full" id="kbTu">Lihat tutupan lahan (sumber & periode sama) →</button></div>`;
+  w.querySelector('#kbTu').onclick = () => window.FHTutupan && FHTutupan.open({ sumber: I.id, y0: o.y0, y1: o.y1 });
   w.querySelectorAll('.kb-sec .kb-h').forEach(b => b.onclick = () => { const s = b.parentElement, op = !s.classList.contains('open'); s.classList.toggle('open', op); b.setAttribute('aria-expanded', op); });
   w.querySelector('#kbXl').onclick = () => excel(H).catch(e => X().toast(e.message));
   w.querySelector('#kbDoc').onclick = () => word(H).catch(e => X().toast(e.message));
   w.querySelector('#kbPdf').onclick = () => pdf(H).catch(e => X().toast(e.message));
 }
 const KLHK_NAMA = { 2001: 'Hutan Lahan Kering Primer', 2002: 'Hutan Lahan Kering Sekunder', 2004: 'Hutan Mangrove Primer', 20041: 'Hutan Mangrove Sekunder', 2005: 'Hutan Rawa Primer', 20051: 'Hutan Rawa Sekunder', 2006: 'Hutan Tanaman', 2007: 'Semak Belukar', 20071: 'Belukar Rawa', 2010: 'Perkebunan', 2012: 'Permukiman', 20121: 'Bandara / Pelabuhan', 20122: 'Transmigrasi', 2014: 'Tanah Terbuka', 20141: 'Pertambangan', 20091: 'Pertanian Lahan Kering', 20092: 'Pertanian Lahan Kering Campur Semak', 20093: 'Sawah', 20094: 'Tambak', 3000: 'Savana / Padang Rumput', 5001: 'Tubuh Air', 50011: 'Rawa', 2500: 'Awan', 5003: 'Laut' };
+function emisiTahun(t, P) { const C = P.C; return (t[1] * (C.hlk_primer - C.hlk_sekunder) + t[2] * (C.hlk_sekunder - C.plk_semak) + t[3] * (C.hr_primer - C.hr_sekunder) + t[4] * (C.hr_sekunder - C.belukar_rawa)) * KC; }
 function tutupan(H) {
-  return H.HD.map(d => { const a = d.a, sumber = a.sumber === 'KLHK' ? `acuan Peta Penutupan Lahan KLHK ${a.epoch}; kondisi awal ${H.o.y0} dibentuk dari citra satelit tiap tahun` : `GLAD GLCLU ${a.epoch} (proksi kelas KLHK – peta resmi KLHK belum tersedia untuk lokasi ini)`;
-    const rows = a.tutupan ? Object.entries(a.tutupan).filter(([, v]) => v > 0.005).sort((x, y) => y[1] - x[1]).map(([k, v]) => [KLHK_NAMA[k] || k, v]) : KELAS.map((k, j) => [k, a.rows[j].D + (j % 2 ? 0 : 0)]);
-    return `<h5 style="margin:12px 0 6px">${esc(d.nama)}</h5><p class="fa-note">Sumber kelas: <b>${esc(sumber)}</b>${a.sumber === 'KLHK' ? '' : ' <span class="fa-err">– bukan peta resmi KLHK</span>'}</p>
-      ${a.citra ? `<p class="fa-note" style="color:#B45309">Tahun ${a.citra}: data aktivitas dari citra Sentinel-2 (indikasi), menunggu rilis data tahunan Hansen.</p>` : ''}<table class="kb-t"><tr><th>Kelas penutupan lahan (awal ${H.o.y0})</th><th>Luas (ha)</th></tr>${rows.map(([n, v]) => `<tr><td>${esc(n)}</td><td class="n">${nf(v)}</td></tr>`).join('')}</table>`; }).join(''); }
+  return H.HD.map(d => { const a = d.a, I = d.info || {}, lok = !!I.lokal, ya = H.o.y0 - 1;
+    const sumber = lok ? `${I.nama} – peta tahun ${ya}` : a.sumber === 'KLHK' ? `acuan Peta Penutupan Lahan KLHK ${a.epoch}; kondisi awal ${H.o.y0} dibentuk dari citra satelit tiap tahun` : `GLAD GLCLU ${a.epoch} (proksi kelas KLHK – peta resmi KLHK belum tersedia untuk lokasi ini)`;
+    const rows = a.tutupan ? Object.entries(a.tutupan).filter(([, v]) => v > 0.005).sort((x, y) => y[1] - x[1]).map(([k, v]) => [KLHK_NAMA[k] || k, v]) : KELAS.map((k, j) => [k, a.rows[j].D]);
+    return `<h5 style="margin:12px 0 6px">${esc(d.nama)}</h5><p class="fa-note">Sumber kelas: <b>${esc(sumber)}</b>${lok || a.sumber === 'KLHK' ? '' : ' <span class="fa-err">– bukan peta resmi KLHK</span>'}</p>
+      ${a.citra ? `<p class="fa-note" style="color:#B45309">Tahun ${a.citra}: data aktivitas dari citra Sentinel-2 (indikasi), menunggu rilis data tahunan Hansen.</p>` : ''}<table class="kb-t"><tr><th>Kelas penutupan lahan (awal periode, ${ya})</th><th>Luas (ha)</th></tr>${rows.map(([n, v]) => `<tr><td>${esc(n)}</td><td class="n">${nf(v)}</td></tr>`).join('')}</table>
+      ${lok && a.tumbuh > 0 ? `<p class="fa-note" style="color:#166534">Regenerasi (bukan hutan → hutan) ${H.o.y0}–${H.o.y1}: <b>${nf(a.tumbuh, 4)} ha</b> – dicatat terpisah; templat FREL tidak memuat serapan, sehingga tidak mengurangi emisi.</p>` : ''}`; }).join(''); }
+function metodeK(H) {
+  const I = H.info || {};
+  if (!I.lokal) return METODE;
+  return [METODE[0], `Tutupan lahan & data aktivitas: ${I.nama} – ${I.sumber}. ${I.metode}`, I.groundcheck ? `Groundcheck lapangan: ${I.groundcheck}` : null,
+    'Luas awal (kolom tahun awal) = luas kelas hutan pada peta tahun sebelum tahun awal periode. Deforestasi = jumlah perubahan tahunan kelas hutan → bukan hutan (tumpang-susun peta tahun y−1 dan y); degradasi = hutan primer → hutan sekunder. Kelas peta dipadankan dengan kode Penutupan Lahan KLHK (Hutan Lahan Kering Sekunder 2002, Hutan Rawa Sekunder 20051, dst.).',
+    'Regenerasi (bukan hutan → hutan) dan suksesi alami dicatat di alat Tutupan lahan dan di sini sebagai informasi; templat FREL tidak memuat serapan sehingga tidak mengurangi emisi.',
+    'Data aktivitas sama persis dengan alat Tutupan lahan (satu basis data), sehingga luas & perubahan di kedua alat selalu sama.',
+    'Tidak mencakup emisi dekomposisi/kebakaran gambut, degradasi ringan di bawah tajuk, dan serapan dari pertumbuhan kembali.', METODE[METODE.length - 1]].filter(Boolean);
+}
 const METODE = ['Kepadatan karbon: FREL 2022 (FRL ke-2 Indonesia, KLHK), biomassa AGB+BGB × fraksi karbon 0,47; kelas hutan = nilai Kalimantan, non-hutan = nilai nasional.',
   'Data aktivitas: kehilangan tutupan pohon tahunan dari citra satelit – Hansen/UMD Global Forest Change v1.13 (citra Landsat, 2001–2025, piksel ±30 m, tajuk tahun 2000 ≥ 30%); tahun berjalan (mis. 2026) dari citra Sentinel-2 20 m (perubahan NBR/SWIR terhadap musim yang sama tahun lalu, indikasi sampai data Hansen terbit). Luas piksel geodesik.',
   'Tutupan lahan tiap tahun: acuan Peta Penutupan Lahan KLHK 2020; tahun sesudah 2020 = acuan + perubahan dari citra tahun itu (HLK Primer → Sekunder, HLK Sekunder → PLK Campur Semak, Hutan Rawa Primer → Sekunder, Hutan Rawa Sekunder → Belukar Rawa); tahun sebelum 2020 = acuan dengan piksel yang hilang sesudah tahun itu dikembalikan ke hutan sekunder (lahan kering atau rawa sesuai kelas acuan). Piksel yang hilang sebelum 2020 tetapi masih dipetakan hutan oleh KLHK 2020 tidak dihitung berubah.',
@@ -149,8 +173,9 @@ async function excel(H) {
   put(p, 'A13', 'Keefektifan Proyek'); put(p, 'C13', P.eff, Object.assign({ fmt: '0%' }, IN)); put(p, 'A14', 'Perkiraan Kebocoran'); put(p, 'C14', P.leak, Object.assign({ fmt: '0%' }, IN));
   put(p, 'A15', 'Penyangga Risiko'); put(p, 'C15', P.buf, Object.assign({ fmt: '0.0%' }, IN)); put(p, 'A17', 'Faktor Konversi C ke CO2 '); put(p, 'C17', f('44/12', KC), Object.assign({ fmt: '0.00' }, IN));
   p.getCell('A19').value = 'Sumber kepadatan karbon: FREL 2022 (FRL ke-2 Indonesia, KLHK), biomassa AGB+BGB × fraksi karbon 0,47; hutan = nilai Kalimantan, non-hutan = nilai nasional.';
-  p.getCell('A20').value = 'Kelas awal: GLAD GLCLUC v2 (pohon > 25 m = primer, 3–25 m = sekunder; lahan kering/rawa) sebagai proksi Penutupan Lahan KLHK. Lahan terdeforestasi = PLK bercampur semak (lahan kering) / belukar rawa (rawa).';
-  p.getCell('A21').value = `Data aktivitas: Hansen GFC v1.13, kehilangan tutupan pohon ${per}. Dibuat otomatis oleh Fire Hotspot – Yayasan PRCF Indonesia, ${A.wib(Date.now())}.`;
+  const I = H.info || {};
+  p.getCell('A20').value = I.lokal ? `Tutupan lahan & data aktivitas: ${I.nama} – ${I.sumber}. Lahan terdeforestasi = PLK bercampur semak (lahan kering) / belukar rawa (rawa).` : 'Tutupan lahan: Peta Penutupan Lahan KLHK 2020 (1:250.000) + kehilangan tutupan pohon tahunan Hansen GFC v1.13 (tahun berjalan: Sentinel-2). Lahan terdeforestasi = PLK bercampur semak (lahan kering) / belukar rawa (rawa).';
+  p.getCell('A21').value = `Data aktivitas ${per} sama dengan alat Tutupan lahan (satu basis data). Dibuat otomatis oleh Fire Hotspot – Yayasan PRCF Indonesia, ${A.wib(Date.now())}.`;
   /* Awal */
   const a = wb.addWorksheet('Awal'); [24.53, 27.06, 15.47, 9.26, 9.2, 9.2, 12.06, 13.2, 9.86, 10.53, 48.2].forEach((w, i) => a.getColumn(i + 1).width = w);
   a.mergeCells('A1:A2'); a.mergeCells('B1:B2'); a.mergeCells('C1:D1'); a.mergeCells('E1:F1'); a.mergeCells('G1:H1'); a.mergeCells('I1:J1'); a.mergeCells('E2:F2');
@@ -170,8 +195,8 @@ async function excel(H) {
   put(a, 'A' + tr, 'Total', { font: { name: 'Segoe UI Semibold' } }); put(a, 'B' + tr, null);
   [['C', x => x.C, '#,##0.00'], ['D', x => x.D, '#,##0.00'], ['E', x => x.E, '#,##0.00'], ['F', x => x.F, '#,##0.00'], ['G', x => x.G, '0.00%'], ['H', x => x.H, '0.00%'], ['K', x => x.K, '#,##0.00']]
     .forEach(([c, fn, fm]) => put(a, c + tr, f(`SUM(${c}4:${c}${last})`, sum(c, fn)), { fmt: fm, font: { name: 'Segoe UI Semibold', color: { argb: 'FF002060' } } }));
-  a.getCell('A' + (tr + 2)).value = 'Deforestasi = kehilangan tutupan pohon di hutan sekunder (→ lahan terdeforestasi). Degradasi = kehilangan di hutan primer (→ hutan sekunder).';
-  a.getCell('A' + (tr + 3)).value = 'Kehilangan tutupan pohon di areal bukan hutan (ladang/semak) tidak dihitung sebagai deforestasi maupun degradasi.';
+  a.getCell('A' + (tr + 2)).value = I.lokal ? 'Deforestasi = perubahan kelas hutan → bukan hutan antar peta tahunan. Degradasi = hutan primer → hutan sekunder.' : 'Deforestasi = kehilangan tutupan pohon di hutan sekunder (→ lahan terdeforestasi). Degradasi = kehilangan di hutan primer (→ hutan sekunder).';
+  a.getCell('A' + (tr + 3)).value = I.lokal ? `Regenerasi (bukan hutan → hutan) ${per}: ${H.HD.reduce((q, d) => q + (d.a.tumbuh || 0), 0).toFixed(4)} ha – dicatat terpisah, tidak mengurangi emisi.` : 'Kehilangan tutupan pohon di areal bukan hutan (ladang/semak) tidak dihitung sebagai deforestasi maupun degradasi.';
   /* Manfaat */
   const m = wb.addWorksheet('Manfaat'); m.getColumn(1).width = 55.58; m.getColumn(2).width = 4.6; for (let c = 3; c <= 4 + 2 * n; c++) m.getColumn(c).width = 13;
   const col = k => { let s = '', x = k; while (x > 0) { const r = (x - 1) % 26; s = String.fromCharCode(65 + r) + s; x = Math.floor((x - 1) / 26); } return s; };
@@ -214,7 +239,7 @@ async function excel(H) {
   wb.calcProperties = { fullCalcOnLoad: true };
   const buf = await wb.xlsx.writeBuffer(); A.dl(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), fn(H, 'xlsx')); A.pakai('karbon_excel');
 }
-const fn = (H, ext) => `PERHITUNGAN_KARBON_${H.HD.length === 6 ? '6_HD' : H.HD.map(d => d.nama.replace(/^Hutan Desa\s*/, '').replace(/\W+/g, '_')).join('_')}_${H.o.y0 === H.o.y1 ? H.o.y0 : H.o.y0 + '-' + H.o.y1}.${ext}`;
+const fn = (H, ext) => `PERHITUNGAN_KARBON_${H.HD.map(d => d.nama.replace(/^Hutan Desa\s*/, '').replace(/\W+/g, '_')).join('_')}_${((H.info && H.info.id) || 'klhk').toUpperCase()}_${H.o.y0 === H.o.y1 ? H.o.y0 : H.o.y0 + '-' + H.o.y1}.${ext}`;
 function tabelLaporan(H) { const nf0 = v => X().n1(v, 0), T = H.T;
   return { ring: [['Emisi skenario awal (Mg CO2/thn) – ΣK × 44/12', nf0(T.n3)], ['Emisi skenario awal selama periode proyek (Mg CO2)', nf0(T.m3)], ['Emisi skenario proyek (Mg CO2/thn)', nf0(T.n4)], ['Kebocoran (Mg CO2/thn)', nf0(T.n5)], ['Manfaat iklim (Mg CO2/thn)', nf0(T.n6)], ['Penyangga risiko (Mg CO2/thn)', nf0(T.n7)], ['Sertifikat Plan Vivo dapat dijual (Mg CO2/thn)', nf0(T.n8)], ['Luas hutan terlindungi (ha)', nf(T.m11)], ['Luas deforestasi dicegah (ha)', nf(T.m12)], ['Luas degradasi dicegah (ha)', nf(T.m13)]],
     awal: H.HD.flatMap(d => d.h.r.map((x, j) => [j ? '' : d.nama, KELAS[j], nf(x.D, 2), nf(x.E, 4), nf(x.F, 4), nf(x.C, 2), nf(x.K, 2)])),
@@ -226,58 +251,69 @@ async function word(H) {
   const cell = (t, h) => new d.TableCell({ children: [new d.Paragraph({ children: [run(t, { bold: h, size: 17, color: h ? 'FFFFFF' : undefined })] })], shading: h ? { fill: '1F4E3D' } : undefined, margins: { top: 50, bottom: 50, left: 80, right: 80 } });
   const tbl = (Hd, rows) => new d.Table({ width: { size: 100, type: d.WidthType.PERCENTAGE }, rows: [new d.TableRow({ tableHeader: true, children: Hd.map(h => cell(h, true)) }), ...rows.map(r => new d.TableRow({ children: r.map(c => cell(c)) }))] });
   const doc = new d.Document({ creator: 'Yayasan PRCF Indonesia – Fire Hotspot', sections: [{ children: [
-    p('Perhitungan Emisi Karbon Hutan Desa', { bold: true, size: 36, color: '1F4E3D' }), p(`Periode ${per} · ${H.HD.map(x => x.nama).join(', ')}`, { color: '55665D' }),
+    p('Perhitungan Emisi Karbon Hutan Desa', { bold: true, size: 36, color: '1F4E3D' }), p(`Periode ${per} · ${H.HD.map(x => x.nama).join(', ')} · sumber tutupan lahan: ${(H.info && H.info.nama) || ''}`, { color: '55665D' }),
     p('1. Ringkasan', { bold: true, size: 26 }), tbl(['Indikator', 'Nilai'], B.ring),
     p(''), p('2. Per Hutan Desa', { bold: true, size: 26 }), tbl(['Hutan Desa', 'Emisi awal (Mg CO2/thn)', 'Manfaat (Mg CO2/thn)', 'Dapat dijual (Mg CO2/thn)', 'Hutan terlindungi (ha)'], B.hd),
     p(''), p('3. Luas & pengurangan cadangan karbon (sheet Awal)', { bold: true, size: 26 }), tbl(['Hutan Desa', 'Tipe hutan', `Luas ${H.o.y0} (ha)`, 'Deforestasi (ha)', 'Degradasi (ha)', `Luas ${H.o.y1} (ha)`, 'Pengurangan C (Mg C)'], B.awal),
     p(''), p('4. Rumus & metode', { bold: true, size: 26 }), p('Emisi (Mg CO2) = Σ [Luas deforestasi × (stok hutan − stok lahan terdeforestasi) + Luas degradasi × (stok primer − stok sekunder)] × 44/12.'),
-    ...METODE.map(x => p('• ' + x, { size: 18, color: '55665D' })), p(`Fire Hotspot · Yayasan PRCF Indonesia · dibuat ${A.wib(Date.now())}`, { size: 16, color: '888888' })] }] });
+    ...metodeK(H).map(x => p('• ' + x, { size: 18, color: '55665D' })), p(`Fire Hotspot · Yayasan PRCF Indonesia · dibuat ${A.wib(Date.now())}`, { size: 16, color: '888888' })] }] });
   A.dl(await d.Packer.toBlob(doc), fn(H, 'docx'));
 }
 async function pdf(H) {
   const A = X(); await A.lib(A.JSPDF); await A.lib(A.AUTOTABLE); const { jsPDF } = window.jspdf, doc = new jsPDF({ unit: 'mm', format: 'a4' }); if (window.FHLang) FHLang.pdf(doc);
   const B = tabelLaporan(H), per = H.o.y0 === H.o.y1 ? String(H.o.y0) : `${H.o.y0}-${H.o.y1}`, a = s => String(s).replace(/[–—]/g, '-').replace(/→/g, '->').replace(/Σ/g, 'Sum ').replace(/×/g, 'x').replace(/−/g, '-');
   doc.setFillColor(31, 78, 61); doc.rect(0, 0, 210, 30, 'F'); doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.text('Perhitungan Emisi Karbon Hutan Desa', 16, 13);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.text(doc.splitTextToSize(a(`Periode ${per} · ${H.HD.map(x => x.nama).join(', ')}`), 178), 16, 20); doc.setTextColor(20);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.text(doc.splitTextToSize(a(`Periode ${per} · ${H.HD.map(x => x.nama).join(', ')} · sumber tutupan lahan: ${(H.info && H.info.nama) || ''}`), 178), 16, 20); doc.setTextColor(20);
   const T = (y, head, body, fs = 8.5, c = [31, 78, 61]) => { doc.autoTable({ startY: y, head: [head.map(a)], body: body.map(r => r.map(a)), theme: 'grid', headStyles: { fillColor: c, fontSize: fs }, styles: { fontSize: fs, cellPadding: 1.4 }, margin: { left: 16, right: 16 } }); return doc.lastAutoTable.finalY + 7; };
   let y = T(38, ['Indikator', 'Nilai'], B.ring); y = T(y, ['Hutan Desa', 'Emisi awal (Mg CO2/thn)', 'Manfaat (Mg CO2/thn)', 'Dapat dijual (Mg CO2/thn)', 'Hutan terlindungi (ha)'], B.hd, 8);
   y = T(y, ['Hutan Desa', 'Tipe hutan', `Luas ${H.o.y0}`, 'Deforestasi', 'Degradasi', `Luas ${H.o.y1}`, 'Pengurangan C (Mg C)'], B.awal, 7.4);
   if (y > 240) { doc.addPage(); y = 20; } doc.setFontSize(8); doc.setTextColor(70);
-  [a('Rumus: Emisi (Mg CO2) = Sum [Luas deforestasi x (stok hutan - stok lahan terdeforestasi) + Luas degradasi x (stok primer - stok sekunder)] x 44/12.'), ...METODE.map(a)].forEach(t => { const L = doc.splitTextToSize(t, 178); if (y + L.length * 3.6 > 285) { doc.addPage(); y = 20; } doc.text(L, 16, y); y += L.length * 3.6 + 1.5; });
+  [a('Rumus: Emisi (Mg CO2) = Sum [Luas deforestasi x (stok hutan - stok lahan terdeforestasi) + Luas degradasi x (stok primer - stok sekunder)] x 44/12.'), ...metodeK(H).map(a)].forEach(t => { const L = doc.splitTextToSize(t, 178); if (y + L.length * 3.6 > 285) { doc.addPage(); y = 20; } doc.text(L, 16, y); y += L.length * 3.6 + 1.5; });
   const np = doc.getNumberOfPages(); for (let i = 1; i <= np; i++) { doc.setPage(i); doc.setFontSize(7.5); doc.setTextColor(120); doc.text(`Fire Hotspot · Yayasan PRCF Indonesia · ${A.wib(Date.now())} · ${i}/${np}`, 16, 290); }
   doc.save(fn(H, 'pdf'));
 }
-/* ringkasan untuk laporan umum (laporan.js): satu Hutan Desa, periode laporan */
-async function ringkas(id, y0, y1) {
-  try { const C = window.FHModelKLHK && await FHModelKLHK.citra(); if (C && C.tahun > Y_MAX && Object.values(C.lokasi || {}).some(x => x.status === 'selesai')) Y_MAX = C.tahun; } catch (e) { }
-  y0 = Math.max(Y_MIN, Math.min(Y_MAX, y0)); y1 = Math.max(y0, Math.min(Y_MAX, y1));
-  const H = await hitung({ lokasi: [id], y0, y1, eff: 0.9, leak: 0.05, buf: 0.135 }); if (!H.HD.length) return null;
-  const d = H.HD[0]; return { periode: y0 === y1 ? String(y0) : `${y0}–${y1}`, y0, y1, nama: d.nama, defo: d.h.r[1].E + d.h.r[3].E, degr: d.h.r[0].F + d.h.r[2].F, nh: d.a.nh,
-    emisi_thn: d.h.m.d3, emisi_proj: d.h.m.c3, manfaat_thn: d.h.m.d6, jual_thn: d.h.m.d8, terlindungi: d.h.m.c11, baris: d.h.r.map((x, j) => [KELAS[j], x.D, x.E, x.F, x.C, x.K]), metode: METODE };
+/* ringkasan untuk laporan umum, indikator, dll.: satu Hutan Desa, periode pilihan, sumber tutupan lahan utama (atau sid) */
+async function ringkas(id, y0, y1, sid) {
+  const H = await hitung({ lokasi: [id], y0, y1, eff: 0.9, leak: 0.05, buf: 0.135, sumber: sid }); if (!H.HD.length) return null;
+  const d = H.HD[0], o = H.o; return { periode: o.y0 === o.y1 ? String(o.y0) : `${o.y0}–${o.y1}`, y0: o.y0, y1: o.y1, nama: d.nama, defo: d.h.r.reduce((s, x) => s + x.E, 0), degr: d.h.r.reduce((s, x) => s + x.F, 0), nh: d.a.nh || 0, tumbuh: d.a.tumbuh || 0,
+    emisi_thn: d.h.m.d3, emisi_proj: d.h.m.c3, manfaat_thn: d.h.m.d6, jual_thn: d.h.m.d8, terlindungi: d.h.m.c11, baris: d.h.r.map((x, j) => [KELAS[j], x.D, x.E, x.F, x.C, x.K]),
+    sumber: (H.info && H.info.nama) || '', sumber_id: (H.info && H.info.id) || 'klhk', metode: metodeK(H) };
 }
 /* ---------- halaman alat ---------- */
-function open() {
-  const A = X(); if (!A || !window.openPage) return; css(); A.pakai('karbon');
-  const S = window.FHSites ? FHSites() : [], cur = window.FHSiteObj && FHSiteObj(), Y = []; for (let y = Y_MAX; y >= Y_MIN; y--) Y.push(y);
-  if (window.FHModelKLHK) FHModelKLHK.citra().then(C => { const cc = C && cur && C.lokasi && C.lokasi[cur.id]; if (!C || !(C.tahun > 2025) || !cc || cc.status !== 'selesai') return; if (C.tahun > Y_MAX) Y_MAX = C.tahun; ['#kbY0', '#kbY1'].forEach(id => { const e = document.querySelector(id); if (e && ![...e.options].some(o => +o.value === C.tahun)) e.insertAdjacentHTML('afterbegin', `<option value="${C.tahun}">${C.tahun} (citra)</option>`); }); });
-  openPage('Emisi karbon (FREL)', (cur ? cur.hd_nama : 'Hutan Desa') + ' · pilih periode & tahun', `<div class="fa" id="kbW">
-    <div class="fa-card"><h5>Hutan Desa</h5><div style="font-size:18px;font-weight:800">${esc(cur ? cur.hd_nama : '–')}</div><p class="fa-note">${esc(cur ? [cur.lphd, cur.kec ? 'Kec. ' + cur.kec : '', 'Kab. Kapuas Hulu'].filter(Boolean).join(' · ') : '')} · semua angka, laporan & ekspor di halaman ini hanya untuk Hutan Desa ini. Ganti Hutan Desa di Beranda untuk melihat lokasi lain.</p>
-     <h5 style="margin-top:14px">Periode</h5><div class="fa-chips" id="kbPre" style="--c:#15803D">${[['2020', '2025', '2020–2025'], ['2025', '2025', '2025'], ['2021', '2025', '5 tahun terakhir'], ['2016', '2025', '10 tahun terakhir'], ['2001', '2025', '2001–2025']].map(([a, b, t], i) => `<button type="button" data-a="${a}" data-b="${b}" aria-pressed="${!i}">${t}</button>`).join('')}</div>
-     <div class="fa-row" style="margin-top:10px"><label>Tahun awal<select id="kbY0">${Y.map(y => `<option ${y === 2020 ? 'selected' : ''}>${y}</option>`).join('')}</select></label><label>Tahun akhir<select id="kbY1">${Y.map(y => `<option ${y === 2025 ? 'selected' : ''}>${y}</option>`).join('')}</select></label></div>
+function open(opsi) {
+  const A = X(); if (!A || !window.openPage) return; css(); A.pakai('karbon'); opsi = opsi || {};
+  const cur = window.FHSiteObj && FHSiteObj(), MK = window.FHModelKLHK;
+  if (!cur) return A.toast('Pilih Hutan Desa di Beranda.');
+  openPage('Emisi karbon (FREL)', cur.hd_nama + ' · sumber tutupan lahan & periode', `<div class="fa" id="kbW">
+    <div class="fa-card"><h5>Hutan Desa</h5><div style="font-size:18px;font-weight:800">${esc(cur.hd_nama)}</div><p class="fa-note">${esc([cur.lphd, cur.kec ? 'Kec. ' + cur.kec : '', 'Kab. Kapuas Hulu'].filter(Boolean).join(' · '))} · semua angka, laporan & ekspor di halaman ini hanya untuk Hutan Desa ini. Ganti Hutan Desa di Beranda untuk melihat lokasi lain.</p>
+     <h5 style="margin-top:14px">Sumber tutupan lahan</h5><select id="kbSm" style="width:100%"></select><p class="fa-note">Sama dengan alat Tutupan lahan – luas & perubahan di kedua alat selalu sama.</p>
+     <h5 style="margin-top:14px">Periode</h5><div class="fa-chips" id="kbPre" style="--c:#15803D"></div>
+     <div class="fa-row" style="margin-top:10px"><label>Tahun awal<select id="kbY0"></select></label><label>Tahun akhir<select id="kbY1"></select></label></div>
      <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700;font-size:13px">Parameter proyek (templat PRCF)</summary><div class="fa-row" style="margin-top:10px">
       <label>Keefektifan proyek (%)<input type="number" id="kbEff" value="90" min="0" max="100" step="0.1"></label><label>Kebocoran (%)<input type="number" id="kbLeak" value="5" min="0" max="100" step="0.1"></label>
       <label>Penyangga risiko (%)<input type="number" id="kbBuf" value="13.5" min="0" max="100" step="0.1"></label><label>Lama periode proyek (thn)<input type="number" id="kbProj" placeholder="= periode acuan" min="1" max="100"></label></div></details>
-     <button class="fa-btn pri full" id="kbGo" style="--c:#15803D;margin-top:14px">Hitung emisi karbon</button></div><div id="kbOut"></div></div>`, () => {
+     <button class="fa-btn pri full" id="kbGo" style="--c:#15803D;margin-top:14px">Hitung emisi karbon</button></div><div id="kbOut"></div></div>`, async () => {
     const w = document.getElementById('kbW'), $ = s => w.querySelector(s);
-    $('#kbPre').querySelectorAll('button').forEach(b => b.onclick = () => { $('#kbPre').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); $('#kbY0').value = b.dataset.a; $('#kbY1').value = b.dataset.b; go(); });
+    let SM; try { SM = await MK.daftarSumber(cur.id); } catch (e) { SM = [MK.SUMBER_KLHK]; }
+    let sid = (SM.find(x => x.id === (opsi.sumber || MK.pilihan(cur.id))) || SM[0]).id, M = null;
+    $('#kbSm').innerHTML = SM.map((x, i) => `<option value="${esc(x.id)}" ${x.id === sid ? 'selected' : ''}>${esc(x.nama)}${i === 0 && SM.length > 1 ? ' – utama' : SM.length > 1 ? ' – pembanding' : ''}</option>`).join('');
+    const isi = keep => { const lok = !!(M && M.info && M.info.lokal), yMin = lok ? M.yMin + 1 : Y_MIN, yMax = M ? M.yMax : Y_MAX, Y = []; for (let y = yMax; y >= yMin; y--) Y.push(y);
+      const o0 = keep ? +$('#kbY0').value : opsi.y0 != null ? Math.max(yMin, opsi.y0) : null, o1 = keep ? +$('#kbY1').value : opsi.y1;
+      const d1 = Y.includes(o1) ? o1 : (lok ? yMax : Math.min(yMax, 2025)), d0 = Y.includes(o0) ? o0 : Math.max(yMin, Math.min(d1, 2020));
+      const lbl = y => `${y}${M && y === M.yCitra ? ' (citra)' : ''}`;
+      $('#kbY0').innerHTML = Y.map(y => `<option value="${y}" ${y === d0 ? 'selected' : ''}>${lbl(y)}</option>`).join(''); $('#kbY1').innerHTML = Y.map(y => `<option value="${y}" ${y === d1 ? 'selected' : ''}>${lbl(y)}</option>`).join('');
+      const PR = (lok ? [[2020, 2025, '2020–2025'], [yMax - 4, yMax, '5 tahun terakhir'], [yMax - 9, yMax, '10 tahun terakhir'], [yMin, yMax, `seluruh peta (${yMin - 1}–${yMax})`]] : [[2020, 2025, '2020–2025'], [2025, 2025, '2025'], [2021, 2025, '5 tahun terakhir'], [2016, 2025, '10 tahun terakhir'], [2001, 2025, '2001–2025']]).filter(([a, b]) => a >= yMin && b <= yMax && a <= b);
+      $('#kbPre').innerHTML = PR.map(([a, b, t]) => `<button type="button" data-a="${a}" data-b="${b}" aria-pressed="${a === d0 && b === d1}">${t}</button>`).join('');
+      $('#kbPre').querySelectorAll('button').forEach(b => b.onclick = () => { $('#kbPre').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); $('#kbY0').value = b.dataset.a; $('#kbY1').value = b.dataset.b; go(); }); };
     const go = async () => { let y0 = +$('#kbY0').value, y1 = +$('#kbY1').value; if (y0 > y1) [y0, y1] = [y1, y0];
-      if (!cur) return A.toast('Pilih Hutan Desa di Beranda.'); const lokasi = [cur.id];
       const pr = (id, d) => { const v = parseFloat($(id).value); return Number.isFinite(v) ? v / 100 : d; };
       $('#kbOut').innerHTML = '<div class="fa-card"><p class="fa-note">Menghitung…</p></div>';
-      try { const H = await hitung({ lokasi, y0, y1, eff: pr('#kbEff', .9), leak: pr('#kbLeak', .05), buf: pr('#kbBuf', .135), proj: parseInt($('#kbProj').value) || 0 }); window.__kb = H; ui(w, H); }
+      try { const H = await hitung({ lokasi: [cur.id], y0, y1, sumber: sid, eff: pr('#kbEff', .9), leak: pr('#kbLeak', .05), buf: pr('#kbBuf', .135), proj: parseInt($('#kbProj').value) || 0 }); window.__kb = H; ui(w, H); }
       catch (e) { $('#kbOut').innerHTML = '<div class="fa-card"><p class="fa-err">Data belum dapat dimuat (perlu internet).</p></div>'; } };
-    $('#kbGo').onclick = go; go();
+    const ganti = async keep => { try { M = await MK.muat(cur.id, sid); } catch (e) { M = null; } isi(keep); go(); };
+    $('#kbSm').onchange = () => { sid = $('#kbSm').value; MK.simpanPilihan(cur.id, sid); ganti(true); };
+    $('#kbGo').onclick = go; ganti(false);
   });
 }
-window.FHKarbon = { css, excel, open, hitung, ringkas, awalHD, hitungHD, param, total, BASE };
+window.FHKarbon = { css, excel, open, hitung, ringkas, awalHD, hitungHD, param, total, BASE, emisiTahun, metodeK };
 })();

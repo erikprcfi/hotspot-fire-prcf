@@ -47,7 +47,78 @@ function buat(F, C) {
   }
   return { t, yMin: 2001, yMax, yCitra: yc, kondisi, aktivitas, awal };
 }
+/* ===================== BASIS DATA TUTUPAN LAHAN BERSAMA (satu sumber untuk alat Tutupan lahan, Emisi karbon, Indikator & Laporan) =====================
+ * Urutan sumber per Hutan Desa: (1) peta tahunan LOKAL yang sudah di-groundcheck (data/tutupan_lokal, mis. PRCF Nanga Lauk 2006–2026)
+ *   → (2) peta KLHK tahunan bila tersedia → (3) model KLHK 2020 + Hansen GFC v1.13 (+ Sentinel-2 tahun berjalan).
+ * Setiap model memberi antarmuka yang sama: kondisi(Y) luas per kode KLHK pada tahun Y, aktivitas(y) perubahan kelas tahun y,
+ * awal(y0, y1) baris sheet "Awal" templat karbon PRCF – sehingga luas, perubahan & emisi selalu sama di semua alat. */
+const PRIMER = { 2001: 2002, 2005: 20051, 2004: 20041 };   // primer → sekundernya (degradasi)
+const BARIS = { 2001: 0, 2002: 1, 2005: 2, 20051: 3 };      // baris templat: HLK primer, HLK sekunder, HR primer, HR sekunder
+const VEG = new Set([2007, 20071, 20092, 20091, 2010, 20093]), TERBUKA = new Set([5001, 50011, 2014, 20094, 20141]);
+function jenis(a, b) {   // jenis perubahan kelas a → b
+  if (HUTAN.has(a) && !HUTAN.has(b)) return 'deforestasi';
+  if (PRIMER[a] && b === PRIMER[a]) return 'degradasi';
+  if (!HUTAN.has(a) && HUTAN.has(b)) return 'regenerasi';
+  if (HUTAN.has(a) && HUTAN.has(b)) return 'antar hutan';
+  if (TERBUKA.has(a) && VEG.has(b)) return 'suksesi';
+  return 'bukan hutan';
+}
+function lokal(L) {   // L = data/tutupan_lokal/<id>.json (peta tahunan per tahun, transisi tahunan y-1→y)
+  const yMin = L.tahun_min, yMax = L.tahun_maks, num = o => { const r = {}; Object.entries(o || {}).forEach(([k, v]) => r[+k] = v); return r; };
+  function kondisi(Y) { Y = Math.max(yMin, Math.min(yMax, Y)); return num(L.luas[String(Y)]); }   // sebelum peta pertama = peta pertama
+  function aktivitas(y) {
+    const T = y > yMin && y <= yMax ? (L.transisi_tahunan[String(y)] || []) : [], ub = [], semua = [];
+    let tumbuh = 0, suksesi = 0, lain = 0;
+    T.forEach(([a, b, ha]) => { const j = jenis(a, b); semua.push({ dari: a, ke: b, jenis: j, ha });
+      if (j === 'deforestasi' || j === 'degradasi') ub.push({ dari: a, ke: b, jenis: j, ha }); else if (j === 'regenerasi') tumbuh += ha; else if (j === 'suksesi') suksesi += ha; else lain += ha; });
+    return { ub, nh: 0, tetap: 0, citra: false, semua, tumbuh, suksesi, lain };
+  }
+  function awal(y0, y1) {
+    const k0 = kondisi(y0 - 1), D = [2001, 2002, 2005, 20051].map(c => Math.max(0, k0[c] || 0)), E = [0, 0, 0, 0], Fd = [0, 0, 0, 0], tahun = []; let tumbuh = 0, lain = 0;
+    for (let y = y0; y <= y1; y++) { const A = aktivitas(y), row = [y, 0, 0, 0, 0, 0];
+      A.ub.forEach(u => { const j = BARIS[u.dari]; if (j == null) { lain += u.ha; return; } if (u.jenis === 'degradasi') { Fd[j] += u.ha; row[1 + j] += u.ha; } else { E[j] += u.ha; row[1 + j] += u.ha; } });
+      tumbuh += A.tumbuh; tahun.push(row); }
+    return { epoch: yMin, sumber: 'PRCF', tutupan: k0, nh: 0, tahun, citra: null, tumbuh, lain,
+      rows: [0, 1, 2, 3].map(j => ({ D: D[j], E: E[j], F: Fd[j] })) };
+  }
+  return { t: yMin, yMin, yMax, yCitra: null, kondisi, aktivitas, awal, matriks: (a, b) => (L.matriks[`${a}-${b}`] || []).map(([x, y, ha]) => ({ dari: x, ke: y, ha, jenis: x === y ? 'tetap' : jenis(x, y) })) };
+}
+const J_ = u => { try { return fetch(u, { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null); } catch (e) { return Promise.resolve(null); } };
+let IDX = null; const indeks = () => IDX || (IDX = J_('data/tutupan_lokal/indeks.json').then(x => x || { lokasi: {} }));
+let IDX_ = null; indeks().then(x => IDX_ = x);   // dimuat lebih awal agar lokalAda() bisa dipanggil sinkron
+const lokalAda = id => !!(IDX_ && IDX_.lokasi && IDX_.lokasi[id]) ? IDX_.lokasi[id] : null;
+/* teks sumber dalam bahasa tampilan (English bila aplikasi berbahasa Inggris): nilai *_en dipakai, aslinya disimpan di *_id */
+function EN_(o) { const en = (() => { try { return !!(window.FHAlat && window.FHAlat.EN && window.FHAlat.EN()); } catch (e) { return false; } })();
+  ['nama', 'singkat', 'sumber', 'metode', 'groundcheck'].forEach(k => { if (o[k + '_id'] == null) o[k + '_id'] = o[k]; o[k] = en && o[k + '_en'] ? o[k + '_en'] : o[k + '_id']; }); return o; }
+const SUMBER_KLHK = { nama_en: 'KLHK 2020 model + Hansen GFC v1.13 (current-year changes: Sentinel-2)', singkat_en: 'KLHK 2020 + Hansen',
+  sumber_en: 'KLHK Land Cover Map 2020 (1:250,000); Hansen/UMD GFC-2025-v1.13; Sentinel-2 L2A (current year, indicative)',
+  metode_en: 'Reference classes from the 2020 KLHK map; yearly changes from Hansen tree cover loss (30 m) by the KLHK class at each pixel. Only forest loss is detected.', id: 'klhk', nama: 'Model KLHK 2020 + Hansen GFC v1.13 (perubahan tahun berjalan: Sentinel-2)', singkat: 'KLHK 2020 + Hansen',
+  sumber: 'Peta Penutupan Lahan KLHK 2020 (1:250.000); Hansen/UMD GFC-2025-v1.13; Sentinel-2 L2A (tahun berjalan, indikasi)',
+  metode: 'Kelas acuan dari peta KLHK 2020; perubahan tiap tahun dari kehilangan tutupan pohon Hansen (30 m) menurut kelas KLHK di lokasi piksel. Hanya hutan yang hilang yang terdeteksi.' };
+async function daftarSumber(id) {   // urutan prioritas; [0] = bawaan
+  const I = await indeks(), L = I.lokasi && I.lokasi[id], out = [];
+  if (L) out.push(EN_({ id: L.id, nama: L.nama, nama_en: L.nama_en, singkat: L.singkat || 'Peta tahunan ' + (L.id || '').toUpperCase(), singkat_en: L.singkat_en, lokal: true, tahun_min: L.tahun_min, tahun_maks: L.tahun_maks }));
+  out.push(EN_(Object.assign({}, SUMBER_KLHK))); return out;
+}
+const MODEL = {};
+function muat(id, sid) {   // → Promise<model> dengan .info (id, nama, sumber, metode), .peta(Y), .ubah(a, b)
+  const k = id + '|' + (sid || '');
+  return MODEL[k] || (MODEL[k] = (async () => {
+    const S = await daftarSumber(id), info = S.find(x => x.id === sid) || S[0];
+    if (info.lokal) { const L = await J_(`data/tutupan_lokal/${id}.json`); if (!L) throw new Error('Data ' + info.nama + ' belum dapat dimuat.');
+      const M = lokal(L); M.info = EN_(Object.assign({}, info, { sumber: L.sumber, metode: L.metode, groundcheck: L.groundcheck, sumber_en: L.sumber_en, metode_en: L.metode_en, groundcheck_en: L.groundcheck_en, kelas_asli: L.kelas_asli }));
+      M.peta = Y => J_(`data/tutupan_lokal/${id}_${Math.max(M.yMin, Math.min(M.yMax, Y))}.geojson`);
+      M.ubah = (a, b) => a >= b ? Promise.resolve({ type: 'FeatureCollection', features: [] }) : J_(`data/tutupan_lokal/ubah/${id}_${Math.max(M.yMin, a)}_${Math.min(M.yMax, b)}.geojson`);
+      return M; }
+    const [R, C] = await Promise.all([J_(`data/analisis/${id}_hd.json`), citra()]);
+    const M = R && R.emisi_frel ? buat(R.emisi_frel, C && C.lokasi && C.lokasi[id]) : null; if (!M) throw new Error('Data tutupan lahan belum tersedia.');
+    M.info = info; M.R = R; return M;
+  })().catch(e => { delete MODEL[k]; throw e; }));
+}
+const PILIH = 'fh_sumber_tutupan_';
+function pilihan(id) { try { return localStorage.getItem(PILIH + id) || null; } catch (e) { return null; } }
+function simpanPilihan(id, sid) { try { localStorage.setItem(PILIH + id, sid); } catch (e) { } }
 let CITRA = null;
 const citra = () => CITRA || (CITRA = fetch('data/analisis/citra_tahun_berjalan.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null));
-window.FHModelKLHK = { buat, citra, KE, HUTAN, pre };
+window.FHModelKLHK = { buat, citra, KE, HUTAN, pre, lokal, jenis, daftarSumber, muat, pilihan, simpanPilihan, SUMBER_KLHK, lokalAda };
 })();

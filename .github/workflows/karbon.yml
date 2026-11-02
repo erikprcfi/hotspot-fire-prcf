@@ -32,7 +32,7 @@ jobs:
           path: /tmp/firms_cache
           key: firms-indonesia-2016-2025-v1
       - name: Pasang pustaka
-        run: pip install shapely==2.0.6 pyproj==3.7.0 rasterio==1.4.3 numpy scipy
+        run: pip install shapely==2.0.6 pyproj==3.7.0 rasterio==1.4.3 numpy scipy pyshp
       - name: Unduh peta penutupan lahan resmi KLHK
         run: python scripts/tutupan_klhk.py
       - name: Hitung ulang analisis lahan & emisi karbon FREL (6 Hutan Desa)
@@ -45,6 +45,8 @@ jobs:
       - name: Pembanding independen tutupan lahan tahunan (Sentinel-2 10 m, Impact Observatory/Esri)
         continue-on-error: true
         run: python scripts/pembanding_lulc.py
+      - name: Impor peta tahunan lokal yang sudah di-groundcheck (PRCF Nanga Lauk 2006–2026)
+        run: python scripts/impor_prcf.py
       - name: Peta tutupan lahan tahunan (vektor, unduhan SHP)
         run: python scripts/tutupan_tahunan.py
       - name: Uji perhitungan karbon (rumus templat PRCF & konsistensi data)
@@ -54,7 +56,7 @@ jobs:
         run: |
           git config user.name "pantau-api-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/klhk data/analisis
+          git add data/klhk data/analisis data/tutupan_lokal
           if git diff --cached --quiet; then echo "Tidak ada perubahan"; exit 0; fi
           git commit -m "Tutupan lahan KLHK & emisi karbon FREL $(date -u +%Y-%m-%dT%H:%MZ)"
           for i in 1 2 3 4 5; do
