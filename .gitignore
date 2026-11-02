@@ -1,2 +1,5 @@
 data/laporan/
 __pycache__/
+
+# sumber mentah besar (salinan lengkap tersimpan terkompresi di data/lahan_kritis/*.geojson.gz)
+data/sumber/lahan_kritis/

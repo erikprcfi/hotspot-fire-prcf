@@ -4,15 +4,15 @@
   "nangalauk": {
    "tahun": 2026,
    "periode_terkini": [
-    "2026-06-04",
-    "2026-11-01"
+    "2026-06-05",
+    "2026-11-02"
    ],
    "periode_acuan": [
-    "2025-06-04",
-    "2025-11-01"
+    "2025-06-05",
+    "2025-11-02"
    ],
    "hutan_acuan_ha": 1109.64,
-   "dicek_utc": "2026-11-01T16:03:38Z",
+   "dicek_utc": "2026-11-02T14:10:11Z",
    "cerah_persen": 88,
    "citra_terkini": [
     "S2B_49NFB_20260606_0_L2A",
@@ -36,15 +36,15 @@
   "batangtau": {
    "tahun": 2026,
    "periode_terkini": [
-    "2026-06-04",
-    "2026-11-01"
+    "2026-06-05",
+    "2026-11-02"
    ],
    "periode_acuan": [
-    "2025-06-04",
-    "2025-11-01"
+    "2025-06-05",
+    "2025-11-02"
    ],
    "hutan_acuan_ha": 266.88,
-   "dicek_utc": "2026-11-01T16:03:54Z",
+   "dicek_utc": "2026-11-02T14:10:28Z",
    "cerah_persen": 100,
    "citra_terkini": [
     "S2C_49NFA_20260830_0_L2A",
@@ -66,15 +66,15 @@
   "nyuai": {
    "tahun": 2026,
    "periode_terkini": [
-    "2026-06-04",
-    "2026-11-01"
+    "2026-06-05",
+    "2026-11-02"
    ],
    "periode_acuan": [
-    "2025-06-04",
-    "2025-11-01"
+    "2025-06-05",
+    "2025-11-02"
    ],
    "hutan_acuan_ha": 4121.56,
-   "dicek_utc": "2026-11-01T16:04:09Z",
+   "dicek_utc": "2026-11-02T14:10:45Z",
    "cerah_persen": 100,
    "citra_terkini": [
     "S2C_49NFA_20260830_0_L2A",
@@ -96,15 +96,15 @@
   "pundjung": {
    "tahun": 2026,
    "periode_terkini": [
-    "2026-06-04",
-    "2026-11-01"
+    "2026-06-05",
+    "2026-11-02"
    ],
    "periode_acuan": [
-    "2025-06-04",
-    "2025-11-01"
+    "2025-06-05",
+    "2025-11-02"
    ],
    "hutan_acuan_ha": 1876.6,
-   "dicek_utc": "2026-11-01T16:04:18Z",
+   "dicek_utc": "2026-11-02T14:10:57Z",
    "cerah_persen": 98,
    "citra_terkini": [
     "S2C_49NFA_20260830_0_L2A",
@@ -126,15 +126,15 @@
   "bumilestari": {
    "tahun": 2026,
    "periode_terkini": [
-    "2026-06-04",
-    "2026-11-01"
+    "2026-06-05",
+    "2026-11-02"
    ],
    "periode_acuan": [
-    "2025-06-04",
-    "2025-11-01"
+    "2025-06-05",
+    "2025-11-02"
    ],
    "hutan_acuan_ha": 520.8,
-   "dicek_utc": "2026-11-01T16:04:24Z",
+   "dicek_utc": "2026-11-02T14:11:04Z",
    "cerah_persen": 54,
    "citra_terkini": [
     "S2B_49NFA_20260606_0_L2A",
@@ -156,15 +156,15 @@
   "bukitbelang": {
    "tahun": 2026,
    "periode_terkini": [
-    "2026-06-04",
-    "2026-11-01"
+    "2026-06-05",
+    "2026-11-02"
    ],
    "periode_acuan": [
-    "2025-06-04",
-    "2025-11-01"
+    "2025-06-05",
+    "2025-11-02"
    ],
    "hutan_acuan_ha": 3366.0,
-   "dicek_utc": "2026-11-01T16:04:31Z",
+   "dicek_utc": "2026-11-02T14:11:12Z",
    "cerah_persen": 99,
    "citra_terkini": [
     "S2C_49NGA_20260830_0_L2A",
@@ -184,6 +184,6 @@
    "jumlah_petak": 0
   }
  },
- "metode": "Perubahan tutupan hutan TAHUN BERJALAN dari citra Sentinel-2 (untuk tahun yang belum ada data tahunan Hansen) – Fire Hotspot PRCF\n==================================================================================================================================\nAcuan kelas: Peta Penutupan Lahan resmi KLHK 2020 (data/klhk/<lokasi>_2020.geojson).\nHutan acuan: tajuk 2000 ≥ 30% dan BELUM hilang s.d. 2025 menurut Hansen GFC v1.13 (jadi kehilangan 2001–2025 tidak terhitung dua kali).\nCitra: Sentinel-2 L2A (ESA Copernicus, Earth Search AWS), 20 m. TERKINI = 150 hari terakhir tahun berjalan (4 citra paling cerah),\nACUAN = 150 hari yang sama tahun sebelumnya (musim sama). Piksel berubah bila NBR turun ≥ 0,27, SWIR2 naik ≥ 0,02 dan NBR terkini ≤ 0,30\n(metode sama dengan Peringatan Hutan), petak ≥ 0,5 ha. Setiap piksel berubah diberi kode kelas KLHK 2020 → dipakai alat Tutupan Lahan\ndan Emisi Karbon FREL untuk tahun berjalan (diberi tanda \"indikasi citra\", menunggu rilis data tahunan resmi).\nKeluaran: data/analisis/citra_tahun_berjalan.json  (+ data/analisis/citra_tahun_berjalan.geojson)",
- "diperbarui_utc": "2026-11-01T16:04:44Z"
+ "metode": "Perubahan tutupan hutan TAHUN BERJALAN dari citra Sentinel-2 (untuk tahun yang belum ada data tahunan Hansen) – Fire Hotspot PRCF\n==================================================================================================================================\nAcuan kelas: Peta Penutupan Lahan resmi KLHK TERBARU (data/klhk/<lokasi>_<tahun>.geojson; kini 2025).\nHutan acuan: tajuk 2000 ≥ 30% dan BELUM hilang s.d. 2025 menurut Hansen GFC v1.13 (jadi kehilangan 2001–2025 tidak terhitung dua kali).\nCitra: Sentinel-2 L2A (ESA Copernicus, Earth Search AWS), 20 m. TERKINI = 150 hari terakhir tahun berjalan (4 citra paling cerah),\nACUAN = 150 hari yang sama tahun sebelumnya (musim sama). Piksel berubah bila NBR turun ≥ 0,27, SWIR2 naik ≥ 0,02 dan NBR terkini ≤ 0,30\n(metode sama dengan Peringatan Hutan), petak ≥ 0,5 ha. Setiap piksel berubah diberi kode kelas KLHK terbaru → dipakai alat Tutupan Lahan\ndan Emisi Karbon FREL untuk tahun berjalan (diberi tanda \"indikasi citra\", menunggu rilis data tahunan resmi).\nKeluaran: data/analisis/citra_tahun_berjalan.json  (+ data/analisis/citra_tahun_berjalan.geojson)",
+ "diperbarui_utc": "2026-11-02T14:11:27Z"
 }

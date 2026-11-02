@@ -1,0 +1,29 @@
+{
+ "sumber": "Peta Lahan Kritis Kabupaten Kapuas Hulu 2022 (kelas: Tidak Kritis, Potensial Kritis, Agak Kritis, Kritis, Sangat Kritis; atribut BPDAS)",
+ "lokasi": {
+  "nangalauk": {
+   "tahun": 2022,
+   "poligon": 2
+  },
+  "batangtau": {
+   "tahun": 2022,
+   "poligon": 5
+  },
+  "nyuai": {
+   "tahun": 2022,
+   "poligon": 31
+  },
+  "pundjung": {
+   "tahun": 2022,
+   "poligon": 29
+  },
+  "bumilestari": {
+   "tahun": 2022,
+   "poligon": 7
+  },
+  "bukitbelang": {
+   "tahun": 2022,
+   "poligon": 22
+  }
+ }
+}

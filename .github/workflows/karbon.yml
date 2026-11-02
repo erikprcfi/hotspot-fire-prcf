@@ -47,6 +47,10 @@ jobs:
         run: python scripts/pembanding_lulc.py
       - name: Impor peta tahunan lokal yang sudah di-groundcheck (PRCF Nanga Lauk 2006–2026)
         run: python scripts/impor_prcf.py
+      - name: Perbandingan peta lokal vs peta resmi KLHK
+        run: python scripts/banding_sumber.py
+      - name: Lahan kritis per Hutan Desa (silang dengan tutupan lahan acuan)
+        run: python scripts/lahan_kritis.py
       - name: Peta tutupan lahan tahunan (vektor, unduhan SHP)
         run: python scripts/tutupan_tahunan.py
       - name: Uji perhitungan karbon (rumus templat PRCF & konsistensi data)
@@ -56,7 +60,7 @@ jobs:
         run: |
           git config user.name "pantau-api-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/klhk data/analisis data/tutupan_lokal
+          git add data/klhk data/analisis data/tutupan_lokal data/lahan_kritis
           if git diff --cached --quiet; then echo "Tidak ada perubahan"; exit 0; fi
           git commit -m "Tutupan lahan KLHK & emisi karbon FREL $(date -u +%Y-%m-%dT%H:%MZ)"
           for i in 1 2 3 4 5; do

@@ -1,0 +1,60 @@
+{
+ "tahun": 2022,
+ "sumber": "Peta Lahan Kritis Kabupaten Kapuas Hulu 2022 (kelas: Tidak Kritis, Potensial Kritis, Agak Kritis, Kritis, Sangat Kritis; atribut BPDAS)",
+ "luas_area_ha": 336.9478,
+ "tercakup_ha": 336.9478,
+ "kelas_ha": {
+  "Potensial Kritis": 7.6012,
+  "Agak Kritis": 278.1693,
+  "Kritis": 51.1774
+ },
+ "kelas_persen": {
+  "Potensial Kritis": 2.26,
+  "Agak Kritis": 82.56,
+  "Kritis": 15.19
+ },
+ "bpdas_ha": {
+  "Kapuas": 336.9478
+ },
+ "metode": "Luas pada WGS 1984 UTM 49N (planimetrik) di dalam batas area.",
+ "silang_tutupan": {
+  "sumber_tutupan": "Peta Penutupan Lahan KLHK/Kemenhut 2025",
+  "baris": [
+   [
+    "Agak Kritis",
+    2002,
+    195.8461
+   ],
+   [
+    "Agak Kritis",
+    2007,
+    82.3231
+   ],
+   [
+    "Kritis",
+    2002,
+    39.8878
+   ],
+   [
+    "Kritis",
+    2007,
+    11.2896
+   ],
+   [
+    "Potensial Kritis",
+    2007,
+    7.6012
+   ]
+  ]
+ },
+ "prioritas": {
+  "kritis_bukan_hutan_ha": 11.2896,
+  "agak_kritis_bukan_hutan_ha": 82.3231,
+  "kritis_di_hutan_ha": 235.7339,
+  "keterangan": "Prioritas rehabilitasi = lahan Kritis/Sangat Kritis dan Agak Kritis pada tutupan bukan hutan. Lahan Agak Kritis s.d. Sangat Kritis yang masih berhutan umumnya dipengaruhi lereng & bahaya erosi (penilaian resmi tidak hanya dari tutupan) – prioritas perlindungan, bukan penanaman; perbedaan tahun & skala peta dicek lapangan."
+ },
+ "lokasi": "batangtau",
+ "hutan_desa": "Hutan Desa Batang Tau",
+ "tahun_tutupan": 2025,
+ "dibuat_utc": "2026-11-02T14:26:26Z"
+}

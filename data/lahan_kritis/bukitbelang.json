@@ -1,0 +1,112 @@
+{
+ "tahun": 2022,
+ "sumber": "Peta Lahan Kritis Kabupaten Kapuas Hulu 2022 (kelas: Tidak Kritis, Potensial Kritis, Agak Kritis, Kritis, Sangat Kritis; atribut BPDAS)",
+ "luas_area_ha": 3617.6575,
+ "tercakup_ha": 3617.6574,
+ "kelas_ha": {
+  "Tidak Kritis": 342.2061,
+  "Potensial Kritis": 173.4442,
+  "Agak Kritis": 2877.7633,
+  "Kritis": 224.2438
+ },
+ "kelas_persen": {
+  "Tidak Kritis": 9.46,
+  "Potensial Kritis": 4.79,
+  "Agak Kritis": 79.55,
+  "Kritis": 6.2
+ },
+ "bpdas_ha": {
+  "Kapuas": 3617.6574
+ },
+ "metode": "Luas pada WGS 1984 UTM 49N (planimetrik) di dalam batas area.",
+ "silang_tutupan": {
+  "sumber_tutupan": "Peta Penutupan Lahan KLHK/Kemenhut 2025",
+  "baris": [
+   [
+    "Agak Kritis",
+    2001,
+    1470.5597
+   ],
+   [
+    "Agak Kritis",
+    2002,
+    1203.8725
+   ],
+   [
+    "Tidak Kritis",
+    2002,
+    314.5303
+   ],
+   [
+    "Kritis",
+    20092,
+    176.3434
+   ],
+   [
+    "Agak Kritis",
+    20092,
+    171.3815
+   ],
+   [
+    "Potensial Kritis",
+    2002,
+    121.9012
+   ],
+   [
+    "Potensial Kritis",
+    20092,
+    51.543
+   ],
+   [
+    "Kritis",
+    2007,
+    35.5933
+   ],
+   [
+    "Agak Kritis",
+    20091,
+    16.9112
+   ],
+   [
+    "Agak Kritis",
+    2007,
+    15.0383
+   ],
+   [
+    "Tidak Kritis",
+    2001,
+    14.8763
+   ],
+   [
+    "Tidak Kritis",
+    20092,
+    11.7563
+   ],
+   [
+    "Kritis",
+    20091,
+    6.6789
+   ],
+   [
+    "Kritis",
+    2002,
+    5.6283
+   ],
+   [
+    "Tidak Kritis",
+    2007,
+    1.0431
+   ]
+  ]
+ },
+ "prioritas": {
+  "kritis_bukan_hutan_ha": 218.6156,
+  "agak_kritis_bukan_hutan_ha": 203.331,
+  "kritis_di_hutan_ha": 2680.0605,
+  "keterangan": "Prioritas rehabilitasi = lahan Kritis/Sangat Kritis dan Agak Kritis pada tutupan bukan hutan. Lahan Agak Kritis s.d. Sangat Kritis yang masih berhutan umumnya dipengaruhi lereng & bahaya erosi (penilaian resmi tidak hanya dari tutupan) – prioritas perlindungan, bukan penanaman; perbedaan tahun & skala peta dicek lapangan."
+ },
+ "lokasi": "bukitbelang",
+ "hutan_desa": "Hutan Desa Bukit Belang",
+ "tahun_tutupan": 2025,
+ "dibuat_utc": "2026-11-02T14:26:27Z"
+}

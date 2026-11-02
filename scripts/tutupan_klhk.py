@@ -63,7 +63,7 @@ def cari_layanan():
 
 def _kode(props):
     for k, v in props.items():
-        if re.match(r"^(PL\d{2,4}_ID|ID_PL\d*|KODE_PL|PL_ID|KODE|kode|gridcode|GRIDCODE|kode_pl)$", k, re.I):
+        if re.match(r"^(PL\d{2,4}_ID|ID_PL\d*|KODE_PL|PL_ID|KODE|kode|gridcode|GRIDCODE|kode_pl|tutupan_id)$", k, re.I):
             try:
                 c = int(float(v))
                 if c in KODE: return c

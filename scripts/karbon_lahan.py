@@ -6,6 +6,7 @@ Pemakaian: python scripts/karbon_lahan.py
 """
 import os, sys, json, datetime
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import lahan_kritis as LK
 from analisis_inti import hitung_raster, hitung_titik_panas, wilayah, muat_klhk, SUMBER, KELAS, TAHUN_LC
 from shapely.geometry import shape, mapping
 from shapely.ops import unary_union
@@ -17,7 +18,7 @@ def paket(nama, geom, jenis, klhk=None):
     r = {"nama": nama, "jenis": jenis, "dibuat_utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
          "sumber": SUMBER, "kelas": [{"kode": k, "nama": n, "warna": c} for k, n, _, c in KELAS], "tahun_tutupan": TAHUN_LC,
          "geometri": mapping(geom.simplify(0.0002, preserve_topology=True))}
-    r.update(hitung_raster(geom, klhk)); r["titik_panas"] = hitung_titik_panas(geom); r["wilayah"] = wilayah(geom)
+    r.update(hitung_raster(geom, klhk)); r["lahan_kritis"] = LK.untuk_area(geom, klhk or muat_klhk(bbox=geom.bounds)); r["titik_panas"] = hitung_titik_panas(geom); r["wilayah"] = wilayah(geom)
     return r
 
 def main():

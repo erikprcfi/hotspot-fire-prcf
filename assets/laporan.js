@@ -140,6 +140,7 @@ async function buildModel(a, b, wilKey, sensor) {
   M.title = `Laporan Titik Panas ${W.nama}`;
   M.periodeTxt = `${tglID(a)} – ${tglID(b)}`;
   M.summary = summary(M); M.weatherTxt = weatherText(M);
+  try { M.lk = SITE ? await fetch(`data/lahan_kritis/${SITE.id}.json`, { cache: 'no-cache' }).then(r => r.ok ? r.json() : null) : null; } catch (e) { M.lk = null; }
   try { M.karbon = window.FHKarbon && SITE ? await FHKarbon.ringkas(SITE.id, +a.slice(0, 4), +b.slice(0, 4)) : null; } catch (e) { M.karbon = null; }
   M.ex = await extras(M); M.summary.push(...extraSummary(M)); M.checks = verify(M); M.dibuat = new Date().toLocaleString('id-ID');
   return M;
@@ -487,6 +488,10 @@ function extraBlocks(M) {
     b.t.push({ cap: 'Luas & pengurangan cadangan karbon per tipe hutan (sheet Awal)', rows: [['Tipe hutan', `Luas ${K.y0} (ha)`, 'Deforestasi (ha)', 'Degradasi (ha)', `Luas ${K.y1} (ha)`, 'Pengurangan C (Mg C)'], ...K.baris.map(r => [r[0], fmt1(r[1]), r[2].toFixed(4).replace('.', ','), r[3].toFixed(4).replace('.', ','), fmt1(r[4]), fmt1(r[5])])],
       note: 'Rincian lengkap (Parameter, Awal, Manfaat, per hektare) dan berkas Excel dengan rumus hidup tersedia di menu Emisi karbon (FREL). ' + K.metode.slice(0, 3).join(' ') });
     B[7] = b; }
+  B[8] = null;
+  if (M.lk && M.lk.kelas_ha) { const K = M.lk, P = K.prioritas || {}, ks = Object.keys(K.kelas_ha);
+    B[8] = { h: `Lahan kritis (peta ${K.tahun})`, p: [`Peta Lahan Kritis Kabupaten Kapuas Hulu ${K.tahun} dipotong di batas Hutan Desa (luas UTM 49N). Prioritas rehabilitasi (Kritis/Sangat Kritis pada tutupan bukan hutan): ${fmt1(P.kritis_bukan_hutan_ha || 0)} ha; Agak Kritis pada bukan hutan: ${fmt1(P.agak_kritis_bukan_hutan_ha || 0)} ha; Agak Kritis–Sangat Kritis yang masih berhutan (prioritas perlindungan): ${fmt1(P.kritis_di_hutan_ha || 0)} ha. Tutupan lahan acuan: ${K.silang_tutupan ? K.silang_tutupan.sumber_tutupan : '–'}.`],
+      t: [{ cap: 'Luas per kelas lahan kritis', rows: [['Kelas', 'Luas (ha)', '%'], ...ks.map(k => [k, fmt1(K.kelas_ha[k]), fmt1(K.kelas_persen[k] || 0) + '%'])] }] }; }
   return B;
 }
 function kpis(M) {
@@ -525,6 +530,7 @@ function preview(M, F, T) {
   ${blk(XB[1])}${blk(XB[2])}
   ${XB[3] ? blk(XB[3]) + (F.lc ? img(F.lc) : '') + blk(XB[4]) + (F.em ? img(F.em) : '') + blk(XB[5]) + blk(XB[6]) : ''}
   ${XB[7] ? blk(XB[7]) : ''}
+  ${XB[8] ? blk(XB[8]) : ''}
   <h4>Lampiran A. Detail deteksi di desa & radius 5 km (${M.near.length})</h4>${T.detail.length > 1 ? htmlTable(T.detail, 30) : '<p>Tidak ada deteksi.</p>'}
   <h4>Lampiran B. Verifikasi data</h4>${htmlTable(T.cek)}
   <h4>Lampiran C–D. Kamus data, sumber data & jejak audit</h4><p class="rp-note">Lihat file PDF/Word.</p></div>`;
@@ -585,7 +591,7 @@ async function exportPDF(M, F, T) {
   if (T.ev.length > 1) { if (M.events.length > CAP_EVENTS) P(`Ditampilkan ${CAP_EVENTS} kejadian (diurutkan dari zona terdekat). Seluruh kejadian ada di file CSV.`, 8.5, MUTED); TAB(T.ev, 7); } else P('Tidak ada kejadian pada periode ini.');
   BLK(XB[1]); BLK(XB[2]);
   if (XB[3]) { BLK(XB[3]); if (F.lc) IMGp(F.lc, CW); BLK(XB[4]); if (F.em) IMGp(F.em, CW); BLK(XB[5]); BLK(XB[6]); }
-  if (XB[7]) BLK(XB[7]);
+  if (XB[7]) BLK(XB[7]); if (XB[8]) BLK(XB[8]);
   doc.addPage('a4', 'landscape'); y = 24; const ML2 = 12;
   TOC.push([`Lampiran A. Detail deteksi di Hutan Desa, desa & radius 5 km (${M.near.length})`, doc.getNumberOfPages()]);
   doc.setFont('helvetica', 'bold'); doc.setFontSize(12.5); doc.setTextColor(HEAD); doc.text(pdfTxt(TOC[TOC.length - 1][0]), ML2, y); y += 5;
@@ -649,7 +655,7 @@ async function exportDOCX(M, F, T) {
   if (T.ev.length > 1) { if (M.events.length > CAP_EVENTS) main.push(P(`Ditampilkan ${CAP_EVENTS} kejadian (zona terdekat lebih dulu). Seluruh kejadian ada di file CSV.`, { size: 17, color: '5B6A61' })); main.push(TB(T.ev, 14)); } else main.push(P('Tidak ada kejadian pada periode ini.'));
   main.push(...BLKd(XB[1]), ...BLKd(XB[2]));
   if (XB[3]) { main.push(...BLKd(XB[3])); if (F.lc) main.push(await img(F.lc, 16.5)); main.push(...BLKd(XB[4])); if (F.em) main.push(await img(F.em, 16.5)); main.push(...BLKd(XB[5]), ...BLKd(XB[6])); }
-  if (XB[7]) main.push(...BLKd(XB[7]));
+  if (XB[7]) main.push(...BLKd(XB[7])); if (XB[8]) main.push(...BLKd(XB[8]));
   const app = [H(`Lampiran A. Detail deteksi di Hutan Desa, desa & radius 5 km (${M.near.length})`, false)]; if (T.detailNote) app.push(P(T.detailNote, { size: 17, color: '5B6A61' }));
   app.push(T.detail.length > 1 ? TB(T.detail, 13) : P('Tidak ada deteksi pada periode ini.'));
   const end = [H('Lampiran B. Verifikasi data', false), P('Pemeriksaan konsistensi otomatis atas data yang masuk ke laporan ini, dijalankan saat laporan dibuat.', { size: 17, color: '5B6A61' }), TB(T.cek, 16, true),

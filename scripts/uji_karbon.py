@@ -95,7 +95,7 @@ KE = {2001: 2002, 2002: 20092, 2005: 20051, 20051: 20071}; HUT = {2001, 2002, 20
 pre = lambda c: None if c in HUT else (20051 if c in BAS else 2002)
 CIf = os.path.join(ROOT, "data", "analisis", "citra_tahun_berjalan.json"); CI = json.load(open(CIf)) if os.path.exists(CIf) else {}
 def model(F, ci):
-    t = max(map(int, F["tutupan_klhk_ha"])); base = {int(k): v for k, v in F["tutupan_klhk_ha"][str(t)].items()}; H = F["hilang_kode_ha"][str(t)]
+    SZ = lambda y: sum(F["tutupan_klhk_ha"][str(y)].values()); mx = max(SZ(y) for y in map(int, F["tutupan_klhk_ha"])); t = max(y for y in map(int, F["tutupan_klhk_ha"]) if SZ(y) >= 0.98 * mx); base = {int(k): v for k, v in F["tutupan_klhk_ha"][str(t)].items()}; H = F["hilang_kode_ha"][str(t)]
     yc = CI.get("tahun") if ci and ci.get("status") == "selesai" and CI.get("tahun", 0) > 2025 else None
     loss = lambda y: {int(k): v for k, v in ((ci or {}).get("hilang_kode_ha", {}) if y == yc else H.get(str(y), {})).items()}
     def kondisi(Y):
@@ -218,6 +218,40 @@ try:
         print(f"8. Tutupan lahan ↔ emisi karbon satu basis (PRCF, {nper} periode, hitung ulang independen dari SHP asli): {'LULUS' if len(gagal) == n0 else 'GAGAL'}")
 except ImportError as e:
     gagal.append(f"uji 8 butuh pustaka: {e}")
+# 9. Lahan kritis per Hutan Desa: kelas sah, luas peta = luas HD, poligon = ringkasan, silang tutupan = luas tercakup, cocok dengan SHP sumber
+n0 = len(gagal); LKD = os.path.join(ROOT, "data", "lahan_kritis")
+if os.path.isdir(LKD):
+    KLS = {"Tidak Kritis", "Potensial Kritis", "Agak Kritis", "Kritis", "Sangat Kritis"}; GEO9 = json.load(open(os.path.join(ROOT, "data", "geo.json")))
+    for s_ in GEO9["sites"]:
+        p_ = os.path.join(LKD, f"{s_['id']}.json")
+        if not os.path.exists(p_): gagal.append(f"lahan kritis {s_['id']}: ringkasan tidak ada"); continue
+        R9 = json.load(open(p_)); G9 = json.load(open(os.path.join(LKD, f"{s_['id']}_{R9['tahun']}.geojson")))
+        if set(R9["kelas_ha"]) - KLS: gagal.append(f"lahan kritis {s_['id']}: kelas tak sah {set(R9['kelas_ha']) - KLS}")
+        if abs(sum(R9["kelas_ha"].values()) - R9["luas_area_ha"]) > max(0.05, 0.001 * R9["luas_area_ha"]): gagal.append(f"lahan kritis {s_['id']}: Σkelas {sum(R9['kelas_ha'].values()):.3f} ≠ luas HD {R9['luas_area_ha']:.3f}")
+        pk = {}
+        for f in G9["features"]: pk[f["properties"]["kritis"]] = pk.get(f["properties"]["kritis"], 0) + f["properties"]["luas_ha"]
+        for k, v in R9["kelas_ha"].items():
+            if abs(pk.get(k, 0) - v) > 0.01: gagal.append(f"lahan kritis {s_['id']} {k}: poligon {pk.get(k, 0):.4f} ≠ ringkasan {v:.4f}")
+        sl = sum(x[2] for x in R9.get("silang_tutupan", {}).get("baris", []))
+        if R9.get("silang_tutupan") and abs(sl - R9["tercakup_ha"]) > max(0.1, 0.002 * R9["tercakup_ha"]): gagal.append(f"lahan kritis {s_['id']}: Σ silang tutupan {sl:.3f} ≠ tercakup {R9['tercakup_ha']:.3f}")
+    SRC9 = glob.glob(os.path.join(ROOT, "data", "sumber", "lahan_kritis", "*.shp"))
+    if SRC9:   # cek independen dari SHP sumber asli (bila tersedia di komputer pengolah)
+        import shapefile as _sf
+        from shapely.geometry import shape as _sh
+        from shapely.ops import unary_union as _uu2
+        from pyproj import Transformer as _Tr
+        import shapely as _shp, numpy as _np
+        _T = _Tr.from_crs(4326, 32649, always_xy=True); _U = lambda g: _shp.transform(g, lambda c: _np.column_stack(_T.transform(c[:, 0], c[:, 1])))
+        s_ = GEO9["sites"][0]; hd9 = _uu2([_sh(f["geometry"]) for f in s_["hd"]["features"]]).buffer(0); ref = {}
+        rd = _sf.Reader(SRC9[0], encoding="utf-8")
+        for sh_, rec in zip(rd.shapes(), rd.records()):
+            if not (sh_.bbox[0] <= hd9.bounds[2] and sh_.bbox[2] >= hd9.bounds[0] and sh_.bbox[1] <= hd9.bounds[3] and sh_.bbox[3] >= hd9.bounds[1]): continue
+            g = _sh(sh_.__geo_interface__).buffer(0)
+            if g.intersects(hd9): ref[rec["kritis"]] = ref.get(rec["kritis"], 0) + _U(g.intersection(hd9)).area / 1e4
+        R9 = json.load(open(os.path.join(LKD, f"{s_['id']}.json")))
+        for k, v in ref.items():
+            if abs(R9["kelas_ha"].get(k, 0) - v) > max(0.05, 0.0005 * v): gagal.append(f"lahan kritis {s_['id']} {k}: aplikasi {R9['kelas_ha'].get(k, 0):.4f} ≠ SHP sumber {v:.4f}")
+    print(f"9. Lahan kritis per Hutan Desa (kelas, luas, poligon, silang tutupan{', cek SHP sumber' if SRC9 else ''}): {'LULUS' if len(gagal) == n0 else 'GAGAL'}")
 if gagal:
     print("\n".join(gagal[:50])); sys.exit(1)
 print("SEMUA UJI LULUS")

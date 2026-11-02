@@ -1,0 +1,80 @@
+{
+ "tahun": 2022,
+ "sumber": "Peta Lahan Kritis Kabupaten Kapuas Hulu 2022 (kelas: Tidak Kritis, Potensial Kritis, Agak Kritis, Kritis, Sangat Kritis; atribut BPDAS)",
+ "luas_area_ha": 1287.9907,
+ "tercakup_ha": 1287.9907,
+ "kelas_ha": {
+  "Tidak Kritis": 1128.9497,
+  "Potensial Kritis": 111.7253,
+  "Agak Kritis": 47.3157
+ },
+ "kelas_persen": {
+  "Tidak Kritis": 87.65,
+  "Potensial Kritis": 8.67,
+  "Agak Kritis": 3.67
+ },
+ "bpdas_ha": {
+  "Kapuas": 1287.9907
+ },
+ "metode": "Luas pada WGS 1984 UTM 49N (planimetrik) di dalam batas area.",
+ "silang_tutupan": {
+  "sumber_tutupan": "Peta Penutupan Lahan KLHK/Kemenhut 2025",
+  "baris": [
+   [
+    "Tidak Kritis",
+    50011,
+    889.4898
+   ],
+   [
+    "Tidak Kritis",
+    20051,
+    231.5103
+   ],
+   [
+    "Potensial Kritis",
+    20071,
+    111.7177
+   ],
+   [
+    "Agak Kritis",
+    20071,
+    47.3151
+   ],
+   [
+    "Tidak Kritis",
+    20071,
+    7.9497
+   ],
+   [
+    "Potensial Kritis",
+    50011,
+    0.0071
+   ],
+   [
+    "Potensial Kritis",
+    20051,
+    0.0005
+   ],
+   [
+    "Agak Kritis",
+    20051,
+    0.0004
+   ],
+   [
+    "Agak Kritis",
+    50011,
+    0.0002
+   ]
+  ]
+ },
+ "prioritas": {
+  "kritis_bukan_hutan_ha": 0,
+  "agak_kritis_bukan_hutan_ha": 47.3153,
+  "kritis_di_hutan_ha": 0.0004,
+  "keterangan": "Prioritas rehabilitasi = lahan Kritis/Sangat Kritis dan Agak Kritis pada tutupan bukan hutan. Lahan Agak Kritis s.d. Sangat Kritis yang masih berhutan umumnya dipengaruhi lereng & bahaya erosi (penilaian resmi tidak hanya dari tutupan) – prioritas perlindungan, bukan penanaman; perbedaan tahun & skala peta dicek lapangan."
+ },
+ "lokasi": "bumilestari",
+ "hutan_desa": "Hutan Desa Bumi Lestari",
+ "tahun_tutupan": 2025,
+ "dibuat_utc": "2026-11-02T14:26:26Z"
+}

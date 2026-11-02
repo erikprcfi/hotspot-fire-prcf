@@ -18,7 +18,9 @@ const pre = c => HUTAN.has(c) ? null : (BASAH.has(c) ? 20051 : 2002);
 /* F = emisi_frel dari data/analisis/<id>_hd.json ; C = entri lokasi dari citra_tahun_berjalan.json (boleh null) */
 function buat(F, C) {
   if (!F || !F.tutupan_klhk_ha || !F.hilang_kode_ha) return null;
-  const t = Math.max(...Object.keys(F.tutupan_klhk_ha).map(Number)), base = {}, H = F.hilang_kode_ha[String(t)] || {};
+  // peta acuan = peta KLHK TERBARU yang menutup seluruh area (≥ 98% luas peta terlengkap) – mis. PL 2025 Kapuas Hulu hanya dipakai bila area di dalam Kapuas Hulu
+  const SZ = y => Object.values(F.tutupan_klhk_ha[y] || {}).reduce((a, b) => a + b, 0), Ys = Object.keys(F.tutupan_klhk_ha).map(Number), mx = Math.max(...Ys.map(SZ));
+  const t = Math.max(...Ys.filter(y => SZ(y) >= 0.98 * mx)), base = {}, H = F.hilang_kode_ha[String(t)] || {};
   Object.entries(F.tutupan_klhk_ha[String(t)]).forEach(([k, v]) => base[+k] = v);
   const yc = C && C.status === 'selesai' && C.hilang_kode_ha && C.tahun > 2025 ? +C.tahun : null;
   const loss = y => { const o = y === yc ? C.hilang_kode_ha : H[String(y)]; const r = {}; Object.entries(o || {}).forEach(([k, v]) => r[+k] = v); return r; };
@@ -90,11 +92,20 @@ const lokalAda = id => !!(IDX_ && IDX_.lokasi && IDX_.lokasi[id]) ? IDX_.lokasi[
 /* teks sumber dalam bahasa tampilan (English bila aplikasi berbahasa Inggris): nilai *_en dipakai, aslinya disimpan di *_id */
 function EN_(o) { const en = (() => { try { return !!(window.FHAlat && window.FHAlat.EN && window.FHAlat.EN()); } catch (e) { return false; } })();
   ['nama', 'singkat', 'sumber', 'metode', 'groundcheck'].forEach(k => { if (o[k + '_id'] == null) o[k + '_id'] = o[k]; o[k] = en && o[k + '_en'] ? o[k + '_en'] : o[k + '_id']; }); return o; }
-const SUMBER_KLHK = { nama_en: 'KLHK 2020 model + Hansen GFC v1.13 (current-year changes: Sentinel-2)', singkat_en: 'KLHK 2020 + Hansen',
-  sumber_en: 'KLHK Land Cover Map 2020 (1:250,000); Hansen/UMD GFC-2025-v1.13; Sentinel-2 L2A (current year, indicative)',
-  metode_en: 'Reference classes from the 2020 KLHK map; yearly changes from Hansen tree cover loss (30 m) by the KLHK class at each pixel. Only forest loss is detected.', id: 'klhk', nama: 'Model KLHK 2020 + Hansen GFC v1.13 (perubahan tahun berjalan: Sentinel-2)', singkat: 'KLHK 2020 + Hansen',
-  sumber: 'Peta Penutupan Lahan KLHK 2020 (1:250.000); Hansen/UMD GFC-2025-v1.13; Sentinel-2 L2A (tahun berjalan, indikasi)',
-  metode: 'Kelas acuan dari peta KLHK 2020; perubahan tiap tahun dari kehilangan tutupan pohon Hansen (30 m) menurut kelas KLHK di lokasi piksel. Hanya hutan yang hilang yang terdeteksi.' };
+const SUMBER_KLHK = { id: 'klhk', nama: 'Peta resmi KLHK + Hansen GFC v1.13 (perubahan tahun berjalan: Sentinel-2)', singkat: 'KLHK + Hansen',
+  nama_en: 'Official KLHK map + Hansen GFC v1.13 (current-year changes: Sentinel-2)', singkat_en: 'KLHK + Hansen',
+  sumber: 'Peta Penutupan Lahan resmi KLHK/Kementerian Kehutanan (1:250.000); Hansen/UMD GFC-2025-v1.13; Sentinel-2 L2A (tahun berjalan, indikasi)',
+  sumber_en: 'Official KLHK/Ministry of Forestry Land Cover Map (1:250,000); Hansen/UMD GFC-2025-v1.13; Sentinel-2 L2A (current year, indicative)',
+  metode: 'Kelas acuan dari peta KLHK terbaru; perubahan tiap tahun dari kehilangan tutupan pohon Hansen (30 m) menurut kelas KLHK di lokasi piksel. Hanya hutan yang hilang yang terdeteksi.',
+  metode_en: 'Reference classes from the latest KLHK map; yearly changes from Hansen tree cover loss (30 m) by the KLHK class at each pixel. Only forest loss is detected.' };
+function infoKLHK(t, tahun) {   // nama & sumber dengan tahun peta acuan (peta terbaru) dan peta lain sebagai pembanding
+  const lain = (tahun || []).filter(y => y !== t), L = lain.length ? `; peta ${lain.join(', ')} sebagai pembanding` : '', Le = lain.length ? `; ${lain.join(', ')} map(s) for comparison` : '';
+  return { nama_id: `Peta resmi KLHK ${t} + Hansen GFC v1.13 (perubahan tahun berjalan: Sentinel-2)`, nama_en: `Official KLHK ${t} map + Hansen GFC v1.13 (current-year changes: Sentinel-2)`, singkat_id: `KLHK ${t} + Hansen`, singkat_en: `KLHK ${t} + Hansen`,
+    sumber_id: `Peta Penutupan Lahan resmi KLHK/Kementerian Kehutanan ${t} (1:250.000)${L}; Hansen/UMD GFC-2025-v1.13; Sentinel-2 L2A (tahun berjalan, indikasi)`, sumber_en: `Official KLHK/Ministry of Forestry Land Cover Map ${t} (1:250,000)${Le}; Hansen/UMD GFC-2025-v1.13; Sentinel-2 L2A (current year, indicative)`,
+    metode_id: `Kelas acuan dari peta KLHK ${t}; tahun sebelum ${t} direkonstruksi mundur dan tahun sesudahnya maju dengan kehilangan tutupan pohon Hansen (30 m) menurut kelas KLHK di lokasi piksel. Hanya hutan yang hilang yang terdeteksi.`,
+    metode_en: `Reference classes from the ${t} KLHK map; years before ${t} are reconstructed backwards and later years forwards with Hansen tree cover loss (30 m) by KLHK class at each pixel. Only forest loss is detected.` };
+}
+
 async function daftarSumber(id) {   // urutan prioritas; [0] = bawaan
   const I = await indeks(), L = I.lokasi && I.lokasi[id], out = [];
   if (L) out.push(EN_({ id: L.id, nama: L.nama, nama_en: L.nama_en, singkat: L.singkat || 'Peta tahunan ' + (L.id || '').toUpperCase(), singkat_en: L.singkat_en, lokal: true, tahun_min: L.tahun_min, tahun_maks: L.tahun_maks }));
@@ -112,7 +123,8 @@ function muat(id, sid) {   // → Promise<model> dengan .info (id, nama, sumber,
       return M; }
     const [R, C] = await Promise.all([J_(`data/analisis/${id}_hd.json`), citra()]);
     const M = R && R.emisi_frel ? buat(R.emisi_frel, C && C.lokasi && C.lokasi[id]) : null; if (!M) throw new Error('Data tutupan lahan belum tersedia.');
-    M.info = info; M.R = R; return M;
+    const ik = infoKLHK(M.t, Object.keys(R.emisi_frel.tutupan_klhk_ha || {}).map(Number).sort());
+    M.info = Object.assign({}, info, ik, { nama: ik.nama_id, singkat: ik.singkat_id, sumber: ik.sumber_id, metode: ik.metode_id }); EN_(M.info); M.R = R; return M;
   })().catch(e => { delete MODEL[k]; throw e; }));
 }
 const PILIH = 'fh_sumber_tutupan_';
