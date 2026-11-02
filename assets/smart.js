@@ -58,7 +58,7 @@ window.addEventListener('online', () => setTimeout(sync, 2000)); setInterval(() 
 
 /* ---------- tampilan ---------- */
 function css() { if (document.getElementById('sm-css')) return; const s = document.createElement('style'); s.id = 'sm-css';
-  s.textContent = `.sm-st{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.sm-st div{background:var(--surface-2,#f3f6f4);border-radius:14px;padding:10px}.sm-st small{display:block;font-size:11px;color:var(--muted)}.sm-st b{font-size:17px}
+  s.textContent = `#smB{display:grid;gap:16px}#smB>*{margin:0}.fa#smW{gap:16px;padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}.sm-act{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.sm-act .fa-btn{min-height:52px}#smMap{border-radius:18px;overflow:hidden}.sm-st{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}@media(min-width:560px){.sm-st{grid-template-columns:repeat(4,1fr)}}.sm-st div{background:var(--surface-2,#f3f6f4);border-radius:14px;padding:10px}.sm-st small{display:block;font-size:11px;color:var(--muted)}.sm-st b{font-size:17px}
   .sm-wp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.sm-wp button{border:0;border-radius:16px;padding:14px 8px;color:#fff;font:700 13px var(--f,system-ui);cursor:pointer;min-height:76px}.sm-wp button span{display:block;font-size:22px}
   .sm-f label{display:block;margin:10px 0 4px;font-size:12.5px;font-weight:700}.sm-f input,.sm-f select,.sm-f textarea{width:100%;box-sizing:border-box}.sm-gps{font-size:12.5px;font-weight:700}.sm-gps.ok{color:#15803D}.sm-gps.lemah{color:#B45309}.sm-gps.no{color:#B91C1C}
   .sm-li{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.sm-li:first-child{border-top:0}.sm-li .m{flex:1;min-width:0}.sm-li small{display:block;color:var(--muted);font-size:12px}
@@ -109,12 +109,12 @@ function layarAktif() {
   }
   const p = AKTIF;
   BOX.innerHTML = `<div class="fa-card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><div><b>${esc(p.info.id_kegiatan)}</b><small style="display:block;color:var(--muted)">${esc(p.info.stasiun || p.info.lokasi)} · ${esc(p.info.tim)}</small></div><span class="sm-gps" id="smGps">GPS…</span></div>
-      <div class="sm-st" style="margin-top:10px"><div><small>Durasi</small><b id="smDur">–</b></div><div><small>Jarak</small><b id="smJr">–</b></div><div><small>Titik track</small><b id="smTk">–</b></div><div><small>Waypoint</small><b id="smWn">–</b></div></div></div>
+      <div class="sm-st" style="margin-top:10px"><div><small>Durasi</small><b id="smDur">–</b></div><div><small>Jarak</small><b id="smJr">–</b></div><div><small>Titik track</small><b id="smTk">–</b></div><div><small>Waypoint</small><b id="smWn">–</b></div></div>
+      <div class="sm-act"><button class="fa-btn" id="smJd">${p.jeda ? '▶ Lanjutkan track' : '⏸ Jeda track'}</button><button class="fa-btn pri" id="smSl" style="--c:#B3261E">■ Selesai patroli</button></div></div>
     <div class="fa-card"><h4>Ambil waypoint</h4><div class="sm-wp">${AKAR().map((c, i) => `<button data-w="${esc(c.key)}" style="background:${WARNA[Math.min(i, 3)][0]}"><span>${WARNA[Math.min(i, 3)][1]}</span>${esc(c.nama.replace(/^Indikator /, ''))}</button>`).join('')}</div>
       <p class="fa-note">Koordinat diambil dari GPS saat tombol ditekan (tanpa internet). Tunggu akurasi ≤ 15 m bila memungkinkan.</p></div>
     <div class="fa-map" id="smMap" style="height:300px"></div>
-    <div class="fa-card" id="smWl"></div>
-    <div class="fa-row"><button class="fa-btn" id="smJd">${p.jeda ? '▶ Lanjutkan track' : '⏸ Jeda track'}</button><button class="fa-btn pri" id="smSl" style="--c:#B3261E">■ Selesai patroli</button></div>`;
+    <div class="fa-card" id="smWl"></div>`;
   BOX.querySelectorAll('[data-w]').forEach(b => b.onclick = () => formWp(b.dataset.w));
   BOX.querySelector('#smJd').onclick = async () => { p.jeda = !p.jeda; await simpan(p); layarAktif(); };
   BOX.querySelector('#smSl').onclick = () => tanya('Selesaikan patroli ini? Perekaman track akan berhenti.', async () => { p.status = 'selesai'; p.selesai = Date.now(); p.jeda = false; await simpan(p); gpsStop(); const id = p.id; AKTIF = null; X().pakai('smart_selesai'); sync(); detail(id); });
@@ -127,7 +127,7 @@ function ui() {
   BOX.querySelector('#smJr').textContent = nf(panjang(p.track) / 1000, 2) + ' km'; BOX.querySelector('#smTk').textContent = p.track.length; BOX.querySelector('#smWn').textContent = p.waypoints.length;
   if (MAP && LYR) { LYR.clearLayers(); if (p.track.length > 1) L.polyline(p.track.map(x => [x[1], x[2]]), { color: '#F59E0B', weight: 4 }).addTo(LYR);
     p.waypoints.forEach(w => L.circleMarker([w.la, w.lo], { radius: 7, color: '#fff', weight: 2, fillColor: RUPA(w)[0], fillOpacity: 1 }).bindTooltip('WPT ' + pad(w.no)).addTo(LYR));
-    if (FIX) L.circleMarker([FIX.la, FIX.lo], { radius: 6, color: '#2563EB', fillColor: '#60A5FA', fillOpacity: 1 }).addTo(LYR); }
+    if (FIX) { L.circleMarker([FIX.la, FIX.lo], { radius: 7, color: '#fff', weight: 2, fillColor: '#2563EB', fillOpacity: 1 }).bindTooltip(T_('Posisi saya')).addTo(LYR); if (!MAP._fhIkut) { MAP._fhIkut = 1; MAP.setView([FIX.la, FIX.lo], 16); } } }
 }
 const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 function peta() {
