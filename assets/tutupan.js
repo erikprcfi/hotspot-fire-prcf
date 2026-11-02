@@ -101,7 +101,7 @@ function open(opsi) {
       const o0 = keep ? +$('#tuY0').value : opsi.y0, o1 = keep ? +$('#tuY1').value : opsi.y1, d0 = Y.includes(o0) ? o0 : (M.info && M.info.lokal ? yMin : 2020), d1 = Y.includes(o1) ? o1 : yMax;
       const lbl = y => `${y}${y === M.yCitra ? ' (citra)' : ''}`;
       $('#tuY0').innerHTML = Y.map(y => `<option value="${y}" ${y === d0 ? 'selected' : ''}>${lbl(y)}</option>`).join(''); $('#tuY1').innerHTML = Y.map(y => `<option value="${y}" ${y === d1 ? 'selected' : ''}>${lbl(y)}</option>`).join('');
-      const I = M.info || {}; $('#tuSmI').textContent = I.lokal ? `${I.sumber}. ${I.metode}` : `${MK.SUMBER_KLHK.sumber}. ${MK.SUMBER_KLHK.metode}`;
+      const I = M.info || {}; $('#tuSmI').textContent = I.lokal ? `${I.sumber}. ${I.metode}` : `${I.sumber || MK.SUMBER_KLHK.sumber}. ${I.metode || MK.SUMBER_KLHK.metode}`;
       $('#tuInfo').textContent = I.lokal ? `Peta tahunan ${M.yMin}–${M.yMax}. Kondisi awal periode = peta tahun sebelum tahun awal (atau peta ${M.yMin}); perubahan = selisih peta tiap tahun.` : `Acuan: Peta Penutupan Lahan KLHK ${M.t}. Tahun 2001–2025 dianalisis dengan citra Landsat (Hansen GFC v1.13)${M.yCitra ? `, tahun ${M.yCitra} dengan citra Sentinel-2` : ''}.`; };
     const go = () => { if (!M) return; let y0 = +$('#tuY0').value, y1 = +$('#tuY1').value; if (y0 > y1) [y0, y1] = [y1, y0];
       const h = hitung(M, y0, y1); if (!h) { $('#tuOut').innerHTML = '<div class="fa-card"><p class="fa-err">Data tutupan lahan untuk periode ini belum tersedia.</p></div>'; return; }
@@ -173,7 +173,7 @@ function tampil(w, x, y0, y1) {
   const trp = f => ({ type: 'Feature', geometry: f.geometry, properties: Object.fromEntries(Object.entries(f.properties).map(([k, v]) => [k, typeof v === 'string' ? T_(v) : v])) });
   out.querySelector('#tuGeo').onclick = async () => { const P = cur && await peta_(); if (!P) return A.toast('Peta tahunan belum tersedia.');
     A.dl(new Blob([JSON.stringify({ type: 'FeatureCollection', name: `tutupan_${slug}_${y1}`, features: P.fitur.map(trp) })], { type: 'application/geo+json' }), `${A.EN() ? 'land_cover' : 'tutupan_lahan'}_${src}_${slug}_${y1}.geojson`); A.pakai('tutupan_geojson'); };
-  out.querySelector('#tuShp').onclick = async e => { const bt = e.currentTarget; bt.disabled = true; try { const P = cur && await peta_(); if (!P) return A.toast('Peta tahunan belum tersedia.'); if (!window.FHShp) await A.lib('assets/shp.js?v=60');
+  out.querySelector('#tuShp').onclick = async e => { const bt = e.currentTarget; bt.disabled = true; try { const P = cur && await peta_(); if (!P) return A.toast('Peta tahunan belum tersedia.'); if (!window.FHShp) await A.lib('assets/shp.js?v=61');
       const F = P.fitur.map(trp), tot = P.fitur.reduce((a, f) => a + f.properties.LUAS_HA, 0), nm = `tutupan_lahan_${slug}_${y1}`, L_ = [{ nama: nm, fitur: F, kolom: P.kolom || KOLOM }];
       const U = P.ubah ? P.ubah.map(trp) : F.filter((f, i) => P.fitur[i].properties.UBAH_PER === 'Ya'); if (U.length) L_.push({ nama: `perubahan_${slug}_${ya === y1 ? y1 : (lok ? ya : y0) + '-' + y1}`, fitur: U, kolom: P.ubah ? KOLOM_UBAH : KOLOM });
       const ring = ['kode_klhk;kelas;luas_poligon_ha;luas_tabel_aplikasi_ha'].concat(G.kode.map(k => [k, NAMA[k], P.fitur.filter(f => f.properties.KODE_PL === k).reduce((a, f) => a + f.properties.LUAS_HA, 0).toFixed(4), (G.akhir[k] || 0).toFixed(4)].join(';'))).join('\r\n');

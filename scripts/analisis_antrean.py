@@ -6,6 +6,7 @@ Butuh env: ANALISIS_KEY (kunci pekerja dari Apps Script), AKUN_URL (URL aplikasi
 """
 import os, sys, json, datetime, urllib.request, traceback
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import lahan_kritis as LK
 from analisis_inti import hitung_raster, hitung_titik_panas, wilayah, muat_klhk, SUMBER, KELAS, TAHUN_LC
 from shapely.geometry import shape, mapping
 from shapely.validation import make_valid
@@ -32,7 +33,7 @@ def main():
             r = {"nama": t.get("nama") or "Area unggahan", "jenis": "SHP unggahan pengguna", "dibuat_utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
                  "sumber": SUMBER, "kelas": [{"kode": k, "nama": n, "warna": c} for k, n, _, c in KELAS], "tahun_tutupan": TAHUN_LC,
                  "geometri": mapping(g.simplify(0.0002, preserve_topology=True)), "luas_geodesik_ha": round(luas_geo, 1)}
-            r.update(hitung_raster(g, muat_klhk(bbox=g.bounds))); r["titik_panas"] = hitung_titik_panas(g, cache=os.environ.get("FIRMS_CACHE", "/tmp/firms_cache")); r["wilayah"] = wilayah(g)
+            kd = muat_klhk(bbox=g.bounds); r.update(hitung_raster(g, kd)); r["lahan_kritis"] = LK.untuk_area(g, kd); r["titik_panas"] = hitung_titik_panas(g, cache=os.environ.get("FIRMS_CACHE", "/tmp/firms_cache")); r["wilayah"] = wilayah(g)
             print(post({"aksi": "pekerja_hasil", "kunci": "fh-prcf-2026-akun", "kunci_pekerja": KEY, "aid": aid, "hasil": json.loads(json.dumps(r, default=float))}))
         except Exception as e:
             traceback.print_exc()

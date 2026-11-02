@@ -34,7 +34,7 @@ async function kumpul(s, k) {
   return { id: s.id, nama: s.hd_nama, lphd: s.lphd || '', kec: s.kec || '', luas: A.luas_ha || s.luas_hd_ha, tpY, tp5: thn.reduce((a, y) => a + (tpY[y] || 0), 0), tpTot: SUM(tpY), near, inside,
     hutan2000: H.hutan_2000_ha, hutan2025: H.hutan_tersisa_2025_ha, hilang: H.persen_hilang, lossY, loss5: thn.reduce((a, y) => a + (lossY[y] || 0), 0), lossTot: SUM(lossY),
     fluks: K.fluks_bersih_per_tahun_tCO2e, emisi: K.emisi_bruto_per_tahun_tCO2e, serap: K.serapan_bruto_per_tahun_tCO2, stok: K.stok_karbon_total_2000_tC, bt, btTot: SUM(bt),
-    frel, tk, tkTahun, src, srcNama, lok: !!(M && M.info && M.info.lokal) };
+    frel, tk, tkTahun, src, srcNama, lok: !!(M && M.info && M.info.lokal), lk: await J(`data/lahan_kritis/${s.id}.json`).catch(() => null) };
 }
 function baris(r) { const n1 = X().n1, v = (x, d) => x == null ? '–' : n1(x, d);
   return [['Luas Hutan Desa', v(r.luas, 2), 'ha', 'Batas SK Hutan Desa (data/geo.json)'],
@@ -44,6 +44,9 @@ function baris(r) { const n1 = X().n1, v = (x, d) => x == null ? '–' : n1(x, d
     ...r.frel.map(p => [`Degradasi ${p.periode}`, v(p.degradasi_ha, 2), 'ha', r.src]),
     ...(r.lok ? r.frel.map(p => [`Regenerasi (bukan hutan → hutan) ${p.periode}`, v(p.tumbuh, 2), 'ha', r.src]) : []),
     ...r.frel.map(p => [`Emisi FREL ${p.periode}`, v(p.emisi_tCO2e, 0), 'tCO₂e', 'Rumus FREL templat PRCF · ' + r.src]),
+    ...(r.lk ? [[`Lahan Kritis + Sangat Kritis (${r.lk.tahun})`, v((r.lk.kelas_ha['Kritis'] || 0) + (r.lk.kelas_ha['Sangat Kritis'] || 0), 2), 'ha', 'Peta Lahan Kritis Kab. Kapuas Hulu ' + r.lk.tahun],
+      [`Lahan Agak Kritis (${r.lk.tahun})`, v(r.lk.kelas_ha['Agak Kritis'] || 0, 2), 'ha', 'Peta Lahan Kritis Kab. Kapuas Hulu ' + r.lk.tahun],
+      ['Prioritas rehabilitasi (Kritis/Sangat Kritis, bukan hutan)', v((r.lk.prioritas || {}).kritis_bukan_hutan_ha, 2), 'ha', 'Lahan kritis × ' + r.src]] : []),
     ['Titik panas di dalam HD 2021–2025', v(r.tp5, 0), 'titik', 'NASA FIRMS VIIRS S-NPP'], ['Titik panas di dalam HD 12 bulan terakhir', v(r.inside, 0), 'titik', 'NASA FIRMS NRT'],
     ['Titik panas ≤5 km 12 bulan terakhir', v(r.near, 0), 'titik', 'NASA FIRMS NRT'], ['Bekas terbakar terpetakan ≤5 km', v(r.btTot, 2), 'ha', 'Sentinel-2 dNBR'],
     ['Emisi bruto karbon hutan', v(r.emisi, 0), 'tCO₂e/thn', 'Harris dkk. 2021'], ['Serapan bruto karbon hutan', v(r.serap, 0), 'tCO₂/thn', 'Harris dkk. 2021'],

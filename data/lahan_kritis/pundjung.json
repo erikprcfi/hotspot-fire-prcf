@@ -1,0 +1,97 @@
+{
+ "tahun": 2022,
+ "sumber": "Peta Lahan Kritis Kabupaten Kapuas Hulu 2022 (kelas: Tidak Kritis, Potensial Kritis, Agak Kritis, Kritis, Sangat Kritis; atribut BPDAS)",
+ "luas_area_ha": 1974.971,
+ "tercakup_ha": 1974.9708,
+ "kelas_ha": {
+  "Tidak Kritis": 972.1563,
+  "Potensial Kritis": 136.0754,
+  "Agak Kritis": 851.8704,
+  "Kritis": 14.8687
+ },
+ "kelas_persen": {
+  "Tidak Kritis": 49.22,
+  "Potensial Kritis": 6.89,
+  "Agak Kritis": 43.13,
+  "Kritis": 0.75
+ },
+ "bpdas_ha": {
+  "Kapuas": 1974.9708
+ },
+ "metode": "Luas pada WGS 1984 UTM 49N (planimetrik) di dalam batas area.",
+ "silang_tutupan": {
+  "sumber_tutupan": "Peta Penutupan Lahan KLHK/Kemenhut 2025",
+  "baris": [
+   [
+    "Tidak Kritis",
+    2002,
+    917.7659
+   ],
+   [
+    "Agak Kritis",
+    2002,
+    719.8607
+   ],
+   [
+    "Agak Kritis",
+    20092,
+    132.0092
+   ],
+   [
+    "Potensial Kritis",
+    20092,
+    116.4351
+   ],
+   [
+    "Tidak Kritis",
+    20092,
+    51.4919
+   ],
+   [
+    "Potensial Kritis",
+    2002,
+    14.4975
+   ],
+   [
+    "Kritis",
+    20092,
+    13.6956
+   ],
+   [
+    "Potensial Kritis",
+    2007,
+    5.1429
+   ],
+   [
+    "Tidak Kritis",
+    2014,
+    2.898
+   ],
+   [
+    "Kritis",
+    2002,
+    1.1731
+   ],
+   [
+    "Agak Kritis",
+    2014,
+    0.0006
+   ],
+   [
+    "Tidak Kritis",
+    2007,
+    0.0004
+   ]
+  ]
+ },
+ "prioritas": {
+  "kritis_bukan_hutan_ha": 13.6956,
+  "agak_kritis_bukan_hutan_ha": 132.0098,
+  "kritis_di_hutan_ha": 721.0338,
+  "keterangan": "Prioritas rehabilitasi = lahan Kritis/Sangat Kritis dan Agak Kritis pada tutupan bukan hutan. Lahan Agak Kritis s.d. Sangat Kritis yang masih berhutan umumnya dipengaruhi lereng & bahaya erosi (penilaian resmi tidak hanya dari tutupan) – prioritas perlindungan, bukan penanaman; perbedaan tahun & skala peta dicek lapangan."
+ },
+ "lokasi": "pundjung",
+ "hutan_desa": "Hutan Desa Pundjung Batara",
+ "tahun_tutupan": 2025,
+ "dibuat_utc": "2026-11-02T14:26:26Z"
+}

@@ -18,7 +18,9 @@ const pre = c => HUTAN.has(c) ? null : (BASAH.has(c) ? 20051 : 2002);
 /* F = emisi_frel dari data/analisis/<id>_hd.json ; C = entri lokasi dari citra_tahun_berjalan.json (boleh null) */
 function buat(F, C) {
   if (!F || !F.tutupan_klhk_ha || !F.hilang_kode_ha) return null;
-  const t = Math.max(...Object.keys(F.tutupan_klhk_ha).map(Number)), base = {}, H = F.hilang_kode_ha[String(t)] || {};
+  // peta acuan = peta KLHK TERBARU yang menutup seluruh area (≥ 98% luas peta terlengkap) – mis. PL 2025 Kapuas Hulu hanya dipakai bila area di dalam Kapuas Hulu
+  const SZ = y => Object.values(F.tutupan_klhk_ha[y] || {}).reduce((a, b) => a + b, 0), Ys = Object.keys(F.tutupan_klhk_ha).map(Number), mx = Math.max(...Ys.map(SZ));
+  const t = Math.max(...Ys.filter(y => SZ(y) >= 0.98 * mx)), base = {}, H = F.hilang_kode_ha[String(t)] || {};
   Object.entries(F.tutupan_klhk_ha[String(t)]).forEach(([k, v]) => base[+k] = v);
   const yc = C && C.status === 'selesai' && C.hilang_kode_ha && C.tahun > 2025 ? +C.tahun : null;
   const loss = y => { const o = y === yc ? C.hilang_kode_ha : H[String(y)]; const r = {}; Object.entries(o || {}).forEach(([k, v]) => r[+k] = v); return r; };

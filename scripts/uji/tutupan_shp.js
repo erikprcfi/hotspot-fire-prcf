@@ -13,7 +13,7 @@ require(R0 + '/assets/model_klhk.js'); require(R0 + '/assets/tutupan.js'); requi
       const P = await FHTutupan.petaTahun(s, Y, 2020), k = M.kondisi(Y), v = {};
       P.fitur.forEach(f => v[f.properties.KODE_PL] = (v[f.properties.KODE_PL] || 0) + f.properties.LUAS_HA);
       const tot = Object.values(k).reduce((a, b) => a + b, 0), tv = Object.values(v).reduce((a, b) => a + b, 0), f_ = tv / tot;   // luas poligon vs piksel: skala total sama
-      new Set([...Object.keys(k), ...Object.keys(v)]).forEach(c => { const kc = (k[c] || 0) * f_, d = Math.abs((v[c] || 0) - kc), tol = Math.max(0.5, 0.01 * kc); hasil.uji++; hasil.maks = Math.max(hasil.maks, d);
+      new Set([...Object.keys(k), ...Object.keys(v)]).forEach(c => { const kc = (k[c] || 0) * f_, d = Math.abs((v[c] || 0) - kc), tol = Math.max(1.5, 0.01 * kc); /* kelas sempit di tepi poligon 1:250.000: piksel 30 m vs garis poligon bisa berbeda ±1,5 ha */ hasil.uji++; hasil.maks = Math.max(hasil.maks, d);
         if (d > tol) hasil.gagal.push(`${s.id} ${Y} kode ${c}: SHP ${(v[c] || 0).toFixed(3)} ha ≠ model ${kc.toFixed(3)} ha`); });
       // perubahan kelas (deforestasi+degradasi) sejak 2020 harus sama dengan model (selisih hanya garis tepi)
       { const ub = P.fitur.filter(f => f.properties.TH_UBAH && f.properties.TH_UBAH <= Y).reduce((a, f) => a + f.properties.LUAS_HA, 0); let mu = 0; for (let y = 2001; y <= Y; y++) M.aktivitas(y).ub.forEach(u => mu += u.ha);
