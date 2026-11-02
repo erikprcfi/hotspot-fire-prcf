@@ -36,23 +36,25 @@ function kelasTahun(k, th, Y, t = 2020) {   // → [kode kelas akhir tahun Y, st
 async function petaTahun(s, Y, y0) {
   const D = await muatTh(s.id); if (!D) return null; const HUT = new Set([2001, 2002, 2004, 20041, 2005, 20051, 2006]);
   const per = y0 != null && y0 <= Y;
-  const fitur = D.features.map(f => { const p = f.properties, [k, st, tu] = kelasTahun(p.k, p.th, Y, D.tahun_peta), fr = FREL_T[k];
+  const fitur = D.features.map(f => { const p = f.properties, [k, st, tu] = kelasTahun(p.k, p.th, Y, D.tahun_peta || 2020), fr = FREL_T[k];
     return { type: 'Feature', geometry: f.geometry, properties: { HD_NAMA: s.hd_nama, LPHD: s.lphd || '', TAHUN: Y, KODE_PL: k, KELAS: NAMA[k] || String(k), KELOMPOK: HUT.has(k) ? 'Hutan' : 'Bukan hutan',
-      TIPE_FREL: fr ? fr[0] : '-', C_TCHA: fr ? +(fr[1] * 0.47).toFixed(4) : null, KODE_2020: p.k, KELAS_2020: NAMA[p.k] || String(p.k), STATUS: st, TH_UBAH: tu,
+      TIPE_FREL: fr ? fr[0] : '-', C_TCHA: fr ? +(fr[1] * 0.47).toFixed(4) : null, KODE_REF: p.k, KELAS_REF: NAMA[p.k] || String(p.k), STATUS: st, TH_UBAH: tu,
       UBAH_PER: per && tu && tu >= y0 && tu <= Y ? 'Ya' : 'Tidak', SUMBER: p.src === 'S2' ? 'Sentinel-2 ' + p.th + ' (indikasi)' : p.src === 'GFC' ? 'Hansen GFC v1.13 lossyear ' + p.th : 'KLHK PL2020 1:250.000', LUAS_HA: p.ha } }; });
   return { type: 'FeatureCollection', fitur, D };
 }
 const KOLOM = [['HD_NAMA', 'C', 60], ['LPHD', 'C', 60], ['TAHUN', 'N', 4, 0], ['KODE_PL', 'N', 6, 0], ['KELAS', 'C', 80], ['KELOMPOK', 'C', 12], ['TIPE_FREL', 'C', 60], ['C_TCHA', 'N', 10, 4],
-  ['KODE_2020', 'N', 6, 0], ['KELAS_2020', 'C', 80], ['STATUS', 'C', 60], ['TH_UBAH', 'N', 4, 0], ['UBAH_PER', 'C', 5], ['SUMBER', 'C', 60], ['LUAS_HA', 'N', 14, 4]];
-const BACA = (s, Y, per, n, tot) => [`Peta tutupan lahan ${s.hd_nama} – kondisi akhir tahun ${Y}` + (per ? ` (periode ${per})` : ''), `Dibuat oleh aplikasi Fire Hotspot – Yayasan PRCF Indonesia, ${X().wib(Date.now())}`, '',
+  ['KODE_REF', 'N', 6, 0], ['KELAS_REF', 'C', 80], ['STATUS', 'C', 60], ['TH_UBAH', 'N', 4, 0], ['UBAH_PER', 'C', 5], ['SUMBER', 'C', 60], ['LUAS_HA', 'N', 14, 4]];
+const BACA = (s, Y, per, n, tot, t) => [`Peta tutupan lahan ${s.hd_nama} – kondisi akhir tahun ${Y}` + (per ? ` (periode ${per})` : ''), `Dibuat oleh aplikasi Fire Hotspot – Yayasan PRCF Indonesia, ${X().wib(Date.now())}`, '',
   `Jumlah poligon: ${n} · total luas: ${nf(tot, 4)} ha · sistem koordinat: WGS 1984 (EPSG:4326)`, '',
   'Sumber: Peta Penutupan Lahan KLHK 2020 (1:250.000) sebagai acuan; perubahan per tahun dari Hansen/UMD/Google/USGS/NASA Global Forest Change GFC-2025-v1.13 (lossyear, tajuk 2000 ≥ 30%, piksel 30 m); tahun berjalan dari citra Sentinel-2 L2A (indikasi, menunggu rilis tahunan Hansen).',
   'Aturan: tahun ≥ 2020 – kehilangan tutupan pohon di HLK Primer → HLK Sekunder (degradasi), HLK Sekunder → Pertanian Lahan Kering Campur Semak (deforestasi), Hutan Rawa Primer → Hutan Rawa Sekunder (degradasi), Hutan Rawa Sekunder → Belukar Rawa (deforestasi); kelas lain tidak berubah. Tahun < 2020 – piksel yang hilang sesudah tahun itu dan di peta 2020 sudah bukan hutan dikembalikan ke Hutan Rawa Sekunder (kelas basah) atau HLK Sekunder (lainnya).', '',
   'Kolom atribut:', 'HD_NAMA nama Hutan Desa · LPHD lembaga pengelola · TAHUN tahun kondisi (akhir tahun) · KODE_PL / KELAS kode & nama kelas penutupan lahan KLHK pada tahun itu · KELOMPOK hutan / bukan hutan',
-  'TIPE_FREL tipe kelas pada rumus FREL · C_TCHA cadangan karbon (tC/ha = biomassa FREL 2022 × 0,47; hanya kelas yang dipakai rumus FREL) · KODE_2020 / KELAS_2020 kelas di peta acuan KLHK 2020',
+  'TIPE_FREL tipe kelas pada rumus FREL · C_TCHA cadangan karbon (tC/ha = biomassa FREL 2022 × 0,47; hanya kelas yang dipakai rumus FREL) · KODE_REF / KELAS_REF kelas di peta acuan KLHK 2020',
   'STATUS keadaan poligon pada tahun itu (Tetap / Degradasi / Deforestasi / Hutan sebelum hilang / Kehilangan pohon tanpa perubahan kelas) · TH_UBAH tahun perubahan kelas (0 = tidak berubah)',
   'UBAH_PER Ya bila kelas berubah di dalam periode yang dipilih · SUMBER sumber geometri/perubahan · LUAS_HA luas geodesik poligon (ha, elipsoid WGS84)', '',
-  'Catatan: luas pada tabel aplikasi dihitung dari piksel 30 m (pusat piksel di dalam batas), luas poligon SHP dihitung dari garis batas, sehingga dapat berbeda sedikit (umumnya < 0,5%). Data resmi, tidak ada angka buatan.'].join('\r\n');
+  'Catatan: luas pada tabel aplikasi dihitung dari piksel 30 m (pusat piksel di dalam batas), luas poligon SHP dihitung dari garis batas, sehingga dapat berbeda sedikit (umumnya < 0,5%). Data resmi, tidak ada angka buatan.'].map(x => TX(x, t)).join('\r\n');
+/* teks metode untuk peta acuan KLHK tahun t (kini 2025; teks dasar ditulis untuk 2020) */
+const TX = (s, t) => !t || t === 2020 ? s : s.replace(/PL_2020_AR_250K Provinsi Kalimantan Barat/g, `Penutupan Lahan ${t} Kabupaten Kapuas Hulu (Kementerian Kehutanan); peta KLHK 2020 dipakai sebagai pembanding`).replace(/(KLHK|peta|Peta acuan|acuan|sebelum|sesudah|Tahun <|tahun ≥|tahun <|Tahun ≥|setelah) 2020/g, `$1 ${t}`).replace(/PL 2021–2024/g, `PL ${t + 1} dst.`);
 const T_ = s => window.FHLang ? FHLang.t(String(s)) : String(s);
 
 const JENIS = { deforestasi: 'Deforestasi', degradasi: 'Degradasi', regenerasi: 'Regenerasi', suksesi: 'Suksesi', 'antar hutan': 'Antar kelas hutan', 'bukan hutan': 'Antar kelas bukan hutan', tetap: 'Tetap' };
@@ -142,12 +144,20 @@ function tampil(w, x, y0, y1) {
     ${sec('tuS1', 'Tutupan lahan awal & akhir periode', `Luas per kelas, ${per}`, `<div class="fa-scroll">${tRing}</div>`, true)}
     ${sec('tuS2', 'Tutupan lahan per tahun', 'Luas tiap tahun & perubahan tahunan (ha)', `<div class="fa-scroll">${tTh}</div>`)}
     ${sec('tuS3', 'Perubahan kelas', lok ? 'Deforestasi, degradasi, regenerasi, suksesi & matriks perubahan' : 'Degradasi & deforestasi dari data kehilangan tutupan pohon', `<div class="fa-scroll">${tUb}</div>${tMat ? `<div class="fa-scroll" style="margin-top:10px">${tMat}</div>` : ''}${lok ? '' : `<p class="fa-note">Kehilangan tutupan pohon di areal bukan hutan KLHK (ladang/semak, dll.) ${per}: <b>${nf(G.nh, 4)} ha</b> – tidak mengubah kelas dan tidak dihitung sebagai emisi.</p>${G.tetap > 0.0001 ? `<p class="fa-note">Kehilangan sebelum 2020 di areal yang tetap dipetakan hutan oleh KLHK 2020: <b>${nf(G.tetap, 4)} ha</b> – tidak dihitung berubah.</p>` : ''}`}${G.citra ? `<p class="fa-note" style="color:#B45309">Tahun ${G.citra}: perubahan dari citra Sentinel-2 (indikasi), menunggu rilis data tahunan Hansen.</p>` : ''}`)}
+    ${lok ? sec('tuS6', 'Perbandingan dengan peta resmi KLHK', 'Peta lokal vs Peta Penutupan Lahan KLHK/Kemenhut pada tahun yang sama', '<div id="tuBd"><p class="fa-note">Memuat…</p></div>') : ''}
     ${sec('tuS5', 'Pembanding independen (Sentinel-2 10 m)', 'Peta tutupan lahan tahunan terpisah 2017–2023 untuk cek silang tren', '<div id="tuPb"><p class="fa-note">Memuat…</p></div>')}
     ${sec('tuS4', 'Metode & sumber', 'Sumber peta, aturan perubahan kelas, keterbatasan', metode(G).map(m => `<p class="fa-note">• ${esc(m)}</p>`).join(''))}
     <div class="fa-card"><button class="fa-btn full" id="tuKb">Hitung emisi karbon dari tutupan lahan ini (sumber & periode sama) →</button></div>`;
   out.querySelectorAll('.kb-sec .kb-h').forEach(b => b.onclick = () => { const s = b.parentElement, op = !s.classList.contains('open'); s.classList.toggle('open', op); b.setAttribute('aria-expanded', op); if (op && s.querySelector('#tuMap') && MAP) setTimeout(() => MAP.invalidateSize(), 320); });
   const cur = (window.FHSites ? FHSites() : []).find(q => q.id === x.id), slug = SLUG(nama), src = (I.id || 'klhk').toUpperCase();
   peta(x.id, G, y1, y0);
+  if (lok) fetch(`data/tutupan_lokal/${x.id}_banding.json`, { cache: 'no-cache' }).then(r_ => r_.ok ? r_.json() : null).catch(() => null).then(J => { const el = out.querySelector('#tuBd'); if (!el) return;
+    if (!J || !Object.keys(J.tahun || {}).length) { el.innerHTML = '<p class="fa-note">Belum ada peta KLHK resmi pada tahun yang sama untuk dibandingkan.</p>'; return; }
+    el.innerHTML = Object.entries(J.tahun).map(([y, B]) => { const K = [...new Set([...Object.keys(B.luas_lokal), ...Object.keys(B.luas_klhk)])].sort((a, b) => ((B.luas_lokal[b] || 0) + (B.luas_klhk[b] || 0)) - ((B.luas_lokal[a] || 0) + (B.luas_klhk[a] || 0)));
+      return `<h5 style="margin:10px 0 6px">Tahun ${y}</h5><div class="fa-kpi"><div><small>Kelas sama persis</small><b>${nf(B.sesuai_kelas_persen, 1)}%</b></div><div><small>Kelompok sama (hutan / lahan basah / lahan kering)</small><b>${nf(B.sesuai_kelompok_persen, 1)}%</b></div><div><small>Hutan vs bukan hutan sama</small><b>${nf(B.sesuai_hutan_persen, 1)}%</b></div><div><small>Luas hutan: lokal / KLHK</small><b>${nf(B.hutan_lokal_ha, 1)} / ${nf(B.hutan_klhk_ha, 1)} ha</b></div></div>
+        <div class="fa-scroll"><table class="kb-t"><tr><th>Kelas (kode KLHK)</th><th>${esc(I.singkat || 'Lokal')} ${y} (ha)</th><th>KLHK ${y} (ha)</th><th>Selisih (ha)</th></tr>${K.map(k => { const a = B.luas_lokal[k] || 0, b = B.luas_klhk[k] || 0; return `<tr><td>${esc(NAMA[k] || k)}</td><td class="n">${nf(a)}</td><td class="n">${nf(b)}</td><td class="n">${a - b > 0 ? '+' : ''}${nf(a - b)}</td></tr>`; }).join('')}</table></div>
+        <div class="fa-scroll" style="margin-top:8px"><table class="kb-t"><tr><th>Peta lokal</th><th>Peta KLHK</th><th>Luas (ha)</th></tr>${B.matriks.filter(m => m[2] >= 0.5).sort((p, q) => q[2] - p[2]).map(m => `<tr><td>${esc(NAMA[m[0]] || m[0])}</td><td>${esc(NAMA[m[1]] || m[1])}</td><td class="n" style="${m[0] === m[1] ? 'color:#166534;font-weight:700' : ''}">${nf(m[2])}</td></tr>`).join('')}</table></div>`; }).join('') +
+      `<p class="fa-note">Tumpang-susun kedua peta di dalam batas Hutan Desa (UTM 49N). Peta KLHK berskala 1:250.000 (unit pemetaan minimum ±6,25 ha), sedangkan peta lokal didigitasi rinci dari citra 30 m + citra resolusi tinggi dan dicek lapangan; karena itu peta lokal dipakai sebagai sumber utama untuk Hutan Desa ini dan peta KLHK sebagai pembanding.</p>`; });
   PB().then(J => { const el = out.querySelector('#tuPb'), L = J && J.lokasi && J.lokasi[x.id]; if (!el) return; if (!L) { el.innerHTML = '<p class="fa-note">Data pembanding belum tersedia.</p>'; return; }
     const Y = Object.keys(L.tahun).sort(), K = [...new Set(Y.flatMap(y => Object.keys(L.tahun[y])))].filter(k => Y.some(y => L.tahun[y][k] > 0.5)).sort((a, b) => (L.tahun[Y[Y.length - 1]][b] || 0) - (L.tahun[Y[Y.length - 1]][a] || 0));
     el.innerHTML = `<div class="fa-scroll"><table class="kb-t"><tr><th>Kelas (9 kelas global)</th>${Y.map(y => `<th>${y}</th>`).join('')}<th>Perubahan ${Y[0]}–${Y[Y.length - 1]}</th></tr>${K.map(k => { const a = L.tahun[Y[0]][k] || 0, b = L.tahun[Y[Y.length - 1]][k] || 0; return `<tr><td>${esc(k)}</td>${Y.map(y => `<td class="n">${nf(L.tahun[y][k] || 0, 1)}</td>`).join('')}<td class="n">${b - a > 0 ? '+' : ''}${nf(b - a, 1)}</td></tr>`; }).join('')}</table></div>
@@ -167,7 +177,7 @@ function tampil(w, x, y0, y1) {
       const F = P.fitur.map(trp), tot = P.fitur.reduce((a, f) => a + f.properties.LUAS_HA, 0), nm = `tutupan_lahan_${slug}_${y1}`, L_ = [{ nama: nm, fitur: F, kolom: P.kolom || KOLOM }];
       const U = P.ubah ? P.ubah.map(trp) : F.filter((f, i) => P.fitur[i].properties.UBAH_PER === 'Ya'); if (U.length) L_.push({ nama: `perubahan_${slug}_${ya === y1 ? y1 : (lok ? ya : y0) + '-' + y1}`, fitur: U, kolom: P.ubah ? KOLOM_UBAH : KOLOM });
       const ring = ['kode_klhk;kelas;luas_poligon_ha;luas_tabel_aplikasi_ha'].concat(G.kode.map(k => [k, NAMA[k], P.fitur.filter(f => f.properties.KODE_PL === k).reduce((a, f) => a + f.properties.LUAS_HA, 0).toFixed(4), (G.akhir[k] || 0).toFixed(4)].join(';'))).join('\r\n');
-      A.dl(await FHShp.zip(L_, { [`BACA_${slug}_${y1}.txt`]: lok ? BACA_L(cur, G, y1, per, F.length, tot) : BACA(cur, y1, per, F.length, tot), [`ringkasan_luas_${slug}_${y1}.csv`]: ring }), `${A.EN() ? 'land_cover_SHP' : 'SHP_tutupan_lahan'}_${src}_${slug}_${y1}.zip`); A.pakai('tutupan_shp'); }
+      A.dl(await FHShp.zip(L_, { [`BACA_${slug}_${y1}.txt`]: lok ? BACA_L(cur, G, y1, per, F.length, tot) : BACA(cur, y1, per, F.length, tot, G.t), [`ringkasan_luas_${slug}_${y1}.csv`]: ring }), `${A.EN() ? 'land_cover_SHP' : 'SHP_tutupan_lahan'}_${src}_${slug}_${y1}.zip`); A.pakai('tutupan_shp'); }
     catch (er) { A.toast(er.message); } finally { bt.disabled = false; } };
   out.querySelector('#tuXl').onclick = () => excel(B()).catch(e => A.toast(e.message));
   out.querySelector('#tuDoc').onclick = () => word(B()).catch(e => A.toast(e.message));
@@ -211,7 +221,7 @@ const METODE_KLHK = ['Keterbatasan: kelas KLHK hanya berubah bila tutupan pohon 
   'Peta 1:250.000 lebih kasar daripada piksel 30 m (unit pemetaan minimum KLHK ±6,25 ha), sehingga batas kelas di tepi poligon bersifat perkiraan. Tutupan lahan yang sama dipakai untuk perhitungan emisi karbon FREL.'];
 function metode(G) {
   const I = (G.M && G.M.info) || {};
-  if (!G.lok) return [`Sumber peta: ${I.nama || 'Model KLHK 2020 + Hansen'}.`].concat(METODE_KLHK);
+  if (!G.lok) return [`Sumber peta: ${I.nama || 'Peta resmi KLHK + Hansen'}.`].concat(METODE_KLHK.map(x => TX(x, G.t)));
   return [`Sumber peta: ${I.nama}. ${I.sumber}.`, `Metode pemetaan: ${I.metode}`, I.groundcheck ? `Groundcheck lapangan: ${I.groundcheck}` : null,
     `Kelas peta sumber dipadankan dengan kode Penutupan Lahan KLHK: ${Object.entries(I.kelas_asli || {}).map(([k, v]) => `${v} = ${k} (${NAMA[k] || k})`).join('; ')}.`,
     'Perubahan tahun y = tumpang-susun (overlay) peta tahun y−1 dan y. Deforestasi = hutan → bukan hutan; degradasi = hutan primer → sekunder; regenerasi = bukan hutan → hutan; suksesi = air / lahan terbuka → semak & vegetasi. Matriks periode = tumpang-susun peta awal & akhir (perubahan bersih).',

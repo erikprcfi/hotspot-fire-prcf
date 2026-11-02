@@ -2,26 +2,36 @@
  "sumber": "Peta Penutupan Lahan KLHK (Direktorat IPSDH, Ditjen PKTL), skala 1:250.000",
  "lokasi": {
   "nangalauk": {
-   "2020": 9
+   "2020": 9,
+   "2025": 17
   },
   "batangtau": {
-   "2020": 3
+   "2020": 3,
+   "2025": 19
   },
   "nyuai": {
-   "2020": 5
+   "2020": 5,
+   "2025": 24
   },
   "pundjung": {
-   "2020": 15
+   "2020": 15,
+   "2025": 56
   },
   "bumilestari": {
-   "2020": 8
+   "2020": 8,
+   "2025": 31
   },
   "bukitbelang": {
-   "2020": 42
+   "2020": 42,
+   "2025": 138
   }
  },
  "berkas": {
-  "2020": "pl.zip"
+  "2020": "pl.zip",
+  "2025": "Tutupan Lahan 2025 Kabupaten Kapuas Hulu.shp"
  },
- "diimpor_utc": "2026-11-01T15:54:31Z"
+ "diimpor_utc": "2026-11-02T13:56:02Z",
+ "wilayah": {
+  "kapuashulu_2025": 11442
+ }
 }

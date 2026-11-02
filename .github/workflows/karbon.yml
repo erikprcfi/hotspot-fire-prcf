@@ -47,6 +47,8 @@ jobs:
         run: python scripts/pembanding_lulc.py
       - name: Impor peta tahunan lokal yang sudah di-groundcheck (PRCF Nanga Lauk 2006–2026)
         run: python scripts/impor_prcf.py
+      - name: Perbandingan peta lokal vs peta resmi KLHK
+        run: python scripts/banding_sumber.py
       - name: Peta tutupan lahan tahunan (vektor, unduhan SHP)
         run: python scripts/tutupan_tahunan.py
       - name: Uji perhitungan karbon (rumus templat PRCF & konsistensi data)

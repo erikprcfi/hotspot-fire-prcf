@@ -1,11 +1,11 @@
 """
 Perubahan tutupan hutan TAHUN BERJALAN dari citra Sentinel-2 (untuk tahun yang belum ada data tahunan Hansen) – Fire Hotspot PRCF
 ==================================================================================================================================
-Acuan kelas: Peta Penutupan Lahan resmi KLHK 2020 (data/klhk/<lokasi>_2020.geojson).
+Acuan kelas: Peta Penutupan Lahan resmi KLHK TERBARU (data/klhk/<lokasi>_<tahun>.geojson; kini 2025).
 Hutan acuan: tajuk 2000 ≥ 30% dan BELUM hilang s.d. 2025 menurut Hansen GFC v1.13 (jadi kehilangan 2001–2025 tidak terhitung dua kali).
 Citra: Sentinel-2 L2A (ESA Copernicus, Earth Search AWS), 20 m. TERKINI = 150 hari terakhir tahun berjalan (4 citra paling cerah),
 ACUAN = 150 hari yang sama tahun sebelumnya (musim sama). Piksel berubah bila NBR turun ≥ 0,27, SWIR2 naik ≥ 0,02 dan NBR terkini ≤ 0,30
-(metode sama dengan Peringatan Hutan), petak ≥ 0,5 ha. Setiap piksel berubah diberi kode kelas KLHK 2020 → dipakai alat Tutupan Lahan
+(metode sama dengan Peringatan Hutan), petak ≥ 0,5 ha. Setiap piksel berubah diberi kode kelas KLHK terbaru → dipakai alat Tutupan Lahan
 dan Emisi Karbon FREL untuk tahun berjalan (diberi tanda "indikasi citra", menunggu rilis data tahunan resmi).
 Keluaran: data/analisis/citra_tahun_berjalan.json  (+ data/analisis/citra_tahun_berjalan.geojson)
 """
@@ -33,7 +33,9 @@ def run_site(site, today, hari=150):
     hd = unary_union([shape(f["geometry"]) for f in site["hd"]["features"]]); hdu = stf(to_utm, hd)
     x0, y0, x1, y1 = hdu.buffer(100).bounds; res = 20.0; W, H = int(math.ceil((x1 - x0) / res)), int(math.ceil((y1 - y0) / res)); tr = from_origin(x0, y1, res, res)
     inhd = features.rasterize([(mapping(hdu), 1)], out_shape=(H, W), transform=tr).astype(bool)
-    pk = os.path.join(DATA, "klhk", f"{site['id']}_2020.geojson")
+    import re as _re
+    T_ = [int(m.group(1)) for f in os.listdir(os.path.join(DATA, "klhk")) for m in [_re.match(rf"^{site['id']}_(\d{{4}})\.geojson$", f)] if m]
+    pk = os.path.join(DATA, "klhk", f"{site['id']}_{max(T_) if T_ else 2020}.geojson")
     if not os.path.exists(pk): return {"status": "peta KLHK belum ada"}, []
     K = json.load(open(pk)); km = features.rasterize([(mapping(stf(to_utm, shape(f["geometry"]))), int(f["properties"]["kode"])) for f in K["features"]], out_shape=(H, W), transform=tr, fill=0, dtype="int32")
     lo0, la0 = to_wgs(x0, y0); lo1, la1 = to_wgs(x1, y1)

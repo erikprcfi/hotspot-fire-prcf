@@ -138,9 +138,11 @@ function tutupan(H) {
     return `<h5 style="margin:12px 0 6px">${esc(d.nama)}</h5><p class="fa-note">Sumber kelas: <b>${esc(sumber)}</b>${lok || a.sumber === 'KLHK' ? '' : ' <span class="fa-err">– bukan peta resmi KLHK</span>'}</p>
       ${a.citra ? `<p class="fa-note" style="color:#B45309">Tahun ${a.citra}: data aktivitas dari citra Sentinel-2 (indikasi), menunggu rilis data tahunan Hansen.</p>` : ''}<table class="kb-t"><tr><th>Kelas penutupan lahan (awal periode, ${ya})</th><th>Luas (ha)</th></tr>${rows.map(([n, v]) => `<tr><td>${esc(n)}</td><td class="n">${nf(v)}</td></tr>`).join('')}</table>
       ${lok && a.tumbuh > 0 ? `<p class="fa-note" style="color:#166534">Regenerasi (bukan hutan → hutan) ${H.o.y0}–${H.o.y1}: <b>${nf(a.tumbuh, 4)} ha</b> – dicatat terpisah; templat FREL tidak memuat serapan, sehingga tidak mengurangi emisi.</p>` : ''}`; }).join(''); }
+/* teks metode untuk peta acuan KLHK tahun t (kini 2025; teks dasar ditulis untuk 2020) */
+const TX = (s, t) => !t || t === 2020 ? s : s.replace(/PL_2020_AR_250K Provinsi Kalimantan Barat/g, `Penutupan Lahan ${t} Kabupaten Kapuas Hulu (Kementerian Kehutanan); peta KLHK 2020 dipakai sebagai pembanding`).replace(/(KLHK|peta|Peta acuan|acuan|sebelum|sesudah|Tahun <|tahun ≥|tahun <|Tahun ≥|setelah) 2020/g, `$1 ${t}`).replace(/PL 2021–2024/g, `PL ${t + 1} dst.`);
 function metodeK(H) {
-  const I = H.info || {};
-  if (!I.lokal) return METODE;
+  const I = H.info || {}, t = H.HD[0] && H.HD[0].a && H.HD[0].a.epoch;
+  if (!I.lokal) return METODE.map(x => TX(x, t));
   return [METODE[0], `Tutupan lahan & data aktivitas: ${I.nama} – ${I.sumber}. ${I.metode}`, I.groundcheck ? `Groundcheck lapangan: ${I.groundcheck}` : null,
     'Luas awal (kolom tahun awal) = luas kelas hutan pada peta tahun sebelum tahun awal periode. Deforestasi = jumlah perubahan tahunan kelas hutan → bukan hutan (tumpang-susun peta tahun y−1 dan y); degradasi = hutan primer → hutan sekunder. Kelas peta dipadankan dengan kode Penutupan Lahan KLHK (Hutan Lahan Kering Sekunder 2002, Hutan Rawa Sekunder 20051, dst.).',
     'Regenerasi (bukan hutan → hutan) dan suksesi alami dicatat di alat Tutupan lahan dan di sini sebagai informasi; templat FREL tidak memuat serapan sehingga tidak mengurangi emisi.',

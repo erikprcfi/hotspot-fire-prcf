@@ -25,7 +25,7 @@ async function kumpul(s, k) {
   const bt = {}; Object.values((BT && BT.musim) || {}).forEach(m => { if (m.lokasi === s.id && m.status === 'selesai' && m.luas_ha != null) { const y = m.awal.slice(0, 4); bt[y] = (bt[y] || 0) + m.luas_ha; } });
   const y12 = p => now - p.when <= 365 * 864e5, near = ALL.filter(p => p.ls && p.ls[k] <= 5 && y12(p)).length, inside = ALL.filter(p => p.ls && p.ls[k] <= 0 && y12(p)).length;
   const lossY = H.kehilangan_per_tahun_ha || {}, thn = ['2021', '2022', '2023', '2024', '2025'];
-  let M = null, frel = [], tk = {}, tkTahun = '', src = 'KLHK 2020 + Hansen', srcNama = '';
+  let M = null, frel = [], tk = {}, tkTahun = '', src = 'KLHK + Hansen', srcNama = '';
   try { M = await FHModelKLHK.muat(s.id); const lok = !!(M.info && M.info.lokal), yEnd = lok ? M.yMax : Math.min(M.yMax, 2025); src = M.info.singkat || src; srcNama = M.info.nama || '';
     tkTahun = String(yEnd); tk = M.kondisi(yEnd);
     const per = [[2020, Math.min(2025, M.yMax)], [lok ? M.yMin + 1 : 2001, yEnd]].filter(([a, b], i, L) => a <= b && (i === 0 || a !== L[0][0] || b !== L[0][1]));

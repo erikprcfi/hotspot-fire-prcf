@@ -1,7 +1,7 @@
 """
 Impor Peta Penutupan Lahan KLHK dari berkas SHP/ZIP (mis. PL_2020_AR_250K Kalimantan Barat) → data/klhk/<lokasi>_<tahun>.geojson
 Dipakai bila layanan peta KLHK tidak dapat dijangkau otomatis. Kelas dibaca dari kolom kode baku KLHK (PL20_ID, PL2020_ID, KODE, ...).
-Pemakaian: python scripts/impor_klhk.py <berkas.zip|berkas.shp> <tahun>
+Pemakaian: python scripts/impor_klhk.py <berkas.zip|berkas.shp> <tahun> [nama_wilayah, mis. kapuashulu]
 Lalu: python scripts/karbon_lahan.py && python scripts/uji_karbon.py
 """
 import os, sys, json, zipfile, tempfile, datetime
@@ -47,6 +47,10 @@ def main():
         if not P: print(" ", s["id"], "tidak tercakup peta ini"); continue
         json.dump({"type": "FeatureCollection", "tahun": y, "sumber": os.path.basename(src), "features": P}, open(os.path.join(OUT, f"{s['id']}_{y}.geojson"), "w"), separators=(",", ":"))
         idx["lokasi"].setdefault(s["id"], {})[str(y)] = len(P); print(" ", s["id"], y, len(P), "poligon")
+    if len(sys.argv) > 3:   # simpan juga seluruh peta (mis. satu kabupaten) untuk analisis SHP unggahan: data/klhk/<nama>_<tahun>.geojson.gz
+        import gzip
+        nm = sys.argv[3]; json.dump({"type": "FeatureCollection", "tahun": y, "sumber": os.path.basename(src), "features": F}, gzip.open(os.path.join(OUT, f"{nm}_{y}.geojson.gz"), "wt"), separators=(",", ":"))
+        idx.setdefault("wilayah", {})[f"{nm}_{y}"] = len(F); print(" ", nm, y, len(F), "poligon (wilayah)")
     json.dump(idx, open(ip, "w"), ensure_ascii=False, indent=1)
 
 if __name__ == "__main__":

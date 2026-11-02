@@ -2,22 +2,26 @@
 Peta tutupan lahan TAHUNAN (vektor) per Hutan Desa – Fire Hotspot PRCF
 ======================================================================
 Untuk unduhan SHP alat "Tutupan lahan (KLHK)". Satu berkas per Hutan Desa: data/klhk/tahunan/<lokasi>.geojson berisi
-  – bagian TETAP: poligon Peta Penutupan Lahan KLHK 2020 ∩ batas Hutan Desa, dikurangi semua piksel yang berubah (th = 0);
+  – bagian TETAP: poligon Peta Penutupan Lahan KLHK TERBARU (tahun t, kini 2025; dahulu 2020) ∩ batas Hutan Desa, dikurangi semua piksel yang berubah (th = 0);
   – PETAK BERUBAH: piksel kehilangan tutupan pohon Hansen/UMD GFC-2025-v1.13 (tajuk 2000 ≥ 30 %, grid 0,00025°, piksel masuk bila
-    pusatnya di dalam Hutan Desa – sama persis dengan scripts/analisis_inti.py) dikelompokkan menurut kode kelas KLHK 2020 & tahun hilang;
+    pusatnya di dalam Hutan Desa – sama persis dengan scripts/analisis_inti.py) dikelompokkan menurut kode kelas KLHK tahun t & tahun hilang;
     ditambah petak perubahan tahun berjalan dari citra Sentinel-2 (data/analisis/citra_tahun_berjalan.geojson, "indikasi").
 Aplikasi menyusun peta tahun Y dari berkas ini dengan aturan yang sama dengan assets/model_klhk.js (alat Tutupan lahan & Emisi karbon):
-  Y ≥ 2020: petak hilang tahun 2020..Y di HLK Primer→HLK Sekunder, HLK Sekunder→PLK Campur Semak, HR Primer→HR Sekunder, HR Sekunder→Belukar Rawa.
-  Y < 2020: petak hilang tahun Y+1..2019 yang di peta 2020 sudah bukan hutan dikembalikan ke HR Sekunder (kelas basah) / HLK Sekunder (lainnya).
+  Y ≥ t: petak hilang tahun t..Y di HLK Primer→HLK Sekunder, HLK Sekunder→PLK Campur Semak, HR Primer→HR Sekunder, HR Sekunder→Belukar Rawa.
+  Y < t: petak hilang tahun Y+1..t−1 yang di peta t sudah bukan hutan dikembalikan ke HR Sekunder (kelas basah) / HLK Sekunder (lainnya).
 Pemakaian: python scripts/tutupan_tahunan.py [lokasi ...]
 """
-import os, sys, json, math
+import os, sys, json, math, re
 import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from analisis_inti import HAN, _tiles
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data"); OUT = os.path.join(DATA, "klhk", "tahunan")
+
+def terbaru(lokasi):   # tahun peta KLHK terbaru yang tersedia untuk lokasi (data/klhk/<lokasi>_<tahun>.geojson)
+    T = [int(m.group(1)) for f in os.listdir(os.path.join(DATA, "klhk")) for m in [re.match(rf"^{lokasi}_(\d{{4}})\.geojson$", f)] if m]
+    return max(T) if T else None
 
 def geod_ha(g):
     from pyproj import Geod
@@ -37,7 +41,7 @@ def run(site, citra):
     from shapely.geometry import shape, mapping, box
     from shapely.ops import unary_union
     hd = unary_union([shape(f["geometry"]) for f in site["hd"]["features"]]).buffer(0)
-    K = json.load(open(os.path.join(DATA, "klhk", f"{site['id']}_2020.geojson")))
+    tp = terbaru(site["id"]); K = json.load(open(os.path.join(DATA, "klhk", f"{site['id']}_{tp}.geojson")))
     kl = [(shape(f["geometry"]).buffer(0).intersection(hd), int(f["properties"]["kode"])) for f in K["features"]]
     kl = [(g, k) for g, k in kl if not g.is_empty]
     grup = {}   # (kode, tahun) -> [geom pixel ...]
@@ -80,8 +84,8 @@ def run(site, citra):
         x = bersih(x)
         if x is not None: tetap.append({"type": "Feature", "properties": {"k": kd, "th": 0, "src": "KLHK", "ha": round(geod_ha(x), 4)}, "geometry": mapping(x)})
     os.makedirs(OUT, exist_ok=True)
-    out = {"type": "FeatureCollection", "lokasi": site["id"], "hutan_desa": site["hd_nama"], "tahun_peta": 2020, "tahun_citra": cy or None,
-           "sumber": ["Peta Penutupan Lahan KLHK 2020 (1:250.000)", "Hansen/UMD/Google/USGS/NASA GFC-2025-v1.13 (lossyear, treecover2000 ≥ 30%)", "Sentinel-2 L2A ESA Copernicus (tahun berjalan, indikasi)"],
+    out = {"type": "FeatureCollection", "lokasi": site["id"], "hutan_desa": site["hd_nama"], "tahun_peta": tp, "tahun_citra": cy or None,
+           "sumber": [f"Peta Penutupan Lahan KLHK {tp} (1:250.000)", "Hansen/UMD/Google/USGS/NASA GFC-2025-v1.13 (lossyear, treecover2000 ≥ 30%)", "Sentinel-2 L2A ESA Copernicus (tahun berjalan, indikasi)"],
            "features": tetap + feats}
     json.dump(out, open(os.path.join(OUT, f"{site['id']}.geojson"), "w"), separators=(",", ":"))
     return len(tetap), len(feats), round(sum(f["properties"]["ha"] for f in out["features"]), 2)
@@ -91,7 +95,7 @@ def main():
     pc = os.path.join(DATA, "analisis", "citra_tahun_berjalan.geojson"); citra = json.load(open(pc)) if os.path.exists(pc) else None
     for s in geo["sites"]:
         if pilih and s["id"] not in pilih: continue
-        if not os.path.exists(os.path.join(DATA, "klhk", f"{s['id']}_2020.geojson")): print(s["id"], "peta KLHK belum ada"); continue
+        if not terbaru(s["id"]): print(s["id"], "peta KLHK belum ada"); continue
         print(s["id"], *run(s, citra))
 
 if __name__ == "__main__":
