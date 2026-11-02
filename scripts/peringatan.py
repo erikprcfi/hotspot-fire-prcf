@@ -78,12 +78,25 @@ def teks(e, bhs):
         rinci = [f'{tgl(h["tanggal"])}: {KELAS["en" if en else "id"][h["level"]]} (FWI {angka(float(h["fwi"] or 0), "en" if en else "id")})' for h in e["hari"]]
     return judul, isi, rinci, url
 
+def umpan(ev):   # umpan publik untuk notifikasi lokal aplikasi Android (tanpa data pribadi): 14 hari terakhir, maks. 100
+    fp = os.path.join(OUT, "feed.json"); F = json.load(open(fp)) if os.path.exists(fp) else {"peringatan": []}
+    ada = {e["kunci"] for e in F["peringatan"]}
+    for e in ev:
+        k = "|".join(e["kunci"]); 
+        if k in ada: continue
+        ji, ii, _, url = teks(e, "id"); je, ie, _, _ = teks(e, "en")
+        F["peringatan"].append({"kunci": k, "situs": e["situs"], "jenis": e["jenis"], "waktu": NOW.strftime("%Y-%m-%dT%H:%MZ"), "url": url, "id": {"judul": ji, "isi": ii}, "en": {"judul": je, "isi": ie}})
+    batas = (NOW - datetime.timedelta(days=14)).strftime("%Y-%m-%d")
+    F["peringatan"] = [e for e in F["peringatan"] if e["waktu"] >= batas][-100:]; F["diperbarui_utc"] = NOW.strftime("%Y-%m-%dT%H:%MZ")
+    json.dump(F, open(fp, "w"), ensure_ascii=False, separators=(",", ":"))
+
 def main():
     if not KEY or not URL: print("ANALISIS_KEY/AKUN_URL belum diatur – lewati"); return
     sf = os.path.join(OUT, "terkirim.json")
     state = json.load(open(sf)) if os.path.exists(sf) else {}
     ev = kejadian(state)
     print(len(ev), "peringatan baru")
+    umpan(ev)
     if not ev: return
     lg = get("langganan=1")
     if not lg.get("ok"): print("langganan tidak dapat dibaca:", lg); return
