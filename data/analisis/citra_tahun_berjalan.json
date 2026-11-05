@@ -4,21 +4,21 @@
   "nangalauk": {
    "tahun": 2026,
    "periode_terkini": [
-    "2026-06-05",
-    "2026-11-02"
+    "2026-06-08",
+    "2026-11-05"
    ],
    "periode_acuan": [
-    "2025-06-05",
-    "2025-11-02"
+    "2025-06-08",
+    "2025-11-05"
    ],
    "hutan_acuan_ha": 1109.64,
-   "dicek_utc": "2026-11-02T14:10:11Z",
+   "dicek_utc": "2026-11-05T12:46:57Z",
    "cerah_persen": 88,
    "citra_terkini": [
-    "S2B_49NFB_20260606_0_L2A",
     "S2C_49NFB_20260810_0_L2A",
     "S2C_49NFB_20260830_0_L2A",
-    "S2C_49NFB_20260820_0_L2A"
+    "S2C_49NFB_20260820_0_L2A",
+    "S2B_49NFB_20260825_0_L2A"
    ],
    "citra_acuan": [
     "S2C_49NFB_20250626_0_L2A",
@@ -28,35 +28,35 @@
    ],
    "status": "selesai",
    "hilang_kode_ha": {
-    "50011": 0.8
+    "50011": 2.4
    },
-   "luas_berubah_ha": 0.8,
-   "jumlah_petak": 1
+   "luas_berubah_ha": 2.4,
+   "jumlah_petak": 3
   },
   "batangtau": {
    "tahun": 2026,
    "periode_terkini": [
-    "2026-06-05",
-    "2026-11-02"
+    "2026-06-08",
+    "2026-11-05"
    ],
    "periode_acuan": [
-    "2025-06-05",
-    "2025-11-02"
+    "2025-06-08",
+    "2025-11-05"
    ],
    "hutan_acuan_ha": 266.88,
-   "dicek_utc": "2026-11-02T14:10:28Z",
+   "dicek_utc": "2026-11-05T12:47:09Z",
    "cerah_persen": 100,
    "citra_terkini": [
     "S2C_49NFA_20260830_0_L2A",
-    "S2B_49NFA_20260606_0_L2A",
     "S2C_49NFA_20260830_1_L2A",
-    "S2C_49NFA_20260810_0_L2A"
+    "S2C_49NFA_20260810_0_L2A",
+    "S2A_49NFA_20260713_0_L2A"
    ],
    "citra_acuan": [
     "S2B_49NFA_20250701_0_L2A",
     "S2B_49NFA_20250711_0_L2A",
-    "S2B_49NFA_20250721_0_L2A",
-    "S2B_49NFA_20250621_0_L2A"
+    "S2C_49NFA_20251103_0_L2A",
+    "S2B_49NFA_20250721_0_L2A"
    ],
    "status": "selesai",
    "hilang_kode_ha": {},
@@ -66,27 +66,27 @@
   "nyuai": {
    "tahun": 2026,
    "periode_terkini": [
-    "2026-06-05",
-    "2026-11-02"
+    "2026-06-08",
+    "2026-11-05"
    ],
    "periode_acuan": [
-    "2025-06-05",
-    "2025-11-02"
+    "2025-06-08",
+    "2025-11-05"
    ],
    "hutan_acuan_ha": 4121.56,
-   "dicek_utc": "2026-11-02T14:10:45Z",
+   "dicek_utc": "2026-11-05T12:47:23Z",
    "cerah_persen": 100,
    "citra_terkini": [
     "S2C_49NFA_20260830_0_L2A",
-    "S2B_49NFA_20260606_0_L2A",
     "S2C_49NFA_20260810_0_L2A",
-    "S2A_49NFA_20260713_0_L2A"
+    "S2A_49NFA_20260713_0_L2A",
+    "S2C_49NFA_20260711_0_L2A"
    ],
    "citra_acuan": [
     "S2B_49NFA_20250701_0_L2A",
     "S2B_49NFA_20250711_0_L2A",
-    "S2B_49NFA_20250721_0_L2A",
-    "S2B_49NFA_20250621_0_L2A"
+    "S2C_49NFA_20251103_0_L2A",
+    "S2B_49NFA_20250721_0_L2A"
    ],
    "status": "selesai",
    "hilang_kode_ha": {},
@@ -96,27 +96,27 @@
   "pundjung": {
    "tahun": 2026,
    "periode_terkini": [
-    "2026-06-05",
-    "2026-11-02"
+    "2026-06-08",
+    "2026-11-05"
    ],
    "periode_acuan": [
-    "2025-06-05",
-    "2025-11-02"
+    "2025-06-08",
+    "2025-11-05"
    ],
    "hutan_acuan_ha": 1876.6,
-   "dicek_utc": "2026-11-02T14:10:57Z",
-   "cerah_persen": 98,
+   "dicek_utc": "2026-11-05T12:47:30Z",
+   "cerah_persen": 99,
    "citra_terkini": [
     "S2C_49NFA_20260830_0_L2A",
-    "S2B_49NFA_20260606_0_L2A",
     "S2C_49NFA_20260830_1_L2A",
-    "S2C_49NFA_20260810_0_L2A"
+    "S2C_49NFA_20260810_0_L2A",
+    "S2A_49NFA_20260713_0_L2A"
    ],
    "citra_acuan": [
     "S2B_49NFA_20250701_0_L2A",
     "S2B_49NFA_20250711_0_L2A",
-    "S2B_49NFA_20250721_0_L2A",
-    "S2B_49NFA_20250621_0_L2A"
+    "S2C_49NFA_20251103_0_L2A",
+    "S2B_49NFA_20250721_0_L2A"
    ],
    "status": "selesai",
    "hilang_kode_ha": {},
@@ -156,21 +156,21 @@
   "bukitbelang": {
    "tahun": 2026,
    "periode_terkini": [
-    "2026-06-05",
-    "2026-11-02"
+    "2026-06-08",
+    "2026-11-05"
    ],
    "periode_acuan": [
-    "2025-06-05",
-    "2025-11-02"
+    "2025-06-08",
+    "2025-11-05"
    ],
    "hutan_acuan_ha": 3366.0,
-   "dicek_utc": "2026-11-02T14:11:12Z",
+   "dicek_utc": "2026-11-05T12:47:42Z",
    "cerah_persen": 99,
    "citra_terkini": [
     "S2C_49NGA_20260830_0_L2A",
     "S2C_49NGA_20260830_1_L2A",
-    "S2B_49NGA_20260606_0_L2A",
-    "S2C_49NGA_20260810_0_L2A"
+    "S2C_49NGA_20260810_0_L2A",
+    "S2B_49NGA_20260726_0_L2A"
    ],
    "citra_acuan": [
     "S2C_49NGA_20250924_0_L2A",
@@ -185,5 +185,5 @@
   }
  },
  "metode": "Perubahan tutupan hutan TAHUN BERJALAN dari citra Sentinel-2 (untuk tahun yang belum ada data tahunan Hansen) – Fire Hotspot PRCF\n==================================================================================================================================\nAcuan kelas: Peta Penutupan Lahan resmi KLHK TERBARU (data/klhk/<lokasi>_<tahun>.geojson; kini 2025).\nHutan acuan: tajuk 2000 ≥ 30% dan BELUM hilang s.d. 2025 menurut Hansen GFC v1.13 (jadi kehilangan 2001–2025 tidak terhitung dua kali).\nCitra: Sentinel-2 L2A (ESA Copernicus, Earth Search AWS), 20 m. TERKINI = 150 hari terakhir tahun berjalan (4 citra paling cerah),\nACUAN = 150 hari yang sama tahun sebelumnya (musim sama). Piksel berubah bila NBR turun ≥ 0,27, SWIR2 naik ≥ 0,02 dan NBR terkini ≤ 0,30\n(metode sama dengan Peringatan Hutan), petak ≥ 0,5 ha. Setiap piksel berubah diberi kode kelas KLHK terbaru → dipakai alat Tutupan Lahan\ndan Emisi Karbon FREL untuk tahun berjalan (diberi tanda \"indikasi citra\", menunggu rilis data tahunan resmi).\nKeluaran: data/analisis/citra_tahun_berjalan.json  (+ data/analisis/citra_tahun_berjalan.geojson)",
- "diperbarui_utc": "2026-11-02T14:11:27Z"
+ "diperbarui_utc": "2026-11-05T12:47:55Z"
 }

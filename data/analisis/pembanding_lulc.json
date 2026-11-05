@@ -1,7 +1,7 @@
 {
  "sumber": "Impact Observatory, Microsoft & Esri – 10m Annual Land Use Land Cover (9-class) V2, Sentinel-2 10 m, CC BY 4.0 (Microsoft Planetary Computer: io-lulc-annual-v02)",
  "metode": "Pembanding INDEPENDEN tutupan lahan tahunan per Hutan Desa – Fire Hotspot PRCF\n==============================================================================\nSumber: Impact Observatory, Microsoft & Esri – \"10m Annual Land Use Land Cover (9-class) V2\" (io-lulc-annual-v02),\nklasifikasi citra Sentinel-2 10 m per tahun (2017–tahun terakhir yang dirilis), lisensi CC BY 4.0, dibaca dari Microsoft Planetary Computer.\nGunanya: memeriksa silang tren alat \"Tutupan lahan (KLHK)\" (acuan KLHK 2020 + kehilangan tutupan pohon Hansen) dengan peta yang dibuat\nsetiap tahun secara terpisah. Kelasnya berbeda dengan KLHK (9 kelas global), dan hasil per tahun dapat naik-turun karena awan/banjir musiman\n(akurasi global ±75–85%), jadi dipakai sebagai pembanding, bukan pengganti peta resmi KLHK. Luas dihitung dari piksel 10 m (UTM) yang\npusatnya di dalam batas Hutan Desa.\nKeluaran: data/analisis/pembanding_lulc.json",
- "dibuat_utc": "2026-11-02T03:43:17Z",
+ "dibuat_utc": "2026-11-05T12:47:56Z",
  "kelas": {
   "1": "Air",
   "2": "Pohon",
