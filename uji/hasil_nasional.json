@@ -1,0 +1,538 @@
+{
+ "dijalankan_utc": "2026-11-06T14:39:18Z",
+ "firms_key": false,
+ "hasil": {
+  "Bengkulu (Seluma)": {
+   "klhk_tahun": [],
+   "kunci": [
+    "emisi_frel",
+    "hutan",
+    "karbon",
+    "luas_ha",
+    "perubahan_2000_2020_ha",
+    "tutupan_lahan_ha"
+   ],
+   "ringkas": {
+    "luas_ha": 3083.5
+   },
+   "lahan_kritis": null,
+   "titik_panas": {
+    "periode": "2016–2026",
+    "per_tahun": {
+     "2016": {
+      "VIIRS S-NPP": 7,
+      "VIIRS NOAA-20": 0,
+      "MODIS": 0
+     },
+     "2017": {
+      "VIIRS S-NPP": 3,
+      "VIIRS NOAA-20": 0,
+      "MODIS": 0
+     },
+     "2018": {
+      "VIIRS S-NPP": 1,
+      "VIIRS NOAA-20": 1,
+      "MODIS": 0
+     },
+     "2019": {
+      "VIIRS S-NPP": 1,
+      "VIIRS NOAA-20": 2,
+      "MODIS": 1
+     },
+     "2020": {
+      "VIIRS S-NPP": 2,
+      "VIIRS NOAA-20": 1,
+      "MODIS": 1
+     },
+     "2021": {
+      "VIIRS S-NPP": 1,
+      "VIIRS NOAA-20": 0,
+      "MODIS": 0
+     },
+     "2022": {
+      "VIIRS S-NPP": 2,
+      "VIIRS NOAA-20": 3,
+      "MODIS": 0
+     },
+     "2023": {
+      "VIIRS S-NPP": 4,
+      "VIIRS NOAA-20": 2,
+      "MODIS": 1
+     },
+     "2024": {
+      "VIIRS S-NPP": 4,
+      "VIIRS NOAA-20": 4,
+      "MODIS": 4
+     },
+     "2025": {
+      "VIIRS S-NPP": 4,
+      "VIIRS NOAA-20": 3,
+      "MODIS": 0
+     },
+     "2026": {
+      "VIIRS S-NPP": 0,
+      "VIIRS NOAA-20": 0,
+      "MODIS": 0
+     }
+    },
+    "total": 52,
+    "arsip_dipakai": [
+     "VIIRS S-NPP 2016",
+     "VIIRS S-NPP 2017",
+     "VIIRS S-NPP 2018",
+     "VIIRS S-NPP 2019",
+     "VIIRS S-NPP 2020",
+     "VIIRS S-NPP 2021",
+     "VIIRS S-NPP 2022",
+     "VIIRS S-NPP 2023",
+     "VIIRS S-NPP 2024",
+     "VIIRS S-NPP 2025",
+     "VIIRS NOAA-20 2018",
+     "VIIRS NOAA-20 2019",
+     "VIIRS NOAA-20 2020",
+     "VIIRS NOAA-20 2021",
+     "VIIRS NOAA-20 2022",
+     "VIIRS NOAA-20 2023",
+     "VIIRS NOAA-20 2024",
+     "VIIRS NOAA-20 2025",
+     "MODIS 2016",
+     "MODIS 2017",
+     "MODIS 2018",
+     "MODIS 2019",
+     "MODIS 2020",
+     "MODIS 2021",
+     "MODIS 2022",
+     "MODIS 2023",
+     "MODIS 2024",
+     "MODIS 2025"
+    ]
+   },
+   "wilayah": [
+    {
+     "desa": "Pandan",
+     "kec": "Seluma Utara",
+     "kab": "Kabupaten Seluma",
+     "prov": "Bengkulu",
+     "persen_desa_tercakup": 80.5
+    },
+    {
+     "desa": "Talang Rami",
+     "kec": "Seluma Utara",
+     "kab": "Kabupaten Seluma",
+     "prov": "Bengkulu",
+     "persen_desa_tercakup": 62.0
+    },
+    {
+     "desa": "Tanjung Agung",
+     "kec": "Seluma Barat",
+     "kab": "Kabupaten Seluma",
+     "prov": "Bengkulu",
+     "persen_desa_tercakup": 41.5
+    },
+    {
+     "desa": "Talang Beringin",
+     "kec": "Seluma Utara",
+     "kab": "Kabupaten Seluma",
+     "prov": "Bengkulu",
+     "persen_desa_tercakup": 36.6
+    },
+    {
+     "desa": "Dusun Baru",
+     "kec": "Seluma",
+     "kab": "Kabupaten Seluma",
+     "prov": "Bengkulu",
+     "persen_desa_tercakup": 21.4
+    },
+    {
+     "desa": "Talang Dantuk",
+     "kec": "Seluma",
+     "kab": "Kabupaten Seluma",
+     "prov": "Bengkulu",
+     "persen_desa_tercakup": 10.2
+    },
+    {
+     "desa": "Air Latak",
+     "kec": "Seluma Barat",
+     "kab": "Kabupaten Seluma",
+     "prov": "Bengkulu",
+     "persen_desa_tercakup": 2.3
+    },
+    {
+     "desa": "Bunga Mas",
+     "kec": "Seluma Timur",
+     "kab": "Kabupaten Seluma",
+     "prov": "Bengkulu",
+     "persen_desa_tercakup": 2.3
+    },
+    {
+     "desa": "Talang Saling",
+     "kec": "Seluma",
+     "kab": "Kabupaten Seluma",
+     "prov": "Bengkulu",
+     "persen_desa_tercakup": 1.5
+    },
+    {
+     "desa": "Lubuk Lagan",
+     "kec": "Seluma Barat",
+     "kab": "Kabupaten Seluma",
+     "prov": "Bengkulu",
+     "persen_desa_tercakup": 1.0
+    },
+    {
+     "desa": "Puguk",
+     "kec": "Seluma Utara",
+     "kab": "Kabupaten Seluma",
+     "prov": "Bengkulu",
+     "persen_desa_tercakup": 0.6
+    }
+   ],
+   "detik": 55
+  },
+  "Papua (Merauke)": {
+   "klhk_tahun": [],
+   "kunci": [
+    "emisi_frel",
+    "hutan",
+    "karbon",
+    "luas_ha",
+    "perubahan_2000_2020_ha",
+    "tutupan_lahan_ha"
+   ],
+   "ringkas": {
+    "luas_ha": 3059.7
+   },
+   "lahan_kritis": null,
+   "titik_panas": {
+    "periode": "2016–2026",
+    "per_tahun": {
+     "2016": {
+      "VIIRS S-NPP": 10,
+      "VIIRS NOAA-20": 0,
+      "MODIS": 1
+     },
+     "2017": {
+      "VIIRS S-NPP": 4,
+      "VIIRS NOAA-20": 0,
+      "MODIS": 2
+     },
+     "2018": {
+      "VIIRS S-NPP": 55,
+      "VIIRS NOAA-20": 62,
+      "MODIS": 16
+     },
+     "2019": {
+      "VIIRS S-NPP": 15,
+      "VIIRS NOAA-20": 20,
+      "MODIS": 1
+     },
+     "2020": {
+      "VIIRS S-NPP": 1,
+      "VIIRS NOAA-20": 1,
+      "MODIS": 1
+     },
+     "2021": {
+      "VIIRS S-NPP": 2,
+      "VIIRS NOAA-20": 1,
+      "MODIS": 0
+     },
+     "2022": {
+      "VIIRS S-NPP": 1,
+      "VIIRS NOAA-20": 3,
+      "MODIS": 1
+     },
+     "2023": {
+      "VIIRS S-NPP": 61,
+      "VIIRS NOAA-20": 33,
+      "MODIS": 13
+     },
+     "2024": {
+      "VIIRS S-NPP": 0,
+      "VIIRS NOAA-20": 0,
+      "MODIS": 0
+     },
+     "2025": {
+      "VIIRS S-NPP": 0,
+      "VIIRS NOAA-20": 0,
+      "MODIS": 0
+     },
+     "2026": {
+      "VIIRS S-NPP": 0,
+      "VIIRS NOAA-20": 0,
+      "MODIS": 0
+     }
+    },
+    "total": 304,
+    "arsip_dipakai": [
+     "VIIRS S-NPP 2016",
+     "VIIRS S-NPP 2017",
+     "VIIRS S-NPP 2018",
+     "VIIRS S-NPP 2019",
+     "VIIRS S-NPP 2020",
+     "VIIRS S-NPP 2021",
+     "VIIRS S-NPP 2022",
+     "VIIRS S-NPP 2023",
+     "VIIRS S-NPP 2024",
+     "VIIRS S-NPP 2025",
+     "VIIRS NOAA-20 2018",
+     "VIIRS NOAA-20 2019",
+     "VIIRS NOAA-20 2020",
+     "VIIRS NOAA-20 2021",
+     "VIIRS NOAA-20 2022",
+     "VIIRS NOAA-20 2023",
+     "VIIRS NOAA-20 2024",
+     "VIIRS NOAA-20 2025",
+     "MODIS 2016",
+     "MODIS 2017",
+     "MODIS 2018",
+     "MODIS 2019",
+     "MODIS 2020",
+     "MODIS 2021",
+     "MODIS 2022",
+     "MODIS 2023",
+     "MODIS 2024",
+     "MODIS 2025"
+    ]
+   },
+   "wilayah": [
+    {
+     "desa": "Sumber Mulya",
+     "kec": "Kurik",
+     "kab": "Kabupaten Merauke",
+     "prov": "Papua Selatan",
+     "persen_desa_tercakup": 10.7
+    },
+    {
+     "desa": "Kaliki",
+     "kec": "Kurik",
+     "kab": "Kabupaten Merauke",
+     "prov": "Papua Selatan",
+     "persen_desa_tercakup": 3.8
+    },
+    {
+     "desa": "Sumber Rejeki",
+     "kec": "Kurik",
+     "kab": "Kabupaten Merauke",
+     "prov": "Papua Selatan",
+     "persen_desa_tercakup": 1.0
+    }
+   ],
+   "detik": 43
+  },
+  "Aceh (Aceh Barat)": {
+   "klhk_tahun": [],
+   "kunci": [
+    "emisi_frel",
+    "hutan",
+    "karbon",
+    "luas_ha",
+    "perubahan_2000_2020_ha",
+    "tutupan_lahan_ha"
+   ],
+   "ringkas": {
+    "luas_ha": 3082.3
+   },
+   "lahan_kritis": null,
+   "titik_panas": {
+    "periode": "2016–2026",
+    "per_tahun": {
+     "2016": {
+      "VIIRS S-NPP": 16,
+      "VIIRS NOAA-20": 0,
+      "MODIS": 1
+     },
+     "2017": {
+      "VIIRS S-NPP": 25,
+      "VIIRS NOAA-20": 0,
+      "MODIS": 1
+     },
+     "2018": {
+      "VIIRS S-NPP": 1,
+      "VIIRS NOAA-20": 0,
+      "MODIS": 0
+     },
+     "2019": {
+      "VIIRS S-NPP": 9,
+      "VIIRS NOAA-20": 4,
+      "MODIS": 0
+     },
+     "2020": {
+      "VIIRS S-NPP": 0,
+      "VIIRS NOAA-20": 0,
+      "MODIS": 0
+     },
+     "2021": {
+      "VIIRS S-NPP": 0,
+      "VIIRS NOAA-20": 0,
+      "MODIS": 0
+     },
+     "2022": {
+      "VIIRS S-NPP": 1,
+      "VIIRS NOAA-20": 5,
+      "MODIS": 0
+     },
+     "2023": {
+      "VIIRS S-NPP": 1,
+      "VIIRS NOAA-20": 2,
+      "MODIS": 0
+     },
+     "2024": {
+      "VIIRS S-NPP": 2,
+      "VIIRS NOAA-20": 2,
+      "MODIS": 1
+     },
+     "2025": {
+      "VIIRS S-NPP": 1,
+      "VIIRS NOAA-20": 3,
+      "MODIS": 0
+     },
+     "2026": {
+      "VIIRS S-NPP": 0,
+      "VIIRS NOAA-20": 0,
+      "MODIS": 0
+     }
+    },
+    "total": 75,
+    "arsip_dipakai": [
+     "VIIRS S-NPP 2016",
+     "VIIRS S-NPP 2017",
+     "VIIRS S-NPP 2018",
+     "VIIRS S-NPP 2019",
+     "VIIRS S-NPP 2020",
+     "VIIRS S-NPP 2021",
+     "VIIRS S-NPP 2022",
+     "VIIRS S-NPP 2023",
+     "VIIRS S-NPP 2024",
+     "VIIRS S-NPP 2025",
+     "VIIRS NOAA-20 2018",
+     "VIIRS NOAA-20 2019",
+     "VIIRS NOAA-20 2020",
+     "VIIRS NOAA-20 2021",
+     "VIIRS NOAA-20 2022",
+     "VIIRS NOAA-20 2023",
+     "VIIRS NOAA-20 2024",
+     "VIIRS NOAA-20 2025",
+     "MODIS 2016",
+     "MODIS 2017",
+     "MODIS 2018",
+     "MODIS 2019",
+     "MODIS 2020",
+     "MODIS 2021",
+     "MODIS 2022",
+     "MODIS 2023",
+     "MODIS 2024",
+     "MODIS 2025"
+    ]
+   },
+   "wilayah": [
+    {
+     "desa": "Cot Murong",
+     "kec": "Woyla",
+     "kab": "Kabupaten Aceh Barat",
+     "prov": "Aceh",
+     "persen_desa_tercakup": 98.0
+    },
+    {
+     "desa": "Alue Lhok",
+     "kec": "Bubon",
+     "kab": "Kabupaten Aceh Barat",
+     "prov": "Aceh",
+     "persen_desa_tercakup": 92.4
+    },
+    {
+     "desa": "Gunong Panah",
+     "kec": "Bubon",
+     "kab": "Kabupaten Aceh Barat",
+     "prov": "Aceh",
+     "persen_desa_tercakup": 82.0
+    },
+    {
+     "desa": "Layung",
+     "kec": "Bubon",
+     "kab": "Kabupaten Aceh Barat",
+     "prov": "Aceh",
+     "persen_desa_tercakup": 78.5
+    },
+    {
+     "desa": "Kuta Padang",
+     "kec": "Bubon",
+     "kab": "Kabupaten Aceh Barat",
+     "prov": "Aceh",
+     "persen_desa_tercakup": 53.8
+    },
+    {
+     "desa": "Cot Lagan Cm",
+     "kec": "Woyla",
+     "kab": "Kabupaten Aceh Barat",
+     "prov": "Aceh",
+     "persen_desa_tercakup": 48.4
+    },
+    {
+     "desa": "Beurawang",
+     "kec": "Bubon",
+     "kab": "Kabupaten Aceh Barat",
+     "prov": "Aceh",
+     "persen_desa_tercakup": 42.5
+    },
+    {
+     "desa": "Padang Jawa",
+     "kec": "Woyla",
+     "kab": "Kabupaten Aceh Barat",
+     "prov": "Aceh",
+     "persen_desa_tercakup": 32.7
+    },
+    {
+     "desa": "Aron Baroh",
+     "kec": "Woyla",
+     "kab": "Kabupaten Aceh Barat",
+     "prov": "Aceh",
+     "persen_desa_tercakup": 32.6
+    },
+    {
+     "desa": "Ie Itam Tunong",
+     "kec": "Woyla",
+     "kab": "Kabupaten Aceh Barat",
+     "prov": "Aceh",
+     "persen_desa_tercakup": 17.7
+    },
+    {
+     "desa": "Blang Cot Rubek",
+     "kec": "Woyla Barat",
+     "kab": "Kabupaten Aceh Barat",
+     "prov": "Aceh",
+     "persen_desa_tercakup": 15.8
+    },
+    {
+     "desa": "Alue Bakong",
+     "kec": "Bubon",
+     "kab": "Kabupaten Aceh Barat",
+     "prov": "Aceh",
+     "persen_desa_tercakup": 9.7
+    },
+    {
+     "desa": "Pange",
+     "kec": "Samatiga",
+     "kab": "Kabupaten Aceh Barat",
+     "prov": "Aceh",
+     "persen_desa_tercakup": 7.6
+    },
+    {
+     "desa": "Lhung Tgk Yah",
+     "kec": "Woyla",
+     "kab": "Kabupaten Aceh Barat",
+     "prov": "Aceh",
+     "persen_desa_tercakup": 3.4
+    },
+    {
+     "desa": "Seumuleng",
+     "kec": "Bubon",
+     "kab": "Kabupaten Aceh Barat",
+     "prov": "Aceh",
+     "persen_desa_tercakup": 0.1
+    }
+   ],
+   "detik": 41
+  }
+ },
+ "layanan_klhk": {},
+ "detik_layanan": 19
+}
