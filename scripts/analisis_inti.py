@@ -80,7 +80,7 @@ def muat_klhk(lokasi=None, bbox=None):
             for f in sorted(os.listdir(root)):
                 m = __import__("re").match(rf"^{lokasi}_(\d{{4}})\.geojson$", f)
                 if m: out[int(m.group(1))] = [(shape(x["geometry"]), int(x["properties"]["kode"])) for x in json.load(open(os.path.join(root, f)))["features"]]
-        elif bbox:   # SHP unggahan: peta provinsi KLHK yang tersimpan (data/klhk/<prov>_<tahun>.geojson.gz), cadangan layanan KLHK
+        elif bbox:   # SHP unggahan: peta provinsi KLHK yang tersimpan (data/klhk/<prov>_<tahun>.geojson.gz); di luar itu data terbuka
             import gzip, re as _re
             from shapely.geometry import box as _box
             bb = _box(*bbox)
@@ -91,10 +91,8 @@ def muat_klhk(lokasi=None, bbox=None):
                     g = shape(x["geometry"])
                     if g.intersects(bb): out.setdefault(int(m.group(1)), []).append((g.buffer(0), int(x["properties"]["kode"])))
             if out: return out
-            import tutupan_klhk as T
-            for y, url in T.cari_layanan().items():
-                F = T.ambil(url, bbox)
-                if F: out[y] = [(shape(x["geometry"]).buffer(0), int(x["properties"]["kode"])) for x in F]
+            # Di luar peta KLHK yang tersimpan (Kalimantan Barat) tutupan lahan memakai data terbuka resmi: GLAD/UMD 2000–2020 + ESA WorldCover 2021.
+            # Layanan peta KLHK (geoportal/sigap.menlhk.go.id) tidak terjangkau dari GitHub Actions, jadi tidak lagi dicoba (hemat ±20 detik per analisis).
     except Exception as e:
         print("  peta KLHK tidak tersedia:", e)
     return out

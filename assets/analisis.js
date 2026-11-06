@@ -115,22 +115,31 @@ if (!document.getElementById('fhan-css')) {
   document.head.appendChild(st);
 }
 const ST = { Menunggu: ['#FFF4E5', '#B26A00'], Diproses: ['#E8F1FB', '#1F6FC5'], Selesai: ['#E6F4EA', '#1E7A3B'], Gagal: ['#FDECEA', '#B3261E'] };
+const TX_EN = { 'Tutupan pohon': 'Tree cover', 'Semak belukar': 'Shrubland', 'Padang rumput': 'Grassland', 'Lahan pertanian': 'Cropland', 'Lahan terbangun': 'Built-up',
+  'Lahan terbuka / vegetasi jarang': 'Bare / sparse vegetation', 'Salju & es': 'Snow & ice', 'Badan air permanen': 'Permanent water bodies', 'Lahan basah herba': 'Herbaceous wetland',
+  'Mangrove': 'Mangroves', 'Lumut & lumut kerak': 'Moss & lichen', 'Tidak kritis': 'Not critical', 'Potensial kritis': 'Potentially critical', 'Agak kritis': 'Slightly critical',
+  'Kritis': 'Critical', 'Sangat kritis': 'Very critical', 'Tidak dinilai (air/terbangun)': 'Not assessed (water/built-up)' };
+const TX = t => EN() ? (TX_EN[t] || t) : t;
+const LKI_EN = { catatan: 'Indication for initial screening, NOT an official Critical Land Map. Only the canopy cover (weight 50) and slope (weight 20) criteria are used; erosion hazard and management are not available as national open data, so weights are normalised to the 100–500 scale. Canopy cover = share of ESA WorldCover 2021 (10 m) tree/mangrove pixels within a 90 × 90 m window; tree crops (e.g. oil palm, rubber) count as canopy. Water bodies and built-up land are not assessed. Natural treeless ecosystems (savanna, grass swamps) also score low because the method is designed for forested land – interpret with care. Field verification and the local BPDAS Critical Land Map remain the official reference.',
+  sumber: 'PRCF indication from open data: ESA WorldCover 2021 10 m (canopy cover) and Copernicus DEM GLO-30 (slope), scoring follows Ministry of Forestry regulation P.4/V-SET/2013 (protection forest) using 2 of 4 criteria' };
+const WC_EN = { sumber: 'ESA WorldCover 10 m 2021 v200 (Zanaga et al. 2022, doi:10.5281/zenodo.7254221), CC BY 4.0 – AWS Open Data', metode: 'Area = pixel count × geodesic pixel area per row (WGS84), only pixels whose centre lies inside the boundary.' };
 function wcHTML(R) {   // tutupan lahan 2021 ESA WorldCover 10 m (data terbuka, seluruh Indonesia)
   const W = R.tutupan_2021; if (!W || !W.kelas) return '';
-  return `<h3 style="margin-top:18px">Tutupan lahan terbaru 2021 · 10 m</h3>${bars(W.kelas.map(k => k.ha), W.kelas.map(k => k.nama.split(' ')[0]), '#2B8A3E', 'ha')}
-   <table><tr><th>Kelas (ESA WorldCover)</th><th>Luas (ha)</th><th>%</th></tr>${W.kelas.map(k => `<tr><td><span class="fan-sw" style="background:${esc(k.warna)}"></span>${esc(k.nama)}</td><td>${N(k.ha, 2)}</td><td>${N(k.persen, 2)}</td></tr>`).join('')}</table>
-   <p class="fan-src">${esc(W.sumber)}. ${esc(W.metode || '')}</p>`;
+  const e = EN();
+  return `<h3 style="margin-top:18px">${e ? 'Latest land cover 2021 · 10 m' : 'Tutupan lahan terbaru 2021 · 10 m'}</h3>${bars(W.kelas.map(k => k.ha), W.kelas.map(k => TX(k.nama).split(' ')[0]), '#2B8A3E', 'ha')}
+   <table><tr><th>${e ? 'Class (ESA WorldCover)' : 'Kelas (ESA WorldCover)'}</th><th>${e ? 'Area (ha)' : 'Luas (ha)'}</th><th>%</th></tr>${W.kelas.map(k => `<tr><td><span class="fan-sw" style="background:${esc(k.warna)}"></span>${esc(TX(k.nama))}</td><td>${N(k.ha, 2)}</td><td>${N(k.persen, 2)}</td></tr>`).join('')}</table>
+   <p class="fan-src">${esc(e ? WC_EN.sumber : W.sumber)}. ${esc(e ? WC_EN.metode : (W.metode || ''))}</p>`;
 }
 function lkiHTML(R) {   // indikasi lahan kritis dari data terbuka (di luar cakupan Peta Lahan Kritis resmi)
-  const K = R.lahan_kritis_indikasi;
-  if (!K || !K.kelas) return '<div class="fan-card"><p class="mut">Peta Lahan Kritis resmi tidak mencakup area ini, dan indikasi dari data terbuka belum tersedia untuk analisis ini (analisis lama – unggah ulang untuk menghitungnya).</p></div>';
+  const K = R.lahan_kritis_indikasi, e = EN();
+  if (!K || !K.kelas) return `<div class="fan-card"><p class="mut">${e ? 'The official Critical Land Map does not cover this area, and an open-data indication is not yet available for this analysis (older analysis – upload again to compute it).' : 'Peta Lahan Kritis resmi tidak mencakup area ini, dan indikasi dari data terbuka belum tersedia untuk analisis ini (analisis lama – unggah ulang untuk menghitungnya).'}</p></div>`;
   const row = o => Object.entries(o || {}).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${N(v, 2)}</td></tr>`).join('');
-  return `<div class="fan-card"><h3>Indikasi lahan kritis</h3><p class="mut" style="color:#8A4B00"><b>Indikasi, bukan peta resmi.</b> ${esc(K.catatan)}</p>
-   ${bars(K.kelas.map(k => k.ha), K.kelas.map(k => k.nama.replace(' kritis', '')), '#E8590C', 'ha')}
-   <table><tr><th>Kelas indikasi</th><th>Luas (ha)</th><th>%</th></tr>${K.kelas.map(k => `<tr><td><span class="fan-sw" style="background:${esc(k.warna)}"></span>${esc(k.nama)}</td><td>${N(k.ha, 2)}</td><td>${N(k.persen, 2)}</td></tr>`).join('')}</table>
-   <h3 style="margin-top:14px">Penutupan tajuk</h3><table><tr><th>Kelas tajuk</th><th>Luas (ha)</th></tr>${row(K.tajuk_ha)}</table>
-   <h3 style="margin-top:14px">Kemiringan lereng</h3><table><tr><th>Kelas lereng</th><th>Luas (ha)</th></tr>${row(K.lereng_ha)}</table>
-   <p class="fan-src">${esc(K.sumber)}.</p></div>`;
+  return `<div class="fan-card"><h3>${e ? 'Critical land indication' : 'Indikasi lahan kritis'}</h3><p class="mut" style="color:#8A4B00"><b>${e ? 'Indication, not an official map.' : 'Indikasi, bukan peta resmi.'}</b> ${esc(e ? LKI_EN.catatan : K.catatan)}</p>
+   ${bars(K.kelas.map(k => k.ha), K.kelas.map(k => TX(k.nama).replace(e ? ' critical' : ' kritis', '')), '#E8590C', 'ha')}
+   <table><tr><th>${e ? 'Indicated class' : 'Kelas indikasi'}</th><th>${e ? 'Area (ha)' : 'Luas (ha)'}</th><th>%</th></tr>${K.kelas.map(k => `<tr><td><span class="fan-sw" style="background:${esc(k.warna)}"></span>${esc(TX(k.nama))}</td><td>${N(k.ha, 2)}</td><td>${N(k.persen, 2)}</td></tr>`).join('')}</table>
+   <h3 style="margin-top:14px">${e ? 'Canopy cover' : 'Penutupan tajuk'}</h3><table><tr><th>${e ? 'Canopy class' : 'Kelas tajuk'}</th><th>${e ? 'Area (ha)' : 'Luas (ha)'}</th></tr>${row(K.tajuk_ha)}</table>
+   <h3 style="margin-top:14px">${e ? 'Slope' : 'Kemiringan lereng'}</h3><table><tr><th>${e ? 'Slope class' : 'Kelas lereng'}</th><th>${e ? 'Area (ha)' : 'Luas (ha)'}</th></tr>${row(K.lereng_ha)}</table>
+   <p class="fan-src">${esc(e ? LKI_EN.sumber : K.sumber)}.</p></div>`;
 }
 function bars(vals, labels, color, unit, h = 150) {   // grafik batang SVG sederhana
   const W = 640, P = 34, mx = Math.max(1e-9, ...vals), bw = (W - P - 6) / vals.length;
@@ -291,9 +300,9 @@ async function pdfHasil(R) {
   const used = K.filter(k => Yr.some(yy => (R.tutupan_lahan_ha[yy][k.kode] || 0) >= 0.05));
   TAB([['Kelas', ...Yr, 'Perubahan'], ...used.map(k => [k.nama, ...Yr.map(yy => fmt1(R.tutupan_lahan_ha[yy][k.kode] || 0)), (v => (v >= 0 ? '+' : '') + fmt1(v))((R.tutupan_lahan_ha['2020'][k.kode] || 0) - (R.tutupan_lahan_ha['2000'][k.kode] || 0))])], 7.6);
   const tr = Object.entries(R.perubahan_2000_2020_ha || {}).slice(0, 10); if (tr.length) TAB([['Perubahan 2000 -> 2020', 'Luas (ha)'], ...tr.map(([k, v]) => { const [a, b] = k.split('>'); return [`${kn(a)} -> ${kn(b)}`, fmt1(v)]; })]);
-  if (R.tutupan_2021 && R.tutupan_2021.kelas) { H1('Tutupan lahan 2021 (10 m)'); P(R.tutupan_2021.sumber, 8.3, [90, 100, 95]); TAB([['Kelas', 'Luas (ha)', '%'], ...R.tutupan_2021.kelas.map(k => [k.nama, fmt1(k.ha), fmt1(k.persen)])]); }
+  if (R.tutupan_2021 && R.tutupan_2021.kelas) { H1(EN() ? 'Land cover 2021 (10 m)' : 'Tutupan lahan 2021 (10 m)'); P(EN() ? WC_EN.sumber : R.tutupan_2021.sumber, 8.3, [90, 100, 95]); TAB([[EN() ? 'Class' : 'Kelas', EN() ? 'Area (ha)' : 'Luas (ha)', '%'], ...R.tutupan_2021.kelas.map(k => [TX(k.nama), fmt1(k.ha), fmt1(k.persen)])]); }
   if (R.lahan_kritis && R.lahan_kritis.kelas_ha) { const K = R.lahan_kritis; H1(`Lahan kritis ${K.tahun}`); P(`${K.sumber}. ${K.metode || ''}`, 8.3, [90, 100, 95]); TAB([['Kelas', 'Luas (ha)', '%'], ...Object.keys(K.kelas_ha).map(k => [k, fmt1(K.kelas_ha[k]), fmt1((K.kelas_persen || {})[k] || 0)])]); }
-  else if (R.lahan_kritis_indikasi && R.lahan_kritis_indikasi.kelas) { const K = R.lahan_kritis_indikasi; H1('Indikasi lahan kritis (bukan peta resmi)'); P(K.catatan, 8.3, [140, 75, 0]); P(K.sumber, 8.3, [90, 100, 95]); TAB([['Kelas indikasi', 'Luas (ha)', '%'], ...K.kelas.map(k => [k.nama, fmt1(k.ha), fmt1(k.persen)])]); }
+  else if (R.lahan_kritis_indikasi && R.lahan_kritis_indikasi.kelas) { const K = R.lahan_kritis_indikasi; H1(EN() ? 'Critical land indication (not an official map)' : 'Indikasi lahan kritis (bukan peta resmi)'); P(EN() ? LKI_EN.catatan : K.catatan, 8.3, [140, 75, 0]); P(EN() ? LKI_EN.sumber : K.sumber, 8.3, [90, 100, 95]); TAB([[EN() ? 'Indicated class' : 'Kelas indikasi', EN() ? 'Area (ha)' : 'Luas (ha)', '%'], ...K.kelas.map(k => [TX(k.nama), fmt1(k.ha), fmt1(k.persen)])]); }
   H1('Perubahan hutan 2001-2025'); P(R.sumber.kehilangan_pohon, 8.3, [90, 100, 95]);
   const ys = Object.keys(Hh.kehilangan_per_tahun_ha); IMG(barCanvas('Kehilangan tutupan pohon per tahun (ha)', ys.map(v => v.slice(2)), ys.map(v => Hh.kehilangan_per_tahun_ha[v]), '#D9480F', 'ha'), CW);
   TAB([['Tahun', 'Kehilangan (ha)', 'Emisi bruto (tCO2e)'], ...ys.map(v => [v, fmt1(Hh.kehilangan_per_tahun_ha[v]), fmtI(C.emisi_per_tahun_kehilangan_tCO2e[v])]), ['Jumlah', fmt1(Hh.kehilangan_total_ha), fmtI(Object.values(C.emisi_per_tahun_kehilangan_tCO2e).reduce((p, c) => p + c, 0))]], 7.6);
