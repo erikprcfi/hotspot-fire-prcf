@@ -48,7 +48,7 @@ Kerjakan bagian PERTAMA yang belum dicentang, satu bagian per sesi:
       (mis. Riau, Papua, Aceh); ganti sumber lokal-saja dengan sumber resmi nasional/global atau beri label jelas.
 - [x] Sesi C (SELESAI 6 Nov) – Penyegaran tampilan untuk presentasi: beranda & peta lebih profesional (web dan HP berbeda tata letak), nama/ikon Android
       (strings.xml app_name, mipmap adaptif dari assets/logo_pr.svg), kop laporan Pantau Rimbak.
-- [ ] Sesi D – Uji menyeluruh semua alat/navigasi (Playwright), perbaiki error, rangkuman siap-gabung untuk pengguna.
+- [x] Sesi D (SELESAI 6 Nov) – Uji menyeluruh semua alat/navigasi (Playwright), perbaiki error, rangkuman siap-gabung untuk pengguna.
 - [ ] Sesi E – Data nasional untuk wilayah SHP pengguna: perluas pipeline analisis (scripts/analisis_antrean.py) agar wilayah di luar Kalbar
       dihitung dari sumber resmi global/nasional (Hansen GFC v1.13 via ubin/COG resmi, NASA FIRMS area API dgn kunci di secret Actions,
       tutupan lahan KLHK resmi bila layanan terjangkau dari Actions, cadangan ESA WorldCover); uji dengan poligon Bengkulu, Papua, Aceh.
@@ -82,6 +82,12 @@ Kerjakan bagian PERTAMA yang belum dicentang, satu bagian per sesi:
   dari logo lensa (latar #DDF1E4), splash baru. APK BELUM dibangun ulang (pengguna mengurus kunci tanda tangan & Play Store).
 - Laporan PDF/Word: logo Pantau Rimbak di sampul & kop halaman, subjudul "Monitoring, Reporting & Verification Hutan Desa" (diuji: PDF & DOCX terunduh, 0 error).
 - Website (html.web): semua kelompok alat terbuka sebagai kisi 4 kolom (HP tetap akordeon). Layar masuk diperiksa di HP.
+
+## Catatan Sesi D (6 Nov) – siap digabung ke main (MENUNGGU PERSETUJUAN PENGGUNA)
+- 31 alat dibuka satu per satu di tampilan HP (400 px) & web (1440 px): 0 error JavaScript. Pesan UI yang muncul hanya yang wajar di uji lokal
+  (Analisis: perlu akun terverifikasi; Admin: mode uji lokal tidak menghubungi basis data).
+- Login: 9 skenario lulus (server tiruan) + server v12 asli menjawab cek_email. Lapisan peta: lulus di 4 provinsi. Laporan PDF/DOCX: lulus.
+- Setelah digabung: APK lama (Fire Hotspot) otomatis menampilkan Pantau Rimbak (memuat app.html live); APK baru dgn identitas pantaurimbak dibangun pengguna.
 
 ## Cara kerja hemat kuota (paket Pro pengguna)
 Satu bagian per sesi/percakapan; uji, commit ke `pantau-rimbak`, perbarui file ini, laporkan singkat dalam bahasa Indonesia.
