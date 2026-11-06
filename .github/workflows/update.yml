@@ -30,6 +30,10 @@ jobs:
         continue-on-error: true
         timeout-minutes: 5
         run: python scripts/tle.py
+      - name: Angin 10 m seluruh Indonesia (ECMWF IFS open data) untuk animasi peta
+        continue-on-error: true
+        timeout-minutes: 10
+        run: pip install -q ecmwf-opendata eccodes eccodeslib && python scripts/angin_nasional.py
       - name: Unduh & olah data NASA FIRMS
         if: github.event_name != 'push'
         env:
