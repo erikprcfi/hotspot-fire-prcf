@@ -26,6 +26,8 @@ jobs:
       - name: Jalankan uji
         env:
           FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+          ANALISIS_KEY: ${{ secrets.ANALISIS_KEY }}
+          AKUN_URL: https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec
           FIRMS_CACHE: /tmp/firms_cache
         run: python uji/uji_nasional.py
       - name: Simpan hasil

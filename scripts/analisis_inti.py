@@ -233,8 +233,18 @@ def _firms_csv(sp, y, cache):
     return p
 
 FIRMS_NRT = {"VIIRS S-NPP": ("VIIRS_SNPP_SP", "VIIRS_SNPP_NRT"), "VIIRS NOAA-20": ("VIIRS_NOAA20_SP", "VIIRS_NOAA20_NRT"), "MODIS": ("MODIS_SP", "MODIS_NRT")}  # SP (standar) dulu, NRT untuk minggu-minggu terakhir
+_KEY = []
+def _firms_key():   # secret Actions FIRMS_MAP_KEY, atau kunci yang disimpan di Apps Script PRCF (sama dengan pipeline.py)
+    if not _KEY:
+        k = os.environ.get("FIRMS_MAP_KEY", "").strip()
+        if not k and os.environ.get("ANALISIS_KEY") and os.environ.get("AKUN_URL"):
+            try: k = (json.loads(urllib.request.urlopen(f'{os.environ["AKUN_URL"]}?pekerja={os.environ["ANALISIS_KEY"]}&rahasia=1', timeout=60).read()).get("firms") or "").strip()
+            except Exception: k = ""
+        _KEY.append(k)
+    return _KEY[0]
+
 def _firms_nrt(src, akhir, hari, cache):   # NASA FIRMS Country API (resmi) – tahun berjalan, belum ada di arsip tahunan; kunci MAP_KEY dari secret
-    key = os.environ.get("FIRMS_MAP_KEY", "")
+    key = _firms_key()
     if not key: return None
     p = os.path.join(cache, f"nrt_{src}_{akhir}_{hari}.csv")
     if not os.path.exists(p):
