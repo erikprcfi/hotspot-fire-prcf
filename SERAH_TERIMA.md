@@ -106,3 +106,11 @@ Satu bagian per sesi/percakapan; uji, commit ke `pantau-rimbak`, perbarui file i
   diarahkan ke Analisis area (server). Alat program HD (patroli, tindak, indikator, peringatan, cek, tim, admin, unduh peta HD) tetap perlu kode ID.
 - assets/web_peta.js (hanya website): panel lapisan kiri (titik panas Indonesia 7 hari, NASA GIBS/OPERA, CAMS, transparansi, legenda), linimasa bawah
   (14 hari / CAMS per 3 jam, putar animasi) dengan grafik titik panas per hari di area peta yang terlihat. HP tidak berubah.
+
+## Catatan 6 Nov malam – kepatuhan Play Store & data terbuka nasional
+- Berbagi lokasi OPSIONAL (akun.js), penjelasan sebelum menyalakan dari Profil, izin REQUEST_IGNORE_BATTERY_OPTIMIZATIONS dihapus, hapus-akun.html,
+  kebijakan privasi diperbarui. Apps Script v13 (di luar repo, dikirim ke pengguna): hapus akun ikut menghapus sidik kata sandi, wilayah SHP + kode ID, unggahan & hasil analisis.
+- scripts/terbuka_nasional.py: tutupan lahan 2021 ESA WorldCover 10 m (semua SHP) + indikasi lahan kritis (WorldCover tajuk + Copernicus DEM lereng, skoring
+  P.4/V-SET/2013 dgn 2 dari 4 kriteria, air & terbangun tidak dinilai) bila peta resmi tidak menjangkau. Uji Kapuas Hulu vs peta resmi: tidak kritis 80/70 %, kritis 1,4/4,7 %.
+- nasional.js: + Lintasan satelit untuk lokasi mana pun. app.html: perbaikan closeAll (history.go(-n) hanya memicu satu popstate).
+- Panduan rilis Play Store (Word) dikirim ke pengguna.
