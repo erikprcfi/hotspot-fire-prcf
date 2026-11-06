@@ -59,7 +59,7 @@ const perluLok = (ulang) => `${lokBar(null)}<div class="empty">Pilih lokasi dulu
 
 /* ---------- grafik batang sederhana ---------- */
 function bars(lbl, val, o = {}) {
-  const W = 640, H = o.h || 180, n = val.length, mx = Math.max(1, ...val.filter(v => v != null)), bw = W / n, ev = o.every || 1;
+  const W = innerWidth < 600 ? 360 : 640, H = o.h || (innerWidth < 600 ? 150 : 180), n = val.length, mx = Math.max(1, ...val.filter(v => v != null)), bw = W / n, ev = o.every || 1;
   return `<svg viewBox="0 0 ${W} ${H + 26}" style="width:100%;height:auto;display:block" role="img" aria-label="${esc(o.aria || 'grafik')}">
    ${[.25, .5, .75, 1].map(f => `<line x1="0" x2="${W}" y1="${H - f * H}" y2="${H - f * H}" stroke="currentColor" stroke-opacity=".08"/>`).join('')}
    <text x="2" y="11" font-size="11" fill="currentColor" fill-opacity=".55">${esc(o.fmt ? o.fmt(mx) : N0(mx))}${o.unit ? ' ' + o.unit : ''}</text>
@@ -119,8 +119,8 @@ function hujan() {
     const L = lokasi(); D = null; err = ''; draw(); if (!L) return;
     const k = `${L.lat.toFixed(2)},${L.lon.toFixed(2)}`, end = hariWIB(Date.now() - 6 * 864e5);
     try {
-      D = ERA[k] || (ERA[k] = await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${L.lat.toFixed(4)}&longitude=${L.lon.toFixed(4)}&start_date=2001-01-01&end_date=${end}&daily=precipitation_sum,temperature_2m_max,temperature_2m_mean&timezone=Asia%2FJakarta&models=era5`).then(r => r.json()).then(j => { if (j.error) throw new Error(j.reason || 'galat'); return j.daily; }));
-    } catch (e) { err = e.message; delete ERA[k]; D = null; }
+      D = ERA[k] || st.get('era_' + k + '_' + end, null) || (ERA[k] = await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${L.lat.toFixed(4)}&longitude=${L.lon.toFixed(4)}&start_date=2001-01-01&end_date=${end}&daily=precipitation_sum,temperature_2m_max&timezone=Asia%2FJakarta&models=era5`).then(r => r.json()).then(j => { if (j.error) throw new Error(j.reason || 'galat'); return j.daily; })); ERA[k] = D; try { Object.keys(localStorage).filter(x => x.startsWith('fhn_era_')).forEach(x => localStorage.removeItem(x)); } catch (e) { } st.set('era_' + k + '_' + end, D);
+    } catch (e) { err = /limit/i.test(e.message) ? 'batas harian layanan Open-Meteo tercapai, coba lagi besok' : e.message; delete ERA[k]; D = null; }
     if (D && !Y) Y = +D.time[D.time.length - 1].slice(0, 4);
     draw();
   };

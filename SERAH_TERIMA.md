@@ -49,10 +49,10 @@ Kerjakan bagian PERTAMA yang belum dicentang, satu bagian per sesi:
 - [x] Sesi C (SELESAI 6 Nov) – Penyegaran tampilan untuk presentasi: beranda & peta lebih profesional (web dan HP berbeda tata letak), nama/ikon Android
       (strings.xml app_name, mipmap adaptif dari assets/logo_pr.svg), kop laporan Pantau Rimbak.
 - [x] Sesi D (SELESAI 6 Nov) – Uji menyeluruh semua alat/navigasi (Playwright), perbaiki error, rangkuman siap-gabung untuk pengguna.
-- [~] Sesi E (SEDANG dikerjakan di percakapan utama – sesi terjadwal lewati) – Data nasional untuk wilayah SHP pengguna: perluas pipeline analisis (scripts/analisis_antrean.py) agar wilayah di luar Kalbar
+- [x] Sesi E (SELESAI 6 Nov, percakapan utama) – Data nasional untuk wilayah SHP pengguna: perluas pipeline analisis (scripts/analisis_antrean.py) agar wilayah di luar Kalbar
       dihitung dari sumber resmi global/nasional (Hansen GFC v1.13 via ubin/COG resmi, NASA FIRMS area API dgn kunci di secret Actions,
       tutupan lahan KLHK resmi bila layanan terjangkau dari Actions, cadangan ESA WorldCover); uji dengan poligon Bengkulu, Papua, Aceh.
-- [ ] Sesi F – Website gaya NASA: halaman peta web layar penuh dgn panel lapisan interaktif, linimasa tanggal, grafik ringkas; tampilan HP tetap terpisah.
+- [x] Sesi F (SELESAI 6 Nov, percakapan utama) – Website gaya NASA: halaman peta web layar penuh dgn panel lapisan interaktif, linimasa tanggal, grafik ringkas; tampilan HP tetap terpisah.
 
 ## Catatan Sesi A (6 Nov)
 - `assets/akun.js`: layar masuk saat aplikasi dibuka (email, kata sandi, kode ID opsional); daftar → cek_email (sudah terdaftar → layar masuk);
@@ -91,3 +91,18 @@ Kerjakan bagian PERTAMA yang belum dicentang, satu bagian per sesi:
 
 ## Cara kerja hemat kuota (paket Pro pengguna)
 Satu bagian per sesi/percakapan; uji, commit ke `pantau-rimbak`, perbarui file ini, laporkan singkat dalam bahasa Indonesia.
+
+## Catatan Sesi E & F (6 Nov, percakapan utama)
+- Analisis SHP nasional diuji di GitHub Actions (uji/uji_nasional.py → uji/hasil_nasional.json) untuk Bengkulu (Seluma), Papua (Merauke), Aceh Barat:
+  Hansen, GLAD, karbon GFW, arsip FIRMS 2016–2025 dan nama desa/kab berjalan tanpa galat (±45–90 dtk/area).
+- Titik panas tahun berjalan: NASA FIRMS Area API (SP dulu, NRT untuk hari terakhir), kunci dari secret FIRMS_MAP_KEY atau Apps Script (rahasia=1, sama dgn pipeline).
+  Tahun tanpa berkas data tidak ditampilkan sebagai nol. Cache Actions harian `firms-indonesia-v2-<tanggal>`.
+- Layanan KLHK (geoportal/sigap.menlhk.go.id) TIDAK terjangkau dari GitHub Actions (uji 6 Nov: daftar layanan kosong). Di luar Kalbar tutupan lahan memakai
+  GLAD (dilabeli "proksi – peta KLHK tidak mencakup area ini"). Lahan kritis hanya Kapuas Hulu – ditulis apa adanya.
+- Titik panas nasional (data/titik_id) kini disaring ke daratan Indonesia (data/wilayah/indonesia_darat.geojson dari scripts/batas_indonesia.py, OCHA COD-AB);
+  indeks memuat per_hari_wib per petak 1° untuk grafik.
+- assets/nasional.js: di mode umum/SHP alat Sebaran titik panas (7 hari, radius 5–100 km atau poligon SHP), Riwayat hujan ERA5 sejak 2001, Kualitas udara CAMS
+  30 hari + prakiraan berjalan untuk lokasi mana pun di Indonesia (GPS/tengah peta/wilayah SHP). Hutan, tutupan, karbon, riwayat titik panas, laporan & unduh
+  diarahkan ke Analisis area (server). Alat program HD (patroli, tindak, indikator, peringatan, cek, tim, admin, unduh peta HD) tetap perlu kode ID.
+- assets/web_peta.js (hanya website): panel lapisan kiri (titik panas Indonesia 7 hari, NASA GIBS/OPERA, CAMS, transparansi, legenda), linimasa bawah
+  (14 hari / CAMS per 3 jam, putar animasi) dengan grafik titik panas per hari di area peta yang terlihat. HP tidak berubah.
