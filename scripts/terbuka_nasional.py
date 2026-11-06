@@ -129,21 +129,25 @@ def indikasi_lahan_kritis(geom):
         xs = t.c + (cc + .5) * t.a; ys = t.f + (rr + .5) * t.e
         r2, c2 = rowcol(ts, xs, ys); r2 = np.clip(np.asarray(r2), 0, S.shape[0] - 1); c2 = np.clip(np.asarray(c2), 0, S.shape[1] - 1)
         nt = _nilai_tajuk(c[rr, cc]); nl = _nilai_lereng(S[r2, c2]); luas = lb[rr]
+        lewat = np.isin(a[rr, cc], (50, 80)); ha["Tidak dinilai"] = ha.get("Tidak dinilai", 0.0) + float(luas[lewat].sum())   # badan air & lahan terbangun tidak dinilai
+        nt, nl, luas = nt[~lewat], nl[~lewat], luas[~lewat]
         skor = (50 * nt + 20 * nl) / 70.0 * 100.0   # bobot dinormalkan ke skala 100–500
         sisa = np.ones(skor.shape, bool)
         for batas, n, _ in LK_KELAS:
             sel = sisa & (np.ceil(skor - 1e-9) >= batas); ha[n] += float(luas[sel].sum()); sisa &= ~sel
-        tot += float(luas.sum())
+        tot += float(luas.sum()) + float(lb[rr][lewat].sum())
         for v in (1, 2, 3, 4, 5):
             tajuk[v] = tajuk.get(v, 0) + float(luas[nt == v].sum()); lereng[v] = lereng.get(v, 0) + float(luas[nl == v].sum())
     if tot <= 0: return None
     return {"jenis": "indikasi", "sumber": SUMBER_LK, "tercakup_ha": round(tot, 2),
-            "kelas": [{"nama": n, "warna": w, "ha": round(ha[n], 2), "persen": round(ha[n] / tot * 100, 2)} for _, n, w in LK_KELAS],
+            "kelas": [{"nama": n, "warna": w, "ha": round(ha[n], 2), "persen": round(ha[n] / tot * 100, 2)} for _, n, w in LK_KELAS]
+                     + ([{"nama": "Tidak dinilai (air/terbangun)", "warna": "#9E9E9E", "ha": round(ha["Tidak dinilai"], 2), "persen": round(ha["Tidak dinilai"] / tot * 100, 2)}] if ha.get("Tidak dinilai") else []),
             "tajuk_ha": {lbl: round(tajuk.get(v, 0), 2) for v, lbl in ((5, ">80 %"), (4, "61–80 %"), (3, "41–60 %"), (2, "21–40 %"), (1, "≤20 %"))},
             "lereng_ha": {lbl: round(lereng.get(v, 0), 2) for v, lbl in ((5, "<8 %"), (4, "8–15 %"), (3, "16–25 %"), (2, "26–40 %"), (1, ">40 %"))},
             "catatan": "Indikasi untuk penapisan awal, BUKAN Peta Lahan Kritis resmi. Hanya kriteria penutupan tajuk (bobot 50) dan kemiringan lereng (bobot 20); "
                        "kriteria tingkat bahaya erosi dan manajemen tidak tersedia sebagai data terbuka nasional, sehingga bobot dinormalkan ke skala 100–500. "
                        "Penutupan tajuk = persentase piksel pohon/mangrove ESA WorldCover 2021 (10 m) dalam jendela 90 × 90 m; kebun berpohon (mis. sawit, karet) terhitung bertajuk. "
+                       "Badan air dan lahan terbangun tidak dinilai. Ekosistem alami tanpa pohon (savana, rawa rumput) ikut bernilai rendah karena metode ini dirancang untuk kawasan berhutan – tafsirkan dengan hati-hati. "
                        "Verifikasi lapangan dan Peta Lahan Kritis BPDAS setempat tetap menjadi acuan resmi."}
 
 def _tiles_han(b):
