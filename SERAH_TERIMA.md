@@ -46,7 +46,7 @@ Kerjakan bagian PERTAMA yang belum dicentang, satu bagian per sesi:
       untuk wilayah SHP di Drive). Pengguna memasang v12 sendiri. Uji di Playwright dengan server tiruan.
 - [x] Sesi B (SELESAI 6 Nov) – Audit & perbaiki semua lapisan peta (lihat butir 4): uji tiap lapisan menghasilkan ubin di Kalbar & lokasi lain Indonesia
       (mis. Riau, Papua, Aceh); ganti sumber lokal-saja dengan sumber resmi nasional/global atau beri label jelas.
-- [ ] Sesi C – Penyegaran tampilan untuk presentasi: beranda & peta lebih profesional (web dan HP berbeda tata letak), nama/ikon Android
+- [x] Sesi C (SELESAI 6 Nov) – Penyegaran tampilan untuk presentasi: beranda & peta lebih profesional (web dan HP berbeda tata letak), nama/ikon Android
       (strings.xml app_name, mipmap adaptif dari assets/logo_pr.svg), kop laporan Pantau Rimbak.
 - [ ] Sesi D – Uji menyeluruh semua alat/navigasi (Playwright), perbaiki error, rangkuman siap-gabung untuk pengguna.
 - [ ] Sesi E – Data nasional untuk wilayah SHP pengguna: perluas pipeline analisis (scripts/analisis_antrean.py) agar wilayah di luar Kalbar
@@ -76,6 +76,12 @@ Kerjakan bagian PERTAMA yang belum dicentang, satu bagian per sesi:
 - Mode umum otomatis menyalakan lapisan titik api NASA FIRMS (seluruh dunia). Angin (Open-Meteo ECMWF) memang global.
 - Apps Script v12 SUDAH dipasang pengguna (diverifikasi: layanan "Pantau Rimbak – database pengguna v12", cek_email berfungsi).
 - Daftar titik panas & statistik masih dari data FIRMS wilayah Kapuas Hulu (pipeline) → nasional = tahap data nasional.
+
+## Catatan Sesi C (6 Nov)
+- Android: applicationId & appId `org.prcfindonesia.pantaurimbak` (namespace Java tetap org.prcfindonesia.firehotspot), ikon peluncur & adaptif
+  dari logo lensa (latar #DDF1E4), splash baru. APK BELUM dibangun ulang (pengguna mengurus kunci tanda tangan & Play Store).
+- Laporan PDF/Word: logo Pantau Rimbak di sampul & kop halaman, subjudul "Monitoring, Reporting & Verification Hutan Desa" (diuji: PDF & DOCX terunduh, 0 error).
+- Website (html.web): semua kelompok alat terbuka sebagai kisi 4 kolom (HP tetap akordeon). Layar masuk diperiksa di HP.
 
 ## Cara kerja hemat kuota (paket Pro pengguna)
 Satu bagian per sesi/percakapan; uji, commit ke `pantau-rimbak`, perbarui file ini, laporkan singkat dalam bahasa Indonesia.
