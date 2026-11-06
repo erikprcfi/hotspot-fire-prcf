@@ -1,5 +1,5 @@
 {
- "dijalankan_utc": "2026-11-06T14:49:42Z",
+ "dijalankan_utc": "2026-11-06T14:59:36Z",
  "firms_key": true,
  "hasil": {
   "Bengkulu (Seluma)": {
@@ -70,12 +70,12 @@
       "MODIS": 0
      },
      "2026": {
-      "VIIRS S-NPP": 6,
-      "VIIRS NOAA-20": 1,
+      "VIIRS S-NPP": 2,
+      "VIIRS NOAA-20": 0,
       "MODIS": 0
      }
     },
-    "total": 59,
+    "total": 54,
     "arsip_dipakai": [
      "VIIRS S-NPP 2016",
      "VIIRS S-NPP 2017",
@@ -105,9 +105,9 @@
      "MODIS 2023",
      "MODIS 2024",
      "MODIS 2025",
-     "VIIRS S-NPP 2026 (NRT s.d. 2026-11-05)",
-     "VIIRS NOAA-20 2026 (NRT s.d. 2026-11-05)",
-     "MODIS 2026 (NRT s.d. 2026-11-05)"
+     "VIIRS S-NPP 2026 (FIRMS API SP/NRT s.d. 2026-11-05)",
+     "VIIRS NOAA-20 2026 (FIRMS API SP/NRT s.d. 2026-11-05)",
+     "MODIS 2026 (FIRMS API SP/NRT s.d. 2026-11-05)"
     ],
     "per_bulan": {
      "2016-05": 1,
@@ -144,11 +144,8 @@
      "2025-06": 1,
      "2025-08": 1,
      "2025-10": 2,
-     "2026-01": 3,
-     "2026-02": 1,
      "2026-04": 1,
-     "2026-05": 1,
-     "2026-06": 1
+     "2026-05": 1
     }
    },
    "wilayah": [
@@ -230,7 +227,7 @@
      "persen_desa_tercakup": 0.6
     }
    ],
-   "detik": 207
+   "detik": 137
   },
   "Papua (Merauke)": {
    "klhk_tahun": [],
@@ -335,9 +332,9 @@
      "MODIS 2023",
      "MODIS 2024",
      "MODIS 2025",
-     "VIIRS S-NPP 2026 (NRT s.d. 2026-11-05)",
-     "VIIRS NOAA-20 2026 (NRT s.d. 2026-11-05)",
-     "MODIS 2026 (NRT s.d. 2026-11-05)"
+     "VIIRS S-NPP 2026 (FIRMS API SP/NRT s.d. 2026-11-05)",
+     "VIIRS NOAA-20 2026 (FIRMS API SP/NRT s.d. 2026-11-05)",
+     "MODIS 2026 (FIRMS API SP/NRT s.d. 2026-11-05)"
     ],
     "per_bulan": {
      "2016-01": 8,
@@ -391,7 +388,7 @@
      "persen_desa_tercakup": 1.0
     }
    ],
-   "detik": 152
+   "detik": 198
   },
   "Aceh (Aceh Barat)": {
    "klhk_tahun": [],
@@ -463,10 +460,10 @@
      "2026": {
       "VIIRS S-NPP": 22,
       "VIIRS NOAA-20": 29,
-      "MODIS": 0
+      "MODIS": 6
      }
     },
-    "total": 126,
+    "total": 132,
     "arsip_dipakai": [
      "VIIRS S-NPP 2016",
      "VIIRS S-NPP 2017",
@@ -496,9 +493,9 @@
      "MODIS 2023",
      "MODIS 2024",
      "MODIS 2025",
-     "VIIRS S-NPP 2026 (NRT s.d. 2026-11-05)",
-     "VIIRS NOAA-20 2026 (NRT s.d. 2026-11-05)",
-     "MODIS 2026 (NRT s.d. 2026-11-05)"
+     "VIIRS S-NPP 2026 (FIRMS API SP/NRT s.d. 2026-11-05)",
+     "VIIRS NOAA-20 2026 (FIRMS API SP/NRT s.d. 2026-11-05)",
+     "MODIS 2026 (FIRMS API SP/NRT s.d. 2026-11-05)"
     ],
     "per_bulan": {
      "2016-02": 2,
@@ -524,9 +521,9 @@
      "2025-06": 2,
      "2025-12": 1,
      "2026-01": 1,
-     "2026-03": 4,
-     "2026-05": 33,
-     "2026-06": 13
+     "2026-03": 5,
+     "2026-05": 34,
+     "2026-06": 17
     }
    },
    "wilayah": [
@@ -636,9 +633,9 @@
      "persen_desa_tercakup": 0.1
     }
    ],
-   "detik": 124
+   "detik": 164
   }
  },
  "layanan_klhk": {},
- "detik_layanan": 20
+ "detik_layanan": 19
 }
