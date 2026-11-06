@@ -1,5 +1,6 @@
 /* Akun pengguna aplikasi HP – Pantau Rimbak PRCF
- * Daftar sekali di aplikasi; setelah itu langsung masuk tanpa login. Profil: nama, tanggal lahir, alamat,
+ * Daftar SEKALI; setiap aplikasi dibuka: masuk dengan email + kata sandi (+ kode ID opsional) dari perangkat mana pun
+ * (Apps Script v12 memeriksa kata sandi di server; tanpa v12/tanpa internet: diperiksa di perangkat ini). Profil: nama, tanggal lahir, alamat,
  * email, nomor HP, foto profil.
  * Data disimpan di perangkat (IndexedDB) dan – dengan persetujuan pengguna – dikirim ke database pengguna
  * Yayasan PRCF Indonesia (Google Sheets melalui Google Apps Script). Kata sandi TIDAK pernah dikirim.
@@ -12,7 +13,7 @@ const DBN = 'fh-akun', ST = 'kv', ITER = 210000;
 // URL aplikasi web Google Apps Script (database pengguna PRCF). Kosong = belum aktif, data tetap di HP.
 const UJI = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && !/[?&]ujiakun=1/.test(location.search);   // pengujian lokal tidak menulis ke database asli
 const ENDPOINT = UJI ? '' : (window.FH_AKUN_URL || 'https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec');
-const KUNCI = 'fh-prcf-2026-akun', VERSI = '2026.10b', SKEMA = 2;   // SKEMA 2: email wajib terverifikasi; akun lama direset
+const KUNCI = 'fh-prcf-2026-akun', VERSI = '2026.11a', SKEMA = 2;   // SKEMA 2: email wajib terverifikasi; akun lama direset
 async function api(body, ms = 30000) { const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), ms);
   try { const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ kunci: KUNCI, bahasa: (window.FHLang && FHLang.get()) === 'en' ? 'en' : 'id' }, body)), signal: ctl.signal }); return await r.json(); }
   finally { clearTimeout(tm); } }
@@ -60,6 +61,7 @@ let NEXT = () => { };
 async function reset(why, msg) {   // akun dihapus dari HP: diblokir admin, tidak ada di database, atau sistem akun diperbarui
   try { await del('akun'); await del('sesi'); } catch (e) { } U = null; SESI = false; notify(); document.querySelectorAll('.ak').forEach(x => x.remove());
   if (why === 'blokir') { screen(hero('Akun diblokir', esc(msg || 'Akun ini diblokir oleh admin Yayasan PRCF Indonesia.')) + `<div class="ak-card"><p class="mut" style="font-size:14px">Hubungi Yayasan PRCF Indonesia bila menurut Anda ini keliru. Anda dapat mendaftar lagi dengan data yang benar.</p><button class="ak-btn" id="akRe">Daftar dengan data yang benar</button></div>`).querySelector('#akRe').onclick = e => { e.target.closest('.ak').remove(); registerScreen(NEXT); }; return; }
+  if (why !== 'blokir') return loginScreen(NEXT, why === 'ulang' ? 'Sesi akun di perangkat ini tidak lagi berlaku. Silakan masuk kembali.' : '');
   registerScreen(NEXT, why === 'skema' ? 'Sistem akun diperbarui demi keamanan data. Semua pengguna diminta mendaftar ulang dan memverifikasi email. Data pemantauan tidak terpengaruh.' : why === 'ulang' ? 'Akun Anda tidak ditemukan di database PRCF. Silakan daftar ulang.' : '');
 }
 window.addEventListener('online', () => flush(false));
@@ -285,6 +287,7 @@ function registerScreen(onDone, notice) {
     const b = d.querySelector('#akN1'); b.disabled = true; b.textContent = 'Memeriksa email…';
     const ok = await mxAda(v('email').toLowerCase()); b.disabled = false; b.textContent = 'Lanjut: verifikasi email';
     if (!ok) { setErr(d, 'email', 'Domain email ini tidak menerima email. Periksa ejaannya.'); return; }
+    try { const ce = await api({ aksi: 'cek_email', email: v('email').toLowerCase() }, 20000); if (ce && ce.ok && ce.terdaftar) { const em0 = v('email').toLowerCase(); d.remove(); U = U && U.email === em0 ? U : { email: em0, skema: SKEMA }; if (!U.pw) U = null; loginScreen(onDone, 'Email ' + em0 + ' sudah terdaftar. Cukup masuk dengan kata sandi (atau "Lupa kata sandi").'); const e = document.querySelector('#ak_email'); if (e) e.value = em0; return; } if (ce && ce.diblokir) { setErr(d, 'email', ce.galat); return; } } catch (e) { }
     step(2); otpBox(d.querySelector('#akOtp'), v('email').toLowerCase(), id, t => { token = t; step(3); });
   };
   d.querySelector('#akB1').onclick = () => step(1);
@@ -300,43 +303,108 @@ function registerScreen(onDone, notice) {
       if (ENDPOINT) { const p = { aksi: 'daftar', id, token, lokasi: OPT.lokasi ? OPT.lokasi() : '', perangkat: dev(), versi: VERSI, profil: { nama: U.nama, lahir: U.lahir, alamat: U.alamat, email: U.email, hp: '+62 ' + fmtHP(U.hp).slice(1), dibuat: U.dibuat, diubah: U.diubah }, foto: foto ? foto.split(',')[1] : '' };
         const j = await api(p, 45000); if (!j.ok) { b.disabled = false; b.textContent = 'Daftar & masuk'; toast(j.diblokir ? 'Email ini diblokir admin PRCF' : 'Ditolak server: ' + (j.galat || 'periksa biodata')); if (!j.diblokir) step(1); return; }
         U.terkirim = true; U.pingT = Date.now(); U.sinkronT = new Date().toISOString(); }
+      if (ENDPOINT) { try { await api({ aksi: 'sandi_set', id, token, pw: d.querySelector('#ak_pw').value }, 30000); } catch (e) { } }
+      AKSES = { mode: 'umum' }; await put('akses', AKSES).catch(() => { }); try { sessionStorage.setItem('pr_sesi', '1'); } catch (e) { }
       await put('akun', U); await put('sesi', { masuk: true, t: Date.now() }); try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) { }
       SESI = true; d.remove(); notify(); toast(`Selamat datang, ${U.nama.split(' ')[0]}!`); onDone();
     } catch (e) { console.error(e); b.disabled = false; b.textContent = 'Daftar & masuk'; toast('Gagal mendaftar: periksa internet lalu coba lagi'); }
   };
 }
-function loginScreen(onDone) {
-  NEXT = onDone;
-  const d = screen(hero(`Halo, ${esc((U.nama || '').split(' ')[0])}`, 'Masuk kembali dengan kata sandi akun Anda.', 'tall') +
-    `<div class="ak-card"><div class="ak-av" style="margin:-70px auto 10px"><div class="ph">${avatarInner(U)}</div></div>
-     <div class="ak-f">${field('email', 'Email', 'mail', 'email', U.email, 'autocomplete="username" inputmode="email" autocapitalize="off"')}${field('pw', 'Kata sandi', 'lock', 'password', '', 'autocomplete="current-password"')}
-     ${U.lokasiSetuju ? '' : lokChk()}<button class="ak-btn" id="akIn">Masuk</button></div><button class="ak-link" id="akLupa">Lupa kata sandi?</button></div>`); bindLok(d);
+/* ---------- kode ID: Hutan Desa (sidik SHA-256; kode asli tidak ditulis di kode sumber) & wilayah SHP milik pengguna ---------- */
+const HDK = {
+  'bbdb5e51333fcecae92e50cb0ef01c5a9f6ad5c798c47d89cfab3a7e3c8db16d': 'nangalauk', '8e92c15ad870d5c64ce0f3166fad5dd15e11653a690d8454c9dd0cd465603063': 'nyuai',
+  '2bf7b2054810aba7ed6fdb6076274cb1230749a15f6fce0bec668790a730dc8d': 'batangtau', 'd078f44346b6418a82222bebda2d17db3fcbf84b083ac4c3c1972e1746920f70': 'pundjung',
+  '0226fd8f8c30b1f1fb845686694fcf0dbda3f7a6fd11b44a52946e096d29a212': 'bumilestari', 'c78d512a202d8270d0bf3d0a2b2a123ca189606d82b7651a1c5078b23b14f61c': 'bukitbelang' };
+const sha = async s => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)))].map(x => x.toString(16).padStart(2, '0')).join('');
+const kodeN = k => String(k || '').trim().toUpperCase();
+const SERVER_LAMA = j => !!(j && j.ok === false && /id tidak valid|akun tidak ditemukan|token tidak sah/.test(j.galat || ''));   // Apps Script < v12
+let AKSES = { mode: 'umum' };
+async function aksesDari(kode) {   // → {mode:'hd', situs} | {mode:'shp', nama, geojson} | {mode:'umum'}
+  const k = kodeN(kode); if (!k) return { mode: 'umum' };
+  const h = await sha('pantau-rimbak|' + k); if (HDK[h]) return { mode: 'hd', situs: HDK[h] };
+  if (!U || !U.id) throw new Error('Masuk dengan akun dulu.');
+  const ck = 'wilayah:' + await sha(U.id + '|' + k);
+  if (!ENDPOINT || navigator.onLine === false) { const c = await get(ck).catch(() => null); if (c) return c; throw new Error(ENDPOINT ? 'Kode ID wilayah perlu internet saat pertama dipakai di perangkat ini.' : 'Kode ID tidak dikenal.'); }
+  let j; try { j = await api({ aksi: 'wilayah_ambil', id: U.id, token: U.token, kode: k }, 45000); } catch (e) { const c = await get(ck).catch(() => null); if (c) return c; throw new Error('Gagal memeriksa kode ID. Periksa internet.'); }
+  if (j.ok) { const o = { mode: 'shp', nama: j.nama || 'Wilayah saya', geojson: JSON.parse(j.geojson) }; await put(ck, o).catch(() => { }); return o; }
+  if (SERVER_LAMA(j)) throw new Error('Kode ID wilayah belum aktif di server PRCF (menunggu pembaruan). Kosongkan kode untuk mode umum.');
+  throw new Error(j.galat || 'Kode ID tidak dikenal.');
+}
+async function daftarKode(kode, nama, geojson) {   // setelah unggah SHP: daftarkan kode ID bebas untuk wilayah itu
+  const k = kodeN(kode); if (!/^[A-Z0-9_-]{3,30}$/.test(k)) throw new Error('Kode ID 3–30 karakter: huruf, angka, - atau _.');
+  if (HDK[await sha('pantau-rimbak|' + k)]) throw new Error('Kode ini sudah dipakai. Pilih kode lain.');
+  if (!U || !U.token || !ENDPOINT) throw new Error('Masuk dengan akun terverifikasi dulu.');
+  const g = typeof geojson === 'string' ? geojson : JSON.stringify(geojson);
+  const j = await api({ aksi: 'wilayah_simpan', id: U.id, token: U.token, kode: k, nama: String(nama || '').slice(0, 120), geojson: g }, 90000);
+  if (!j.ok) throw new Error(SERVER_LAMA(j) ? 'Penyimpanan kode ID wilayah belum aktif di server PRCF (menunggu pembaruan).' : (j.galat || 'Gagal menyimpan.'));
+  AKSES = { mode: 'shp', nama: nama || 'Wilayah saya', geojson: typeof geojson === 'string' ? JSON.parse(geojson) : geojson };
+  await put('wilayah:' + await sha(U.id + '|' + k), AKSES).catch(() => { }); await put('akses', AKSES).catch(() => { }); notify(); return true;
+}
+function dariServer(srv, em) {   // akun dari server (masuk lintas perangkat) digabung dengan data lokal
+  const now = new Date().toISOString(), p = srv.profil || {}, lama = U && U.email === em ? U : null;
+  U = Object.assign(lama || { skema: SKEMA, setuju: true, setujuT: now, dibuat: now, foto: null }, { id: srv.id, token: srv.token, email: em, nama: p.nama || (lama && lama.nama) || em.split('@')[0],
+    lahir: p.lahir || (lama && lama.lahir) || '', alamat: p.alamat || (lama && lama.alamat) || '', hp: p.hp ? normHP(p.hp) : (lama && lama.hp) || '', terkirim: true, verifikasi: (lama && lama.verifikasi) || now, skema: SKEMA });
+}
+async function selesaiMasuk(d, kid, onDone) {
+  const b = d.querySelector('#akIn');
+  try { AKSES = await aksesDari(kid); } catch (e) { setErr(d, 'kid', e.message); if (b) { b.disabled = false; b.textContent = 'Masuk'; } return false; }
+  if (!U.lokasiSetuju) setujuLok();
+  await put('akun', U); await put('akses', AKSES).catch(() => { }); await put('kunciMasuk', { n: 0, t: 0 }); await put('sesi', { masuk: true, t: Date.now() });
+  try { sessionStorage.setItem('pr_sesi', '1'); } catch (e) { }
+  SESI = true; d.remove(); notify(); toast(AKSES.mode === 'hd' ? 'Masuk · data Hutan Desa terbuka' : AKSES.mode === 'shp' ? 'Masuk · wilayah ' + AKSES.nama : `Selamat datang, ${U.nama.split(' ')[0]}`); onDone(); flush(true); return true;
+}
+function loginScreen(onDone, notice) {   // layar pertama saat aplikasi dibuka: email, kata sandi, kode ID (opsional)
+  NEXT = onDone; document.querySelectorAll('.ak').forEach(x => x.remove());
+  const d = screen(hero('Masuk ke Pantau Rimbak', 'Monitoring · Reporting · Verification Hutan Desa', 'tall') +
+    `<div class="ak-card">${notice ? `<div class="ak-note" style="background:#FFF4E5;margin-bottom:12px">${svg('shield', 18)}<span>${esc(notice)}</span></div>` : ''}
+     <div class="ak-f">${field('email', 'Email', 'mail', 'email', U ? U.email : '', 'autocomplete="username" inputmode="email" autocapitalize="off"')}${field('pw', 'Kata sandi', 'lock', 'password', '', 'autocomplete="current-password"')}
+     ${field('kid', 'Kode ID (opsional)', 'shield', 'text', '', 'autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Kode kawasan / proyek"')}
+     <p class="mut" style="font-size:12.5px;margin:-2px 2px 4px">Kode ID membuka data Hutan Desa atau wilayah yang Anda daftarkan. Kosongkan bila tidak punya – aplikasi tampil dalam mode umum.</p>
+     ${U && U.lokasiSetuju ? '' : lokChk()}<button class="ak-btn" id="akIn">Masuk</button></div>
+     <button class="ak-link" id="akLupa">Lupa kata sandi?</button>
+     <div style="border-top:1px solid #E3E9E5;margin:14px 0 12px"></div><p class="mut" style="text-align:center;margin:0 0 8px">Belum punya akun? Daftar sekali saja.</p><button class="ak-btn alt" id="akDf">Daftar akun baru</button></div>`); bindLok(d); bindEyes(d);
   const lokOk = () => { const c = d.querySelector('#akLok'); if (c && !c.checked) { toast('Centang persetujuan berbagi lokasi'); return false; } return true; };
+  const val = () => ({ em: d.querySelector('#ak_email').value.trim().toLowerCase(), pw: d.querySelector('#ak_pw').value, kid: d.querySelector('#ak_kid').value });
   const go = async () => {
-    const em = d.querySelector('#ak_email').value.trim().toLowerCase(), pw = d.querySelector('#ak_pw').value, b = d.querySelector('#akIn');
-    setErr(d, 'email', ''); setErr(d, 'pw', '');
+    const { em, pw, kid } = val(), b = d.querySelector('#akIn'); ['email', 'pw', 'kid'].forEach(k => setErr(d, k, ''));
+    if (V.email(em)) { setErr(d, 'email', V.email(em)); return; } if (!pw) { setErr(d, 'pw', 'Masukkan kata sandi.'); return; } if (!lokOk()) return;
     const L = (await get('kunciMasuk').catch(() => null)) || { n: 0, t: 0 };
     if (L.n >= 5 && Date.now() - L.t < 5 * 6e4) { setErr(d, 'pw', `Terlalu banyak percobaan. Coba lagi ${Math.ceil((5 * 6e4 - (Date.now() - L.t)) / 6e4)} menit lagi, atau pakai "Lupa kata sandi".`); return; }
-    if (em !== U.email) { setErr(d, 'email', 'Email tidak terdaftar di perangkat ini.'); return; }
-    if (!lokOk()) return;
     b.disabled = true; b.textContent = 'Memeriksa…';
-    const h = await hashPw(pw, U.pw.salt);
-    if (h.hash !== U.pw.hash) { const n = (L.n >= 5 ? 0 : L.n) + 1; await put('kunciMasuk', { n, t: Date.now() }); setErr(d, 'pw', n >= 5 ? 'Kata sandi salah 5 kali. Akun dikunci 5 menit.' : `Kata sandi salah. Sisa percobaan: ${5 - n}.`); b.disabled = false; b.textContent = 'Masuk'; return; }
-    if (!U.lokasiSetuju) { setujuLok(); await put('akun', U); }
-    await put('kunciMasuk', { n: 0, t: 0 }); await put('sesi', { masuk: true, t: Date.now() }); SESI = true; d.remove(); notify(); onDone(); flush(true);
+    const ulang = m => { b.disabled = false; b.textContent = 'Masuk'; if (m) setErr(d, m[0], m[1]); };
+    let srv = null; if (ENDPOINT && navigator.onLine !== false) { try { srv = await api({ aksi: 'masuk', email: em, pw }, 30000); } catch (e) { srv = null; } }
+    const lokalCocok = async () => !!(U && U.email === em && U.pw && (await hashPw(pw, U.pw.salt)).hash === U.pw.hash);
+    if (srv && srv.ok) { dariServer(srv, em); U.pw = await hashPw(pw); }
+    else if (srv && srv.diblokir) { ulang(); return reset('blokir', srv.galat); }
+    else if (srv && srv.belum_daftar) return ulang(['email', 'Email ini belum terdaftar. Tekan "Daftar akun baru".']);
+    else if (srv && srv.perlu_sandi) { if (!(await lokalCocok())) return ulang(['pw', srv.galat]); api({ aksi: 'sandi_set', id: U.id, token: U.token, pw }).catch(() => { }); }
+    else if (srv && !srv.ok && !SERVER_LAMA(srv)) return ulang(['pw', srv.galat || 'Email atau kata sandi salah.']);
+    else {   // tanpa internet / server lama: periksa akun di perangkat ini
+      if (!U || U.email !== em) return ulang(['email', navigator.onLine === false ? 'Perangkat ini belum pernah masuk dengan email tersebut. Sambungkan internet untuk masuk.' : 'Email belum terdaftar di perangkat ini.']);
+      if (!(await lokalCocok())) { const n = (L.n >= 5 ? 0 : L.n) + 1; await put('kunciMasuk', { n, t: Date.now() }); return ulang(['pw', n >= 5 ? 'Kata sandi salah 5 kali. Dikunci 5 menit.' : `Kata sandi salah. Sisa percobaan: ${5 - n}.`]); }
+    }
+    await selesaiMasuk(d, kid, onDone);
   };
-  d.querySelector('#akIn').onclick = go; d.querySelector('#ak_pw').onkeydown = e => { if (e.key === 'Enter') go(); };
-  d.querySelector('#akLupa').onclick = () => { if (!lokOk()) return; resetPwSheet(async () => { if (!U.lokasiSetuju) { setujuLok(); await put('akun', U); } SESI = true; d.remove(); notify(); onDone(); flush(true); }); };
+  d.querySelector('#akIn').onclick = go; ['#ak_pw', '#ak_kid'].forEach(q => d.querySelector(q).onkeydown = e => { if (e.key === 'Enter') go(); });
+  d.querySelector('#akDf').onclick = () => { d.remove(); registerScreen(onDone); };
+  d.querySelector('#akLupa').onclick = () => { const { em, kid } = val(); if (V.email(em)) { setErr(d, 'email', 'Isi email akun Anda dulu.'); return; } if (!lokOk()) return;
+    resetPwSheet(em, async () => { await selesaiMasuk(d, kid, onDone); }); };
 }
-function resetPwSheet(done) {   // lupa kata sandi: buktikan kepemilikan email dengan kode, lalu buat kata sandi baru
-  const sh = document.createElement('div'); sh.className = 'ak-sheet ak';
-  sh.innerHTML = `<div class="in"><div class="gr"></div><h2>Atur ulang kata sandi</h2><p class="mut">Kode verifikasi dikirim ke email akun Anda.</p><div id="rsBox"></div><button class="ak-btn alt" data-x style="margin-top:10px">Batal</button></div>`;
+function resetPwSheet(em, done) {   // lupa kata sandi / perangkat baru: buktikan kepemilikan email dengan kode, lalu buat kata sandi baru
+  const sh = document.createElement('div'); sh.className = 'ak-sheet ak'; const rid = crypto.randomUUID();
+  sh.innerHTML = `<div class="in"><div class="gr"></div><h2>Atur ulang kata sandi</h2><p class="mut">Kode verifikasi dikirim ke ${esc(em)}.</p><div id="rsBox"></div><button class="ak-btn alt" data-x style="margin-top:10px">Batal</button></div>`;
   document.body.appendChild(sh); sh.querySelector('[data-x]').onclick = () => sh.remove();
-  otpBox(sh.querySelector('#rsBox'), U.email, U.id, t => {
+  otpBox(sh.querySelector('#rsBox'), em, rid, t => {
     sh.querySelector('#rsBox').innerHTML = `<div class="ak-f">${field('pw', 'Kata sandi baru', 'lock', 'password', '', 'autocomplete="new-password"')}${field('pw2', 'Ulangi kata sandi baru', 'lock', 'password', '', 'autocomplete="new-password"')}<button class="ak-btn" data-ok>Simpan kata sandi</button></div>`;
     bindEyes(sh); pwMeter(sh, 'pw');
-    sh.querySelector('[data-ok]').onclick = async () => { if (!check(sh, ['pw'])) return; if (sh.querySelector('#ak_pw2').value !== sh.querySelector('#ak_pw').value) { setErr(sh, 'pw2', 'Kata sandi tidak sama.'); return; }
-      U.pw = await hashPw(sh.querySelector('#ak_pw').value); U.pwDiubah = new Date().toISOString(); U.token = t; await put('akun', U); await put('kunciMasuk', { n: 0, t: 0 }); await put('sesi', { masuk: true, t: Date.now() }); sh.remove(); toast('Kata sandi diperbarui'); done(); };
+    sh.querySelector('[data-ok]').onclick = async () => { if (!check(sh, ['pw'])) return; const pw = sh.querySelector('#ak_pw').value; if (sh.querySelector('#ak_pw2').value !== pw) { setErr(sh, 'pw2', 'Kata sandi tidak sama.'); return; }
+      const bt = sh.querySelector('[data-ok]'); bt.disabled = true; bt.textContent = 'Menyimpan…';
+      let j = null; try { j = await api({ aksi: 'sandi_reset', email: em, rid, token: t, pw }, 45000); } catch (e) { }
+      if (j && j.ok) dariServer(j, em);
+      else if (j && j.diblokir) { sh.remove(); return reset('blokir', j.galat); }
+      else if (j && j.belum_daftar) { bt.disabled = false; bt.textContent = 'Simpan kata sandi'; setErr(sh, 'pw', 'Email ini belum terdaftar. Silakan daftar.'); return; }
+      else if (!(U && U.email === em)) { bt.disabled = false; bt.textContent = 'Simpan kata sandi'; setErr(sh, 'pw', j && !SERVER_LAMA(j) ? (j.galat || 'Gagal menyimpan.') : 'Atur ulang dari perangkat baru aktif setelah server PRCF diperbarui.'); return; }
+      U.pw = await hashPw(pw); U.pwDiubah = new Date().toISOString(); sh.remove(); toast('Kata sandi diperbarui'); done(); };
   });
 }
 function confirmSheet(title, text, okTxt, onOk) {
@@ -372,7 +440,7 @@ function openProfile() {
     d.querySelector('#pfPw').onclick = () => pwSheet(render);
     d.querySelector('#pfLok').onclick = async () => { if (!U.lokasiSetuju || U.lokasiOn === false) { setujuLok(); mintaGPS(); } else U.lokasiOn = false; await put('akun', U); notify(); render(); };
     d.querySelector('#pfPriv').onclick = () => { if (!U.setuju) consentSheet(render); else kebijakan(); };
-    d.querySelector('#pfOut').onclick = () => confirmSheet('Keluar dari akun?', 'Anda perlu memasukkan kata sandi untuk masuk kembali.', 'Keluar', async () => { await put('sesi', { masuk: false, t: Date.now() }); SESI = false; closeProfile(true); notify(); loginScreen(() => { }); });
+    d.querySelector('#pfOut').onclick = () => confirmSheet('Keluar dari akun?', 'Anda perlu memasukkan kata sandi untuk masuk kembali.', 'Keluar', async () => { await put('sesi', { masuk: false, t: Date.now() }); try { sessionStorage.removeItem('pr_sesi'); } catch (e) { } await del('akses').catch(() => { }); AKSES = { mode: 'umum' }; SESI = false; closeProfile(true); notify(); loginScreen(() => { location.reload(); }); });
     d.querySelector('#pfDel').onclick = () => confirmSheet('Hapus akun dari perangkat?', 'Biodata, foto dan kata sandi di HP ini akan dihapus permanen, dan biodata serta foto Anda di database PRCF ikut dihapus. Data pemantauan kebakaran tidak terpengaruh.', 'Hapus akun', async () => { await sendDelete(); await del('akun'); await del('sesi'); U = null; SESI = false; closeProfile(true); notify(); registerScreen(() => { }); });
   };
   render();
@@ -412,16 +480,17 @@ function consentSheet(after) {
 }
 
 /* ---------- API ---------- */
-async function gate(next) {
+async function gate(next) {   // setiap aplikasi dibuka: layar masuk (email, kata sandi, kode ID); dalam satu sesi tidak ditanya ulang
   css();
-  let sesi = null; try { U = await get('akun'); sesi = await get('sesi'); } catch (e) { console.warn('Penyimpanan akun tidak tersedia', e); return next(); }
+  try { U = await get('akun'); } catch (e) { console.warn('Penyimpanan akun tidak tersedia', e); return next(); }
   NEXT = next;
-  if (U && U.skema !== SKEMA) { next(); return reset('skema'); }   // akun lama (tanpa verifikasi email) direset: wajib daftar ulang
+  if (U && U.skema !== SKEMA) { U = null; await del('akun').catch(() => { }); }
   notify();
-  if (!U) return registerScreen(next);
-  if (!sesi || !sesi.masuk || !U.lokasiSetuju) return loginScreen(next);   // persetujuan lokasi belum ada → masuk ulang
-  SESI = true; next(); notify(); flush(true);
+  if (!ENDPOINT && !UJI) return next();
+  let sesi = false; try { sesi = sessionStorage.getItem('pr_sesi') === '1'; } catch (e) { }
+  if (U && sesi && U.lokasiSetuju) { AKSES = (await get('akses').catch(() => null)) || { mode: 'umum' }; SESI = true; next(); notify(); flush(true); return; }
+  loginScreen(next);
 }
 function avatar(px = 34) { return `<span class="ak-mini" style="width:${px}px;height:${px}px">${U ? avatarInner(U) : svg('user', Math.round(px * .55))}</span>`; }
-window.FHAkun = { init: o => { OPT = o || {}; css(); }, gate, openProfile, avatar, user: () => U, masuk: () => SESI && !!U, api: (b, ms) => api(b, ms), endpoint: () => ENDPOINT, perangkat: () => dev(), onChange: f => subs.push(f), firstName: () => U ? U.nama.split(' ')[0] : '' };
+window.FHAkun = { init: o => { OPT = o || {}; css(); }, gate, akses: () => AKSES, daftarKode, keluarUntukKode: async () => { try { sessionStorage.removeItem('pr_sesi'); } catch (e) { } SESI = false; notify(); loginScreen(() => location.reload(), 'Masukkan email, kata sandi dan kode ID kawasan/wilayah Anda.'); }, kodeHD: async k => HDK[await sha('pantau-rimbak|' + kodeN(k))] || null, openProfile, avatar, user: () => U, masuk: () => SESI && !!U, api: (b, ms) => api(b, ms), endpoint: () => ENDPOINT, perangkat: () => dev(), onChange: f => subs.push(f), firstName: () => U ? U.nama.split(' ')[0] : '' };
 })();

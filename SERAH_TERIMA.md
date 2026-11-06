@@ -40,7 +40,7 @@ Presentasi ke Gubernur Kalbar (> 1 minggu lagi); rencana rilis publik Play Store
 
 ## Rencana sesi terjadwal (disetujui pengguna; batas ±40% kuota mingguan minggu ini)
 Kerjakan bagian PERTAMA yang belum dicentang, satu bagian per sesi:
-- [ ] Sesi A – Login sekali daftar + kode ID: ubah `assets/akun.js` (cek email di server: sudah terdaftar → layar masuk; belum → daftar),
+- [x] Sesi A – Login sekali daftar + kode ID (SELESAI 6 Nov, diuji Playwright dgn server tiruan: umum, HDNL, JEMAH, kode salah, sandi salah, belum daftar, kode wilayah SHP, admin, muat ulang dalam sesi – 0 error): ubah `assets/akun.js` (cek email di server: sudah terdaftar → layar masuk; belum → daftar),
       layar masuk email/kata sandi/kode ID (opsional), gating tampilan HD per kode, halaman daftar kode ID setelah unggah SHP,
       tulis `apps_script/Kode_Database_Pengguna_v12.gs.txt` (turunan v11; aksi: cek_email, masuk, daftar dgn hash, kode_simpan/kode_ambil
       untuk wilayah SHP di Drive). Pengguna memasang v12 sendiri. Uji di Playwright dengan server tiruan.
@@ -49,6 +49,18 @@ Kerjakan bagian PERTAMA yang belum dicentang, satu bagian per sesi:
 - [ ] Sesi C – Penyegaran tampilan untuk presentasi: beranda & peta lebih profesional (web dan HP berbeda tata letak), nama/ikon Android
       (strings.xml app_name, mipmap adaptif dari assets/logo_pr.svg), kop laporan Pantau Rimbak.
 - [ ] Sesi D – Uji menyeluruh semua alat/navigasi (Playwright), perbaiki error, rangkuman siap-gabung untuk pengguna.
+
+## Catatan Sesi A (6 Nov)
+- `assets/akun.js`: layar masuk saat aplikasi dibuka (email, kata sandi, kode ID opsional); daftar → cek_email (sudah terdaftar → layar masuk);
+  kata sandi diperiksa server (aksi masuk/sandi_set/sandi_reset) – fallback ke pemeriksaan lokal bila server masih v11/tanpa internet.
+  Kode HD dicocokkan via sidik SHA-256 ('pantau-rimbak|'+KODE) – kode asli tidak ada di kode sumber. Kode wilayah pengguna: wilayah_simpan/wilayah_ambil.
+  `FHAkun.akses()` → {mode:'hd'|'shp'|'umum'}; admin (FHTim.admin) melihat semua HD. Sesi berlaku sampai aplikasi ditutup (sessionStorage).
+- `app.html`: aksesApply() (ALLOW = HD yang boleh dilihat; batas HD di peta hanya yang boleh), mode umum (body.pr-umum, hubUmum: hero umum,
+  alat HD terkunci 🔒 → umumInfo), mode SHP (batas wilayah biru di peta + Analisis). Hook uji: window.FHAkses().
+- `assets/analisis.js`: setelah SHP terkirim → kartu "Daftarkan kode ID untuk wilayah ini".
+- Apps Script v12 sudah dikirim ke pengguna (tidak di repo: berisi ID Sheet/folder). Pengguna perlu memasangnya.
+- BELUM: data semua alat untuk wilayah SHP (tahap data nasional); titik panas di peta mode umum masih data wilayah Kapuas Hulu & sekitar.
+- Risiko Play Store: persetujuan berbagi lokasi GPS ke PRCF masih WAJIB saat masuk/daftar – untuk rilis publik sebaiknya opsional.
 
 ## Cara kerja hemat kuota (paket Pro pengguna)
 Satu bagian per sesi/percakapan; uji, commit ke `pantau-rimbak`, perbarui file ini, laporkan singkat dalam bahasa Indonesia.

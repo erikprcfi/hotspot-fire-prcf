@@ -361,7 +361,13 @@ function mount(el, o = {}) {
         try { const zip = await new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result.split(',')[1]); r.onerror = no; r.readAsDataURL(file); });
           const j = await api({ aksi: 'analisis_kirim', id: a.id, token: a.token, nama_area: pv.querySelector('[data-nm]').value.trim() || S.nama, nama_file: file.name, luas_ha: S.ha, geojson: JSON.stringify(S.geojson), zip }, 120000);
           if (!j.ok) { msg.innerHTML = `<span class="fan-err">${esc(j.galat)}</span>`; b.disabled = false; b.textContent = 'Kirim untuk dianalisis'; return; }
-          pv.innerHTML = '<p style="color:#1E7A3B;font-weight:700">✓ Terkirim. Analisis berjalan otomatis (± 5–20 menit). Hasil muncul di "Analisis saya" dan pemberitahuan dikirim ke email Anda.</p>'; myList();
+          const nmA = pv.querySelector('[data-nm]').value.trim() || S.nama;
+          pv.innerHTML = '<p style="color:#1E7A3B;font-weight:700">✓ Terkirim. Analisis berjalan otomatis (± 5–20 menit). Hasil muncul di "Analisis saya" dan pemberitahuan dikirim ke email Anda.</p>' + (window.FHAkun && FHAkun.daftarKode ? `<div class="fan-card" style="margin-top:12px;border:1.5px solid #38BDF8"><h3 style="margin-top:0">Daftarkan kode ID untuk wilayah ini</h3>
+            <p class="mut">Buat kode ID pilihan Anda (3–30 huruf/angka, boleh - atau _). Saat masuk berikutnya, isi email, kata sandi <b>dan kode ID ini</b> untuk membuka wilayah <b>${esc(nmA)}</b> di semua alat. Kode tidak dapat dilihat siapa pun, termasuk admin.</p>
+            <input class="fan-in" data-kid maxlength="30" autocapitalize="characters" spellcheck="false" placeholder="mis. HUTANKU-01" aria-label="Kode ID wilayah"><button class="fan-btn" data-ksave style="margin-top:8px">Simpan kode ID</button><p class="mut" data-kmsg></p></div>` : ''); myList();
+          const ks = pv.querySelector('[data-ksave]'); if (ks) ks.onclick = async () => { const km = pv.querySelector('[data-kmsg]'), kv = pv.querySelector('[data-kid]').value; ks.disabled = true; ks.textContent = 'Menyimpan…';
+            try { await FHAkun.daftarKode(kv, nmA, S.geojson); km.innerHTML = '<span style="color:#1E7A3B;font-weight:700">✓ Kode ID tersimpan. Wilayah ini kini aktif; saat masuk lagi gunakan kode ID tersebut.</span>'; ks.textContent = 'Tersimpan'; }
+            catch (er) { km.innerHTML = `<span class="fan-err">${esc(er.message)}</span>`; ks.disabled = false; ks.textContent = 'Simpan kode ID'; } };
         } catch (x) { msg.innerHTML = '<span class="fan-err">Gagal mengirim. Periksa internet lalu coba lagi.</span>'; b.disabled = false; b.textContent = 'Kirim untuk dianalisis'; }
       };
     }
