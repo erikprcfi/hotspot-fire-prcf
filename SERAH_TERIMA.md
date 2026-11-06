@@ -120,3 +120,12 @@ Satu bagian per sesi/percakapan; uji, commit ke `pantau-rimbak`, perbarui file i
   Diuji: 9 skenario masuk (umum, HDNL, Jemah, kode salah, sandi salah, belum daftar, SHP, admin) di app.html?web=1 tanpa error.
 - Bahasa Inggris: nasional.js, web_peta.js, kartu WorldCover/indikasi lahan kritis + PDF di analisis.js.
 - Tutupan lahan di luar Kalbar hanya data terbuka (GLAD UMD + ESA WorldCover); probe layanan KLHK dihapus dari muat_klhk.
+
+## Catatan 7 Nov pagi – mode umum tanpa data HD (temuan Erik)
+- Mode umum/SHP: Laporan diganti kartu (umum → unggah SHP / kode ID; SHP → buka analisis & unduh PDF), Prakiraan langsung "Lokasi saya",
+  peta tanpa kartu/titik/petak Nanga Lauk dan dibuka di seluruh Indonesia (SHP: batas wilayah pengguna), 3D & kompas tanpa data HD,
+  Profil tanpa Unduh/Peringatan HD, Bara Api tanpa konteks HD, subjudul kartu beranda netral. Diuji Playwright: tidak ada teks Nanga Lauk/Kapuas Hulu
+  di Beranda/Laporan/Prakiraan/Peta/Profil/Bara Api mode umum; mode HD tetap lengkap.
+- Angin: grid nasional ECMWF open data (scripts/angin_nasional.py → data/angin/indonesia.json, langkah update.yml).
+- Deploy Pages: dicoba ulang sekali bila >10 menit.
+- Ekspor diuji: titik panas CSV/SHP/GeoJSON/KML (jumlah sama, SHP terbaca pyshp, prj WGS84), unduh data spasial tutupan/perubahan/lahan kritis/batas SHP & GeoJSON (Nanga Lauk & Batang Tau), laporan PDF/Word HD, PDF analisis.
