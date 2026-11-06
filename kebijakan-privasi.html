@@ -77,7 +77,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 <tr><td>Analisis lahan</td><td>File batas area (SHP/zip) yang Anda unggah beserta hasil analisisnya; kode ID wilayah yang Anda buat disimpan sebagai sidik satu arah (bukan teks asli). Hanya terbuka untuk akun Anda.</td><td>Saat Anda mengunggah</td></tr>
 <tr><td>Peringatan dini</td><td>Hutan Desa yang Anda pilih, alamat langganan notifikasi HP, pilihan email peringatan</td><td>Saat Anda berlangganan</td></tr>
 </table></div>
-<p class="note"><b>Kata sandi tidak pernah dikirim</b> ke server mana pun. Kata sandi hanya disimpan di HP Anda dalam bentuk sidik terenkripsi satu arah (PBKDF2-SHA-256).</p>
+<p class="note"><b>Kata sandi tidak pernah disimpan dalam bentuk asli.</b> Kata sandi dikirim terenkripsi (HTTPS) ke server PRCF, lalu hanya disimpan sebagai sidik satu arah (HMAC-SHA-256 berulang dengan garam acak dan kunci rahasia server) agar Anda dapat masuk dari HP atau website mana pun. Di HP juga tersimpan sidik satu arah (PBKDF2-SHA-256).</p>
 <p>Pengguna aplikasi minimal berusia 17 tahun. Kami tidak dengan sengaja mengumpulkan data anak.</p>
 </section>
 
@@ -179,7 +179,7 @@ Admin aplikasi Pantau Rimbak: <a href="mailto:erik.prcfi@gmail.com">erik.prcfi@g
 <tr><td>Land analysis</td><td>Boundary files (SHP/zip) you upload and their analysis results; the area ID code you create is stored as a one-way hash (not plain text). Only accessible to your account.</td><td>When you upload</td></tr>
 <tr><td>Early warning</td><td>Selected Village Forests, phone notification subscription, email alert preference</td><td>When you subscribe</td></tr>
 </table></div>
-<p class="note"><b>Your password is never sent</b> to any server. It is stored only on your phone as a one-way encrypted fingerprint (PBKDF2-SHA-256).</p>
+<p class="note"><b>Your password is never stored in plain form.</b> It is sent encrypted (HTTPS) to the PRCF server and stored only as a one-way hash (iterated HMAC-SHA-256 with a random salt and a server secret) so you can sign in from any phone or website. The phone also keeps a one-way hash (PBKDF2-SHA-256).</p>
 <p>App users must be at least 17 years old. We do not knowingly collect children’s data.</p>
 </section>
 
