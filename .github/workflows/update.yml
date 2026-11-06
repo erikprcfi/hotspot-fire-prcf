@@ -78,10 +78,12 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
-      - id: deploy
+      - id: deploy0
+        continue-on-error: true   # situs ±490 MB: GitHub Pages kadang perlu > 10 menit (batas maksimum deploy-pages) → coba sekali lagi
         uses: actions/deploy-pages@v4
-        with:
-          timeout: 1800000   # situs ±490 MB: batas bawaan 10 menit kadang habis
+      - id: deploy
+        if: steps.deploy0.outcome == 'failure'
+        uses: actions/deploy-pages@v4
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+      url: ${{ steps.deploy.outputs.page_url || steps.deploy0.outputs.page_url }}
