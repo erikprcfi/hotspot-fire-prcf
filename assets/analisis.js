@@ -115,6 +115,23 @@ if (!document.getElementById('fhan-css')) {
   document.head.appendChild(st);
 }
 const ST = { Menunggu: ['#FFF4E5', '#B26A00'], Diproses: ['#E8F1FB', '#1F6FC5'], Selesai: ['#E6F4EA', '#1E7A3B'], Gagal: ['#FDECEA', '#B3261E'] };
+function wcHTML(R) {   // tutupan lahan 2021 ESA WorldCover 10 m (data terbuka, seluruh Indonesia)
+  const W = R.tutupan_2021; if (!W || !W.kelas) return '';
+  return `<h3 style="margin-top:18px">Tutupan lahan terbaru 2021 · 10 m</h3>${bars(W.kelas.map(k => k.ha), W.kelas.map(k => k.nama.split(' ')[0]), '#2B8A3E', 'ha')}
+   <table><tr><th>Kelas (ESA WorldCover)</th><th>Luas (ha)</th><th>%</th></tr>${W.kelas.map(k => `<tr><td><span class="fan-sw" style="background:${esc(k.warna)}"></span>${esc(k.nama)}</td><td>${N(k.ha, 2)}</td><td>${N(k.persen, 2)}</td></tr>`).join('')}</table>
+   <p class="fan-src">${esc(W.sumber)}. ${esc(W.metode || '')}</p>`;
+}
+function lkiHTML(R) {   // indikasi lahan kritis dari data terbuka (di luar cakupan Peta Lahan Kritis resmi)
+  const K = R.lahan_kritis_indikasi;
+  if (!K || !K.kelas) return '<div class="fan-card"><p class="mut">Peta Lahan Kritis resmi tidak mencakup area ini, dan indikasi dari data terbuka belum tersedia untuk analisis ini (analisis lama – unggah ulang untuk menghitungnya).</p></div>';
+  const row = o => Object.entries(o || {}).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${N(v, 2)}</td></tr>`).join('');
+  return `<div class="fan-card"><h3>Indikasi lahan kritis</h3><p class="mut" style="color:#8A4B00"><b>Indikasi, bukan peta resmi.</b> ${esc(K.catatan)}</p>
+   ${bars(K.kelas.map(k => k.ha), K.kelas.map(k => k.nama.replace(' kritis', '')), '#E8590C', 'ha')}
+   <table><tr><th>Kelas indikasi</th><th>Luas (ha)</th><th>%</th></tr>${K.kelas.map(k => `<tr><td><span class="fan-sw" style="background:${esc(k.warna)}"></span>${esc(k.nama)}</td><td>${N(k.ha, 2)}</td><td>${N(k.persen, 2)}</td></tr>`).join('')}</table>
+   <h3 style="margin-top:14px">Penutupan tajuk</h3><table><tr><th>Kelas tajuk</th><th>Luas (ha)</th></tr>${row(K.tajuk_ha)}</table>
+   <h3 style="margin-top:14px">Kemiringan lereng</h3><table><tr><th>Kelas lereng</th><th>Luas (ha)</th></tr>${row(K.lereng_ha)}</table>
+   <p class="fan-src">${esc(K.sumber)}.</p></div>`;
+}
 function bars(vals, labels, color, unit, h = 150) {   // grafik batang SVG sederhana
   const W = 640, P = 34, mx = Math.max(1e-9, ...vals), bw = (W - P - 6) / vals.length;
   let s = `<svg viewBox="0 0 ${W} ${h + 22}" style="width:100%;height:auto" role="img"><line x1="${P}" y1="${h}" x2="${W}" y2="${h}" stroke="var(--line,#ddd)"/>`;
@@ -159,7 +176,7 @@ function viewer(el, R, back) {
       return `<div class="fan-card"><h3>Tutupan & penggunaan lahan 2000–2020</h3>${s}
        <table><tr><th>Kelas</th><th>2000 (ha)</th><th>2020 (ha)</th><th>Perubahan</th></tr>${ks.map(k => { const a = tl['2000'][k] || 0, b = tl['2020'][k] || 0; return `<tr><td><span class="fan-sw" style="background:${kw(k)}"></span>${esc(kn(k))}</td><td>${N(a, 1)}</td><td>${N(b, 1)}</td><td style="color:${b - a < 0 ? '#B3261E' : '#1E7A3B'}">${b - a >= 0 ? '+' : ''}${N(b - a, 1)}</td></tr>`; }).join('')}</table>
        ${tr.length ? `<h3 style="margin-top:14px">Perubahan terbesar 2000 → 2020</h3><table>${tr.map(([k, v]) => { const [a, b] = k.split('>'); return `<tr><td>${esc(kn(a))} → ${esc(kn(b))}</td><td>${N(v, 1)} ha</td></tr>`; }).join('')}</table>` : ''}
-       <p class="fan-src">GLAD Global Land Cover and Land Use Change 2000–2020 v2 (Potapov et al. 2022), 30 m. Kelas dikelompokkan dari legenda resmi GLAD. Lahan basah = permukaan basah/tergenang musiman (rawa, gambut, tepi sungai).</p></div>`; },
+       <p class="fan-src">GLAD Global Land Cover and Land Use Change 2000–2020 v2 (Potapov et al. 2022), 30 m. Kelas dikelompokkan dari legenda resmi GLAD. Lahan basah = permukaan basah/tergenang musiman (rawa, gambut, tepi sungai).</p>${wcHTML(R)}</div>`; },
     () => { const yrs = Object.keys(H.kehilangan_per_tahun_ha).filter(inR), v = yrs.map(y => H.kehilangan_per_tahun_ha[y]), sR = v.reduce((a, b) => a + b, 0);
       return `<div class="fan-card"><h3>Kehilangan tutupan pohon per tahun · ${rLbl()}</h3>${bars(v, yrs.map(y => y.slice(2)), '#D9480F', 'ha')}
        ${penuh() ? '' : `<div class="fan-kpi" style="margin-top:10px"><div><b>${N(sR, 1)} ha</b><span>hilang ${rLbl()}</span></div><div><b>${N(H.hutan_2000_ha ? 100 * sR / H.hutan_2000_ha : 0, 2)}%</b><span>dari hutan 2000</span></div></div>`}
@@ -179,14 +196,14 @@ function viewer(el, R, back) {
       const y0 = +RY[0], y1 = +RY[1], P = K.param({ y0, y1, eff: .9, leak: .05, buf: .135 }), A = K.awalHD(R, y0, y1); if (!A) return '<div class="fan-card"><p class="mut">Data FREL tidak lengkap.</p></div>';
       const Hh = K.hitungHD(A, P), defo = A.rows[1].E + A.rows[3].E, degr = A.rows[0].F + A.rows[2].F, yrs = []; for (let y = y0; y <= y1; y++) yrs.push(y);
       const ey = yrs.map(y => { const a = K.awalHD(R, y, y); return a ? K.hitungHD(a, K.param({ y0: y, y1: y, eff: .9, leak: .05, buf: .135 })).m.d3 : 0; });
-      return `<div class="fan-card"><h3>Emisi karbon metode FREL · ${rLbl()}</h3><p class="mut">Kelas awal: ${A.sumber === 'KLHK' ? 'Peta Penutupan Lahan KLHK ' + A.epoch + ' (acuan) + citra satelit tiap tahun' : 'GLAD GLCLU ' + A.epoch + ' (proksi – peta KLHK tidak mencakup area ini)'}.</p>${(() => { const st = (window.FHSites ? FHSites() : []).find(x => x.hd_nama === R.nama), L = st && window.FHModelKLHK && FHModelKLHK.lokalAda(st.id); return L ? `<p class="fan-err" style="background:#ECFDF5;color:#166534;border-color:#A7F3D0">Untuk ${esc(R.nama)} tersedia sumber utama yang lebih rinci: <b>${esc(L.nama)}</b>. Angka resmi aplikasi (alat Tutupan lahan, Emisi karbon, Indikator & Laporan) memakai sumber itu; tab ini menampilkan model KLHK 2020 + Hansen sebagai pembanding.</p>` : ''; })()}<div class="fan-kpi">
+      return `<div class="fan-card"><h3>Emisi karbon metode FREL · ${rLbl()}</h3><p class="mut">Kelas awal: ${A.sumber === 'KLHK' ? 'Peta Penutupan Lahan KLHK ' + A.epoch + ' (acuan) + citra satelit tiap tahun' : 'GLAD GLCLU ' + A.epoch + ' (University of Maryland, data terbuka – peta KLHK tidak menjangkau area ini)'}.</p>${(() => { const st = (window.FHSites ? FHSites() : []).find(x => x.hd_nama === R.nama), L = st && window.FHModelKLHK && FHModelKLHK.lokalAda(st.id); return L ? `<p class="fan-err" style="background:#ECFDF5;color:#166534;border-color:#A7F3D0">Untuk ${esc(R.nama)} tersedia sumber utama yang lebih rinci: <b>${esc(L.nama)}</b>. Angka resmi aplikasi (alat Tutupan lahan, Emisi karbon, Indikator & Laporan) memakai sumber itu; tab ini menampilkan model KLHK 2020 + Hansen sebagai pembanding.</p>` : ''; })()}<div class="fan-kpi">
         <div><b style="color:#B3261E">${N(Hh.m.d3)}</b><span>emisi ${rLbl()}, tCO₂e (ΣK × 44/12)</span></div><div><b>${N(Hh.m.d3 / yrs.length)}</b><span>rata-rata per tahun, tCO₂e/th</span></div>
         <div><b>${N(defo, 2)} ha</b><span>deforestasi</span></div><div><b>${N(degr, 2)} ha</b><span>degradasi</span></div><div><b>${N(A.nh, 2)} ha</b><span>kehilangan di areal bukan hutan (tidak dihitung emisi)</span></div></div>
         <h3 style="margin-top:14px">Emisi per tahun (tCO₂e)</h3>${bars(ey, yrs.map(y => String(y).slice(2)), '#B3261E', 'tCO₂e')}
         <table><tr><th>Tipe hutan</th><th>Luas ${y0} (ha)</th><th>Deforestasi (ha)</th><th>Degradasi (ha)</th><th>Luas ${y1} (ha)</th><th>Pengurangan C (Mg C)</th></tr>${Hh.r.map((x, j) => `<tr><td>${['Hutan Lahan Kering Primer', 'Hutan Lahan Kering Sekunder', 'Hutan Rawa Primer', 'Hutan Rawa Sekunder'][j]}</td><td>${N(x.D, 2)}</td><td>${N(x.E, 4)}</td><td>${N(x.F, 4)}</td><td>${N(x.C, 2)}</td><td>${N(x.K, 2)}</td></tr>`).join('')}</table>
         <p class="mut"><b>Rumus:</b> Emisi (tCO₂e) = Σ [Luas deforestasi × (stok hutan − stok lahan terdeforestasi) + Luas degradasi × (stok primer − stok sekunder)] × 44/12, kepadatan karbon FREL 2022 (templat perhitungan karbon PRCF). Rincian lengkap & Excel di menu Emisi karbon (FREL).</p>
         <p class="fan-src">${(F.sumber || []).map(esc).join('<br>')}</p></div>`; },
-    () => { const K = R.lahan_kritis; if (!K) return '<div class="fan-card"><p class="mut">Peta lahan kritis tidak mencakup area ini (tersedia: Kabupaten Kapuas Hulu) atau belum dihitung untuk analisis ini.</p></div>';
+    () => { const K = R.lahan_kritis; if (!K) return lkiHTML(R);
       const W = { 'Tidak Kritis': '#1B9E4B', 'Potensial Kritis': '#A6D96A', 'Agak Kritis': '#FDD835', 'Kritis': '#F46D43', 'Sangat Kritis': '#A50026' }, ks = Object.keys(K.kelas_ha || {}), P = K.prioritas || {}, SL = (K.silang_tutupan || {}).baris || [];
       const nmT = k => (window.FHTutupan && FHTutupan.NAMA && FHTutupan.NAMA[k]) || k;
       return `<div class="fan-card"><h3>Lahan kritis ${K.tahun}</h3><p class="mut">Tercakup peta: ${N(K.tercakup_ha, 2)} ha dari ${N(K.luas_area_ha, 2)} ha area.</p>${bars(ks.map(k => K.kelas_ha[k]), ks, i => W[ks[i]] || '#999', 'ha')}
@@ -274,6 +291,9 @@ async function pdfHasil(R) {
   const used = K.filter(k => Yr.some(yy => (R.tutupan_lahan_ha[yy][k.kode] || 0) >= 0.05));
   TAB([['Kelas', ...Yr, 'Perubahan'], ...used.map(k => [k.nama, ...Yr.map(yy => fmt1(R.tutupan_lahan_ha[yy][k.kode] || 0)), (v => (v >= 0 ? '+' : '') + fmt1(v))((R.tutupan_lahan_ha['2020'][k.kode] || 0) - (R.tutupan_lahan_ha['2000'][k.kode] || 0))])], 7.6);
   const tr = Object.entries(R.perubahan_2000_2020_ha || {}).slice(0, 10); if (tr.length) TAB([['Perubahan 2000 -> 2020', 'Luas (ha)'], ...tr.map(([k, v]) => { const [a, b] = k.split('>'); return [`${kn(a)} -> ${kn(b)}`, fmt1(v)]; })]);
+  if (R.tutupan_2021 && R.tutupan_2021.kelas) { H1('Tutupan lahan 2021 (10 m)'); P(R.tutupan_2021.sumber, 8.3, [90, 100, 95]); TAB([['Kelas', 'Luas (ha)', '%'], ...R.tutupan_2021.kelas.map(k => [k.nama, fmt1(k.ha), fmt1(k.persen)])]); }
+  if (R.lahan_kritis && R.lahan_kritis.kelas_ha) { const K = R.lahan_kritis; H1(`Lahan kritis ${K.tahun}`); P(`${K.sumber}. ${K.metode || ''}`, 8.3, [90, 100, 95]); TAB([['Kelas', 'Luas (ha)', '%'], ...Object.keys(K.kelas_ha).map(k => [k, fmt1(K.kelas_ha[k]), fmt1((K.kelas_persen || {})[k] || 0)])]); }
+  else if (R.lahan_kritis_indikasi && R.lahan_kritis_indikasi.kelas) { const K = R.lahan_kritis_indikasi; H1('Indikasi lahan kritis (bukan peta resmi)'); P(K.catatan, 8.3, [140, 75, 0]); P(K.sumber, 8.3, [90, 100, 95]); TAB([['Kelas indikasi', 'Luas (ha)', '%'], ...K.kelas.map(k => [k.nama, fmt1(k.ha), fmt1(k.persen)])]); }
   H1('Perubahan hutan 2001-2025'); P(R.sumber.kehilangan_pohon, 8.3, [90, 100, 95]);
   const ys = Object.keys(Hh.kehilangan_per_tahun_ha); IMG(barCanvas('Kehilangan tutupan pohon per tahun (ha)', ys.map(v => v.slice(2)), ys.map(v => Hh.kehilangan_per_tahun_ha[v]), '#D9480F', 'ha'), CW);
   TAB([['Tahun', 'Kehilangan (ha)', 'Emisi bruto (tCO2e)'], ...ys.map(v => [v, fmt1(Hh.kehilangan_per_tahun_ha[v]), fmtI(C.emisi_per_tahun_kehilangan_tCO2e[v])]), ['Jumlah', fmt1(Hh.kehilangan_total_ha), fmtI(Object.values(C.emisi_per_tahun_kehilangan_tCO2e).reduce((p, c) => p + c, 0))]], 7.6);

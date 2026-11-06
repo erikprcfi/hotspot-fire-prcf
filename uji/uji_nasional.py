@@ -18,6 +18,9 @@ for nm, g in UJI.items():
         kd = muat_klhk(bbox=g.bounds); r["klhk_tahun"] = sorted(kd) if kd else []
         h = hitung_raster(g, kd); r["kunci"] = sorted(h); r["ringkas"] = {k: h[k] for k in h if k in ("luas_ha", "tutupan_terbaru", "kehilangan_tutupan", "sumber_tutupan", "catatan_tutupan")}
         r["lahan_kritis"] = LK.untuk_area(g, kd)
+        import terbuka_nasional as TN
+        w = TN.tutupan_worldcover(g); r["tutupan_2021"] = w and [(k["nama"], k["persen"]) for k in w["kelas"]]
+        li = TN.indikasi_lahan_kritis(g) if not r["lahan_kritis"] else None; r["lk_indikasi"] = li and [(k["nama"], k["persen"]) for k in li["kelas"]]
         tp = hitung_titik_panas(g, cache=os.environ.get("FIRMS_CACHE", "/tmp/firms_cache")); r["titik_panas"] = {k: tp[k] for k in ("periode", "per_tahun", "total", "arsip_dipakai", "per_bulan")}
         r["wilayah"] = wilayah(g)
     except Exception: r["galat"] = traceback.format_exc()[-1500:]

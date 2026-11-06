@@ -7,6 +7,7 @@ Butuh env: ANALISIS_KEY (kunci pekerja dari Apps Script), AKUN_URL (URL aplikasi
 import os, sys, json, datetime, urllib.request, traceback
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lahan_kritis as LK
+import terbuka_nasional as TN
 from analisis_inti import hitung_raster, hitung_titik_panas, wilayah, muat_klhk, SUMBER, KELAS, TAHUN_LC
 from shapely.geometry import shape, mapping
 from shapely.validation import make_valid
@@ -16,6 +17,15 @@ KEY, URL = os.environ.get("ANALISIS_KEY", ""), os.environ.get("AKUN_URL", "")
 def post(o):
     req = urllib.request.Request(URL, data=json.dumps(o).encode(), headers={"Content-Type": "text/plain;charset=utf-8"})
     return json.loads(urllib.request.urlopen(req, timeout=120).read())
+
+def terbuka(g, lk_resmi):   # data terbuka nasional: tutupan 2021 (ESA WorldCover 10 m) + indikasi lahan kritis bila peta resmi tidak menjangkau
+    out = {}
+    try: out["tutupan_2021"] = TN.tutupan_worldcover(g)
+    except Exception as e: print("  WorldCover gagal:", e)
+    if not lk_resmi:
+        try: out["lahan_kritis_indikasi"] = TN.indikasi_lahan_kritis(g)
+        except Exception as e: print("  indikasi lahan kritis gagal:", e)
+    return out
 
 def main():
     if not KEY or not URL: print("ANALISIS_KEY/AKUN_URL belum diatur – lewati"); return
@@ -33,7 +43,7 @@ def main():
             r = {"nama": t.get("nama") or "Area unggahan", "jenis": "SHP unggahan pengguna", "dibuat_utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
                  "sumber": SUMBER, "kelas": [{"kode": k, "nama": n, "warna": c} for k, n, _, c in KELAS], "tahun_tutupan": TAHUN_LC,
                  "geometri": mapping(g.simplify(0.0002, preserve_topology=True)), "luas_geodesik_ha": round(luas_geo, 1)}
-            kd = muat_klhk(bbox=g.bounds); r.update(hitung_raster(g, kd)); r["lahan_kritis"] = LK.untuk_area(g, kd); r["titik_panas"] = hitung_titik_panas(g, cache=os.environ.get("FIRMS_CACHE", "/tmp/firms_cache")); r["wilayah"] = wilayah(g)
+            kd = muat_klhk(bbox=g.bounds); r.update(hitung_raster(g, kd)); r["lahan_kritis"] = LK.untuk_area(g, kd); r.update(terbuka(g, r["lahan_kritis"])); r["sumber"] = dict(r["sumber"], **{k: v["sumber"] for k, v in (("tutupan_2021", r.get("tutupan_2021")), ("lahan_kritis_indikasi", r.get("lahan_kritis_indikasi"))) if v}); r["titik_panas"] = hitung_titik_panas(g, cache=os.environ.get("FIRMS_CACHE", "/tmp/firms_cache")); r["wilayah"] = wilayah(g)
             print(post({"aksi": "pekerja_hasil", "kunci": "fh-prcf-2026-akun", "kunci_pekerja": KEY, "aid": aid, "hasil": json.loads(json.dumps(r, default=float))}))
         except Exception as e:
             traceback.print_exc()
