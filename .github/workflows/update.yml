@@ -76,6 +76,8 @@ jobs:
           path: .
       - id: deploy
         uses: actions/deploy-pages@v4
+        with:
+          timeout: 1800000   # situs ±490 MB: batas bawaan 10 menit kadang habis
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
