@@ -129,3 +129,10 @@ Satu bagian per sesi/percakapan; uji, commit ke `pantau-rimbak`, perbarui file i
 - Angin: grid nasional ECMWF open data (scripts/angin_nasional.py → data/angin/indonesia.json, langkah update.yml).
 - Deploy Pages: dicoba ulang sekali bila >10 menit.
 - Ekspor diuji: titik panas CSV/SHP/GeoJSON/KML (jumlah sama, SHP terbaca pyshp, prj WGS84), unduh data spasial tutupan/perubahan/lahan kritis/batas SHP & GeoJSON (Nanga Lauk & Batang Tau), laporan PDF/Word HD, PDF analisis.
+
+## Catatan 7 Nov pagi – fitur publik baru
+- "Indonesia hari ini" (alat 'ringkas'): scripts/ringkas_nasional.py → data/titik_id/ringkasan.json (deteksi 24 jam/7 hari per provinsi & kabupaten,
+  batas data/wilayah/kabupaten.geojson dari scripts/batas_kabupaten.py). Dijalankan update.yml setiap run.
+- Panduan (alat 'panduan'): arti titik panas/keyakinan/FRP, PM2.5, pencegahan, tautan resmi (tanpa nomor telepon yang tidak terverifikasi).
+- Tombol Bagikan (navigator.share → WhatsApp/salin) di Indonesia hari ini, Sebaran titik panas, Panduan.
+- update.yml: pipeline FIRMS kini juga jalan saat push (run push menggantikan run terjadwal yang tertunda, sehingga data sempat beku 16:47Z–).

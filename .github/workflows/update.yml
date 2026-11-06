@@ -35,7 +35,6 @@ jobs:
         timeout-minutes: 10
         run: pip install -q ecmwf-opendata eccodes eccodeslib && python scripts/angin_nasional.py
       - name: Unduh & olah data NASA FIRMS
-        if: github.event_name != 'push'
         env:
           ANALISIS_KEY: ${{ secrets.ANALISIS_KEY }}
           FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
@@ -59,8 +58,11 @@ jobs:
         continue-on-error: true
         timeout-minutes: 30
         run: python scripts/peringatan_hutan.py
+      - name: Ringkasan titik panas per provinsi & kabupaten (Indonesia hari ini)
+        continue-on-error: true
+        timeout-minutes: 5
+        run: python scripts/ringkas_nasional.py
       - name: Simpan perubahan data
-        if: github.event_name != 'push'
         run: |
           git config user.name "pantau-api-bot"
           git config user.email "actions@users.noreply.github.com"
