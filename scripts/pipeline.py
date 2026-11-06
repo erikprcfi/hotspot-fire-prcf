@@ -235,7 +235,7 @@ def ingest_nrt(recs, prov):
         for r in rows:
             try:   # salinan ringkas seluruh Indonesia (untuk "titik panas terdekat" dari lokasi pengguna di mana pun)
                 la, lo = float(r["latitude"]), float(r["longitude"])
-                if -11.5 <= la <= 6.5 and 94.5 <= lo <= 141.5:
+                if -11.5 <= la <= 6.5 and 94.5 <= lo <= 141.5 and _di_indonesia(lo, la):
                     t = str(r["acq_time"]).zfill(4)
                     mnt = int(datetime.datetime.strptime(r["acq_date"] + t, "%Y-%m-%d%H%M").replace(tzinfo=datetime.timezone.utc).timestamp() // 60)
                     IDN.append([round(la, 4), round(lo, 4), mnt, list(SENSORS).index(sid), round(num(r.get("frp")), 1)])
@@ -260,10 +260,21 @@ def ingest_nrt(recs, prov):
         for k, L in tiles.items():
             json.dump(L, open(os.path.join(out, k + ".json"), "w"), separators=(",", ":"))
         json.dump({"diperbarui_utc": NOW_S, "sumber": "NASA FIRMS near real-time 7 hari (berkas Asia Tenggara), disaring ke wilayah Indonesia; tiap baris = [lat, lon, menit sejak 1970 UTC, sensor, FRP MW]",
-                   "sensor": [SENSORS[k]["nama"] for k in SENSORS], "ubin": {k: len(v) for k, v in tiles.items()}},
+                   "sensor": [SENSORS[k]["nama"] for k in SENSORS], "ubin": {k: len(v) for k, v in tiles.items()},
+                   "per_hari_wib": {k: _hari_wib(v) for k, v in tiles.items()}},
                   open(os.path.join(out, "indeks.json"), "w"), separators=(",", ":"))
     return new
 IDN = []
+_IDN_MASK = []
+def _di_indonesia(lo, la):   # hanya titik di daratan Indonesia (data/wilayah/indonesia_darat.geojson, OCHA COD-AB BPS/BIG); tanpa berkas → kotak batas saja
+    if not _IDN_MASK:
+        f = os.path.join(DATA, "wilayah", "indonesia_darat.geojson")
+        _IDN_MASK.append(prep(shape(json.load(open(f))["geometry"])) if os.path.exists(f) else None)
+    return _IDN_MASK[0] is None or _IDN_MASK[0].contains(Point(lo, la))
+def _hari_wib(L):   # jumlah titik per tanggal WIB dalam satu petak (untuk grafik linimasa website)
+    c = defaultdict(int)
+    for r in L: c[(datetime.datetime(1970, 1, 1) + datetime.timedelta(minutes=r[2], hours=7)).strftime("%Y-%m-%d")] += 1
+    return dict(sorted(c.items()))
 
 def ingest_sp(recs, prov, years, force=False):
     """Cek arsip tahunan NASA; bila ada versi baru, ganti catatan tahun-sensor tsb."""

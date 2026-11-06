@@ -55,7 +55,7 @@ SUMBER = {"tutupan_lahan": "GLAD Global Land Cover and Land Use Change 2000–20
           "fluks_karbon": "Forest GHG emissions, removals & net flux 2001–2025 (Harris et al. 2021, Nat. Clim. Change; Gibbs et al. 2025, ESSD), versi 20260327, data publik World Resources Institute, CC BY 4.0",
           "stok_karbon": "Stok karbon hutan tahun 2000 (Harris et al. 2021), versi 20230222, CC BY 4.0",
           "emisi_frel": "Emisi karbon metode FREL 2022 KLHK (beda stok, kepadatan karbon FREL 2022 × 44/12) dari kehilangan tutupan pohon Hansen GFC v1.13 & kelas awal GLCLU v2",
-          "titik_panas": "NASA FIRMS arsip tahunan (VIIRS S-NPP VNP14IMG, VIIRS NOAA-20 VJ114IMG, MODIS MCD14ML) untuk Indonesia"}
+          "titik_panas": "NASA FIRMS arsip tahunan (VIIRS S-NPP VNP14IMG, VIIRS NOAA-20 VJ114IMG, MODIS MCD14ML) untuk Indonesia; tahun berjalan dari NASA FIRMS API (Standard Processing/NRT)"}
 
 def _kls(a):
     out = np.full(a.shape, -1, np.int8)
@@ -243,15 +243,15 @@ def _firms_key():   # secret Actions FIRMS_MAP_KEY, atau kunci yang disimpan di 
         _KEY.append(k)
     return _KEY[0]
 
-def _firms_nrt(src, akhir, hari, cache):   # NASA FIRMS Country API (resmi) – tahun berjalan, belum ada di arsip tahunan; kunci MAP_KEY dari secret
+def _firms_nrt(src, akhir, hari, cache, bb):   # NASA FIRMS Area API (resmi, kotak batas area) – tahun berjalan, belum ada di arsip tahunan; kunci MAP_KEY dari secret
     key = _firms_key()
     if not key: return None
-    p = os.path.join(cache, f"nrt_{src}_{akhir}_{hari}.csv")
+    p = os.path.join(cache, f"api_{src}_{bb.replace(',', '_')}_{akhir}_{hari}.csv")
     if not os.path.exists(p):
-        url = f"https://firms.modaps.eosdis.nasa.gov/api/country/csv/{key}/{src}/IDN/{hari}/{akhir}"
+        url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{key}/{src}/{bb}/{hari}/{akhir}"
         try: raw = urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "PantauRimbak-PRCF"}), timeout=180).read()
-        except Exception: return None
-        if not raw.startswith(b"country_id") and not raw.startswith(b"latitude"): return None
+        except Exception as e: print("  FIRMS API galat:", src, str(e).replace(key, "[MAP_KEY]")[:120]); return None
+        if not raw.startswith(b"latitude"): print("  FIRMS API:", src, raw[:100]); return None
         open(p, "wb").write(raw)
     return p
 
@@ -276,6 +276,7 @@ def hitung_titik_panas(geom, tahun=None, cache="/tmp/firms_cache"):
                     contoh.append([r["acq_date"], r["acq_time"], k, round(la, 5), round(lo, 5), r.get("confidence", ""), float(r.get("frp") or 0)])
     # tahun yang belum punya arsip tahunan (tahun berjalan): FIRMS NRT per 5 hari sampai kemarin
     sudah = {t.split()[-1] for t in tersedia}
+    bb = f"{math.floor(x0 * 100) / 100},{math.floor(y0 * 100) / 100},{math.ceil(x1 * 100) / 100},{math.ceil(y1 * 100) / 100}"
     for y in tahun:
         if str(y) in sudah: continue
         d0, d1 = datetime.date(y, 1, 1), min(datetime.date(y, 12, 31), datetime.date.today() - datetime.timedelta(days=1))
@@ -284,7 +285,7 @@ def hitung_titik_panas(geom, tahun=None, cache="/tmp/firms_cache"):
             while d <= d1:
                 n = min(5, (d1 - d).days + 1); tgl_sudah = set()
                 for src in srcs:   # per tanggal: pakai sumber pertama (SP) yang punya data; tanggal yang belum ada di SP diisi NRT
-                    p = _firms_nrt(src, d.isoformat(), n, cache)
+                    p = _firms_nrt(src, d.isoformat(), n, cache, bb)
                     if not p: continue
                     ok = True; tgl_ini = set()
                     with open(p, encoding="utf-8") as f:
@@ -301,7 +302,10 @@ def hitung_titik_panas(geom, tahun=None, cache="/tmp/firms_cache"):
                 d += datetime.timedelta(days=n)
             if ok: tersedia.append(f"{k} {y} (NRT s.d. {d1.isoformat()})")
     contoh.sort(reverse=True)
-    return {"periode": f"{min(tahun)}–{max(tahun)}", "per_tahun": per, "per_bulan": dict(sorted(bulan.items())), "terbaru": contoh[:50],
+    ada = sorted({int(w) for t in tersedia for w in t.replace("(", " ").split() if w.isdigit() and len(w) == 4 and int(w) in set(tahun)})
+    per = {y: v for y, v in per.items() if int(y) in ada}   # tahun tanpa berkas data tidak ditampilkan sebagai nol
+    if not ada: return None
+    return {"periode": f"{min(ada)}–{max(ada)}", "per_tahun": per, "per_bulan": dict(sorted(bulan.items())), "terbaru": contoh[:50],
             "total": sum(sum(v.values()) for v in per.values()), "arsip_dipakai": tersedia,
             "catatan": "Hanya deteksi tipe 0 (dugaan kebakaran vegetasi). Satu kebakaran bisa terdeteksi oleh beberapa satelit/lintasan, jadi jumlah titik ≠ jumlah kejadian. Tahun berjalan diambil dari NASA FIRMS API (Standard Processing, lalu NRT untuk hari-hari terakhir) karena arsip tahunannya belum terbit."}
 

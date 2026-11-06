@@ -2,7 +2,7 @@ name: Uji analisis nasional
 on:
   push:
     branches: [pantau-rimbak]
-    paths: ["uji/uji_nasional.py", ".github/workflows/uji-nasional.yml"]
+    paths: ["uji/uji_nasional.py", "scripts/analisis_inti.py", ".github/workflows/uji-nasional.yml"]
   workflow_dispatch:
 permissions:
   contents: write
