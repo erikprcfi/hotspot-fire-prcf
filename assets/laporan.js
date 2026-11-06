@@ -41,6 +41,7 @@ async function base() {
   if (!Array.isArray(EVENTS)) EVENTS = EVENTS.baris.map(r => Object.fromEntries(EVENTS.kolom.map((k, i) => [k, r[i]])));
   IMG0 = await new Promise(ok => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = 'assets/s2_20260810.jpg'; });
   LOGO = await new Promise(ok => { const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight; c.getContext('2d').drawImage(im, 0, 0); ok({ c, url: c.toDataURL('image/jpeg', 0.95), r: im.naturalHeight / im.naturalWidth }); }; im.onerror = () => ok(null); im.src = 'assets/logo_prcf.jpg'; });
+  if (!window.__PRL) window.__PRL = await new Promise(ok => { const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight; c.getContext('2d').drawImage(im, 0, 0); ok({ c, url: c.toDataURL('image/png') }); }; im.onerror = () => ok(null); im.src = 'assets/logo_pr_256.png'; });
   await setSite(window.FH_SITE);
 }
 /* ---------------- lokasi Hutan Desa yang dipilih ---------------- */
@@ -516,7 +517,7 @@ function preview(M, F, T) {
   const XB = extraBlocks(M); let n = 0; const h = t => `<h4>${++n}. ${esc(t)}</h4>`;
   const blk = b => h(b.h) + b.p.map(x => `<p>${esc(x)}</p>`).join('') + b.t.map(t => `<p class="rp-note">${esc(t.cap)}</p>${htmlTable(t.rows, 30)}${t.note ? `<p class="rp-note">${esc(t.note)}</p>` : ''}`).join('');
   const bad = M.checks.filter(c => c[2] !== 'Sesuai').length;
-  $('#rpPreview').innerHTML = `<div class="rp-doc">${LOGO ? `<div style="display:flex;align-items:center;gap:12px;border-bottom:2px solid #22382B;padding-bottom:10px;margin-bottom:14px"><img src="${LOGO.url}" alt="PRCF Indonesia" style="height:46px;width:auto;border-radius:4px"><div><b style="font-size:15px">Yayasan PRCF Indonesia</b><div class="rp-note" style="margin:0">Pantau Rimbak · Sistem Pemantauan Titik Panas Hutan Desa</div></div></div>` : ''}<h3>${esc(M.title)}</h3>
+  $('#rpPreview').innerHTML = `<div class="rp-doc">${LOGO ? `<div style="display:flex;align-items:center;gap:12px;border-bottom:2px solid #22382B;padding-bottom:10px;margin-bottom:14px"><img src="${LOGO.url}" alt="PRCF Indonesia" style="height:46px;width:auto;border-radius:4px"><div><b style="font-size:15px">Yayasan PRCF Indonesia</b><div class="rp-note" style="margin:0">Pantau Rimbak · Monitoring, Reporting & Verification Hutan Desa</div></div></div>` : ''}<h3>${esc(M.title)}</h3>
   <div class="tw"><table><tbody>${params(M).map(([k, v]) => `<tr><th style="text-align:left;width:34%">${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</tbody></table></div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:12px 0">${kpis(M).map(([k, v]) => `<div style="border:1px solid var(--line);border-radius:10px;padding:8px 10px"><div style="font:700 18px var(--f-data,monospace)">${esc(v)}</div><div class="rp-note" style="margin:0">${esc(k)}</div></div>`).join('')}</div>
   <p class="rp-note" style="color:${bad ? '#B3261E' : '#2E7D4F'}">Verifikasi otomatis: ${M.checks.length - bad} dari ${M.checks.length} pemeriksaan sesuai${bad ? ' — lihat Lampiran B' : ''}.</p>
@@ -554,8 +555,9 @@ async function exportPDF(M, F, T) {
   /* ---- sampul ---- */
   doc.setFillColor(HEAD); doc.rect(0, 0, PW, 112, 'F');
   if (LOGO) { const lw = 30, lh = lw * LOGO.r; doc.setFillColor(255, 255, 255); doc.roundedRect(ML - 2, 14, lw + 4, lh + 4, 2, 2, 'F'); doc.addImage(LOGO.url, 'JPEG', ML, 16, lw, lh); }
+  if (window.__PRL) doc.addImage(window.__PRL.url, 'PNG', PW - ML - 30, 12, 30, 30);
   doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.text('Yayasan PRCF Indonesia', ML + 38, 24);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.text('Pantau Rimbak - Sistem Pemantauan Titik Panas Hutan Desa, Kabupaten Kapuas Hulu', ML + 38, 29.5);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.text('Pantau Rimbak - Monitoring, Reporting & Verification Hutan Desa', ML + 38, 29.5);
   doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(214, 228, 218); doc.text('LAPORAN PEMANTAUAN TITIK PANAS & KEBAKARAN', ML, 62);
   doc.setTextColor(255, 255, 255); doc.setFontSize(20); let cy = 71; doc.splitTextToSize(pdfTxt(SITE ? SITE.hd_nama : M.title), CW).forEach(l => { doc.text(l, ML, cy); cy += 8.5; });
   doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.text(pdfTxt(`Periode ${M.periodeTxt}`), ML, cy + 1); cy += 7;
@@ -609,7 +611,7 @@ async function exportPDF(M, F, T) {
     doc.setTextColor(MUTED); doc.text('.'.repeat(Math.max(2, Math.floor((CW - w - 12) / doc.getTextWidth('.')))), ML + w + 2, ty); doc.setTextColor(INK); doc.text(String(pg), PW - ML, ty, { align: 'right' }); ty += 7.5; });
   const n = doc.getNumberOfPages();
   for (let i = 2; i <= n; i++) { doc.setPage(i); const w = doc.internal.pageSize.getWidth(), h = doc.internal.pageSize.getHeight();
-    if (LOGO) doc.addImage(LOGO.url, 'JPEG', 12, 6, 9, 9 * LOGO.r); doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(HEAD); doc.text('Yayasan PRCF Indonesia - Pantau Rimbak', 24, 10.5);
+    if (LOGO) doc.addImage(LOGO.url, 'JPEG', 12, 6, 9, 9 * LOGO.r); if (window.__PRL) doc.addImage(window.__PRL.url, 'PNG', w / 2 - 4, 5.5, 8, 8); doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(HEAD); doc.text('Yayasan PRCF Indonesia - Pantau Rimbak', 24, 10.5);
     doc.setFont('helvetica', 'normal'); doc.setTextColor(MUTED); doc.text(pdfTxt(`${SITE ? SITE.hd_nama : ''} | ${M.periodeTxt}`), w - 12, 10.5, { align: 'right' }); doc.setDrawColor(LINE); doc.setLineWidth(0.3); doc.line(12, 15.5, w - 12, 15.5);
     doc.setFontSize(7.5); doc.text(pdfTxt(`${M.title} | ${M.periodeTxt}`).slice(0, 150), 12, h - 8); doc.text(`Halaman ${i} dari ${n}`, w - 12, h - 8, { align: 'right' }); }
   doc.save(fname(M, 'pdf')); return n;
@@ -632,9 +634,9 @@ async function exportDOCX(M, F, T) {
   const K = kpis(M), bad = M.checks.filter(c => c[2] !== 'Sesuai').length;
   const kpiT = new d.Table({ width: { size: 100, type: d.WidthType.PERCENTAGE }, rows: [0, 1].map(r => new d.TableRow({ children: K.slice(r * 4, r * 4 + 4).map(([k, v]) => cell([new d.Paragraph({ children: [run(v, { size: 28, bold: true, color: '1D2A22' })] }), new d.Paragraph({ children: [run(k, { size: 15, color: '5B6A61' })] })], { fill: 'F6F8F6', w: 25 })) })) });
   const cover = [
-    ...(logoBuf ? [new d.Paragraph({ children: [new d.ImageRun({ data: logoBuf, transformation: { width: 120, height: Math.round(120 * LOGO.r) } })] })] : []),
+    ...(logoBuf ? [new d.Paragraph({ children: [new d.ImageRun({ data: logoBuf, transformation: { width: 120, height: Math.round(120 * LOGO.r) } }), ...(window.__PRL ? [run('      '), new d.ImageRun({ data: Uint8Array.from(atob(window.__PRL.url.split(',')[1]), x => x.charCodeAt(0)), transformation: { width: 64, height: 64 } })] : [])] })] : []),
     new d.Paragraph({ children: [run('Yayasan PRCF Indonesia', { bold: true, size: 26, color: '22382B' })] }),
-    new d.Paragraph({ children: [run('Pantau Rimbak · Sistem Pemantauan Titik Panas Hutan Desa, Kabupaten Kapuas Hulu', { size: 17, color: '5B6A61' })], border: { bottom: { style: d.BorderStyle.SINGLE, size: 12, color: '22382B', space: 6 } }, spacing: { after: 600 } }),
+    new d.Paragraph({ children: [run('Pantau Rimbak · Monitoring, Reporting & Verification Hutan Desa', { size: 17, color: '5B6A61' })], border: { bottom: { style: d.BorderStyle.SINGLE, size: 12, color: '22382B', space: 6 } }, spacing: { after: 600 } }),
     new d.Paragraph({ children: [run('LAPORAN PEMANTAUAN TITIK PANAS & KEBAKARAN', { bold: true, size: 18, color: '5B6A61' })] }),
     new d.Paragraph({ children: [run(SITE ? SITE.hd_nama : M.title, { bold: true, size: 44, color: '22382B' })], spacing: { after: 80 } }),
     new d.Paragraph({ children: [run(`Periode ${M.periodeTxt}`, { size: 24 })], spacing: { after: 300 } }),
