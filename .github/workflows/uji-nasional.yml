@@ -1,0 +1,35 @@
+name: Uji analisis nasional
+on:
+  push:
+    branches: [pantau-rimbak]
+    paths: ["uji/uji_nasional.py", ".github/workflows/uji-nasional.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  uji:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache@v4
+        with:
+          path: /tmp/firms_cache
+          key: firms-indonesia-v2-uji-${{ github.run_id }}
+          restore-keys: |
+            firms-indonesia-v2-
+            firms-indonesia-2016-2025-v1
+      - run: pip install shapely==2.0.6 pyproj==3.7.0 rasterio==1.4.3 numpy
+      - name: Jalankan uji
+        env:
+          FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+          FIRMS_CACHE: /tmp/firms_cache
+        run: python uji/uji_nasional.py
+      - name: Simpan hasil
+        run: |
+          git config user.name "github-actions"; git config user.email "github-actions@users.noreply.github.com"
+          git add uji/hasil_nasional.json; git commit -m "Hasil uji analisis nasional [skip ci]" || exit 0
+          git pull --rebase origin pantau-rimbak && git push origin HEAD:pantau-rimbak

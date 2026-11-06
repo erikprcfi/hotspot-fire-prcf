@@ -31,12 +31,19 @@ jobs:
         if: steps.cek.outputs.n != '0'
         with:
           python-version: "3.12"
+      - name: Tanggal
+        id: tgl
+        if: steps.cek.outputs.n != '0'
+        run: echo "d=$(date -u +%Y%m%d)" >> $GITHUB_OUTPUT
       - name: Cache arsip FIRMS
         if: steps.cek.outputs.n != '0'
         uses: actions/cache@v4
         with:
           path: /tmp/firms_cache
-          key: firms-indonesia-2016-2025-v1
+          key: firms-indonesia-v2-${{ steps.tgl.outputs.d }}
+          restore-keys: |
+            firms-indonesia-v2-
+            firms-indonesia-2016-2025-v1
       - name: Pasang pustaka
         if: steps.cek.outputs.n != '0'
         run: pip install shapely==2.0.6 pyproj==3.7.0 rasterio==1.4.3 numpy
@@ -46,4 +53,5 @@ jobs:
           ANALISIS_KEY: ${{ secrets.ANALISIS_KEY }}
           AKUN_URL: https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec
           FIRMS_CACHE: /tmp/firms_cache
+          FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
         run: python scripts/analisis_antrean.py

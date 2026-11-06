@@ -16,7 +16,7 @@ sehingga cara hitungnya identik. Semua dihitung langsung dari raster/arsip resmi
 Raster di grid 0,00025° (ubin 10°), jendela dibulatkan ke piksel utuh (tanpa resampling), luas piksel geodesik,
 piksel masuk poligon bila pusat piksel di dalam poligon.
 """
-import os, io, csv, json, math, urllib.request
+import os, datetime, io, csv, json, math, urllib.request
 import numpy as np
 
 os.environ.setdefault("GDAL_DISABLE_READDIR_ON_OPEN", "EMPTY_DIR"); os.environ.setdefault("CPL_VSIL_CURL_ALLOWED_EXTENSIONS", ".tif")
@@ -232,10 +232,24 @@ def _firms_csv(sp, y, cache):
         open(p, "wb").write(raw)
     return p
 
-def hitung_titik_panas(geom, tahun=range(2016, 2026), cache="/tmp/firms_cache"):
+FIRMS_NRT = {"VIIRS S-NPP": ("VIIRS_SNPP_SP", "VIIRS_SNPP_NRT"), "VIIRS NOAA-20": ("VIIRS_NOAA20_SP", "VIIRS_NOAA20_NRT"), "MODIS": ("MODIS_SP", "MODIS_NRT")}  # SP (standar) dulu, NRT untuk minggu-minggu terakhir
+def _firms_nrt(src, akhir, hari, cache):   # NASA FIRMS Country API (resmi) – tahun berjalan, belum ada di arsip tahunan; kunci MAP_KEY dari secret
+    key = os.environ.get("FIRMS_MAP_KEY", "")
+    if not key: return None
+    p = os.path.join(cache, f"nrt_{src}_{akhir}_{hari}.csv")
+    if not os.path.exists(p):
+        url = f"https://firms.modaps.eosdis.nasa.gov/api/country/csv/{key}/{src}/IDN/{hari}/{akhir}"
+        try: raw = urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "PantauRimbak-PRCF"}), timeout=180).read()
+        except Exception: return None
+        if not raw.startswith(b"country_id") and not raw.startswith(b"latitude"): return None
+        open(p, "wb").write(raw)
+    return p
+
+def hitung_titik_panas(geom, tahun=None, cache="/tmp/firms_cache"):
     from shapely import prepared
     from shapely.geometry import Point
     os.makedirs(cache, exist_ok=True); pg = prepared.prep(geom); x0, y0, x1, y1 = geom.bounds
+    if tahun is None: tahun = range(2016, datetime.date.today().year + 1)
     per = {str(y): {k: 0 for k in FIRMS} for y in tahun}; bulan = {}; tersedia = []; contoh = []
     for k, (sp, y0s) in FIRMS.items():
         for y in tahun:
@@ -250,10 +264,36 @@ def hitung_titik_panas(geom, tahun=range(2016, 2026), cache="/tmp/firms_cache"):
                     if not pg.contains(Point(lo, la)): continue
                     per[str(y)][k] += 1; mk = r["acq_date"][:7]; bulan[mk] = bulan.get(mk, 0) + 1
                     contoh.append([r["acq_date"], r["acq_time"], k, round(la, 5), round(lo, 5), r.get("confidence", ""), float(r.get("frp") or 0)])
+    # tahun yang belum punya arsip tahunan (tahun berjalan): FIRMS NRT per 5 hari sampai kemarin
+    sudah = {t.split()[-1] for t in tersedia}
+    for y in tahun:
+        if str(y) in sudah: continue
+        d0, d1 = datetime.date(y, 1, 1), min(datetime.date(y, 12, 31), datetime.date.today() - datetime.timedelta(days=1))
+        for k, srcs in FIRMS_NRT.items():
+            d = d0; ok = False
+            while d <= d1:
+                n = min(5, (d1 - d).days + 1); tgl_sudah = set()
+                for src in srcs:   # per tanggal: pakai sumber pertama (SP) yang punya data; tanggal yang belum ada di SP diisi NRT
+                    p = _firms_nrt(src, d.isoformat(), n, cache)
+                    if not p: continue
+                    ok = True; tgl_ini = set()
+                    with open(p, encoding="utf-8") as f:
+                        for r in csv.DictReader(f):
+                            t = r.get("acq_date", "")
+                            if t in tgl_sudah or not t.startswith(str(y)): continue
+                            tgl_ini.add(t)
+                            la, lo = float(r["latitude"]), float(r["longitude"])
+                            if not (x0 <= lo <= x1 and y0 <= la <= y1) or r.get("type", "0") not in ("0", ""): continue
+                            if not pg.contains(Point(lo, la)): continue
+                            per[str(y)][k] += 1; mk = t[:7]; bulan[mk] = bulan.get(mk, 0) + 1
+                            contoh.append([t, r["acq_time"], k, round(la, 5), round(lo, 5), r.get("confidence", ""), float(r.get("frp") or 0)])
+                    tgl_sudah |= tgl_ini
+                d += datetime.timedelta(days=n)
+            if ok: tersedia.append(f"{k} {y} (NRT s.d. {d1.isoformat()})")
     contoh.sort(reverse=True)
     return {"periode": f"{min(tahun)}–{max(tahun)}", "per_tahun": per, "per_bulan": dict(sorted(bulan.items())), "terbaru": contoh[:50],
             "total": sum(sum(v.values()) for v in per.values()), "arsip_dipakai": tersedia,
-            "catatan": "Hanya deteksi tipe 0 (dugaan kebakaran vegetasi). Satu kebakaran bisa terdeteksi oleh beberapa satelit/lintasan, jadi jumlah titik ≠ jumlah kejadian. Arsip tahunan NASA untuk tahun berjalan belum terbit."}
+            "catatan": "Hanya deteksi tipe 0 (dugaan kebakaran vegetasi). Satu kebakaran bisa terdeteksi oleh beberapa satelit/lintasan, jadi jumlah titik ≠ jumlah kejadian. Tahun berjalan diambil dari NASA FIRMS API (Standard Processing, lalu NRT untuk hari-hari terakhir) karena arsip tahunannya belum terbit."}
 
 def wilayah(geom):
     """Desa/kecamatan/kabupaten yang beririsan (dari data/wilayah, BPS/BIG + Kepmendagri 2025)."""
