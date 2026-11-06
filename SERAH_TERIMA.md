@@ -49,7 +49,7 @@ Kerjakan bagian PERTAMA yang belum dicentang, satu bagian per sesi:
 - [x] Sesi C (SELESAI 6 Nov) – Penyegaran tampilan untuk presentasi: beranda & peta lebih profesional (web dan HP berbeda tata letak), nama/ikon Android
       (strings.xml app_name, mipmap adaptif dari assets/logo_pr.svg), kop laporan Pantau Rimbak.
 - [x] Sesi D (SELESAI 6 Nov) – Uji menyeluruh semua alat/navigasi (Playwright), perbaiki error, rangkuman siap-gabung untuk pengguna.
-- [ ] Sesi E – Data nasional untuk wilayah SHP pengguna: perluas pipeline analisis (scripts/analisis_antrean.py) agar wilayah di luar Kalbar
+- [~] Sesi E (SEDANG dikerjakan di percakapan utama – sesi terjadwal lewati) – Data nasional untuk wilayah SHP pengguna: perluas pipeline analisis (scripts/analisis_antrean.py) agar wilayah di luar Kalbar
       dihitung dari sumber resmi global/nasional (Hansen GFC v1.13 via ubin/COG resmi, NASA FIRMS area API dgn kunci di secret Actions,
       tutupan lahan KLHK resmi bila layanan terjangkau dari Actions, cadangan ESA WorldCover); uji dengan poligon Bengkulu, Papua, Aceh.
 - [ ] Sesi F – Website gaya NASA: halaman peta web layar penuh dgn panel lapisan interaktif, linimasa tanggal, grafik ringkas; tampilan HP tetap terpisah.
