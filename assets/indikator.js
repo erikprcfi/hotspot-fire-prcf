@@ -1,4 +1,4 @@
-/* Fire Hotspot – INDIKATOR PROGRAM per Hutan Desa (v10)
+/* Pantau Rimbak – INDIKATOR PROGRAM per Hutan Desa (v10)
  * Ringkasan satu halaman untuk Hutan Desa yang sedang dibuka (bukan total 6 Hutan Desa), siap dilampirkan ke laporan program.
  * Semua angka dibaca dari berkas data resmi yang sudah ada di situs ini – tidak ada angka yang dikarang:
  *   - titik panas di dalam Hutan Desa per tahun: NASA FIRMS arsip VIIRS S-NPP (data/analisis/<id>_hd.json → titik_panas)
@@ -7,7 +7,7 @@
  *   - tutupan lahan & emisi FREL: BASIS DATA TUTUPAN LAHAN BERSAMA (FHModelKLHK.muat – sumber utama Hutan Desa: peta tahunan lokal yang
  *     sudah di-groundcheck bila ada, selain itu model KLHK 2020 + Hansen) & FHKarbon.ringkas – angka sama dengan alat Tutupan lahan & Emisi karbon
  *   - emisi, serapan & fluks karbon bersih: Harris dkk. 2021 / Gibbs dkk. 2025, WRI (data/analisis → karbon)
- *   - bekas terbakar terpetakan: Sentinel-2 dNBR otomatis Fire Hotspot, radius ≤ 5 km (data/bekas_terbakar/indeks.json)
+ *   - bekas terbakar terpetakan: Sentinel-2 dNBR otomatis Pantau Rimbak, radius ≤ 5 km (data/bekas_terbakar/indeks.json)
  */
 (function () {
 'use strict';
@@ -55,7 +55,7 @@ function tahunan(r) { const ys = []; for (let y = 2016; y <= 2025; y++) ys.push(
 const SUMBER = ['Titik panas: NASA FIRMS (VIIRS S-NPP 375 m arsip SP; NRT untuk 12 bulan terakhir).', 'Hutan & kehilangan tutupan pohon: Hansen/UMD/Google/USGS/NASA Global Forest Change GFC-2025-v1.13, 30 m, CC BY 4.0. Hutan = tutupan tajuk 2000 ≥ 30%.',
   'Tutupan lahan, deforestasi/degradasi & emisi FREL: basis data tutupan lahan yang sama dengan alat Tutupan lahan & Emisi karbon – peta tahunan lokal yang sudah di-groundcheck bila ada (Nanga Lauk: peta tahunan PRCF 2006–2026), selain itu Peta Penutupan Lahan KLHK 2020 (1:250.000) + Hansen GFC v1.13; emisi dengan rumus templat PRCF (kepadatan karbon per tipe hutan × 0,47 × 44/12).',
   'Karbon: Harris dkk. 2021 (Nat. Clim. Change) & Gibbs dkk. 2025 (ESSD), data publik World Resources Institute, CC BY 4.0. Fluks bersih negatif = hutan menyerap lebih banyak daripada melepas.',
-  'Bekas terbakar: indeks dNBR citra Sentinel-2 L2A (ESA Copernicus) yang dihitung otomatis Fire Hotspot untuk musim api ≤ 5 km dari Hutan Desa; musim tertutup awan tidak dihitung.'];
+  'Bekas terbakar: indeks dNBR citra Sentinel-2 L2A (ESA Copernicus) yang dihitung otomatis Pantau Rimbak untuk musim api ≤ 5 km dari Hutan Desa; musim tertutup awan tidak dihitung.'];
 async function open() {
   const A = X(); if (!A || !window.openPage) return; A.pakai('indikator');
   const s = window.FHSiteObj && FHSiteObj(), k = window.FHSiteIdx ? FHSiteIdx() : 0;
@@ -93,7 +93,7 @@ async function open() {
       const cell = (t, h) => new d.TableCell({ children: [new d.Paragraph({ children: [run(t, { bold: h, size: 16, color: h ? 'FFFFFF' : undefined })] })], shading: h ? { fill: '1E7A58' } : undefined, margins: { top: 50, bottom: 50, left: 70, right: 70 } });
       const tbl = (h, b) => new d.Table({ width: { size: 100, type: d.WidthType.PERCENTAGE }, rows: [new d.TableRow({ tableHeader: true, children: h.map(x => cell(x, true)) }), ...b.map(x => new d.TableRow({ children: x.map(c => cell(c)) }))] });
       const hd = t => new d.Paragraph({ children: [run(t, { bold: true, size: 24 })], spacing: { before: 240, after: 100 } });
-      const doc = new d.Document({ creator: 'Yayasan PRCF Indonesia – Fire Hotspot', sections: [{ children: [
+      const doc = new d.Document({ creator: 'Yayasan PRCF Indonesia – Pantau Rimbak', sections: [{ children: [
         new d.Paragraph({ children: [run(judul, { bold: true, size: 32, color: '0B3B2C' })], spacing: { after: 100 } }), new d.Paragraph({ children: [run(sub, { color: '55665D' })], spacing: { after: 200 } }),
         hd('1. Indikator'), tbl(H1, B), hd('2. Rincian per tahun'), tbl(H2, T2()), ...(TK.length ? [hd('3. Tutupan lahan ' + r.tkTahun + ' – ' + r.src), tbl(H3, T3())] : []),
         hd('Sumber & metode'), ...SUMBER.map(x => new d.Paragraph({ children: [run('• ' + x, { size: 16, color: '55665D' })], spacing: { after: 60 } }))] }] });

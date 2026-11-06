@@ -1,5 +1,5 @@
 """
-Perubahan tutupan hutan TAHUN BERJALAN dari citra Sentinel-2 (untuk tahun yang belum ada data tahunan Hansen) – Fire Hotspot PRCF
+Perubahan tutupan hutan TAHUN BERJALAN dari citra Sentinel-2 (untuk tahun yang belum ada data tahunan Hansen) – Pantau Rimbak PRCF
 ==================================================================================================================================
 Acuan kelas: Peta Penutupan Lahan resmi KLHK TERBARU (data/klhk/<lokasi>_<tahun>.geojson; kini 2025).
 Hutan acuan: tajuk 2000 ≥ 30% dan BELUM hilang s.d. 2025 menurut Hansen GFC v1.13 (jadi kehilangan 2001–2025 tidak terhitung dua kali).

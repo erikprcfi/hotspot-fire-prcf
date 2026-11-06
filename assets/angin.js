@@ -1,4 +1,4 @@
-/* Animasi angin 10 m di peta + angin di satu titik – Fire Hotspot PRCF
+/* Animasi angin 10 m di peta + angin di satu titik – Pantau Rimbak PRCF
  * Data: model ECMWF IFS 0,25° (European Centre for Medium-Range Weather Forecasts, CC BY 4.0) via Open-Meteo,
  *       kecepatan & arah angin 10 m per jam, analisis + prakiraan 3 hari, untuk grid titik di area peta yang terlihat.
  * Partikel bergerak searah angin (arah ke mana angin bertiup); warna = kecepatan sebenarnya. Tidak ada pewarnaan citra dasar.

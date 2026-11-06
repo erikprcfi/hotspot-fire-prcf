@@ -1,4 +1,4 @@
-/* Fire Hotspot – PENULIS SHAPEFILE (ESRI .shp/.shx/.dbf/.prj/.cpg) untuk poligon, tanpa server
+/* Pantau Rimbak – PENULIS SHAPEFILE (ESRI .shp/.shx/.dbf/.prj/.cpg) untuk poligon, tanpa server
  * FHShp.zip([{ nama, fitur: GeoJSON Feature[] (Point / LineString / Polygon – satu jenis per lapisan), kolom: [[NAMA, 'C'|'N', lebar, desimal], ...] }], { 'BACA.txt': '...' }) → Promise<Blob .zip>
  * Koordinat WGS 1984 (EPSG:4326). Cincin luar searah jarum jam, lubang berlawanan (spesifikasi ESRI). Teks atribut UTF-8 (.cpg).
  */

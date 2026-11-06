@@ -1,5 +1,5 @@
 /* "Lokasi saya" – cuaca saat ini, per jam, 14 hari, kualitas udara & bahaya kebakaran di titik pengguna
- * Fire Hotspot PRCF. Semua data dari sumber resmi, diambil langsung oleh HP pengguna:
+ * Pantau Rimbak PRCF. Semua data dari sumber resmi, diambil langsung oleh HP pengguna:
  *   ECMWF IFS 0,25° (via Open-Meteo, CC BY 4.0) – cuaca saat ini (analisis model), per jam, harian 14 hari
  *   Copernicus CAMS (via Open-Meteo Air Quality) – PM2.5, CO, AOD; kategori PM2.5 BMKG, penjelasan ISPU (Permen LHK 14/2020)
  *   Fire Weather Index (Van Wagner 1987), kelas FDRS Indonesia (de Groot dkk. 2006)
@@ -171,7 +171,7 @@ function view(el, X, opt) {
   if (!window.FHTitikID && opt.hotspots && opt.hotspots.length) { const R = 6371, rad = x => x * Math.PI / 180; const dist = p => 2 * R * Math.asin(Math.sqrt(Math.sin(rad(p.la - X.lat) / 2) ** 2 + Math.cos(rad(X.lat)) * Math.cos(rad(p.la)) * Math.sin(rad(p.lo - X.lon) / 2) ** 2));
     const inBox = X.lon >= 111.45 && X.lon <= 114.3 && X.lat >= 0 && X.lat <= 1.7;
     if (inBox) { const wk = opt.hotspots.filter(p => Date.now() - p.when <= 7 * 864e5 + 36e5).map(p => ({ p, d: dist(p) })).sort((a, b) => a.d - b.d);
-      near = `<div class="lx-card"><h4>Titik panas di sekitar Anda · 7 hari</h4><div class="lx-two"><div><div class="lx-big">${wk.filter(x => x.d <= 25).length}</div><div class="lx-note" style="margin:0">titik ≤ 25 km</div></div><div><div class="lx-big">${wk.length ? N1(wk[0].d) : '–'}<small style="font-size:14px"> km</small></div><div class="lx-note" style="margin:0">titik terdekat</div></div></div><p class="lx-note">Basis data NASA FIRMS Fire Hotspot (Kapuas Hulu).</p></div>`; }
+      near = `<div class="lx-card"><h4>Titik panas di sekitar Anda · 7 hari</h4><div class="lx-two"><div><div class="lx-big">${wk.filter(x => x.d <= 25).length}</div><div class="lx-note" style="margin:0">titik ≤ 25 km</div></div><div><div class="lx-big">${wk.length ? N1(wk[0].d) : '–'}<small style="font-size:14px"> km</small></div><div class="lx-note" style="margin:0">titik terdekat</div></div></div><p class="lx-note">Basis data NASA FIRMS Pantau Rimbak (Kapuas Hulu).</p></div>`; }
   }
   el.innerHTML = `<div class="lx">
    <div class="lx-hero" style="background:${heroBg(C.weather_code, C.is_day)}">
@@ -237,7 +237,7 @@ function gps(el, opt, force) {
     if (!best || p.coords.accuracy < best.coords.accuracy) best = p;
     const a = el.querySelector('#lxAcc'); if (a) a.textContent = `Akurasi saat ini ±${best.coords.accuracy < 1000 ? Math.round(best.coords.accuracy) + ' m' : N1(best.coords.accuracy / 1000) + ' km'}`;
     if (best.coords.accuracy <= 25 || (best.coords.accuracy <= 100 && Date.now() - t0 > 6000)) finish();
-  }, err => { if (err.code === 1) { done = true; clearTimeout(tm); el.innerHTML = `<div class="lx"><div class="lx-card"><h4>Akses lokasi ditolak</h4><p class="lx-note" style="font-size:13px">Untuk melihat cuaca di lokasi Anda, izinkan akses lokasi untuk aplikasi/peramban ini (Pengaturan → Aplikasi → Chrome/Fire Hotspot → Izin → Lokasi), lalu ketuk Coba lagi. Anda juga bisa mencari kota secara manual.</p><div class="lx-actions" style="margin-top:10px"><button class="lx-btn pri" data-a="re">Coba lagi</button><button class="lx-btn" data-a="cari">Cari kota</button></div></div></div>`; el.querySelector('[data-a=re]').onclick = () => gps(el, opt, true); el.querySelector('[data-a=cari]').onclick = () => search(el, opt); } },
+  }, err => { if (err.code === 1) { done = true; clearTimeout(tm); el.innerHTML = `<div class="lx"><div class="lx-card"><h4>Akses lokasi ditolak</h4><p class="lx-note" style="font-size:13px">Untuk melihat cuaca di lokasi Anda, izinkan akses lokasi untuk aplikasi/peramban ini (Pengaturan → Aplikasi → Chrome/Pantau Rimbak → Izin → Lokasi), lalu ketuk Coba lagi. Anda juga bisa mencari kota secara manual.</p><div class="lx-actions" style="margin-top:10px"><button class="lx-btn pri" data-a="re">Coba lagi</button><button class="lx-btn" data-a="cari">Cari kota</button></div></div></div>`; el.querySelector('[data-a=re]').onclick = () => gps(el, opt, true); el.querySelector('[data-a=cari]').onclick = () => search(el, opt); } },
   { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
 }
 window.FHLokasi = { render: (el, opt = {}) => gps(el, opt, false), refresh: (el, opt = {}) => gps(el, opt, true), search, at, icon };

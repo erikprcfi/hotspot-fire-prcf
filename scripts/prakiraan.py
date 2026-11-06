@@ -1,5 +1,5 @@
 """
-Prakiraan cuaca 7 hari & peringatan dini bahaya kebakaran – Fire Hotspot PRCF
+Prakiraan cuaca 7 hari & peringatan dini bahaya kebakaran – Pantau Rimbak PRCF
 =============================================================================
 
 Sumber (semuanya resmi & terbuka):

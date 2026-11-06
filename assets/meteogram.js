@@ -1,4 +1,4 @@
-/* Meteogram ensemble ECMWF (gaya ECMWF ENS meteogram) – Fire Hotspot PRCF
+/* Meteogram ensemble ECMWF (gaya ECMWF ENS meteogram) – Pantau Rimbak PRCF
  * Data: ECMWF IFS ENS 0,25° – 51 anggota ensemble (1 kontrol + 50 gangguan), 15 hari, via Open-Meteo Ensemble API (CC BY 4.0).
  * Tiap kotak = sebaran 51 kemungkinan: kotak 25–75%, garis tengah median, kumis 10–90%, titik min/maks.
  * Pemakaian: FHMeteogram.mount(elemen, lat, lon)

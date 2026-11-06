@@ -1,4 +1,4 @@
-/* Fire Hotspot – TUTUPAN LAHAN per Hutan Desa, satu basis data dengan alat Emisi karbon (assets/model_klhk.js → FHModelKLHK.muat)
+/* Pantau Rimbak – TUTUPAN LAHAN per Hutan Desa, satu basis data dengan alat Emisi karbon (assets/model_klhk.js → FHModelKLHK.muat)
  * Sumber (urutan prioritas, dapat dipilih di layar; sumber yang dipakai selalu tertulis di layar & ekspor):
  *  1. Peta tahunan LOKAL yang sudah di-groundcheck (data/tutupan_lokal; kini Hutan Desa Nanga Lauk 2006–2026, Yayasan PRCF Indonesia:
  *     interpretasi visual Landsat 5/7/8 + ArcGIS Imagery, groundcheck lapangan) – luas, perubahan & matriks langsung dari peta tiap tahun.
@@ -44,7 +44,7 @@ async function petaTahun(s, Y, y0) {
 }
 const KOLOM = [['HD_NAMA', 'C', 60], ['LPHD', 'C', 60], ['TAHUN', 'N', 4, 0], ['KODE_PL', 'N', 6, 0], ['KELAS', 'C', 80], ['KELOMPOK', 'C', 12], ['TIPE_FREL', 'C', 60], ['C_TCHA', 'N', 10, 4],
   ['KODE_REF', 'N', 6, 0], ['KELAS_REF', 'C', 80], ['STATUS', 'C', 60], ['TH_UBAH', 'N', 4, 0], ['UBAH_PER', 'C', 5], ['SUMBER', 'C', 60], ['LUAS_HA', 'N', 14, 4]];
-const BACA = (s, Y, per, n, tot, t) => [`Peta tutupan lahan ${s.hd_nama} – kondisi akhir tahun ${Y}` + (per ? ` (periode ${per})` : ''), `Dibuat oleh aplikasi Fire Hotspot – Yayasan PRCF Indonesia, ${X().wib(Date.now())}`, '',
+const BACA = (s, Y, per, n, tot, t) => [`Peta tutupan lahan ${s.hd_nama} – kondisi akhir tahun ${Y}` + (per ? ` (periode ${per})` : ''), `Dibuat oleh aplikasi Pantau Rimbak – Yayasan PRCF Indonesia, ${X().wib(Date.now())}`, '',
   `Jumlah poligon: ${n} · total luas: ${nf(tot, 4)} ha · sistem koordinat: WGS 1984 (EPSG:4326)`, '',
   'Sumber: Peta Penutupan Lahan KLHK 2020 (1:250.000) sebagai acuan; perubahan per tahun dari Hansen/UMD/Google/USGS/NASA Global Forest Change GFC-2025-v1.13 (lossyear, tajuk 2000 ≥ 30%, piksel 30 m); tahun berjalan dari citra Sentinel-2 L2A (indikasi, menunggu rilis tahunan Hansen).',
   'Aturan: tahun ≥ 2020 – kehilangan tutupan pohon di HLK Primer → HLK Sekunder (degradasi), HLK Sekunder → Pertanian Lahan Kering Campur Semak (deforestasi), Hutan Rawa Primer → Hutan Rawa Sekunder (degradasi), Hutan Rawa Sekunder → Belukar Rawa (deforestasi); kelas lain tidak berubah. Tahun < 2020 – piksel yang hilang sesudah tahun itu dan di peta 2020 sudah bukan hutan dikembalikan ke Hutan Rawa Sekunder (kelas basah) atau HLK Sekunder (lainnya).', '',
@@ -195,7 +195,7 @@ async function petaLokal(s, M, Y, ya) {
     JENIS: JENIS[FHModelKLHK.jenis(p.dari, p.ke)] || '', SUMBER: src, LUAS_HA: p.luas_ha } }; }) : [];
   return { fitur, ubah, kolom: KOLOM_L };
 }
-const BACA_L = (s, G, Y, per, n, tot) => { const I = G.M.info || {}; return [`Peta tutupan lahan ${s.hd_nama} – tahun ${Y}` + (per ? ` (periode ${per}; perubahan dibandingkan peta ${G.ya})` : ''), `Dibuat oleh aplikasi Fire Hotspot – Yayasan PRCF Indonesia, ${X().wib(Date.now())}`, '',
+const BACA_L = (s, G, Y, per, n, tot) => { const I = G.M.info || {}; return [`Peta tutupan lahan ${s.hd_nama} – tahun ${Y}` + (per ? ` (periode ${per}; perubahan dibandingkan peta ${G.ya})` : ''), `Dibuat oleh aplikasi Pantau Rimbak – Yayasan PRCF Indonesia, ${X().wib(Date.now())}`, '',
   `Jumlah poligon: ${n} · total luas: ${nf(tot, 4)} ha · sistem koordinat: WGS 1984 (EPSG:4326); luas dihitung pada WGS 1984 UTM 49N`, '', `Sumber: ${I.sumber || ''}.`, `Metode: ${I.metode || ''}`, I.groundcheck ? `Groundcheck: ${I.groundcheck}` : '', '',
   'Kolom lapisan tutupan_lahan: HD_NAMA, LPHD, TAHUN, KODE_PL / KELAS (kode & nama kelas penutupan lahan KLHK padanannya), KELAS_ASLI (nama kelas pada peta sumber), KELOMPOK (hutan / bukan hutan), TIPE_FREL & C_TCHA (tipe & cadangan karbon tC/ha rumus FREL), SUMBER, LUAS_HA.',
   'Kolom lapisan perubahan: TH_AWAL, TH_AKHIR, KODE_DARI / KELAS_DARI, KODE_KE / KELAS_KE, JENIS (Deforestasi / Degradasi / Regenerasi / Suksesi / Antar kelas bukan hutan), SUMBER, LUAS_HA.', '',
@@ -233,7 +233,7 @@ const rowsRing = G => G.kode.map(k => [NAMA[k] || String(k), String(k), nf(G.awa
 const rowsUb = G => G.ubah.map(([a, b, v, j]) => [NAMA[a] || String(a), NAMA[b] || String(b), JENIS[j] || j, nf(v, 4)]);
 const rowsMat = G => (G.mat || []).filter(m => m.dari !== m.ke).map(m => [NAMA[m.dari] || String(m.dari), NAMA[m.ke] || String(m.ke), JENIS[m.jenis] || m.jenis, nf(m.ha, 4)]);
 async function excel(B) {
-  const A = X(), G = B.G; await A.lib('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js'); const wb = new window.ExcelJS.Workbook(); wb.creator = 'Yayasan PRCF Indonesia – Fire Hotspot';
+  const A = X(), G = B.G; await A.lib('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js'); const wb = new window.ExcelJS.Workbook(); wb.creator = 'Yayasan PRCF Indonesia – Pantau Rimbak';
   const HD = { font: { name: 'Segoe UI Semibold', color: { argb: 'FFFFFFFF' } }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F4E3D' } }, alignment: { wrapText: true, vertical: 'middle', horizontal: 'center' } };
   const sheet = (nm, head, rows, w) => { const s = wb.addWorksheet(nm); s.addRow(head.map(T_)); s.getRow(1).eachCell(c => Object.assign(c, HD)); s.getRow(1).height = 32; rows.forEach(r => s.addRow(r.map(v => typeof v === 'string' ? T_(v) : v))); s.columns.forEach((c, i) => { c.width = (w && w[i]) || 16; }); s.eachRow((r, i) => r.eachCell(c => { c.font = Object.assign({ name: 'Segoe UI', size: 10 }, i === 1 ? { name: 'Segoe UI Semibold', color: { argb: 'FFFFFFFF' } } : {}); c.border = { top: { style: 'thin', color: { argb: 'FFBFBFBF' } }, left: { style: 'thin', color: { argb: 'FFBFBFBF' } }, bottom: { style: 'thin', color: { argb: 'FFBFBFBF' } }, right: { style: 'thin', color: { argb: 'FFBFBFBF' } } }; if (typeof c.value === 'number') c.numFmt = '#,##0.0000'; })); return s; };
   sheet('Ringkasan', ['Hutan Desa', 'Sumber peta', 'Kelas penutupan lahan (kode KLHK)', 'Kode KLHK', `Awal (${G.ya}) (ha)`, `Akhir ${B.y1} (ha)`, 'Perubahan (ha)'], G.kode.map(k => [B.nama, B.info.nama, NAMA[k] || String(k), k, +(G.awal[k] || 0).toFixed(4), +(G.akhir[k] || 0).toFixed(4), +((G.akhir[k] || 0) - (G.awal[k] || 0)).toFixed(4)]), [28, 40, 38, 11, 15, 15, 15]);
@@ -248,12 +248,12 @@ async function word(B) {
   const cell = (t, h) => new d.TableCell({ children: [new d.Paragraph({ children: [run(t, { bold: h, size: 17, color: h ? 'FFFFFF' : undefined })] })], shading: h ? { fill: '1F4E3D' } : undefined, margins: { top: 50, bottom: 50, left: 80, right: 80 } });
   const tbl = (H, R) => new d.Table({ width: { size: 100, type: d.WidthType.PERCENTAGE }, rows: [new d.TableRow({ tableHeader: true, children: H.map(h => cell(h, true)) }), ...(R.length ? R : [H.map(() => '–')]).map(r => new d.TableRow({ children: r.map(c => cell(String(c))) }))] });
   const yrs = G.akt.map(a => [String(a.y), ...barisAkt(G).map(([, k]) => nf(a[k], 4))]);
-  const doc = new d.Document({ creator: 'Yayasan PRCF Indonesia – Fire Hotspot', sections: [{ children: [p('Tutupan Lahan ' + B.nama, { bold: true, size: 34, color: '1F4E3D' }), p(`Periode ${B.per} · sumber peta: ${B.info.nama}`, { color: '55665D' }),
+  const doc = new d.Document({ creator: 'Yayasan PRCF Indonesia – Pantau Rimbak', sections: [{ children: [p('Tutupan Lahan ' + B.nama, { bold: true, size: 34, color: '1F4E3D' }), p(`Periode ${B.per} · sumber peta: ${B.info.nama}`, { color: '55665D' }),
     p('1. Luas per kelas', { bold: true, size: 26 }), tbl(['Kelas (kode KLHK)', 'Kode', `Awal (${G.ya}) (ha)`, `Akhir ${B.y1} (ha)`, 'Perubahan (ha)', '% luas'], rowsRing(G)), p(''),
     p('2. Perubahan per tahun (ha)', { bold: true, size: 26 }), tbl(['Tahun', ...barisAkt(G).map(([l]) => l)], yrs), p(''),
     p('3. Perubahan kelas (jumlah tahunan)', { bold: true, size: 26 }), tbl(['Dari', 'Menjadi', 'Jenis', 'Luas (ha)'], rowsUb(G)), p(''),
     ...(G.mat ? [p(`4. Matriks perubahan bersih ${G.ya} → ${B.y1}`, { bold: true, size: 26 }), tbl(['Dari', 'Menjadi', 'Jenis', 'Luas (ha)'], rowsMat(G)), p('')] : []),
-    p('Metode & sumber', { bold: true, size: 24 }), ...metode(G).map(m => p('• ' + m, { size: 18, color: '55665D' })), p(`Fire Hotspot · Yayasan PRCF Indonesia · ${A.wib(Date.now())}`, { size: 16, color: '888888' })] }] });
+    p('Metode & sumber', { bold: true, size: 24 }), ...metode(G).map(m => p('• ' + m, { size: 18, color: '55665D' })), p(`Pantau Rimbak · Yayasan PRCF Indonesia · ${A.wib(Date.now())}`, { size: 16, color: '888888' })] }] });
   A.dl(await d.Packer.toBlob(doc), fn(B, 'docx'));
 }
 async function pdf(B) {

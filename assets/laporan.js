@@ -1,4 +1,4 @@
-/* Pembuat laporan titik panas – Fire Hotspot Nanga Lauk
+/* Pembuat laporan titik panas – Pantau Rimbak Nanga Lauk
  * Semua laporan dibuat di browser pengguna dari basis data website (data/web/YYYY.json),
  * data cuaca (data/cuaca.json), batas wilayah (data/geo.json) dan kejadian api (data/kejadian.json).
  * Keluaran: pratinjau di layar, PDF (jsPDF + autoTable), Word (docx), dan CSV.
@@ -516,7 +516,7 @@ function preview(M, F, T) {
   const XB = extraBlocks(M); let n = 0; const h = t => `<h4>${++n}. ${esc(t)}</h4>`;
   const blk = b => h(b.h) + b.p.map(x => `<p>${esc(x)}</p>`).join('') + b.t.map(t => `<p class="rp-note">${esc(t.cap)}</p>${htmlTable(t.rows, 30)}${t.note ? `<p class="rp-note">${esc(t.note)}</p>` : ''}`).join('');
   const bad = M.checks.filter(c => c[2] !== 'Sesuai').length;
-  $('#rpPreview').innerHTML = `<div class="rp-doc">${LOGO ? `<div style="display:flex;align-items:center;gap:12px;border-bottom:2px solid #22382B;padding-bottom:10px;margin-bottom:14px"><img src="${LOGO.url}" alt="PRCF Indonesia" style="height:46px;width:auto;border-radius:4px"><div><b style="font-size:15px">Yayasan PRCF Indonesia</b><div class="rp-note" style="margin:0">Fire Hotspot · Sistem Pemantauan Titik Panas Hutan Desa</div></div></div>` : ''}<h3>${esc(M.title)}</h3>
+  $('#rpPreview').innerHTML = `<div class="rp-doc">${LOGO ? `<div style="display:flex;align-items:center;gap:12px;border-bottom:2px solid #22382B;padding-bottom:10px;margin-bottom:14px"><img src="${LOGO.url}" alt="PRCF Indonesia" style="height:46px;width:auto;border-radius:4px"><div><b style="font-size:15px">Yayasan PRCF Indonesia</b><div class="rp-note" style="margin:0">Pantau Rimbak · Sistem Pemantauan Titik Panas Hutan Desa</div></div></div>` : ''}<h3>${esc(M.title)}</h3>
   <div class="tw"><table><tbody>${params(M).map(([k, v]) => `<tr><th style="text-align:left;width:34%">${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</tbody></table></div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:12px 0">${kpis(M).map(([k, v]) => `<div style="border:1px solid var(--line);border-radius:10px;padding:8px 10px"><div style="font:700 18px var(--f-data,monospace)">${esc(v)}</div><div class="rp-note" style="margin:0">${esc(k)}</div></div>`).join('')}</div>
   <p class="rp-note" style="color:${bad ? '#B3261E' : '#2E7D4F'}">Verifikasi otomatis: ${M.checks.length - bad} dari ${M.checks.length} pemeriksaan sesuai${bad ? ' — lihat Lampiran B' : ''}.</p>
@@ -555,7 +555,7 @@ async function exportPDF(M, F, T) {
   doc.setFillColor(HEAD); doc.rect(0, 0, PW, 112, 'F');
   if (LOGO) { const lw = 30, lh = lw * LOGO.r; doc.setFillColor(255, 255, 255); doc.roundedRect(ML - 2, 14, lw + 4, lh + 4, 2, 2, 'F'); doc.addImage(LOGO.url, 'JPEG', ML, 16, lw, lh); }
   doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.text('Yayasan PRCF Indonesia', ML + 38, 24);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.text('Fire Hotspot - Sistem Pemantauan Titik Panas Hutan Desa, Kabupaten Kapuas Hulu', ML + 38, 29.5);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.text('Pantau Rimbak - Sistem Pemantauan Titik Panas Hutan Desa, Kabupaten Kapuas Hulu', ML + 38, 29.5);
   doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(214, 228, 218); doc.text('LAPORAN PEMANTAUAN TITIK PANAS & KEBAKARAN', ML, 62);
   doc.setTextColor(255, 255, 255); doc.setFontSize(20); let cy = 71; doc.splitTextToSize(pdfTxt(SITE ? SITE.hd_nama : M.title), CW).forEach(l => { doc.text(l, ML, cy); cy += 8.5; });
   doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.text(pdfTxt(`Periode ${M.periodeTxt}`), ML, cy + 1); cy += 7;
@@ -609,7 +609,7 @@ async function exportPDF(M, F, T) {
     doc.setTextColor(MUTED); doc.text('.'.repeat(Math.max(2, Math.floor((CW - w - 12) / doc.getTextWidth('.')))), ML + w + 2, ty); doc.setTextColor(INK); doc.text(String(pg), PW - ML, ty, { align: 'right' }); ty += 7.5; });
   const n = doc.getNumberOfPages();
   for (let i = 2; i <= n; i++) { doc.setPage(i); const w = doc.internal.pageSize.getWidth(), h = doc.internal.pageSize.getHeight();
-    if (LOGO) doc.addImage(LOGO.url, 'JPEG', 12, 6, 9, 9 * LOGO.r); doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(HEAD); doc.text('Yayasan PRCF Indonesia - Fire Hotspot', 24, 10.5);
+    if (LOGO) doc.addImage(LOGO.url, 'JPEG', 12, 6, 9, 9 * LOGO.r); doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(HEAD); doc.text('Yayasan PRCF Indonesia - Pantau Rimbak', 24, 10.5);
     doc.setFont('helvetica', 'normal'); doc.setTextColor(MUTED); doc.text(pdfTxt(`${SITE ? SITE.hd_nama : ''} | ${M.periodeTxt}`), w - 12, 10.5, { align: 'right' }); doc.setDrawColor(LINE); doc.setLineWidth(0.3); doc.line(12, 15.5, w - 12, 15.5);
     doc.setFontSize(7.5); doc.text(pdfTxt(`${M.title} | ${M.periodeTxt}`).slice(0, 150), 12, h - 8); doc.text(`Halaman ${i} dari ${n}`, w - 12, h - 8, { align: 'right' }); }
   doc.save(fname(M, 'pdf')); return n;
@@ -627,14 +627,14 @@ async function exportDOCX(M, F, T) {
   const TB = (t, size = 15, stat) => new d.Table({ width: { size: 100, type: d.WidthType.PERCENTAGE }, rows: t.map((r, i) => new d.TableRow({ tableHeader: i === 0, children: r.map((v, j) => cell(v, { size, bold: i === 0 || (stat && j === 2), color: i === 0 ? 'FFFFFF' : stat && j === 2 ? (v === 'Sesuai' ? '1E6B3E' : 'B3261E') : undefined, fill: i === 0 ? '22382B' : i % 2 === 0 ? 'F1F4F1' : undefined })) })) });
   const BLKd = b => [H(b.h), ...b.p.map(x => P(x)), ...b.t.flatMap(t => [CAPd(t.cap), TB(t.rows, t.rows[0].length > 7 ? 13 : 15), ...(t.note ? [P(t.note, { size: 16, color: '5B6A61' })] : []), P('')])];
   let logoBuf = null; if (LOGO) { const bl = await new Promise(ok => LOGO.c.toBlob(ok, 'image/jpeg', 0.95)); logoBuf = await bl.arrayBuffer(); }
-  const head = () => new d.Header({ children: [new d.Paragraph({ border: { bottom: { style: d.BorderStyle.SINGLE, size: 4, color: 'D3DBD5', space: 4 } }, tabStops: [{ type: d.TabStopType.RIGHT, position: 9900 }], children: [...(logoBuf ? [new d.ImageRun({ data: logoBuf, transformation: { width: 30, height: Math.round(30 * LOGO.r) } }), run('  ')] : []), run('Yayasan PRCF Indonesia – Fire Hotspot', { size: 15, bold: true, color: '22382B' }), run(`\t${SITE ? SITE.hd_nama + ' | ' : ''}${M.periodeTxt}`, { size: 15, color: '5B6A61' })] })] });
+  const head = () => new d.Header({ children: [new d.Paragraph({ border: { bottom: { style: d.BorderStyle.SINGLE, size: 4, color: 'D3DBD5', space: 4 } }, tabStops: [{ type: d.TabStopType.RIGHT, position: 9900 }], children: [...(logoBuf ? [new d.ImageRun({ data: logoBuf, transformation: { width: 30, height: Math.round(30 * LOGO.r) } }), run('  ')] : []), run('Yayasan PRCF Indonesia – Pantau Rimbak', { size: 15, bold: true, color: '22382B' }), run(`\t${SITE ? SITE.hd_nama + ' | ' : ''}${M.periodeTxt}`, { size: 15, color: '5B6A61' })] })] });
   const foot = () => new d.Footer({ children: [new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [run(`${M.title} | Halaman `, { size: 15, color: '5B6A61' }), new d.TextRun({ children: [d.PageNumber.CURRENT], font: 'Arial', size: 15, color: '5B6A61' })] })] });
   const K = kpis(M), bad = M.checks.filter(c => c[2] !== 'Sesuai').length;
   const kpiT = new d.Table({ width: { size: 100, type: d.WidthType.PERCENTAGE }, rows: [0, 1].map(r => new d.TableRow({ children: K.slice(r * 4, r * 4 + 4).map(([k, v]) => cell([new d.Paragraph({ children: [run(v, { size: 28, bold: true, color: '1D2A22' })] }), new d.Paragraph({ children: [run(k, { size: 15, color: '5B6A61' })] })], { fill: 'F6F8F6', w: 25 })) })) });
   const cover = [
     ...(logoBuf ? [new d.Paragraph({ children: [new d.ImageRun({ data: logoBuf, transformation: { width: 120, height: Math.round(120 * LOGO.r) } })] })] : []),
     new d.Paragraph({ children: [run('Yayasan PRCF Indonesia', { bold: true, size: 26, color: '22382B' })] }),
-    new d.Paragraph({ children: [run('Fire Hotspot · Sistem Pemantauan Titik Panas Hutan Desa, Kabupaten Kapuas Hulu', { size: 17, color: '5B6A61' })], border: { bottom: { style: d.BorderStyle.SINGLE, size: 12, color: '22382B', space: 6 } }, spacing: { after: 600 } }),
+    new d.Paragraph({ children: [run('Pantau Rimbak · Sistem Pemantauan Titik Panas Hutan Desa, Kabupaten Kapuas Hulu', { size: 17, color: '5B6A61' })], border: { bottom: { style: d.BorderStyle.SINGLE, size: 12, color: '22382B', space: 6 } }, spacing: { after: 600 } }),
     new d.Paragraph({ children: [run('LAPORAN PEMANTAUAN TITIK PANAS & KEBAKARAN', { bold: true, size: 18, color: '5B6A61' })] }),
     new d.Paragraph({ children: [run(SITE ? SITE.hd_nama : M.title, { bold: true, size: 44, color: '22382B' })], spacing: { after: 80 } }),
     new d.Paragraph({ children: [run(`Periode ${M.periodeTxt}`, { size: 24 })], spacing: { after: 300 } }),
@@ -661,7 +661,7 @@ async function exportDOCX(M, F, T) {
   const end = [H('Lampiran B. Verifikasi data', false), P('Pemeriksaan konsistensi otomatis atas data yang masuk ke laporan ini, dijalankan saat laporan dibuat.', { size: 17, color: '5B6A61' }), TB(T.cek, 16, true),
     H('Lampiran C. Kamus data', false), TB(T.kamus, 16), H('Lampiran D. Sumber data, metode & jejak audit', false), ...sources(M).map(([k, v]) => new d.Paragraph({ spacing: { after: 100 }, children: [run(k + '. ', { bold: true, size: 18 }), run(v, { size: 18 })] }))];
   const pg = { margin: { top: 1100, bottom: 1000, left: 1000, right: 1000 } };
-  const docx = new d.Document({ creator: 'Yayasan PRCF Indonesia – Fire Hotspot', title: TR(M.title), features: { updateFields: true }, styles: { paragraphStyles: [{ id: 'Heading1', name: 'Heading 1', basedOn: 'Normal', next: 'Normal', quickFormat: true, run: { font: 'Arial', size: 26, bold: true, color: '22382B' }, paragraph: { outlineLevel: 0, spacing: { before: 240, after: 120 } } }] },
+  const docx = new d.Document({ creator: 'Yayasan PRCF Indonesia – Pantau Rimbak', title: TR(M.title), features: { updateFields: true }, styles: { paragraphStyles: [{ id: 'Heading1', name: 'Heading 1', basedOn: 'Normal', next: 'Normal', quickFormat: true, run: { font: 'Arial', size: 26, bold: true, color: '22382B' }, paragraph: { outlineLevel: 0, spacing: { before: 240, after: 120 } } }] },
     sections: [{ properties: { page: pg }, children: cover }, { properties: { page: pg }, headers: { default: head() }, footers: { default: foot() }, children: toc },
       { properties: { page: pg }, headers: { default: head() }, footers: { default: foot() }, children: main },
       { properties: { page: { ...pg, size: { orientation: d.PageOrientation.LANDSCAPE } } }, headers: { default: head() }, footers: { default: foot() }, children: app },

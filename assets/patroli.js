@@ -1,4 +1,4 @@
-/* Fire Hotspot – PATROLI & TEMUAN (v9)
+/* Pantau Rimbak – PATROLI & TEMUAN (v9)
  * 1) Catat temuan patroli: api, penebangan, perburuan/jerat, perambahan, satwa, tumbuhan, patok, sampah – foto (maks. 3), GPS, waktu.
  *    Disimpan dulu di HP (IndexedDB 'fh-patroli'), lalu terkirim otomatis ke Google Sheets PRCF (lembar "Temuan Patroli") saat ada sinyal.
  * 2) Temuan: daftar & peta temuan sendiri (admin: semua tim) + unduh CSV / GeoJSON.
@@ -62,7 +62,7 @@ function formTemuan(box) {
   if (navigator.geolocation) wid = navigator.geolocation.watchPosition(g => { const c = g.coords; if (pos && pos.ak < c.accuracy && Date.now() - pos.t < 6e4) return; pos = { la: c.latitude, lo: c.longitude, ak: c.accuracy, t: Date.now() };
     $('#pGps').innerHTML = `📍 ${pos.la.toFixed(5)}, ${pos.lo.toFixed(5)} <b>(±${Math.round(pos.ak)} m)</b>${pos.ak > 50 ? ' <span class="fa-err">– tunggu sebentar agar GPS lebih akurat</span>' : ''}`; cek(); },
     () => { $('#pGps').innerHTML = '<span class="fa-err">GPS tidak tersedia – aktifkan lokasi HP untuk mencatat temuan.</span>'; }, { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 });
-  kirim.onclick = () => A.perlu('Masuk dengan akun Fire Hotspot untuk mencatat temuan patroli.', async () => {
+  kirim.onclick = () => A.perlu('Masuk dengan akun Pantau Rimbak untuk mencatat temuan patroli.', async () => {
     kirim.disabled = true; kirim.textContent = 'Menyimpan…';
     let wil = ''; try { if (window.FHWilayah) { const w = await FHWilayah.lookup(pos.la, pos.lo); wil = w ? FHWilayah.label(w) : ''; } } catch (e) { }
     const uid = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2), wk = Date.parse($('#pWkt').value) || Date.now();
@@ -163,9 +163,9 @@ function tampil(out, R) {
    <div class="fa-row"><button class="fa-btn pri" style="--c:#1D4ED8" id="rDoc">Word</button><button class="fa-btn pri" style="--c:#B3261E" id="rPdf">PDF</button><button class="fa-btn" id="rGpx">GPX</button></div>
    <div class="fa-2"><div class="fa-card"><h4>Perjalanan</h4><div class="fa-scroll"><table class="fa-tbl"><tr><th>Mulai</th><th>Durasi</th><th>Jarak</th></tr>${R.trip.map(t => `<tr><td>${esc(A.wib(t.mulai))}</td><td>${jam(t.jam)}</td><td class="n">${n1(t.km, 2)} km</td></tr>`).join('') || '<tr><td colspan="3">–</td></tr>'}</table></div></div>
    <div class="fa-card"><h4>Temuan</h4>${Object.entries(R.per).map(([k, v]) => `<div class="fa-bar"><span>${esc(k)}</span><i style="width:${v / Math.max(...Object.values(R.per)) * 50}%;background:${WARNA[k]}"></i><b>${v}</b></div>`).join('') || '<p class="fa-note">Tidak ada temuan tercatat.</p>'}</div></div>
-   <p class="fa-note">Metode: jarak = jumlah jarak antartitik GPS berurutan (rumus haversine); titik dengan akurasi > 100 m dan loncatan > 150 km/jam diabaikan; jeda > 30 menit memisahkan perjalanan. Luas jelajah = jumlah sel ±100 m × 100 m yang dilalui. Sumber: jejak GPS aplikasi Fire Hotspot.</p></div>`;
+   <p class="fa-note">Metode: jarak = jumlah jarak antartitik GPS berurutan (rumus haversine); titik dengan akurasi > 100 m dan loncatan > 150 km/jam diabaikan; jeda > 30 menit memisahkan perjalanan. Luas jelajah = jumlah sel ±100 m × 100 m yang dilalui. Sumber: jejak GPS aplikasi Pantau Rimbak.</p></div>`;
   setTimeout(() => peta(out.querySelector('#rMap'), R.trip.map(t => t.pts.map(p => [p.la, p.lo])), R.temuan), 60);
-  out.querySelector('#rGpx').onclick = () => { const g = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Fire Hotspot – Yayasan PRCF Indonesia" xmlns="http://www.topografix.com/GPX/1/1">\n${R.temuan.map(t => `<wpt lat="${t.la}" lon="${t.lo}"><time>${new Date(t.t).toISOString()}</time><name>${esc(t.jenis)}</name><desc>${esc([t.rincian, t.jumlah, t.spesies].filter(Boolean).join(' · '))}</desc></wpt>`).join('\n')}\n${R.trip.map((t, i) => `<trk><name>Patroli ${i + 1}</name><trkseg>${t.pts.map(p => `<trkpt lat="${p.la}" lon="${p.lo}"><time>${new Date(p.t).toISOString()}</time></trkpt>`).join('')}</trkseg></trk>`).join('\n')}\n</gpx>`;
+  out.querySelector('#rGpx').onclick = () => { const g = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Pantau Rimbak – Yayasan PRCF Indonesia" xmlns="http://www.topografix.com/GPX/1/1">\n${R.temuan.map(t => `<wpt lat="${t.la}" lon="${t.lo}"><time>${new Date(t.t).toISOString()}</time><name>${esc(t.jenis)}</name><desc>${esc([t.rincian, t.jumlah, t.spesies].filter(Boolean).join(' · '))}</desc></wpt>`).join('\n')}\n${R.trip.map((t, i) => `<trk><name>Patroli ${i + 1}</name><trkseg>${t.pts.map(p => `<trkpt lat="${p.la}" lon="${p.lo}"><time>${new Date(p.t).toISOString()}</time></trkpt>`).join('')}</trkseg></trk>`).join('\n')}\n</gpx>`;
     A.dl(new Blob([g], { type: 'application/gpx+xml' }), fn(R, 'gpx')); };
   out.querySelector('#rPdf').onclick = () => pdf(R).catch(e => A.toast(e.message));
   out.querySelector('#rDoc').onclick = () => word(R).catch(e => A.toast(e.message));
@@ -175,7 +175,7 @@ function baris(R) { const A = X(), n1 = A.n1;
   return { ring: [['Jarak tempuh', n1(R.km, 2) + ' km'], ['Durasi patroli', `${Math.floor(R.jam)} j ${Math.round(R.jam % 1 * 60)} m`], ['Hari patroli', String(R.hari)], ['Jumlah perjalanan', String(R.trip.length)], ['Luas jelajah (sel 1 ha)', n1(R.ha, 0) + ' ha'], ['Titik GPS', n1(R.npts, 0)], ['Jumlah temuan', String(R.temuan.length)]],
     trip: R.trip.map((t, i) => [String(i + 1), A.wib(t.mulai), A.wib(t.selesai), n1(t.km, 2) + ' km', String(t.n)]),
     tem: R.temuan.map(t => [A.wib(t.t), t.jenis, [t.rincian, t.jumlah, t.spesies].filter(Boolean).join(' · '), t.tindakan || '', `${t.la.toFixed(5)}, ${t.lo.toFixed(5)}`]) }; }
-const METODE = 'Metode: jarak = jumlah jarak antartitik GPS berurutan (haversine); titik dengan akurasi > 100 m dan loncatan > 150 km/jam diabaikan; jeda > 30 menit memisahkan perjalanan. Luas jelajah = jumlah sel ±100 m × 100 m yang dilalui. Sumber: jejak GPS aplikasi Fire Hotspot (disimpan maks. 30 hari, UU 27/2022) dan temuan patroli yang dicatat tim.';
+const METODE = 'Metode: jarak = jumlah jarak antartitik GPS berurutan (haversine); titik dengan akurasi > 100 m dan loncatan > 150 km/jam diabaikan; jeda > 30 menit memisahkan perjalanan. Luas jelajah = jumlah sel ±100 m × 100 m yang dilalui. Sumber: jejak GPS aplikasi Pantau Rimbak (disimpan maks. 30 hari, UU 27/2022) dan temuan patroli yang dicatat tim.';
 async function pdf(R) {
   const A = X(); await A.lib(A.JSPDF); await A.lib(A.AUTOTABLE); const { jsPDF } = window.jspdf, doc = new jsPDF({ unit: 'mm', format: 'a4' }); if (window.FHLang) FHLang.pdf(doc);
   const B = baris(R); let y = 18;
@@ -187,7 +187,7 @@ async function pdf(R) {
   doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.text('Temuan patroli', 16, y); y += 3;
   doc.autoTable({ startY: y, head: [['Waktu', 'Jenis', 'Rincian', 'Tindakan', 'Koordinat']], body: B.tem.length ? B.tem : [['–', '–', '–', '–', '–']], theme: 'striped', headStyles: { fillColor: [180, 83, 9] }, styles: { fontSize: 8 }, margin: { left: 16, right: 16 } }); y = doc.lastAutoTable.finalY + 8;
   doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(90); doc.text(doc.splitTextToSize(METODE, 178), 16, Math.min(y, 270));
-  const np = doc.getNumberOfPages(); for (let i = 1; i <= np; i++) { doc.setPage(i); doc.setFontSize(7.5); doc.setTextColor(120); doc.text(`Fire Hotspot · Yayasan PRCF Indonesia · dibuat ${A.wib(Date.now())} · ${i}/${np}`, 16, 290); }
+  const np = doc.getNumberOfPages(); for (let i = 1; i <= np; i++) { doc.setPage(i); doc.setFontSize(7.5); doc.setTextColor(120); doc.text(`Pantau Rimbak · Yayasan PRCF Indonesia · dibuat ${A.wib(Date.now())} · ${i}/${np}`, 16, 290); }
   doc.save(fn(R, 'pdf'));
 }
 async function word(R) {
@@ -196,12 +196,12 @@ async function word(R) {
   const p = (t, o = {}) => new d.Paragraph({ children: [run(t, o)], spacing: { after: 120 }, heading: o.h });
   const cell = (t, h) => new d.TableCell({ children: [new d.Paragraph({ children: [run(t, { bold: h, size: 18, color: h ? 'FFFFFF' : undefined })] })], shading: h ? { fill: '1E7A58' } : undefined, margins: { top: 60, bottom: 60, left: 90, right: 90 } });
   const tbl = (H, rows) => new d.Table({ width: { size: 100, type: d.WidthType.PERCENTAGE }, rows: [new d.TableRow({ tableHeader: true, children: H.map(h => cell(h, true)) }), ...(rows.length ? rows : [H.map(() => '–')]).map(r => new d.TableRow({ children: r.map(c => cell(c)) }))] });
-  const doc = new d.Document({ creator: 'Yayasan PRCF Indonesia – Fire Hotspot', title: TR('Rekap Patroli'), sections: [{ children: [
+  const doc = new d.Document({ creator: 'Yayasan PRCF Indonesia – Pantau Rimbak', title: TR('Rekap Patroli'), sections: [{ children: [
     p('Rekap Patroli', { bold: true, size: 36, color: '0B3B2C', h: d.HeadingLevel.TITLE }), p(`${R.nama} · ${A.tgl(R.dari)} – ${A.tgl(R.smp)}${R.hd ? ' · ' + R.hd : ''}`, { color: '55665D' }),
     p('Ringkasan', { bold: true, size: 26, h: d.HeadingLevel.HEADING_1 }), tbl(['Indikator', 'Nilai'], B.ring),
     p('Perjalanan', { bold: true, size: 26, h: d.HeadingLevel.HEADING_1 }), tbl(['No', 'Mulai', 'Selesai', 'Jarak', 'Titik GPS'], B.trip),
     p('Temuan patroli', { bold: true, size: 26, h: d.HeadingLevel.HEADING_1 }), tbl(['Waktu', 'Jenis', 'Rincian', 'Tindakan', 'Koordinat'], B.tem),
-    p(''), p(METODE, { size: 16, color: '55665D' }), p(`Fire Hotspot · Yayasan PRCF Indonesia · dibuat ${A.wib(Date.now())}`, { size: 16, color: '888888' })] }] });
+    p(''), p(METODE, { size: 16, color: '55665D' }), p(`Pantau Rimbak · Yayasan PRCF Indonesia · dibuat ${A.wib(Date.now())}`, { size: 16, color: '888888' })] }] });
   A.dl(await d.Packer.toBlob(doc), fn(R, 'docx'));
 }
 

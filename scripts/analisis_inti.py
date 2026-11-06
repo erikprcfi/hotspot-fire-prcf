@@ -1,5 +1,5 @@
 """
-Inti analisis area (poligon) – Fire Hotspot PRCF, dataset resmi UMD & WRI
+Inti analisis area (poligon) – Pantau Rimbak PRCF, dataset resmi UMD & WRI
 =======================================================================================================
 Dipakai untuk 6 Hutan Desa (scripts/karbon_lahan.py) DAN untuk SHP yang diunggah pengguna (scripts/analisis_antrean.py),
 sehingga cara hitungnya identik. Semua dihitung langsung dari raster/arsip resmi (tanpa estimasi buatan):

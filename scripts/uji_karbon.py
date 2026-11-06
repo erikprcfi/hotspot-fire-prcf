@@ -1,5 +1,5 @@
 """
-Uji otomatis perhitungan emisi karbon FREL – Fire Hotspot PRCF
+Uji otomatis perhitungan emisi karbon FREL – Pantau Rimbak PRCF
 ==============================================================
 1. RUMUS: rumus sheet Awal & Manfaat (ditulis ulang di sini secara independen) dibandingkan dengan nilai hasil Excel
    templat "PERHITUNGAN KARBON" PRCF (scripts/uji/templat_karbon_prcf.json, nilai terhitung dari file Excel aslinya).

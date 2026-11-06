@@ -1,5 +1,5 @@
 """
-Basis pengetahuan resmi untuk asisten AI "Bara Api" – Fire Hotspot PRCF
+Basis pengetahuan resmi untuk asisten AI "Bara Api" – Pantau Rimbak PRCF
 Mengunduh teks peraturan dari situs RESMI pemerintah, memecahnya per Pasal, dan menyimpan
 data/bara/kb.json (dipakai untuk mencari pasal yang relevan sebelum AI menjawab, lalu dikutip).
 Dijalankan GitHub Actions (.github/workflows/kb.yml). Setiap berkas dicatat URL, waktu unduh & SHA-256.

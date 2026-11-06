@@ -1,5 +1,5 @@
 """
-Kehilangan tutupan pohon tahunan 2001–2025 per lokasi – Fire Hotspot PRCF
+Kehilangan tutupan pohon tahunan 2001–2025 per lokasi – Pantau Rimbak PRCF
 ==========================================================================
 Sumber: Hansen/UMD/Google/USGS/NASA Global Forest Change v1.13 (2000–2025), Hansen et al. 2013, Science 342:850–853.
 https://storage.googleapis.com/earthenginepartners-hansen/GFC-2025-v1.13/download.html  (data terbuka, CC BY 4.0)

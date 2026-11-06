@@ -1,4 +1,4 @@
-/* Mode 3D / globe – Fire Hotspot PRCF
+/* Mode 3D / globe – Pantau Rimbak PRCF
  * MapLibre GL (globe + relief medan 3D). Semua data dari sumber resmi:
  *   titik panas  : NASA FIRMS (data/hotspots.json, nilai asli; tinggi kolom = FRP)
  *   relief       : AWS Terrain Tiles (Mapzen; SRTM/GMTED/NED, data terbuka)

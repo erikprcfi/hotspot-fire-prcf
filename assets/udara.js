@@ -1,4 +1,4 @@
-/* Kualitas udara & asap per desa – Fire Hotspot PRCF
+/* Kualitas udara & asap per desa – Pantau Rimbak PRCF
  * Data: Copernicus Atmosphere Monitoring Service (CAMS) global (ECMWF), diolah di data/prakiraan.json
  * Kategori PM2.5 (rata-rata 24 jam) mengikuti BMKG.
  */

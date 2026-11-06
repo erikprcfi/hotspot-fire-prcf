@@ -1,4 +1,4 @@
-/* Citra satelit dasar – Fire Hotspot PRCF
+/* Citra satelit dasar – Pantau Rimbak PRCF
  *  s2026 : Sentinel-2 L2A (ESA Copernicus) komposit MEDIAN bebas awan dari citra 6 bulan terakhir (hingga hari ini),
  *          10 m, dirender oleh Microsoft Planetary Computer (data terbuka). Selalu citra terbaru tahun berjalan.
  *  eox   : Sentinel-2 cloudless 2025 (EOX IT Services, CC BY-NC-SA 4.0), mosaik tahunan 10 m.

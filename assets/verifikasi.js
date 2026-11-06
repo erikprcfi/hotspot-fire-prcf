@@ -1,4 +1,4 @@
-/* Laporan verifikasi lapangan titik panas – Fire Hotspot PRCF
+/* Laporan verifikasi lapangan titik panas – Pantau Rimbak PRCF
  * Tim patroli mencatat hasil cek lapangan (api aktif / bekas terbakar / bukan api …), foto, GPS pelapor & tindakan.
  * Disimpan dulu di HP (IndexedDB, tetap aman tanpa sinyal) lalu dikirim otomatis ke Google Sheets PRCF saat ada internet.
  * Penerima: Google Apps Script (Verifikasi_Lapangan.gs). Ringkasan publik (tanpa data pribadi) untuk tanda "sudah dicek" di peta.

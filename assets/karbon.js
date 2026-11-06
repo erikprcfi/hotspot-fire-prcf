@@ -1,4 +1,4 @@
-/* Fire Hotspot – EMISI KARBON (FREL) per Hutan Desa, periode & tahun pilihan
+/* Pantau Rimbak – EMISI KARBON (FREL) per Hutan Desa, periode & tahun pilihan
  * Rumus & tata letak SAMA dengan templat "PERHITUNGAN KARBON" PRCF (sheet Parameter – Awal – Manfaat):
  *   Parameter : kepadatan karbon FREL 2022 (biomassa AGB+BGB × 0,47; hutan = nilai Kalimantan, non-hutan = nasional),
  *               keefektifan proyek 90%, kebocoran 5%, penyangga risiko 13,5%, faktor konversi C→CO2 = 44/12
@@ -161,7 +161,7 @@ const METODE = ['Kepadatan karbon: FREL 2022 (FRL ke-2 Indonesia, KLHK), biomass
 /* ---------- Excel: tata letak & rumus templat ---------- */
 async function excel(H) {
   const A = X(); await A.lib('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js'); const wb = new window.ExcelJS.Workbook(), P = H.P, o = H.o, n = H.HD.length;
-  wb.creator = 'Yayasan PRCF Indonesia – Fire Hotspot'; const per = o.y0 === o.y1 ? String(o.y0) : `${o.y0}–${o.y1}`;
+  wb.creator = 'Yayasan PRCF Indonesia – Pantau Rimbak'; const per = o.y0 === o.y1 ? String(o.y0) : `${o.y0}–${o.y1}`;
   const TH = { style: 'thin', color: { argb: 'FFBFBFBF' } }, BD = { top: TH, left: TH, bottom: TH, right: TH };
   const put = (ws, a, v, st = {}) => { const c = ws.getCell(a); c.value = v; c.font = Object.assign({ name: 'Segoe UI', size: 10 }, st.font || {}); c.border = BD; if (st.fmt) c.numFmt = st.fmt; c.alignment = Object.assign({ vertical: 'middle', wrapText: !!st.wrap }, st.al || {}); if (st.fill) c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: st.fill } }; return c; };
   const IN = { font: { color: { argb: 'FF7030A0' } } }, FO = { font: { color: { argb: 'FF002060' } } }, HD_ = { font: { name: 'Segoe UI Semibold' }, al: { horizontal: 'center' }, wrap: true };
@@ -177,7 +177,7 @@ async function excel(H) {
   p.getCell('A19').value = 'Sumber kepadatan karbon: FREL 2022 (FRL ke-2 Indonesia, KLHK), biomassa AGB+BGB × fraksi karbon 0,47; hutan = nilai Kalimantan, non-hutan = nilai nasional.';
   const I = H.info || {};
   p.getCell('A20').value = I.lokal ? `Tutupan lahan & data aktivitas: ${I.nama} – ${I.sumber}. Lahan terdeforestasi = PLK bercampur semak (lahan kering) / belukar rawa (rawa).` : 'Tutupan lahan: Peta Penutupan Lahan KLHK 2020 (1:250.000) + kehilangan tutupan pohon tahunan Hansen GFC v1.13 (tahun berjalan: Sentinel-2). Lahan terdeforestasi = PLK bercampur semak (lahan kering) / belukar rawa (rawa).';
-  p.getCell('A21').value = `Data aktivitas ${per} sama dengan alat Tutupan lahan (satu basis data). Dibuat otomatis oleh Fire Hotspot – Yayasan PRCF Indonesia, ${A.wib(Date.now())}.`;
+  p.getCell('A21').value = `Data aktivitas ${per} sama dengan alat Tutupan lahan (satu basis data). Dibuat otomatis oleh Pantau Rimbak – Yayasan PRCF Indonesia, ${A.wib(Date.now())}.`;
   /* Awal */
   const a = wb.addWorksheet('Awal'); [24.53, 27.06, 15.47, 9.26, 9.2, 9.2, 12.06, 13.2, 9.86, 10.53, 48.2].forEach((w, i) => a.getColumn(i + 1).width = w);
   a.mergeCells('A1:A2'); a.mergeCells('B1:B2'); a.mergeCells('C1:D1'); a.mergeCells('E1:F1'); a.mergeCells('G1:H1'); a.mergeCells('I1:J1'); a.mergeCells('E2:F2');
@@ -252,13 +252,13 @@ async function word(H) {
   const p = (t, o = {}) => new d.Paragraph({ children: [run(t, o)], spacing: { after: 120 } });
   const cell = (t, h) => new d.TableCell({ children: [new d.Paragraph({ children: [run(t, { bold: h, size: 17, color: h ? 'FFFFFF' : undefined })] })], shading: h ? { fill: '1F4E3D' } : undefined, margins: { top: 50, bottom: 50, left: 80, right: 80 } });
   const tbl = (Hd, rows) => new d.Table({ width: { size: 100, type: d.WidthType.PERCENTAGE }, rows: [new d.TableRow({ tableHeader: true, children: Hd.map(h => cell(h, true)) }), ...rows.map(r => new d.TableRow({ children: r.map(c => cell(c)) }))] });
-  const doc = new d.Document({ creator: 'Yayasan PRCF Indonesia – Fire Hotspot', sections: [{ children: [
+  const doc = new d.Document({ creator: 'Yayasan PRCF Indonesia – Pantau Rimbak', sections: [{ children: [
     p('Perhitungan Emisi Karbon Hutan Desa', { bold: true, size: 36, color: '1F4E3D' }), p(`Periode ${per} · ${H.HD.map(x => x.nama).join(', ')} · sumber tutupan lahan: ${(H.info && H.info.nama) || ''}`, { color: '55665D' }),
     p('1. Ringkasan', { bold: true, size: 26 }), tbl(['Indikator', 'Nilai'], B.ring),
     p(''), p('2. Per Hutan Desa', { bold: true, size: 26 }), tbl(['Hutan Desa', 'Emisi awal (Mg CO2/thn)', 'Manfaat (Mg CO2/thn)', 'Dapat dijual (Mg CO2/thn)', 'Hutan terlindungi (ha)'], B.hd),
     p(''), p('3. Luas & pengurangan cadangan karbon (sheet Awal)', { bold: true, size: 26 }), tbl(['Hutan Desa', 'Tipe hutan', `Luas ${H.o.y0} (ha)`, 'Deforestasi (ha)', 'Degradasi (ha)', `Luas ${H.o.y1} (ha)`, 'Pengurangan C (Mg C)'], B.awal),
     p(''), p('4. Rumus & metode', { bold: true, size: 26 }), p('Emisi (Mg CO2) = Σ [Luas deforestasi × (stok hutan − stok lahan terdeforestasi) + Luas degradasi × (stok primer − stok sekunder)] × 44/12.'),
-    ...metodeK(H).map(x => p('• ' + x, { size: 18, color: '55665D' })), p(`Fire Hotspot · Yayasan PRCF Indonesia · dibuat ${A.wib(Date.now())}`, { size: 16, color: '888888' })] }] });
+    ...metodeK(H).map(x => p('• ' + x, { size: 18, color: '55665D' })), p(`Pantau Rimbak · Yayasan PRCF Indonesia · dibuat ${A.wib(Date.now())}`, { size: 16, color: '888888' })] }] });
   A.dl(await d.Packer.toBlob(doc), fn(H, 'docx'));
 }
 async function pdf(H) {
@@ -271,7 +271,7 @@ async function pdf(H) {
   y = T(y, ['Hutan Desa', 'Tipe hutan', `Luas ${H.o.y0}`, 'Deforestasi', 'Degradasi', `Luas ${H.o.y1}`, 'Pengurangan C (Mg C)'], B.awal, 7.4);
   if (y > 240) { doc.addPage(); y = 20; } doc.setFontSize(8); doc.setTextColor(70);
   [a('Rumus: Emisi (Mg CO2) = Sum [Luas deforestasi x (stok hutan - stok lahan terdeforestasi) + Luas degradasi x (stok primer - stok sekunder)] x 44/12.'), ...metodeK(H).map(a)].forEach(t => { const L = doc.splitTextToSize(t, 178); if (y + L.length * 3.6 > 285) { doc.addPage(); y = 20; } doc.text(L, 16, y); y += L.length * 3.6 + 1.5; });
-  const np = doc.getNumberOfPages(); for (let i = 1; i <= np; i++) { doc.setPage(i); doc.setFontSize(7.5); doc.setTextColor(120); doc.text(`Fire Hotspot · Yayasan PRCF Indonesia · ${A.wib(Date.now())} · ${i}/${np}`, 16, 290); }
+  const np = doc.getNumberOfPages(); for (let i = 1; i <= np; i++) { doc.setPage(i); doc.setFontSize(7.5); doc.setTextColor(120); doc.text(`Pantau Rimbak · Yayasan PRCF Indonesia · ${A.wib(Date.now())} · ${i}/${np}`, 16, 290); }
   doc.save(fn(H, 'pdf'));
 }
 /* ringkasan untuk laporan umum, indikator, dll.: satu Hutan Desa, periode pilihan, sumber tutupan lahan utama (atau sid) */

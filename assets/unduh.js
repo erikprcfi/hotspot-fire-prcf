@@ -1,4 +1,4 @@
-/* Unduh data terpilih – Fire Hotspot PRCF
+/* Unduh data terpilih – Pantau Rimbak PRCF
  * Pengguna memilih: jenis data, wilayah, tahun, format → satu file.
  * File siap pakai dari server dipakai bila cocok (semua tahun, radius 25 km); selain itu file disusun
  * langsung di browser dari basis data yang sama (data/web/TAHUN.json, data/kejadian.json, dll.).

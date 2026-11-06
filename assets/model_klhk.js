@@ -1,4 +1,4 @@
-/* Fire Hotspot – MODEL TUTUPAN LAHAN TAHUNAN berbasis Peta Penutupan Lahan KLHK (acuan) + citra satelit tiap tahun
+/* Pantau Rimbak – MODEL TUTUPAN LAHAN TAHUNAN berbasis Peta Penutupan Lahan KLHK (acuan) + citra satelit tiap tahun
  * Dipakai bersama oleh alat "Tutupan lahan (KLHK)" dan "Emisi karbon (FREL)" sehingga angkanya selalu sama.
  *
  * Acuan: Peta Penutupan Lahan KLHK tahun t (saat ini PL 2020, 1:250.000). Peta tahun t = kondisi AWAL tahun t (konvensi RC2:

@@ -1,4 +1,4 @@
-/* Fire Hotspot – PATROLI ala SMART Mobile (bekerja TANPA SINYAL)
+/* Pantau Rimbak – PATROLI ala SMART Mobile (bekerja TANPA SINYAL)
  * Alur: Mulai patroli (Info umum tallysheet) → rekam TRACK GPS (APK: tetap merekam saat layar mati) → ambil WAYPOINT dengan
  * formulir tallysheet PRCF: (1) keanekaragaman hayati – perjumpaan satwa, tanda satwa, tumbuhan, perburuan & gangguan;
  * (2) penyebab deforestasi & degradasi hutan; (3) fitur – pal batas, lanting, menara pantau → Selesai.
@@ -38,7 +38,7 @@ function onFix(t, la, lo, ak, alt, v) {
 function gpsMulai() {
   if (W != null || WN != null) return;
   if (NAT()) { const BG = FHNative.plugin('BackgroundGeolocation');
-    WN = 'menunggu'; Promise.resolve(BG.addWatcher({ backgroundTitle: 'Patroli Fire Hotspot', backgroundMessage: 'Merekam track patroli (GPS, tanpa internet)', requestPermissions: true, stale: false, distanceFilter: 5 },
+    WN = 'menunggu'; Promise.resolve(BG.addWatcher({ backgroundTitle: 'Patroli Pantau Rimbak', backgroundMessage: 'Merekam track patroli (GPS, tanpa internet)', requestPermissions: true, stale: false, distanceFilter: 5 },
       (l, e) => { if (l) onFix(l.time || Date.now(), l.latitude, l.longitude, l.accuracy || 99, l.altitude, l.speed); })).then(id => WN = id).catch(() => { WN = null; webGps(); }); }
   else webGps();
   try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(l => LOCK = l).catch(() => { }); } catch (e) { }
@@ -216,7 +216,7 @@ function gpx(p) {
     <extensions><fh:kategori_smart>${xe(w.kat)}</fh:kategori_smart><fh:akurasi_m>${w.ak}</fh:akurasi_m>${idFoto(p, w).map(f => `<fh:foto>${xe(f)}</fh:foto>`).join('')}</extensions></wpt>`).join('\n');
   const tk = p.track.map(x => `      <trkpt lat="${x[1]}" lon="${x[2]}">${x[4] != null ? `<ele>${x[4]}</ele>` : ''}<time>${iso(x[0])}</time></trkpt>`).join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="Fire Hotspot – Yayasan PRCF Indonesia" xmlns="http://www.topografix.com/GPX/1/1" xmlns:fh="https://erikprcfi.github.io/hotspot-fire-prcf/gpx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+<gpx version="1.1" creator="Pantau Rimbak – Yayasan PRCF Indonesia" xmlns="http://www.topografix.com/GPX/1/1" xmlns:fh="https://erikprcfi.github.io/hotspot-fire-prcf/gpx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
   <metadata><name>${xe(p.info.id_kegiatan)}</name><desc>${xe(`${p.info.stasiun || ''} · ${p.info.tim} · ${p.info.pelaksana.join(', ')} · ${p.info.transportasi} · ${p.info.tujuan}`)}</desc><time>${iso(p.mulai)}</time></metadata>
 ${wp}
   <trk><name>${xe(p.info.id_kegiatan)}</name><trkseg>
@@ -245,7 +245,7 @@ async function ekspor(p, f) {
   if (f === 'pdf') return pdfLap(p);
 }
 async function excel(p) {
-  const A = X(); await A.lib('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js'); const wb = new ExcelJS.Workbook(); wb.creator = 'Yayasan PRCF Indonesia – Fire Hotspot';
+  const A = X(); await A.lib('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js'); const wb = new ExcelJS.Workbook(); wb.creator = 'Yayasan PRCF Indonesia – Pantau Rimbak';
   const TH = { style: 'thin', color: { argb: 'FF000000' } }, BD = { top: TH, left: TH, bottom: TH, right: TH };
   AKAR().forEach(ak => { const KA = kolomAkar(ak.key), kol = ['No WPT', 'WPT', 'ID Foto', 'Kategori', ...KA.map(k => DMD.atribut[k].nama)], n = kol.length, s = wb.addWorksheet(ak.nama.replace(/^Indikator /, '').slice(0, 31));
     s.mergeCells(1, 1, 1, n); s.getCell(1, 1).value = 'Tallysheet ' + ak.nama.toLowerCase(); s.getCell(1, 1).font = { bold: true, size: 13 }; s.getCell(1, 1).alignment = { horizontal: 'center' };
@@ -263,7 +263,7 @@ async function excel(p) {
   [24, 3, 40, 40].forEach((w, i) => iu.getColumn(i + 1).width = w);
   const tk = wb.addWorksheet('Track GPS'); tk.addRow(['No', 'Waktu (WIB)', 'x (bujur)', 'y (lintang)', 'Akurasi (m)', 'Ketinggian (m)']); tk.getRow(1).font = { bold: true }; p.track.forEach((x, i) => tk.addRow([i + 1, wib(x[0]), x[2], x[1], x[3], x[4]]));
   [6, 22, 14, 14, 12, 14].forEach((w, i) => tk.getColumn(i + 1).width = w);
-  wb.addWorksheet('Catatan').addRow(['Koordinat: x = bujur, y = lintang, derajat desimal WGS 1984 (EPSG:4326), dari GPS HP. Kategori & pilihan mengikuti Data Model SMART Nanga Lauk. Dibuat oleh Fire Hotspot – Yayasan PRCF Indonesia, ' + wib(Date.now())]);
+  wb.addWorksheet('Catatan').addRow(['Koordinat: x = bujur, y = lintang, derajat desimal WGS 1984 (EPSG:4326), dari GPS HP. Kategori & pilihan mengikuti Data Model SMART Nanga Lauk. Dibuat oleh Pantau Rimbak – Yayasan PRCF Indonesia, ' + wib(Date.now())]);
   A.dl(new Blob([await wb.xlsx.writeBuffer()], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), nm(p) + '_tallysheet.xlsx');
 }
 async function pdfLap(p) {
@@ -333,7 +333,7 @@ ${ag.map(m => `        <ns2:members givenName="${xe(m.depan)}" familyName="${xe(
 ${hari.map(hariXml).join('\n')}
         <ns2:mandate languageCode="in" value="${xe(I.mandat || '')}"/>
     </ns2:legs>
-    <ns2:comment>${xe('Dibuat dengan aplikasi Fire Hotspot – Yayasan PRCF Indonesia')}</ns2:comment>
+    <ns2:comment>${xe('Dibuat dengan aplikasi Pantau Rimbak – Yayasan PRCF Indonesia')}</ns2:comment>
 </ns2:patrol>
 `;
 }

@@ -1,5 +1,5 @@
 """
-Luas bekas terbakar otomatis dari citra Sentinel-2 – Fire Hotspot PRCF
+Luas bekas terbakar otomatis dari citra Sentinel-2 – Pantau Rimbak PRCF
 ======================================================================
 
 Untuk setiap "musim api" (kejadian api berdekatan waktu, jeda > 75 hari = musim baru) yang

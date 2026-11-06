@@ -1,5 +1,5 @@
 """
-Indeks pencarian lokasi (desa/kelurahan, kecamatan, kab/kota) untuk menu Prakiraan – Fire Hotspot PRCF
+Indeks pencarian lokasi (desa/kelurahan, kecamatan, kab/kota) untuk menu Prakiraan – Pantau Rimbak PRCF
 Sumber: data/wilayah/<prov>.json (batas OCHA COD-AB/BPS-BIG, nama Kepmendagri 2025) yang dibuat scripts/wilayah_build.py.
 Titik tiap desa = titik representatif di dalam poligon desa (shapely.point_on_surface).
 Keluaran: data/wilayah/cari.json  {prov:[nama], kab:[[nama, iprov, lat, lon]], kec:[[nama, ikab, lat, lon]], d:[[nama, ikec, tipe, lat, lon]]}

@@ -1,5 +1,5 @@
 """
-Pembanding INDEPENDEN tutupan lahan tahunan per Hutan Desa – Fire Hotspot PRCF
+Pembanding INDEPENDEN tutupan lahan tahunan per Hutan Desa – Pantau Rimbak PRCF
 ==============================================================================
 Sumber: Impact Observatory, Microsoft & Esri – "10m Annual Land Use Land Cover (9-class) V2" (io-lulc-annual-v02),
 klasifikasi citra Sentinel-2 10 m per tahun (2017–tahun terakhir yang dirilis), lisensi CC BY 4.0, dibaca dari Microsoft Planetary Computer.

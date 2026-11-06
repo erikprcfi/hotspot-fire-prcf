@@ -1,4 +1,4 @@
-/* Fire Hotspot – LAHAN KRITIS per Hutan Desa
+/* Pantau Rimbak – LAHAN KRITIS per Hutan Desa
  * Sumber: Peta Lahan Kritis Kabupaten Kapuas Hulu 2022 (kelas Tidak Kritis, Potensial Kritis, Agak Kritis, Kritis, Sangat Kritis; atribut BPDAS),
  * dipotong tepat di batas Hutan Desa yang sedang dibuka (data/lahan_kritis/<id>_<tahun>.geojson) – unduhan hanya berisi Hutan Desa itu.
  * Ringkasan (data/lahan_kritis/<id>.json, scripts/lahan_kritis.py): luas per kelas (UTM 49N), BPDAS, silang dengan tutupan lahan acuan aplikasi
@@ -53,7 +53,7 @@ function tampil(w, s, R, G) {
   const KOL = [['HD_NAMA', 'C', 60], ['LPHD', 'C', 60], ['TAHUN', 'N', 4, 0], ['KODE', 'N', 2, 0], ['KRITIS', 'C', 30], ['BPDAS', 'C', 40], ['PRIORITAS', 'C', 30], ['SUMBER', 'C', 80], ['LUAS_HA', 'N', 14, 4]];
   w.querySelector('#lkGeo').onclick = () => { A.dl(new Blob([JSON.stringify({ type: 'FeatureCollection', name: nm, features: fitur() })], { type: 'application/geo+json' }), nm + '.geojson'); A.pakai('lahankritis_unduh'); };
   w.querySelector('#lkShp').onclick = async e => { const bt = e.currentTarget; bt.disabled = true; try { if (!window.FHShp) await A.lib('assets/shp.js?v=62');
-      const baca = [`Peta lahan kritis ${s.hd_nama} – ${R.tahun}`, `Dibuat oleh aplikasi Fire Hotspot – Yayasan PRCF Indonesia, ${A.wib(Date.now())}`, '', `Jumlah poligon: ${G.features.length} · luas: ${nf(R.tercakup_ha, 4)} ha · WGS 1984 (EPSG:4326); luas dihitung pada UTM 49N`, '', ...METODE(R),
+      const baca = [`Peta lahan kritis ${s.hd_nama} – ${R.tahun}`, `Dibuat oleh aplikasi Pantau Rimbak – Yayasan PRCF Indonesia, ${A.wib(Date.now())}`, '', `Jumlah poligon: ${G.features.length} · luas: ${nf(R.tercakup_ha, 4)} ha · WGS 1984 (EPSG:4326); luas dihitung pada UTM 49N`, '', ...METODE(R),
         '', 'Kolom: HD_NAMA, LPHD, TAHUN, KODE (1 Tidak Kritis … 5 Sangat Kritis), KRITIS, BPDAS, PRIORITAS (kelas Agak Kritis ke atas – cek tutupan lahan), SUMBER, LUAS_HA.'].map(T_).join('\r\n');
       A.dl(await FHShp.zip([{ nama: nm, fitur: fitur(), kolom: KOL }], { [`BACA_${slug}.txt`]: baca }), `${A.EN() ? 'critical_land_SHP' : 'SHP_lahan_kritis'}_${slug}_${R.tahun}.zip`); A.pakai('lahankritis_unduh'); }
     catch (er) { A.toast(er.message); } finally { bt.disabled = false; } };
@@ -61,7 +61,7 @@ function tampil(w, s, R, G) {
   const rowsP = () => [['Prioritas rehabilitasi (Kritis/Sangat Kritis, bukan hutan)', nf(P.kritis_bukan_hutan_ha || 0)], ['Agak Kritis pada bukan hutan', nf(P.agak_kritis_bukan_hutan_ha || 0)], ['Agak Kritis–Sangat Kritis yang masih berhutan (prioritas perlindungan)', nf(P.kritis_di_hutan_ha || 0)]];
   w.querySelector('#lkCsv').onclick = () => { const L = [['hutan_desa', 'bagian', 'kelas_lahan_kritis', 'tutupan_lahan', 'luas_ha']]; K.forEach(k => L.push([s.hd_nama, 'luas per kelas', k, '', kh[k].toFixed(4)])); SL.forEach(x => L.push([s.hd_nama, 'silang tutupan', x[0], NM(x[1]), x[2].toFixed(4)]));
     A.dl(new Blob([A.csv(L.map((r, i) => i ? r.map(T_) : r))], { type: 'text/csv' }), nm + '.csv'); };
-  w.querySelector('#lkXl').onclick = async () => { try { await A.lib('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js'); const wb = new ExcelJS.Workbook(); wb.creator = 'Yayasan PRCF Indonesia – Fire Hotspot';
+  w.querySelector('#lkXl').onclick = async () => { try { await A.lib('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js'); const wb = new ExcelJS.Workbook(); wb.creator = 'Yayasan PRCF Indonesia – Pantau Rimbak';
       const sh = (n, h, rows, wd) => { const x = wb.addWorksheet(T_(n)); x.addRow(h.map(T_)); x.getRow(1).eachCell(c => { c.font = { bold: true, color: { argb: 'FFFFFFFF' } }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F4E3D' } }; }); rows.forEach(r => x.addRow(r.map(c => typeof c === 'string' ? T_(c) : c))); x.columns.forEach((c, i) => c.width = (wd && wd[i]) || 18); };
       sh('Luas per kelas', ['Hutan Desa', 'Kelas lahan kritis', 'Luas (ha)', '% luas'], K.map(k => [s.hd_nama, k, +kh[k].toFixed(4), +(R.kelas_persen[k] || 0).toFixed(2)]), [28, 22]);
       sh('Silang tutupan lahan', ['Kelas lahan kritis', 'Tutupan lahan', 'Kelompok', 'Luas (ha)'], SL.map(x => [x[0], NM(x[1]), HUTAN.has(x[1]) ? 'Hutan' : 'Bukan hutan', +x[2].toFixed(4)]), [22, 38, 14]);
@@ -71,7 +71,7 @@ function tampil(w, s, R, G) {
   w.querySelector('#lkDoc').onclick = async () => { try { await A.lib(A.DOCX); const d = window.docx, run = (t, o = {}) => new d.TextRun({ text: T_(t), font: 'Arial', size: o.size || 20, bold: o.bold, color: o.color }), p = (t, o = {}) => new d.Paragraph({ children: [run(t, o)], spacing: { after: 120 } });
       const cell = (t, h) => new d.TableCell({ children: [new d.Paragraph({ children: [run(t, { bold: h, size: 17, color: h ? 'FFFFFF' : undefined })] })], shading: h ? { fill: '1F4E3D' } : undefined, margins: { top: 50, bottom: 50, left: 80, right: 80 } });
       const tbl = (H, rows) => new d.Table({ width: { size: 100, type: d.WidthType.PERCENTAGE }, rows: [new d.TableRow({ tableHeader: true, children: H.map(h => cell(h, true)) }), ...(rows.length ? rows : [H.map(() => '–')]).map(r => new d.TableRow({ children: r.map(c => cell(String(c))) }))] });
-      const doc = new d.Document({ creator: 'Yayasan PRCF Indonesia – Fire Hotspot', sections: [{ children: [p('Lahan Kritis ' + s.hd_nama, { bold: true, size: 34, color: '1F4E3D' }), p(`Peta Lahan Kritis Kabupaten Kapuas Hulu ${R.tahun} · ${A.wib(Date.now())}`, { color: '55665D' }),
+      const doc = new d.Document({ creator: 'Yayasan PRCF Indonesia – Pantau Rimbak', sections: [{ children: [p('Lahan Kritis ' + s.hd_nama, { bold: true, size: 34, color: '1F4E3D' }), p(`Peta Lahan Kritis Kabupaten Kapuas Hulu ${R.tahun} · ${A.wib(Date.now())}`, { color: '55665D' }),
         p('1. Luas per kelas', { bold: true, size: 26 }), tbl(['Kelas lahan kritis', 'Luas (ha)', '% luas'], rowsK()), p(''), p('2. Prioritas rehabilitasi', { bold: true, size: 26 }), tbl(['Indikator', 'Luas (ha)'], rowsP()), p(''),
         p('3. Lahan kritis × tutupan lahan', { bold: true, size: 26 }), tbl(['Kelas lahan kritis', 'Tutupan lahan', 'Kelompok', 'Luas (ha)'], rowsS()), p(''), p('Metode & sumber', { bold: true, size: 24 }), ...METODE(R).map(m => p('• ' + m, { size: 18, color: '55665D' }))] }] });
       A.dl(await d.Packer.toBlob(doc), nm + '.docx'); } catch (e) { A.toast(e.message); } };

@@ -1,4 +1,4 @@
-/* Fire Hotspot – langganan PERINGATAN DINI otomatis (notifikasi HP + email) – Yayasan PRCF Indonesia
+/* Pantau Rimbak – langganan PERINGATAN DINI otomatis (notifikasi HP + email) – Yayasan PRCF Indonesia
  * Pemicu (diperiksa server tiap 3 jam): titik panas baru NASA FIRMS di desa/HD atau ≤5 km dari batas desa,
  * dan bahaya kebakaran FDRS (BMKG/ECMWF) Tinggi/Ekstrem dalam 3 hari ke depan. Hanya untuk pengguna terverifikasi.
  * Pemakaian: FHPeringatan.mount(el, { akun: () => ({id, token, email}) | null, situs: [{id, nama}], aktif: 'nangalauk' })
@@ -17,7 +17,7 @@ const T = () => en() ? {
   izin: 'Notification permission was denied. Allow notifications for this app in your phone settings, then try again.', tidak: 'This browser does not support push notifications. Email alerts still work.',
   ios: 'On iPhone, notifications only work after adding the app to the Home Screen (Share → Add to Home Screen, iOS 16.4+).', minimal: 'Choose at least one Village Forest.',
   ujiHp: 'Test notification sent to this phone.', ujiMail: e => `Test email sent to ${e} – check your inbox (and spam).`, ujiMailGagal: 'Test email failed', apk: 'Update the Android app (download the latest APK) to enable phone notifications.', lokal: 'In the Android app, alerts are checked every 15 minutes while the app is open or in the background; email arrives even when the phone is off.',
-  ujiJ: '🔥 Test – Fire Hotspot', ujiI: 'Notifications work on this phone. Real alerts come from the PRCF server.', memuat: 'Loading subscription…', status: n => `${n} device(s) receiving notifications`
+  ujiJ: '🔥 Test – Pantau Rimbak', ujiI: 'Notifications work on this phone. Real alerts come from the PRCF server.', memuat: 'Loading subscription…', status: n => `${n} device(s) receiving notifications`
 } : {
   judul: 'Peringatan dini otomatis', sub: 'Diberi tahu tanpa perlu membuka aplikasi',
   info: 'Diperiksa setiap 3 jam: titik panas baru ≤5 km dari desa dan bahaya kebakaran Tinggi/Ekstrem dalam 3 hari ke depan.',
@@ -26,7 +26,7 @@ const T = () => en() ? {
   izin: 'Izin notifikasi ditolak. Izinkan notifikasi untuk aplikasi ini di pengaturan HP, lalu coba lagi.', tidak: 'Peramban ini tidak mendukung notifikasi push. Peringatan lewat email tetap berjalan.',
   ios: 'Di iPhone, notifikasi baru berfungsi setelah aplikasi ditambahkan ke Layar Utama (Bagikan → Tambah ke Layar Utama, iOS 16.4+).', minimal: 'Pilih minimal satu Hutan Desa.',
   ujiHp: 'Notifikasi uji coba dikirim ke HP ini.', ujiMail: e => `Email uji coba dikirim ke ${e} – cek kotak masuk (dan folder spam).`, ujiMailGagal: 'Email uji coba gagal dikirim', apk: 'Perbarui aplikasi Android (unduh APK terbaru) agar notifikasi HP aktif.', lokal: 'Di aplikasi Android, peringatan dicek tiap 15 menit selama aplikasi terbuka atau berjalan di latar; email tetap sampai walau HP mati.',
-  ujiJ: '🔥 Uji coba – Fire Hotspot', ujiI: 'Notifikasi berfungsi di HP ini. Peringatan sungguhan dikirim server PRCF.', memuat: 'Memuat langganan…', status: n => `${n} perangkat menerima notifikasi`
+  ujiJ: '🔥 Uji coba – Pantau Rimbak', ujiI: 'Notifikasi berfungsi di HP ini. Peringatan sungguhan dikirim server PRCF.', memuat: 'Memuat langganan…', status: n => `${n} perangkat menerima notifikasi`
 };
 const bisaPush = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 const ios = () => /iphone|ipad|ipod/i.test(navigator.userAgent) && !(window.matchMedia && matchMedia('(display-mode: standalone)').matches) && !navigator.standalone;

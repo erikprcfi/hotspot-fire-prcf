@@ -34,7 +34,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GAGAL: ${{ steps.cek.outcome == 'failure' }}
         run: |
-          R="$GITHUB_REPOSITORY"; JUDUL="Pemantauan sistem: ada bagian Fire Hotspot yang bermasalah"
+          R="$GITHUB_REPOSITORY"; JUDUL="Pemantauan sistem: ada bagian Pantau Rimbak yang bermasalah"
           NO=$(gh api "repos/$R/issues?state=open&per_page=100" -q '[.[] | select(.title | startswith("Pemantauan sistem"))][0].number // empty')
           cat laporan_pantau.md >> "$GITHUB_STEP_SUMMARY"
           if [ "$GAGAL" = "true" ]; then

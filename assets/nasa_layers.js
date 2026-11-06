@@ -1,4 +1,4 @@
-/* Lapisan satelit harian NASA GIBS (Global Imagery Browse Services) – Fire Hotspot PRCF
+/* Lapisan satelit harian NASA GIBS (Global Imagery Browse Services) – Pantau Rimbak PRCF
  * Tanpa kunci API. https://nasa-gibs.github.io/gibs-api-docs/
  * Dipakai app.html & index.html:  const ctl = FHNasa.create(map); ctl.set('co'); ctl.setDate('2026-10-21')
  */

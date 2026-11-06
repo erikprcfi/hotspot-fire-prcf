@@ -1,5 +1,5 @@
 """
-Peta Penutupan Lahan RESMI KLHK (skala 1:250.000) untuk perhitungan emisi karbon FREL – Fire Hotspot PRCF
+Peta Penutupan Lahan RESMI KLHK (skala 1:250.000) untuk perhitungan emisi karbon FREL – Pantau Rimbak PRCF
 ==========================================================================================================
 Mengambil poligon penutupan lahan KLHK langsung dari layanan peta resmi Kementerian LHK (Geoportal KLHK / SIGAP,
 ArcGIS REST "Time_Series"), dipotong pada kotak sekitar setiap Hutan Desa (+ 1 km), untuk semua tahun yang tersedia.

@@ -1,4 +1,4 @@
-"""Pemantauan otomatis Fire Hotspot – Yayasan PRCF Indonesia.
+"""Pemantauan otomatis Pantau Rimbak – Yayasan PRCF Indonesia.
 Memeriksa situs langsung (GitHub Pages), kesegaran data NASA FIRMS / prakiraan / cuaca, server database pengguna (Apps Script)
 dan file APK. Hasil ditulis ke laporan Markdown; kode keluar 1 bila ada masalah (workflow lalu membuka/memperbarui issue
 "Pemantauan sistem" sehingga admin GitHub menerima email). Tidak memakai kunci rahasia apa pun.
@@ -40,7 +40,7 @@ def data_segar(path, kunci, maks_jam):
 
 def halaman():
     s, b, _ = ambil(SITUS + 'app.html'); t = b.decode('utf-8', 'ignore')
-    return s == 200 and 'Fire Hotspot' in t and 'assets/posisi.js' in t, f'HTTP {s}, {len(b)//1024} KB'
+    return s == 200 and 'Pantau Rimbak' in t and 'assets/posisi.js' in t, f'HTTP {s}, {len(b)//1024} KB'
 
 def versi_sw():
     s, b, _ = ambil(SITUS + 'sw.js'); hidup = b.decode().split("VERSI = '")[1].split("'")[0]
@@ -76,6 +76,6 @@ with open('laporan_pantau.md', 'w', encoding='utf-8') as f:
     f.write(f'Hasil pemeriksaan otomatis {waktu}\n\n| | Bagian | Keterangan |\n|---|---|---|\n')
     for ok, n, k in HASIL: f.write(f"| {'✅' if ok else '❌'} | {n} | {k} |\n")
     if gagal:
-        f.write('\nPetunjuk: lihat Buku Panduan Teknis Fire Hotspot, bab "Bila terjadi masalah". '
+        f.write('\nPetunjuk: lihat Buku Panduan Teknis Pantau Rimbak, bab "Bila terjadi masalah". '
                 'Issue ini ditutup otomatis setelah semua pemeriksaan kembali normal.\n')
 sys.exit(1 if gagal else 0)

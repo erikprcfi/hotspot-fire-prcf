@@ -1,5 +1,5 @@
 """
-Peta tutupan lahan TAHUNAN (vektor) per Hutan Desa – Fire Hotspot PRCF
+Peta tutupan lahan TAHUNAN (vektor) per Hutan Desa – Pantau Rimbak PRCF
 ======================================================================
 Untuk unduhan SHP alat "Tutupan lahan (KLHK)". Satu berkas per Hutan Desa: data/klhk/tahunan/<lokasi>.geojson berisi
   – bagian TETAP: poligon Peta Penutupan Lahan KLHK TERBARU (tahun t, kini 2025; dahulu 2020) ∩ batas Hutan Desa, dikurangi semua piksel yang berubah (th = 0);

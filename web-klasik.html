@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <script>if((matchMedia('(display-mode: standalone)').matches||navigator.standalone)&&!/[?&]web=1/.test(location.search))location.replace('app.html'+location.hash.replace('#buat-laporan','#lap').replace('#status-sistem','#info'));</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Fire Hotspot</title>
-<link rel="icon" href="assets/logo_fh.svg" type="image/svg+xml">
+<title>Pantau Rimbak</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="assets/icons/icon-192.png" sizes="192x192">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0B3B2C">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Fire Hotspot">
+<meta name="apple-mobile-web-app-title" content="Pantau Rimbak">
 <meta name="description" content="Sistem pemantauan titik panas satelit NASA FIRMS untuk Desa dan Hutan Desa Nanga Lauk, Kapuas Hulu, Kalimantan Barat.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -377,8 +377,8 @@ html:not([data-v="beranda"]) .hero-head{margin-bottom:14px}
 <div class="topbar"><div class="wrap">
   <span class="org" title="Yayasan PRCF Indonesia"><img src="assets/logo_prcf.jpg" alt="Yayasan PRCF Indonesia"></span>
   <a class="brand" href="#beranda">
-    <span class="brand-mark" aria-hidden="true"><img src="assets/logo_fh.svg" alt="Fire Hotspot" class="fh-logo" style="width:100%;height:100%;display:block"></span>
-    <span class="brand-txt"><b>Fire Hotspot</b><small>Pemantauan Titik Panas Hutan Desa · Kapuas Hulu</small></span>
+    <span class="brand-mark" aria-hidden="true"><img src="assets/logo_pr.svg" alt="Pantau Rimbak" class="fh-logo" style="width:100%;height:100%;display:block"></span>
+    <span class="brand-txt"><b>Pantau Rimbak</b><small>Pemantauan Titik Panas Hutan Desa · Kapuas Hulu</small></span>
   </a>
   <nav class="nav" aria-label="Navigasi"><a href="#beranda">Beranda</a><a href="#peta">Peta</a><a href="#prakiraan">Prakiraan</a><a href="#status-sistem">Status</a><a href="#riwayat">Riwayat</a><a href="#buat-laporan">Laporan</a><a href="#unduh">Data</a><a href="#analisis">Analisis</a><a href="#sumber">Metodologi</a><a href="kebijakan-privasi.html">Privasi</a></nav>
   <button type="button" class="inst" id="instBtn" aria-label="Pasang aplikasi di HP"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg><span class="inst-l">Pasang aplikasi</span><span class="inst-s">Pasang</span></button>
@@ -542,7 +542,7 @@ html:not([data-v="beranda"]) .hero-head{margin-bottom:14px}
 </main>
 
 <footer><div class="wrap">
-  <span class="foot-org"><img src="assets/logo_prcf.jpg" alt="PRCF Indonesia"><span>Fire Hotspot · dikelola oleh <b>Yayasan PRCF Indonesia</b><br>Pemantauan Hutan Desa di Kabupaten Kapuas Hulu, Kalimantan Barat</span></span>
+  <span class="foot-org"><img src="assets/logo_prcf.jpg" alt="PRCF Indonesia"><span>Pantau Rimbak · dikelola oleh <b>Yayasan PRCF Indonesia</b><br>Pemantauan Hutan Desa di Kabupaten Kapuas Hulu, Kalimantan Barat</span></span>
   <span>Data: NASA FIRMS · BMKG · ECMWF · Copernicus ERA5 &amp; Sentinel-2 · BIG · KLHK · <a href="kebijakan-privasi.html" style="color:inherit;text-decoration:underline">Kebijakan Privasi</a></span>
 </div></footer>
 
@@ -721,7 +721,7 @@ function setSite(id,fly){
   ZONES[1].name='Di dalam Desa '+SITE.desa_nama;ZN[1]='Desa '+SITE.desa_nama;
   document.getElementById('heroName').textContent=SITE.hd_nama;
   document.getElementById('heroEye').textContent=`Desa ${SITE.desa_nama} · Kec. ${SITE.kec} · Kab. Kapuas Hulu · Kalimantan Barat`;
-  document.title=`Fire Hotspot · ${SITE.hd_nama}`;
+  document.title=`Pantau Rimbak · ${SITE.hd_nama}`;
   siteLayers(); if(!map.getSize().x){MAP1=true;} else if(fly)map.flyToBounds(b25,{padding:[10,10],duration:.8}); else map.fitBounds(desaB,{padding:[10,10]});
   reclass(); siteBar(); render(); kpis(); histChart(); eventTable(); histLayer(); fillSources(); renderFCw(); btTable(); renderDash();
 }
@@ -991,13 +991,13 @@ setInterval(setStatus,60000);
 </script>
 <script src="assets/musiman.js?v=57"></script>
 <div class="chz" id="chz" hidden role="dialog" aria-labelledby="chzT"><div class="chz-box">
-  <div class="chz-head"><img class="org-l" src="assets/logo_prcf.jpg" alt="Yayasan PRCF Indonesia"><div class="eyebrow">Fire Hotspot · Kabupaten Kapuas Hulu</div><h2 id="chzT">Pilih Hutan Desa yang ingin dipantau</h2><p>Status dihitung dari titik panas satelit NASA FIRMS 7 hari terakhir terhadap batas desa dan Hutan Desa masing-masing.</p></div>
+  <div class="chz-head"><img class="org-l" src="assets/logo_prcf.jpg" alt="Yayasan PRCF Indonesia"><div class="eyebrow">Pantau Rimbak · Kabupaten Kapuas Hulu</div><h2 id="chzT">Pilih Hutan Desa yang ingin dipantau</h2><p>Status dihitung dari titik panas satelit NASA FIRMS 7 hari terakhir terhadap batas desa dan Hutan Desa masing-masing.</p></div>
   <div class="chz-grid" id="chzGrid"></div>
   <div class="chz-foot"><span><b style="color:var(--fg)">Pilih salah satu Hutan Desa untuk melanjutkan.</b> Hutan Desa lain tetap terlihat di peta, dan lokasi dapat diganti kapan saja melalui tombol lokasi di bagian atas halaman.</span></div>
 </div></div>
 <div class="scrim" id="instScrim" hidden></div>
 <div class="sheet" id="instSheet" hidden role="dialog" aria-labelledby="instT">
-  <h3 id="instT">Pasang Fire Hotspot di HP</h3>
+  <h3 id="instT">Pasang Pantau Rimbak di HP</h3>
   <div id="instBody"></div>
   <button type="button" class="btn primary" id="instClose">Mengerti</button>
 </div>

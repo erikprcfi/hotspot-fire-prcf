@@ -1,4 +1,4 @@
-/* Analisis area – Fire Hotspot PRCF (analisis area dengan dataset resmi)
+/* Analisis area – Pantau Rimbak PRCF (analisis area dengan dataset resmi)
  * - Area dampingan PRCF (6 Hutan Desa + 6 desa): hasil siap pakai di data/analisis/*.json
  * - SHP unggahan (zip: .shp .shx .dbf .prj): dibaca & divalidasi di perangkat, dikirim oleh PENGGUNA TERVERIFIKASI ke database PRCF,
  *   dihitung otomatis di server (GitHub Actions, scripts/analisis_inti.py — cara hitung sama persis dengan area dampingan),
@@ -260,7 +260,7 @@ async function pdfHasil(R) {
   const TAB = (rows, fs = 8) => { doc.autoTable({ startY: y, head: [rows[0].map(asc)], body: rows.slice(1).map(r => r.map(asc)), margin: { left: ML, right: ML, top: 18 }, styles: { fontSize: fs, cellPadding: 1.2 }, headStyles: { fillColor: HEAD }, alternateRowStyles: { fillColor: [241, 245, 242] } }); y = doc.lastAutoTable.finalY + 5; };
   const IMG = (c, w) => { const h = w * c.height / c.width; need(h + 3); doc.addImage(c.toDataURL('image/jpeg', .9), 'JPEG', ML + (CW - w) / 2, y, w, h); y += h + 4; };
   const K = R.kelas, kn = k => (K.find(x => x.kode === k) || {}).nama || k, Yr = R.tahun_tutupan.map(String), C = R.karbon, Hh = R.hutan, T = R.titik_panas;
-  doc.setFillColor(...HEAD); doc.rect(0, 0, 210, 58, 'F'); doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.text('Yayasan PRCF Indonesia - Fire Hotspot', ML, 14);
+  doc.setFillColor(...HEAD); doc.rect(0, 0, 210, 58, 'F'); doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.text('Yayasan PRCF Indonesia - Pantau Rimbak', ML, 14);
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.text('LAPORAN ANALISIS LAHAN, HUTAN, KARBON & TITIK PANAS', ML, 24);
   doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.splitTextToSize(asc(R.nama), CW).slice(0, 2).forEach((l, i) => doc.text(l, ML, 35 + i * 8));
   doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.text(asc(`${R.jenis || ''} | ${fmt1(R.luas_ha)} ha | dihitung ${String(R.dibuat_utc || '').slice(0, 10)} | dicetak ${new Date().toLocaleDateString('id-ID')}`), ML, 52);
@@ -294,14 +294,14 @@ async function pdfHasil(R) {
   if (R.wilayah && R.wilayah.length) { H1('Wilayah administrasi tercakup'); TAB([['Desa/Kelurahan', 'Kecamatan', 'Kab/Kota', 'Provinsi', '% desa'], ...R.wilayah.slice(0, 40).map(w => [w.desa, w.kec, w.kab, w.prov, fmt1(w.persen_desa_tercakup)])], 7.6); }
   H1('Verifikasi data'); TAB([['Pemeriksaan', 'Hasil', 'Status'], ...ck], 8);
   H1('Sumber data & metode'); Object.values(R.sumber).forEach(s => P('- ' + s, 8.6)); P('Metode: raster dibaca pada grid asli 0,00025 derajat (~30 m) tanpa resampling; piksel dihitung bila pusatnya di dalam batas; luas piksel geodesik. Analisis area dampingan dan SHP unggahan memakai kode yang sama: scripts/analisis_inti.py (github.com/erikprcfi/hotspot-fire-prcf).', 8.6);
-  const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFontSize(7.5); doc.setTextColor(120); doc.text(asc(`Fire Hotspot - Yayasan PRCF Indonesia | ${R.nama} | Halaman ${i}/${n}`), ML, 292); }
+  const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFontSize(7.5); doc.setTextColor(120); doc.text(asc(`Pantau Rimbak - Yayasan PRCF Indonesia | ${R.nama} | Halaman ${i}/${n}`), ML, 292); }
   doc.save(`${EN() ? 'analysis' : 'analisis'}_${((EN() ? FHLang.t(R.nama) : R.nama) || 'area').replace(/\W+/g, '_')}.pdf`); return n;
 }
 /* ---------------- sesi website (masuk dengan email terverifikasi) ---------------- */
 const WS = { get() { try { return JSON.parse(localStorage.getItem('fh_web_akun')); } catch (e) { return null; } }, set(v) { try { v ? localStorage.setItem('fh_web_akun', JSON.stringify(v)) : localStorage.removeItem('fh_web_akun'); } catch (e) { } } };
 function webLogin(box, done) {
   const wid = crypto.randomUUID();
-  box.innerHTML = `<div class="fan-card"><h3>Masuk untuk mengunggah SHP</h3><p class="mut">Gunakan email akun aplikasi HP Fire Hotspot yang sudah terverifikasi. Kode 6 angka akan dikirim ke email Anda.</p>
+  box.innerHTML = `<div class="fan-card"><h3>Masuk untuk mengunggah SHP</h3><p class="mut">Gunakan email akun aplikasi HP Pantau Rimbak yang sudah terverifikasi. Kode 6 angka akan dikirim ke email Anda.</p>
     <input class="fan-in" type="email" placeholder="email@contoh.com" data-em style="margin-top:10px"><button class="fan-btn" data-k style="margin-top:10px">Kirim kode</button>
     <div data-s2 hidden style="margin-top:10px"><input class="fan-in" inputmode="numeric" maxlength="6" placeholder="Kode 6 angka" data-kd><button class="fan-btn" data-v style="margin-top:10px">Masuk</button></div><p class="fan-err" data-er></p></div>`;
   const $ = s => box.querySelector(s), er = t => $('[data-er]').textContent = t || '';

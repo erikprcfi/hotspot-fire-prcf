@@ -1,5 +1,5 @@
 """
-LAHAN KRITIS per Hutan Desa & untuk SHP unggahan – Fire Hotspot PRCF
+LAHAN KRITIS per Hutan Desa & untuk SHP unggahan – Pantau Rimbak PRCF
 =====================================================================
 Sumber: Peta Lahan Kritis Kabupaten Kapuas Hulu 2022 (kolom `kritis`: Tidak Kritis / Potensial Kritis / Agak Kritis / Kritis / Sangat Kritis;
 kolom `bpdas`: wilayah kerja BPDAS), WGS84 – data/sumber/lahan_kritis/ (diserahkan Yayasan PRCF Indonesia, 2 Nov 2026).

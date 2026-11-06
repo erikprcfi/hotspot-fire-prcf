@@ -1,4 +1,4 @@
-/* Lintasan satelit pendeteksi titik panas berikutnya di suatu titik – Fire Hotspot PRCF
+/* Lintasan satelit pendeteksi titik panas berikutnya di suatu titik – Pantau Rimbak PRCF
  * Orbit: TLE CelesTrak (data/tle.json, diperbarui otomatis tiap 3 jam oleh GitHub Actions), propagasi SGP4 (satellite.js, MIT).
  * Satelit dianggap "melintas" bila titik berada di dalam lebar sapuan sensor (MODIS 2.330 km, VIIRS 3.060 km);
  * waktu = saat jarak titik ke jejak tanah satelit paling kecil. Siang/malam dari ketinggian matahari (algoritma NOAA).

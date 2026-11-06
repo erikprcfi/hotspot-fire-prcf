@@ -1,7 +1,7 @@
 {
-  "name": "Fire Hotspot",
-  "short_name": "Fire Hotspot",
-  "description": "Fire Hotspot: pemantauan titik panas satelit NASA FIRMS untuk Hutan Desa di Kabupaten Kapuas Hulu.",
+  "name": "Pantau Rimbak",
+  "short_name": "Pantau Rimbak",
+  "description": "Pantau Rimbak: pemantauan titik panas satelit NASA FIRMS untuk Hutan Desa di Kabupaten Kapuas Hulu.",
   "id": "./",
   "start_url": "./app.html",
   "scope": "./",

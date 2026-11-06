@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Pasang Fire Hotspot</title>
-<meta name="description" content="Pasang aplikasi Fire Hotspot – pemantauan titik panas, cuaca dan bahaya kebakaran – Yayasan PRCF Indonesia.">
+<title>Pasang Pantau Rimbak</title>
+<meta name="description" content="Pasang aplikasi Pantau Rimbak – pemantauan titik panas, cuaca dan bahaya kebakaran – Yayasan PRCF Indonesia.">
 <meta name="theme-color" content="#0B3B2C">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="assets/logo_fh.svg" type="image/svg+xml">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Fire Hotspot">
-<meta property="og:title" content="Pasang aplikasi Fire Hotspot">
+<meta name="apple-mobile-web-app-title" content="Pantau Rimbak">
+<meta property="og:title" content="Pasang aplikasi Pantau Rimbak">
 <meta property="og:description" content="Titik panas satelit NASA, cuaca & bahaya kebakaran untuk Hutan Desa dan lokasi Anda. Yayasan PRCF Indonesia.">
 <meta property="og:image" content="https://erikprcfi.github.io/hotspot-fire-prcf/assets/icons/icon-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -56,8 +56,8 @@ body.pad .w{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 80px)}
 </head>
 <body>
 <div class="w">
-  <img class="logo" src="assets/logo_fh.svg" alt="Fire Hotspot">
-  <h1>Fire Hotspot</h1>
+  <img class="logo" src="assets/logo_pr.svg" alt="Pantau Rimbak">
+  <h1>Pantau Rimbak</h1>
   <p class="sub">Titik panas satelit NASA, cuaca &amp; bahaya kebakaran: untuk Hutan Desa dan di lokasi Anda.</p>
   <div class="org"><img src="assets/logo_prcf.jpg" alt="">Yayasan PRCF Indonesia</div>
   <p style="text-align:center;margin:8px 0 0"><button type="button" id="langBtn" data-notr style="font:800 12px inherit;color:#fff;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);padding:7px 12px;border-radius:999px;cursor:pointer" onclick="FHLang.set(FHLang.get()==='en'?'id':'en')"></button></p>
@@ -69,7 +69,7 @@ body.pad .w{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 80px)}
     <div class="card hide" id="manualA"><h2>Pasang secara manual</h2><ol class="steps">
       <li><span>Ketuk menu <b>⋮</b> di pojok kanan atas Chrome.</span></li>
       <li><span>Pilih <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</span></li>
-      <li><span>Ketuk <b>Instal</b>. Ikon Fire Hotspot muncul di layar utama.</span></li></ol></div>
+      <li><span>Ketuk <b>Instal</b>. Ikon Pantau Rimbak muncul di layar utama.</span></li></ol></div>
   </div>
 
   <!-- Dibuka di dalam WhatsApp / Facebook / Instagram -->
@@ -85,7 +85,7 @@ body.pad .w{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 80px)}
     <div class="card" id="iosSafari"><h2>Pasang di iPhone (3 langkah)</h2><ol class="steps">
       <li><span>Ketuk tombol <b>Bagikan</b> <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 15V3m0 0L8 7m4-4 4 4M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></span> di bagian bawah layar.</span></li>
       <li><span>Gulir ke bawah, pilih <b>Tambah ke Layar Utama</b> <span class="ico" style="color:#333"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg></span>.</span></li>
-      <li><span>Ketuk <b>Tambah</b> di kanan atas. Selesai, buka Fire Hotspot dari layar utama.</span></li></ol></div>
+      <li><span>Ketuk <b>Tambah</b> di kanan atas. Selesai, buka Pantau Rimbak dari layar utama.</span></li></ol></div>
     <div class="card hide" id="iosOther"><h2>Buka halaman ini di Safari</h2><p style="margin:0;color:var(--muted)">Di iPhone, aplikasi hanya bisa dipasang lewat <b style="color:#fff">Safari</b>. Salin link di bawah, buka Safari, lalu tempel di kolom alamat.</p>
       <div class="copy"><input id="lnk" readonly value="https://erikprcfi.github.io/hotspot-fire-prcf/pasang.html"><button id="bCopy">Salin</button></div></div>
   </div>
@@ -101,7 +101,7 @@ body.pad .w{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 80px)}
   <div class="ok" id="vWait"><div class="spin"></div><h2 style="margin:14px 0 4px">Sedang memasang…</h2><p class="sub" style="margin-bottom:6px">Android sedang menyiapkan aplikasi. Biasanya <b>10–60 detik</b>; jangan tutup halaman ini.</p><div class="bar"><i></i></div><p class="note" style="margin-top:10px">Ikon akan muncul di layar utama atau di daftar aplikasi (laci aplikasi).</p></div>
 
   <!-- Berhasil -->
-  <div class="ok" id="vOk"><div class="big">✅</div><h2 style="margin:6px 0">Fire Hotspot terpasang!</h2><p class="sub" style="margin-bottom:16px">Buka dari ikon <b>Fire Hotspot</b> di layar utama HP Anda, lalu daftar akun sekali.</p>
+  <div class="ok" id="vOk"><div class="big">✅</div><h2 style="margin:6px 0">Pantau Rimbak terpasang!</h2><p class="sub" style="margin-bottom:16px">Buka dari ikon <b>Pantau Rimbak</b> di layar utama HP Anda, lalu daftar akun sekali.</p>
     <a class="btn" href="app.html">Buka aplikasi</a></div>
 
   <a class="btn ghost" id="bOpen" href="app.html">Lanjut tanpa memasang</a>

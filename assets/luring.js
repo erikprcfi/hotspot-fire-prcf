@@ -1,4 +1,4 @@
-/* Mode luring (tanpa sinyal) untuk patroli – Fire Hotspot PRCF
+/* Mode luring (tanpa sinyal) untuk patroli – Pantau Rimbak PRCF
  * Menyimpan di HP: citra Sentinel-2 cloudless 2025 (EOX, CC BY-NC-SA 4.0 – boleh disimpan untuk pemakaian non-komersial
  * dengan atribusi) zoom 8–14 di sekitar lokasi dampingan, serta data titik panas, batas wilayah, prakiraan & orbit satelit.
  * Citra resolusi tinggi Esri & OpenStreetMap TIDAK diunduh massal (dilarang ketentuan layanan mereka); hanya yang sudah dilihat tersimpan otomatis.

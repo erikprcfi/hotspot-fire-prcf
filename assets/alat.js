@@ -1,4 +1,4 @@
-/* Fire Hotspot – pembantu bersama modul lapangan (patroli, tindak lanjut, dasbor admin, indikator)
+/* Pantau Rimbak – pembantu bersama modul lapangan (patroli, tindak lanjut, dasbor admin, indikator)
  * FHAlat.api(body) → kirim ke database PRCF (Apps Script v9) dengan akun yang sedang masuk (aplikasi HP atau website)
  * FHAlat.akun() → {id, token, nama, email} | null ;  FHAlat.perlu(alasan, f) → jalankan f bila sudah masuk, bila belum minta masuk
  * FHAlat.dl(blob, nama) unduh berkas · FHAlat.lib(url) muat pustaka · FHAlat.foto(file) perkecil foto · FHAlat.jarak(...) meter
@@ -23,7 +23,7 @@ function perlu(alasan, f) {
   if (akun()) return f();
   const a = A(); if (!a) return;
   if (a.perlu) return a.perlu(alasan, f);           // website: masuk dengan email
-  toast(alasan || 'Masuk dengan akun Fire Hotspot terlebih dahulu.'); a.openProfile && a.openProfile();
+  toast(alasan || 'Masuk dengan akun Pantau Rimbak terlebih dahulu.'); a.openProfile && a.openProfile();
 }
 const toast = t => (window.toastMsg || (x => alert(x)))(t);
 function dl(blob, name) { const u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(u); a.remove(); }, 2500); }

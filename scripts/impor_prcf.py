@@ -1,5 +1,5 @@
 """
-Impor PETA TUTUPAN LAHAN TAHUNAN LOKAL (sudah di-groundcheck) per Hutan Desa – Fire Hotspot PRCF
+Impor PETA TUTUPAN LAHAN TAHUNAN LOKAL (sudah di-groundcheck) per Hutan Desa – Pantau Rimbak PRCF
 ==================================================================================================
 Sumber: data/sumber/prcf_nanga_lauk/TL_HD<tahun>Final.shp (Yayasan PRCF Indonesia, Landcover Analysis 2006–2026 – interpretasi visual
 Landsat 5/7/8 + ArcGIS Imagery, groundcheck lapangan; lihat SUMBER.md). Proyeksi asli WGS 1984 UTM 49N (EPSG:32649); LUAS DIHITUNG DI UTM 49N

@@ -1,5 +1,5 @@
 """
-Peringatan dini otomatis – Fire Hotspot PRCF (dijalankan GitHub Actions setelah data diperbarui, tiap 3 jam).
+Peringatan dini otomatis – Pantau Rimbak PRCF (dijalankan GitHub Actions setelah data diperbarui, tiap 3 jam).
 Pemicu (per Hutan Desa yang dipilih pengguna):
   1. Titik panas BARU NASA FIRMS di dalam desa/Hutan Desa atau <= 5 km dari batas desa, terdeteksi <= 36 jam terakhir.
   2. Bahaya kebakaran (FDRS, prakiraan BMKG/ECMWF) TINGGI atau EKSTREM dalam 3 hari ke depan.

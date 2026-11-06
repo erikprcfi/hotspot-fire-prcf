@@ -1,4 +1,4 @@
-/* Fire Hotspot – mode WEBSITE (app.html?web=1, juga dibuka dari index.html)
+/* Pantau Rimbak – mode WEBSITE (app.html?web=1, juga dibuka dari index.html)
  * Tampilan & alat sama dengan aplikasi HP, tanpa wajib masuk. Fitur yang memerlukan akun (Bara Api, unggah SHP, patroli,
  * tindak lanjut, dasbor admin) memakai MASUK DENGAN EMAIL: akun dibuat di aplikasi HP, di website cukup buktikan email
  * dengan kode 6 angka (Apps Script aksi kode → cek → masuk_web). Pendaftaran akun baru tetap hanya di aplikasi HP.
@@ -36,10 +36,10 @@ function dialog(html) { css(); const d = document.createElement('div'); d.classN
 /* Masuk website: email terdaftar di aplikasi HP → kode 6 angka → sesi */
 function login(alasan, done) {
   const wid = crypto.randomUUID ? crypto.randomUUID() : 'w' + Date.now() + Math.random().toString(16).slice(2);
-  const d = dialog(`<h3>Masuk ke Fire Hotspot</h3><p>${esc(alasan || 'Masuk dengan email akun aplikasi HP Fire Hotspot yang sudah terverifikasi.')} Kode 6 angka dikirim ke email Anda.</p>
+  const d = dialog(`<h3>Masuk ke Pantau Rimbak</h3><p>${esc(alasan || 'Masuk dengan email akun aplikasi HP Pantau Rimbak yang sudah terverifikasi.')} Kode 6 angka dikirim ke email Anda.</p>
     <input class="wb-in" type="email" autocomplete="email" placeholder="email@contoh.com" data-em><button class="wb-btn" data-k>Kirim kode</button>
     <div data-s2 hidden style="display:grid;gap:10px"><input class="wb-in" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="Kode 6 angka" data-kd><button class="wb-btn" data-v>Masuk</button></div>
-    <div class="wb-err" data-er></div><p style="font-size:12.5px">Belum punya akun? Akun dibuat sekali di <a href="pasang.html">aplikasi HP Fire Hotspot</a>, lalu bisa dipakai juga di website.</p>
+    <div class="wb-err" data-er></div><p style="font-size:12.5px">Belum punya akun? Akun dibuat sekali di <a href="pasang.html">aplikasi HP Pantau Rimbak</a>, lalu bisa dipakai juga di website.</p>
     <button class="wb-btn ghost" data-x>Batal</button>`);
   const $ = s => d.querySelector(s), er = t => { $('[data-er]').textContent = t || ''; };
   $('[data-x]').onclick = () => d.remove();

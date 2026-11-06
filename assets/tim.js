@@ -1,4 +1,4 @@
-/* Fire Hotspot – Tim lapangan (khusus admin): peta posisi pengguna yang menyetujui berbagi lokasi.
+/* Pantau Rimbak – Tim lapangan (khusus admin): peta posisi pengguna yang menyetujui berbagi lokasi.
  * Sumber: lembar "Posisi Terakhir" & "Riwayat Posisi" di database pengguna PRCF (Apps Script v6, aksi posisi_tim / posisi_jalur).
  * Server memeriksa ulang bahwa peminta adalah admin; aplikasi hanya menampilkan.
  * Online  = terhubung ≤ 5 menit terakhir (aplikasi mengirim sinyal tiap 1–2 menit selama dibuka).

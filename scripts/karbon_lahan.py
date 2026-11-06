@@ -1,5 +1,5 @@
 """
-Analisis lahan, hutan, karbon & titik panas untuk 6 Hutan Desa dampingan – Fire Hotspot PRCF
+Analisis lahan, hutan, karbon & titik panas untuk 6 Hutan Desa dampingan – Pantau Rimbak PRCF
 Memakai scripts/analisis_inti.py (cara hitung identik dengan analisis SHP unggahan pengguna).
 Keluaran: data/analisis/<lokasi>_hd.json (Hutan Desa) dan data/analisis/<lokasi>_desa.json (wilayah desa) + data/analisis/indeks.json
 Pemakaian: python scripts/karbon_lahan.py

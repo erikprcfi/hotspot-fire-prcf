@@ -1,4 +1,4 @@
-/* Kompas lapangan – Fire Hotspot PRCF
+/* Kompas lapangan – Pantau Rimbak PRCF
  * Arah: sensor kompas HP (Android: deviceorientationabsolute; iPhone: webkitCompassHeading), dikoreksi rotasi layar, dihaluskan.
  * Posisi & ketinggian: GPS HP (akurasi tinggi). Wilayah: FHWilayah (BPS/BIG + Kepmendagri 2025).
  * Terbit/terbenam: posisi matahari algoritma NOAA (FHLintas.sunElev), elevasi −0,833°.

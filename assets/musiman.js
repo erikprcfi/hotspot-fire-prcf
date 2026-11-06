@@ -1,4 +1,4 @@
-/* Prakiraan musiman 3 bulan (ECMWF SEAS5) – Fire Hotspot PRCF. Data: data/prakiraan.json → lokasi[id].musiman */
+/* Prakiraan musiman 3 bulan (ECMWF SEAS5) – Pantau Rimbak PRCF. Data: data/prakiraan.json → lokasi[id].musiman */
 (function () {
 'use strict';
 const BLNP = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];

@@ -1,4 +1,4 @@
-/* Fire Hotspot – DASBOR ADMIN (v9, khusus admin PRCF)
+/* Pantau Rimbak – DASBOR ADMIN (v9, khusus admin PRCF)
  * Pengguna aktif (24 jam / 7 / 30 hari), pendaftar per bulan, perangkat, versi aplikasi, Hutan Desa yang dipantau,
  * fitur yang paling sering dibuka (30 hari, tanpa identitas pengguna), temuan patroli, status tindak lanjut & waktu respons,
  * pertanyaan Bara Api & analisis SHP 30 hari. Sumber: Google Sheets PRCF (Apps Script v9 aksi "dasbor"; server memeriksa ulang admin).

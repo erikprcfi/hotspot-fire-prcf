@@ -1,4 +1,4 @@
-/* Fire Hotspot – berbagi lokasi tim lapangan (hanya pengguna yang menyetujui saat masuk/daftar).
+/* Pantau Rimbak – berbagi lokasi tim lapangan (hanya pengguna yang menyetujui saat masuk/daftar).
  * Selama aplikasi dibuka: GPS akurasi tinggi (watchPosition). Titik disimpan ke antrean bila berpindah ≥ max(25 m, akurasi)
  * atau tiap 5 menit, lalu dikirim ke database PRCF tiap 60 detik (sinyal hidup tiap 2 menit). Tanpa sinyal → antrean
  * tetap di HP dan dikirim saat online. Aplikasi ditutup/disembunyikan → GPS berhenti dan status "offline" dikirim.
@@ -56,7 +56,7 @@ function onFix(p) {
 }
 function natMulai() {   // Android: pelacakan latar belakang
   const BG = FHNative.plugin('BackgroundGeolocation'), DV = FHNative.plugin('Perangkat');
-  const pasang = () => Promise.resolve(BG.addWatcher({ backgroundTitle: 'Fire Hotspot', backgroundMessage: 'Lokasi dibagikan ke admin PRCF', requestPermissions: true, stale: false, distanceFilter: 10 }, (l, e) => {
+  const pasang = () => Promise.resolve(BG.addWatcher({ backgroundTitle: 'Pantau Rimbak', backgroundMessage: 'Lokasi dibagikan ke admin PRCF', requestPermissions: true, stale: false, distanceFilter: 10 }, (l, e) => {
     if (e) { GPS = e.code === 'NOT_AUTHORIZED' ? 'ditolak' : 'tidak'; ui(); kirim(); return; }
     if (l) onFix({ timestamp: l.time || Date.now(), coords: { latitude: l.latitude, longitude: l.longitude, accuracy: l.accuracy, speed: l.speed } });
   })).then(id => { WID = id; }).catch(() => { WID = null; });

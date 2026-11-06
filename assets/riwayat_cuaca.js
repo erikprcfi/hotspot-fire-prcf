@@ -1,4 +1,4 @@
-/* Riwayat cuaca per lokasi – Fire Hotspot PRCF
+/* Riwayat cuaca per lokasi – Pantau Rimbak PRCF
  * Sumber: reanalisis ECMWF ERA5 (Copernicus) harian sejak 2001 (data/cuaca*.json) dan
  * indeks bahaya kebakaran FDRS ±400 hari terakhir (data/prakiraan/fdrs_<lokasi>.json).
  * Dipakai bersama oleh app.html dan index.html:  FHRiwayat.render(elemen, {site, hotspots})

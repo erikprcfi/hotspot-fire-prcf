@@ -1,4 +1,4 @@
-/* Akun pengguna aplikasi HP – Fire Hotspot PRCF
+/* Akun pengguna aplikasi HP – Pantau Rimbak PRCF
  * Daftar sekali di aplikasi; setelah itu langsung masuk tanpa login. Profil: nama, tanggal lahir, alamat,
  * email, nomor HP, foto profil.
  * Data disimpan di perangkat (IndexedDB) dan – dengan persetujuan pengguna – dikirim ke database pengguna
@@ -223,9 +223,9 @@ function photoMenu() {
 
 /* ---------- layar: selamat datang / daftar / masuk ---------- */
 function screen(html) { const d = document.createElement('div'); d.className = 'ak'; d.setAttribute('role', 'dialog'); d.innerHTML = html; document.body.appendChild(d); bindEyes(d); return d; }
-const hero = (h, p, cls = '') => `<div class="ak-hero ${cls}"><div class="lg"><img src="assets/logo_fh.svg" alt=""><div><b>Fire Hotspot</b><small>Yayasan PRCF Indonesia</small></div></div><h1>${h}</h1><p>${p}</p></div>`;
+const hero = (h, p, cls = '') => `<div class="ak-hero ${cls}"><div class="lg"><img src="assets/logo_pr.svg" alt=""><div><b>Pantau Rimbak</b><small>Yayasan PRCF Indonesia</small></div></div><h1>${h}</h1><p>${p}</p></div>`;
 const privacy = `<div class="ak-note">${svg('shield', 18)}<span>Biodata dan foto disimpan di HP ini dan dikirim ke <b>database pengguna Yayasan PRCF Indonesia</b> untuk administrasi pengguna aplikasi. Data tidak dibagikan ke pihak lain. <b>Kata sandi tidak pernah dikirim</b>; di HP disimpan terenkripsi satu arah. <a href="kebijakan-privasi.html" data-kp style="color:var(--brand-3,#1E7A58);font-weight:700">Kebijakan Privasi</a></span></div>`;
-const SETUJU = 'Saya menyetujui biodata dan foto saya disimpan dan diolah oleh Yayasan PRCF Indonesia untuk administrasi pengguna aplikasi Fire Hotspot, sesuai UU No. 27 Tahun 2022 tentang Pelindungan Data Pribadi. Saya dapat mengubah atau menghapus akun kapan saja.';
+const SETUJU = 'Saya menyetujui biodata dan foto saya disimpan dan diolah oleh Yayasan PRCF Indonesia untuk administrasi pengguna aplikasi Pantau Rimbak, sesuai UU No. 27 Tahun 2022 tentang Pelindungan Data Pribadi. Saya dapat mengubah atau menghapus akun kapan saja.';
 
 const SETUJU_LOK = 'Saya menyetujui lokasi GPS HP saya dikirim ke Yayasan PRCF Indonesia setiap kali aplikasi dibuka, untuk keselamatan dan koordinasi tim di lapangan. Lokasi hanya dapat dilihat admin PRCF dan riwayatnya dihapus otomatis setelah 30 hari (UU No. 27 Tahun 2022). Berbagi lokasi dapat dimatikan di Profil.';
 const lokChk = () => `<label class="ak-chk"><input type="checkbox" id="akLok"><span>${svg('pin', 16)} ${SETUJU_LOK} <a href="kebijakan-privasi.html" data-kp style="color:var(--brand-3,#1E7A58);font-weight:700">Kebijakan Privasi</a></span></label>`;
@@ -365,7 +365,7 @@ function openProfile() {
        <div class="ak-grp"><button class="ak-row" id="pfLok"><span class="ic">${svg('pin')}</span><span class="m"><b>Bagikan lokasi</b><small>Hanya admin PRCF · riwayat 30 hari</small></span><span class="ak-sw${U.lokasiOn !== false && U.lokasiSetuju ? ' on' : ''}" aria-hidden="true"><i></i></span></button></div>
        <div class="ak-grp"><button class="ak-row" id="pfOut"><span class="ic">${svg('out')}</span><span class="m"><b>Keluar</b><small>Perlu kata sandi untuk masuk lagi</small></span></button>
         <button class="ak-row" id="pfDel" style="color:var(--crit)"><span class="ic" style="color:var(--crit);background:var(--crit-soft)">${svg('trash')}</span><span class="m"><b>Hapus akun dari perangkat</b></span></button></div>
-       <p class="mut" style="text-align:center;font-size:11.5px;margin:4px 0 0">Fire Hotspot · Yayasan PRCF Indonesia</p></div>`;
+       <p class="mut" style="text-align:center;font-size:11.5px;margin:4px 0 0">Pantau Rimbak · Yayasan PRCF Indonesia</p></div>`;
     d.querySelector('#pfBack').onclick = () => closeProfile(true);
     d.querySelector('#pfFoto').onclick = async () => { const r = await photoMenu(); if (r === undefined) return; U.foto = r; U.diubah = new Date().toISOString(); await put('akun', U); notify(); render(); mark('foto'); toast(r ? 'Foto profil diperbarui' : 'Foto profil dihapus'); };
     d.querySelectorAll('[data-ed]').forEach(b => b.onclick = () => editSheet(b.dataset.ed, render));

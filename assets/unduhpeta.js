@@ -1,4 +1,4 @@
-/* Fire Hotspot – UNDUH DATA SPASIAL per Hutan Desa (tahun / periode pilihan)
+/* Pantau Rimbak – UNDUH DATA SPASIAL per Hutan Desa (tahun / periode pilihan)
  * Semua unduhan hanya berisi Hutan Desa yang sedang dibuka (dipotong tepat di batasnya) – tidak pernah satu kabupaten.
  * Data: tutupan lahan tahun Y & perubahan periode (basis data bersama FHModelKLHK: peta lokal ber-groundcheck / Peta KLHK-Kemenhut 2025 + Hansen),
  * lahan kritis (Peta Lahan Kritis Kab. Kapuas Hulu 2022), batas Hutan Desa. Format: SHP (.zip, WGS84, UTF-8), GeoJSON, CSV atribut.
@@ -55,7 +55,7 @@ async function unduh(s, d, M, y0, y1, fmt) {
   else { fitur = (s.hd.features || []).map(f => ({ type: 'Feature', geometry: f.geometry, properties: { HD_NAMA: s.hd_nama, LPHD: s.lphd || '', SK: s.sk || '', LUAS_HA: s.luas_hd_ha || null, SUMBER: s.sumber_batas || '' } }));
     kolom = [['HD_NAMA', 'C', 60], ['LPHD', 'C', 60], ['SK', 'C', 80], ['LUAS_HA', 'N', 14, 2], ['SUMBER', 'C', 120]]; nama = `batas_${slug}`; baca = [`Batas ${s.hd_nama}`, `SK: ${s.sk || '–'} · sumber batas: ${s.sumber_batas || '–'}`]; }
   if (!fitur.length) throw new Error(T_('Tidak ada poligon untuk pilihan ini (mis. tidak ada perubahan pada periode itu).'));
-  const F = fitur.map(tr); baca = baca.concat(['', `Jumlah fitur: ${F.length} · sistem koordinat WGS 1984 (EPSG:4326)`, `Dibuat oleh aplikasi Fire Hotspot – Yayasan PRCF Indonesia, ${A.wib(Date.now())}`]).map(T_);
+  const F = fitur.map(tr); baca = baca.concat(['', `Jumlah fitur: ${F.length} · sistem koordinat WGS 1984 (EPSG:4326)`, `Dibuat oleh aplikasi Pantau Rimbak – Yayasan PRCF Indonesia, ${A.wib(Date.now())}`]).map(T_);
   if (A.EN()) nama = nama.replace(/^tutupan_lahan/, 'land_cover').replace(/^perubahan_tutupan/, 'land_cover_change').replace(/^lahan_kritis/, 'critical_land').replace(/^batas/, 'boundary');
   if (fmt === 'geojson') A.dl(new Blob([JSON.stringify({ type: 'FeatureCollection', name: nama, features: F })], { type: 'application/geo+json' }), nama + '.geojson');
   else if (fmt === 'csv') { const K = Object.keys(F[0].properties); A.dl(new Blob([A.csv([K, ...F.map(f => K.map(k => f.properties[k]))])], { type: 'text/csv' }), nama + '.csv'); }

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>window.FH_WEB=/[?&]web=1/.test(location.search);if(window.FH_WEB)document.documentElement.classList.add("web");</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>Fire Hotspot</title>
+<title>Pantau Rimbak</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0B3B2C">
 <link rel="icon" href="assets/icons/icon-192.png">
@@ -12,8 +12,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Fire Hotspot">
-<meta name="description" content="Fire Hotspot: pemantauan titik panas satelit NASA FIRMS untuk Hutan Desa di Kabupaten Kapuas Hulu.">
+<meta name="apple-mobile-web-app-title" content="Pantau Rimbak">
+<meta name="description" content="Pantau Rimbak: pemantauan titik panas satelit NASA FIRMS untuk Hutan Desa di Kabupaten Kapuas Hulu.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
@@ -547,7 +547,7 @@ html.web [data-noweb]{display:none!important}
 
 <!-- ================= SPLASH ================= -->
 <div id="splash" role="status" aria-live="polite">
-  <div class="sp-ring"><div class="sp-logo"><img src="assets/logo_fh.svg" alt="Fire Hotspot" class="fh-logo" style="width:100%;height:100%;display:block"></div></div>
+  <div class="sp-ring"><div class="sp-logo"><img src="assets/logo_pr.svg" alt="Pantau Rimbak" class="fh-logo" style="width:100%;height:100%;display:block"></div></div>
   <div class="sp-name">Fire <span>Hotspot</span></div>
   <div class="sp-sub">Hutan Desa · Kapuas Hulu</div>
   <div class="sp-bar"><i></i></div>
@@ -558,7 +558,7 @@ html.web [data-noweb]{display:none!important}
 <!-- ================= PILIH LOKASI ================= -->
 <div id="chooser" class="hide" role="dialog" aria-label="Pilih lokasi Hutan Desa">
   <div class="ch-hero">
-    <div class="ch-top"><img src="assets/logo_prcf.jpg" alt="Yayasan PRCF Indonesia" style="height:40px;border-radius:5px;flex:none"><span class="ab-logo"><img src="assets/logo_fh.svg" alt="Fire Hotspot" class="fh-logo" style="width:100%;height:100%;display:block"></span><b>Fire Hotspot</b><span class="live" id="chLive"><i></i><span>LIVE</span></span></div>
+    <div class="ch-top"><img src="assets/logo_prcf.jpg" alt="Yayasan PRCF Indonesia" style="height:40px;border-radius:5px;flex:none"><span class="ab-logo"><img src="assets/logo_pr.svg" alt="Pantau Rimbak" class="fh-logo" style="width:100%;height:100%;display:block"></span><b>Pantau Rimbak</b><span class="live" id="chLive"><i></i><span>LIVE</span></span></div>
     <h1 id="chHi">Selamat datang</h1>
     <p id="chMsg" class="ch-msg"></p>
     <p>Pilih Hutan Desa yang ingin dipantau. Status dihitung dari titik panas satelit NASA 7 hari terakhir.</p>
@@ -572,8 +572,8 @@ html.web [data-noweb]{display:none!important}
 <!-- ================= APP BAR ================= -->
 <header class="appbar" id="appbar">
   <button class="ab-back tap" id="abBack" aria-label="Kembali"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
-  <span class="ab-logo"><img src="assets/logo_fh.svg" alt="Fire Hotspot" class="fh-logo" style="width:100%;height:100%;display:block"></span>
-  <div class="ab-t" id="abT"><b id="abTitle">Fire Hotspot</b><small id="abSub">Hutan Desa Nanga Lauk</small></div>
+  <span class="ab-logo"><img src="assets/logo_pr.svg" alt="Pantau Rimbak" class="fh-logo" style="width:100%;height:100%;display:block"></span>
+  <div class="ab-t" id="abT"><b id="abTitle">Pantau Rimbak</b><small id="abSub">Hutan Desa Nanga Lauk</small></div>
   <span class="live off" id="live"><i></i><span>LIVE</span></span>
   <button class="ab-act tap" id="abMe" aria-label="Profil saya" style="background:none;padding:0"></button>
   <button class="ab-act tap" id="abRefresh" aria-label="Muat ulang data"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg></button>
@@ -635,7 +635,7 @@ html.web [data-noweb]{display:none!important}
 </section>
 
 <!-- ================= DASBOR (BERANDA) ================= -->
-<section class="view" id="v-dash" data-title="Fire Hotspot" data-sub="Dasbor pemantauan"><div class="pad"><div class="hub" id="hub"></div></div></section>
+<section class="view" id="v-dash" data-title="Pantau Rimbak" data-sub="Dasbor pemantauan"><div class="pad"><div class="hub" id="hub"></div></div></section>
 
 <!-- ================= BARA AI ================= -->
 <section class="view" id="v-ai" data-title="Bara Api" data-sub="Asisten AI · perhutanan sosial, regulasi, satwa"><div id="aiBox"></div></section>
@@ -724,7 +724,7 @@ html.web [data-noweb]{display:none!important}
       <a class="row tap" href="https://github.com/erikprcfi/hotspot-fire-prcf" target="_blank" rel="noopener"><span class="ico-sq" style="background:#2A2F2C"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 9l-4 3 4 3M16 9l4 3-4 3M14 5l-4 14"/></svg></span><span class="m"><b>Kode &amp; jejak audit (GitHub)</b><small>Semua data dan riwayat terbuka</small></span><span class="chev">›</span></a>
     </div>
     <img src="assets/logo_prcf.jpg" alt="Yayasan PRCF Indonesia" style="height:54px;border-radius:6px;display:block;margin:22px auto 0">
-    <p class="small muted" style="text-align:center;margin-top:10px"><b>Yayasan PRCF Indonesia</b><br>Fire Hotspot · Pemantauan Hutan Desa<br>Kabupaten Kapuas Hulu, Kalimantan Barat</p>
+    <p class="small muted" style="text-align:center;margin-top:10px"><b>Yayasan PRCF Indonesia</b><br>Pantau Rimbak · Pemantauan Hutan Desa<br>Kabupaten Kapuas Hulu, Kalimantan Barat</p>
     </div>
   </div>
 </section>
@@ -906,7 +906,7 @@ $('#fabMe').onclick=()=>{
   if(!navigator.geolocation)return openSheet('<h3>Lokasi tidak tersedia</h3><p class="sub">HP ini tidak mendukung GPS di aplikasi.</p>');
   navigator.geolocation.getCurrentPosition(pos=>{const ll=[pos.coords.latitude,pos.coords.longitude];if(meL)MAP.removeLayer(meL);meL=L.marker(ll,{icon:L.divIcon({className:'',html:'<div class="me-dot"></div>',iconSize:[16,16],iconAnchor:[8,8]})}).addTo(MAP);MAP.flyTo(ll,Math.max(MAP.getZoom(),13),{duration:.8});
     const F=filtered();if(F.length){const d=p=>MAP.distance(ll,[p.la,p.lo]);const n=F.reduce((a,b)=>d(a)<d(b)?a:b);const l=$('#focusLbl');l.textContent=`Titik terdekat ${N1(d(n)/1000)} km dari Anda`;l.classList.add('on');clearTimeout(l._t);l._t=setTimeout(()=>l.classList.remove('on'),2600);}},
-   e=>openSheet(`<h3>GPS belum aktif</h3><p class="sub">Izinkan akses lokasi untuk Fire Hotspot di pengaturan HP, lalu coba lagi.</p><button class="btn pri full tap" onclick="history.back()">Mengerti</button>`),{enableHighAccuracy:true,timeout:15000});
+   e=>openSheet(`<h3>GPS belum aktif</h3><p class="sub">Izinkan akses lokasi untuk Pantau Rimbak di pengaturan HP, lalu coba lagi.</p><button class="btn pri full tap" onclick="history.back()">Mengerti</button>`),{enableHighAccuracy:true,timeout:15000});
 };
 
 let PERX=null,RPTS=[];
@@ -1354,7 +1354,7 @@ function hubSlide(el){clearInterval(HUB_SL);const bg=el.querySelector('.hx-bg'),
     dots.querySelectorAll('button').forEach((b,j)=>b.onclick=()=>{show(j);clearInterval(HUB_SL);HUB_SL=setInterval(()=>show((HUB_SI+1)%L.length),9000);});
     if(HUB_SI)show(HUB_SI);HUB_SL=setInterval(()=>{if(!document.body.contains(bg))return clearInterval(HUB_SL);show((HUB_SI+1)%L.length);},9000);},2500);}
 function hubRender(){const el=$('#hub');if(!el)return;
-  if(!SITE){el.innerHTML='<div class="hx-stage"><div class="hx-bg"><div class="hx-img f0"></div><div class="hx-shade"></div></div><div class="hx-wrap"><div class="hx-site" style="cursor:default">Fire Hotspot</div><p class="hx-meta">Memuat data…</p></div></div>';return;}
+  if(!SITE){el.innerHTML='<div class="hx-stage"><div class="hx-bg"><div class="hx-img f0"></div><div class="hx-shade"></div></div><div class="hx-wrap"><div class="hx-site" style="cursor:default">Pantau Rimbak</div><p class="hx-meta">Memuat data…</p></div></div>';return;}
   let st={txt:'–',inside:0,near:0,r25:0,lvl:'ok'};try{st=siteStatus(SI);}catch(e){}
   const F=(FC&&FC.lokasi&&FC.lokasi[SITE.id])||{},KL=(FC&&FC.kelas)||['Rendah','Sedang','Tinggi','Ekstrem'],HR=(F.hari||[]).slice(0,7),H=HR[0],lv=H?H.level||0:null;
   const u=F.udara&&F.udara.sekarang,un=u?(F.udara.kategori_nama||[])[u.kategori]:null,last=ALL.reduce((m,p)=>p.when>m?p.when:m,0);
@@ -1386,7 +1386,7 @@ function hubRender(){const el=$('#hub');if(!el)return;
     ${kpi('hutan','Hutan tersisa di Hutan Desa','<span id="hxHut">–</span>','<span id="hxHutS">Hansen GFC 2001–2025</span>','<div class="hx-lv" id="hxHutB"></div>')}
    </div></div></div>
    ${G.map(([g,ds,L])=>{const im=HUB_IMG[g];const op=HUB_OPEN===g;return `<section class="hx-sec${op?' open':''}" data-g="${esc(g)}"><button type="button" class="hx-h hx-in${im?'':' plain'}" aria-expanded="${op}" ${I(im?`--img:url(assets/latar_${im[0]}_900.webp);--pos:${im[1]}`:'')}><b>${g}</b><span>${ds} · ${L.length} alat</span><svg class="chv" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="hx-acc"><div class="hx-grid">${L.map(([k,n,c1,c2])=>`<button class="hx-t hx-in" data-hub="${k}" ${I(`--c1:${c1};--c2:${c2}`)}><span class="hx-ic">${IC[k]||IC.grafik}</span><span class="hx-tx"><b>${n}</b><small data-sub="${k}">${HUB_SUB[k]||''}</small></span>${HUB_BARU.includes(k)?'<span class="hx-new">BARU</span>':''}</button>`).join('')}</div></div></section>`;}).join('')}
-   <div class="hx-foot"><span>${last?'NASA FIRMS · '+esc(new Date(last).toLocaleString('id-ID',{timeZone:'Asia/Jakarta',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))+' WIB':''}</span><span>Yayasan PRCF Indonesia · Fire Hotspot</span></div>`;
+   <div class="hx-foot"><span>${last?'NASA FIRMS · '+esc(new Date(last).toLocaleString('id-ID',{timeZone:'Asia/Jakarta',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))+' WIB':''}</span><span>Yayasan PRCF Indonesia · Pantau Rimbak</span></div>`;
   el.classList.toggle('anim',HUB_ANIM);HUB_ANIM=false;
   el.querySelectorAll('[data-hub]').forEach(b=>b.onclick=()=>b.dataset.hub==='pilih'?chooser(true):hubGo(b.dataset.hub));
   el.querySelectorAll('.hx-sec').forEach(sec=>{const h=sec.querySelector('.hx-h');h.onclick=()=>{const buka=!sec.classList.contains('open');

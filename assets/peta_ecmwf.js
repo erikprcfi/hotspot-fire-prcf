@@ -1,4 +1,4 @@
-/* Peta prakiraan asap & kualitas udara bergaya ECMWF charts – Fire Hotspot PRCF
+/* Peta prakiraan asap & kualitas udara bergaya ECMWF charts – Pantau Rimbak PRCF
  * Peta: layanan WMS publik ECMWF (eccharts.ecmwf.int, token publik) – model Copernicus CAMS, per 3 jam, termasuk prakiraan ±4 hari.
  *       Warna = skala resmi ECMWF; kelas nilai rendah dibuat transparan (bukan diubah) agar citra dasar asli tetap terlihat.
  * Nilai di titik: Open-Meteo Air Quality API (CAMS global) untuk koordinat yang dipilih.

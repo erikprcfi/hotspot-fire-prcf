@@ -1,6 +1,6 @@
 {
   "appId": "org.prcfindonesia.firehotspot",
-  "appName": "Fire Hotspot",
+  "appName": "Pantau Rimbak",
   "webDir": "www",
   "server": {
     "url": "https://erikprcfi.github.io/hotspot-fire-prcf/app.html",

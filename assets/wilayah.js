@@ -1,4 +1,4 @@
-/* Deteksi wilayah administrasi dari koordinat (luring, tanpa layanan pihak ketiga) – Fire Hotspot PRCF
+/* Deteksi wilayah administrasi dari koordinat (luring, tanpa layanan pihak ketiga) – Pantau Rimbak PRCF
  * Desa/kelurahan → kecamatan → kabupaten/kota → provinsi.
  * Batas: OCHA COD-AB Indonesia (BPS/BIG); nama & kode: Kepmendagri No. 300.2.2-2430 Tahun 2025.
  * Pemakaian: const w = await FHWilayah.lookup(lat, lon); FHWilayah.label(w)

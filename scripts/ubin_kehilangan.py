@@ -1,4 +1,4 @@
-"""Lapisan peta "Kehilangan tutupan pohon 2001–2025" milik Fire Hotspot sendiri (ubin XYZ PNG), dibuat dari raster ASLI
+"""Lapisan peta "Kehilangan tutupan pohon 2001–2025" milik Pantau Rimbak sendiri (ubin XYZ PNG), dibuat dari raster ASLI
 Hansen/UMD Global Forest Change v1.13 (University of Maryland · Google · USGS · NASA; CC BY 4.0), diunduh dari server resmi
 penerbit (storage.googleapis.com/earthenginepartners-hansen). Tidak bergantung pada server peta pihak lain.
 

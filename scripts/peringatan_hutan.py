@@ -1,5 +1,5 @@
 """
-Peringatan kehilangan tutupan hutan terbaru (Sentinel-2) – Fire Hotspot PRCF
+Peringatan kehilangan tutupan hutan terbaru (Sentinel-2) – Pantau Rimbak PRCF
 ============================================================================
 Untuk setiap lokasi (Hutan Desa + desa + radius 1 km), sebulan sekali:
   * Hutan acuan = tutupan tajuk 2000 >= 30% dan BELUM hilang s.d. 2025 (Hansen/UMD GFC v1.13).

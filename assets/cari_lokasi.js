@@ -1,4 +1,4 @@
-/* Pencarian lokasi untuk menu Prakiraan – Fire Hotspot PRCF
+/* Pencarian lokasi untuk menu Prakiraan – Pantau Rimbak PRCF
  * Indonesia : seluruh desa/kelurahan (±81 ribu), kecamatan & kab/kota – nama Kepmendagri No. 300.2.2-2430 Tahun 2025,
  *             titik dari batas desa OCHA COD-AB (BPS/BIG) → data/wilayah/cari.json (luring, dimuat sekali saat pertama mencari)
  * Seluruh dunia: Open-Meteo Geocoding API (data GeoNames, CC BY 4.0)

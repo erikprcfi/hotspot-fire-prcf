@@ -1,4 +1,4 @@
-/* Layar pembuka (dashboard sapaan) – Fire Hotspot PRCF
+/* Layar pembuka (dashboard sapaan) – Pantau Rimbak PRCF
  * Sapaan + kalimat penyemangat, peta 3D berputar di lokasi pengguna (citra Sentinel-2 cloudless 2025 EOX + elevasi AWS Terrain Tiles),
  * jam setempat (WIB/WITA/WIT), lokasi GPS (desa/kec/kab – BPS/BIG + Kepmendagri 2025), cuaca saat ini (ECMWF IFS via Open-Meteo),
  * kualitas udara PM2.5 (Copernicus CAMS) & titik panas NASA terdekat. Tombol lanjut ke pemilihan Hutan Desa.
@@ -55,7 +55,7 @@ function show(o = {}) {
   const el = document.createElement('div'); el.id = 'fhb'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Beranda');
   el.innerHTML = `<div class="fhb-map"><div id="fhbMap" style="position:absolute;inset:0;width:100%;height:100%"></div></div><div class="fhb-fade"></div>
    <div class="fhb-in">
-    <div class="fhb-top"><img src="assets/logo_prcf.jpg" alt="Yayasan PRCF Indonesia"><span class="ab-logo" style="width:38px;height:38px"><img src="assets/logo_fh.svg" alt="" style="width:100%;height:100%;border-radius:0"></span><b>Fire Hotspot</b><div class="fhb-clock" id="fhbClock">–</div></div>
+    <div class="fhb-top"><img src="assets/logo_prcf.jpg" alt="Yayasan PRCF Indonesia"><span class="ab-logo" style="width:38px;height:38px"><img src="assets/logo_pr.svg" alt="" style="width:100%;height:100%;border-radius:0"></span><b>Pantau Rimbak</b><div class="fhb-clock" id="fhbClock">–</div></div>
     <h1 class="fhb-hi">${esc(o.sapa ? o.sapa() : 'Selamat datang')}</h1>
     <p class="fhb-msg">${esc(o.pesan ? o.pesan() : '')}</p>
     <div class="fhb-sp"></div>

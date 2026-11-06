@@ -1,4 +1,4 @@
-/* Fire Hotspot – pilihan bahasa antarmuka (Bahasa Indonesia / English) – Yayasan PRCF Indonesia
+/* Pantau Rimbak – pilihan bahasa antarmuka (Bahasa Indonesia / English) – Yayasan PRCF Indonesia
  * Bahasa Indonesia = teks asli. English = terjemahan manual (kamus di bawah, ditulis per kalimat; tidak memakai mesin penerjemah),
  * diterapkan ke teks yang tampil di layar. Nama resmi (Hutan Desa, desa, peraturan, sumber data) dibiarkan sesuai aslinya.
  * Bagian bertanda data-notr (mis. obrolan Bara Api) diatur modulnya sendiri.
@@ -115,7 +115,7 @@ const D = {
 'Tampilan': 'Appearance', 'Otomatis': 'Automatic', 'Terang': 'Light', 'Gelap': 'Dark', 'Tentang': 'About',
 'Cara kerja & validitas data': 'How it works & data validity', 'NASA FIRMS, pembaruan # jam, jejak audit': 'NASA FIRMS, #-hour updates, audit trail', 'Zona & tingkat status': 'Zones & status levels', 'Aman, Waspada, Siaga': 'Safe, Alert, Warning',
 'Buka versi website': 'Open the website version', 'Tampilan lengkap untuk laptop': 'Full layout for laptops', 'Kode & jejak audit (GitHub)': 'Code & audit trail (GitHub)', 'Semua data dan riwayat terbuka': 'All data and history are open',
-'Fire Hotspot · Pemantauan Hutan Desa': 'Fire Hotspot · Village Forest Monitoring', 'Kabupaten Kapuas Hulu, Kalimantan Barat': 'Kapuas Hulu Regency, West Kalimantan',
+'Pantau Rimbak · Pemantauan Hutan Desa': 'Pantau Rimbak · Village Forest Monitoring', 'Kabupaten Kapuas Hulu, Kalimantan Barat': 'Kapuas Hulu Regency, West Kalimantan',
 'Beranda': 'Home', 'Prakiraan': 'Forecast', 'Data': 'Data', 'Laporan': 'Reports', 'Lainnya': 'More', 'Pratinjau laporan': 'Report preview',
 'Buat akun Anda': 'Create your account', 'Daftar sekali saja dengan data asli. Email Anda akan diverifikasi.': 'Register once with your real data. Your email will be verified.',
 'Biodata': 'Personal details', 'Isi sesuai identitas asli (KTP). Data palsu akan diblokir admin.': 'Fill in as on your official ID (KTP). Fake data will be blocked by the admin.',
@@ -125,7 +125,7 @@ const D = {
 'Kata sandi': 'Password', 'Ulangi kata sandi': 'Repeat password', 'Biodata dan foto disimpan di HP ini dan dikirim ke': 'Details and photo are stored on this phone and sent to the',
 'database pengguna Yayasan PRCF Indonesia': 'Yayasan PRCF Indonesia user database', 'untuk administrasi pengguna aplikasi. Data tidak dibagikan ke pihak lain.': 'for app user administration. Data is not shared with other parties.',
 'Kata sandi tidak pernah dikirim': 'Your password is never sent', '; di HP disimpan terenkripsi satu arah.': '; on the phone it is stored one-way encrypted.',
-'Saya menyetujui biodata dan foto saya disimpan dan diolah oleh Yayasan PRCF Indonesia untuk administrasi pengguna aplikasi Fire Hotspot, sesuai UU No. # Tahun # tentang Pelindungan Data Pribadi. Saya dapat mengubah atau menghapus akun kapan saja.': 'I agree that my details and photo are stored and processed by Yayasan PRCF Indonesia for Fire Hotspot user administration, in accordance with Law No. # of # on Personal Data Protection. I can change or delete my account at any time.',
+'Saya menyetujui biodata dan foto saya disimpan dan diolah oleh Yayasan PRCF Indonesia untuk administrasi pengguna aplikasi Pantau Rimbak, sesuai UU No. # Tahun # tentang Pelindungan Data Pribadi. Saya dapat mengubah atau menghapus akun kapan saja.': 'I agree that my details and photo are stored and processed by Yayasan PRCF Indonesia for Pantau Rimbak user administration, in accordance with Law No. # of # on Personal Data Protection. I can change or delete my account at any time.',
 'Daftar & masuk': 'Register & sign in', 'Pilih lokasi Hutan Desa': 'Choose a Village Forest', 'Kembali': 'Back', 'Bara Api – asisten AI': 'Bara Api – AI assistant', 'Profil saya': 'My profile', 'Muat ulang data': 'Reload data',
 'Sembunyikan kartu info': 'Hide info card', 'Tutup lapisan NASA': 'Close NASA layer', 'Hari sebelumnya': 'Previous day', 'Hari berikutnya': 'Next day', 'Putar pergerakan # hari': 'Play # -day movement',
 'Daftar titik panas': 'Hotspot list', 'Filter satelit dan periode': 'Satellite & period filter', 'Lapisan peta': 'Map layers', 'Peta #D dan globe': '#D map and globe', 'Fokus wilayah': 'Focus area', 'Animasi angin': 'Wind animation', 'Kompas': 'Compass',

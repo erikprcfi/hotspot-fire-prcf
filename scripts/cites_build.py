@@ -1,5 +1,5 @@
 """
-Daftar Apendiks CITES resmi untuk asisten AI "Bara Api" – Fire Hotspot PRCF
+Daftar Apendiks CITES resmi untuk asisten AI "Bara Api" – Pantau Rimbak PRCF
 Sumber: Species+ (UNEP-WCMC & Sekretariat CITES), ekspor publik "CITES Listings" (speciesplus.net/species/exports).
 Menyimpan data/bara/cites/{huruf}.json (dipecah per huruf awal genus) + data/bara/cites/indeks.json (sumber, waktu unduh, SHA-256).
 Dijalankan GitHub Actions (kb.yml, bulanan) – nilai Apendiks disalin apa adanya, tidak diubah.

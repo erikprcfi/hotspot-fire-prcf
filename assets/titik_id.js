@@ -1,4 +1,4 @@
-/* Fire Hotspot – titik panas NASA FIRMS terdekat dari lokasi mana pun di Indonesia (7 hari terakhir).
+/* Pantau Rimbak – titik panas NASA FIRMS terdekat dari lokasi mana pun di Indonesia (7 hari terakhir).
  * Data: data/titik_id/*.json, dipecah per petak 1°×1° oleh pipeline dari berkas resmi NASA FIRMS near real-time Asia Tenggara
  * (diperbarui otomatis tiap 3 jam). HP hanya memuat petak di sekitar pengguna.
  * FHTitikID.terdekat(lat, lon, {hari:7}) → { jarak_km, n5, n25, titik:{la,lo,when,sensor,frp}, diperbarui_utc } | null

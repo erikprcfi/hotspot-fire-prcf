@@ -1,4 +1,4 @@
-/* Fire Hotspot – TINDAK LANJUT KEJADIAN (v9)
+/* Pantau Rimbak – TINDAK LANJUT KEJADIAN (v9)
  * Setiap titik panas di sekitar Hutan Desa punya status penanganan:
  *   Terdeteksi → Ditugaskan → Dicek di lapangan → Ditangani → Selesai
  * Disimpan di Google Sheets PRCF (lembar "Tindak Lanjut", Apps Script v9: tindak_set / tindak_daftar) beserta riwayat & waktu tiap tahap,
@@ -22,7 +22,7 @@ const sat = p => (p.ins === 'MODIS' ? 'MODIS' : 'VIIRS') + (p.sat ? ' ' + ({ N: 
 
 /* formulir ubah status (dipakai dari daftar & dari detail titik di peta) */
 function ubah(p, selesai) {
-  const A = X(); A.perlu('Masuk dengan akun Fire Hotspot untuk memperbarui tindak lanjut.', async () => {
+  const A = X(); A.perlu('Masuk dengan akun Pantau Rimbak untuk memperbarui tindak lanjut.', async () => {
     let D = { status: {}, tim: [], admin: false }; try { D = await muat(true); } catch (e) { return A.toast('Tidak ada koneksi. Tindak lanjut memerlukan internet.'); }
     const cur = D.status[p.k] || {}, sNow = cur.s || 'Terdeteksi', u = A.akun();
     const host = document.createElement('div'); host.className = 'wb-dlg tl-dlg'; host.style.cssText = 'position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:16px;background:rgba(4,12,8,.55);backdrop-filter:blur(4px)';

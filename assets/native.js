@@ -1,4 +1,4 @@
-/* Fire Hotspot – penyesuaian saat berjalan di aplikasi Android (Capacitor). Di browser biasa berkas ini tidak melakukan apa pun.
+/* Pantau Rimbak – penyesuaian saat berjalan di aplikasi Android (Capacitor). Di browser biasa berkas ini tidak melakukan apa pun.
  * - Unduhan (CSV, SHP, PDF, JSON) → disimpan ke HP lalu menu "Bagikan/Simpan" Android dibuka (WebView tidak bisa mengunduh blob).
  * - navigator.share → menu bagikan Android.
  * - FHNative.http(): kirim data lewat jaringan asli (tidak diperlambat Android saat aplikasi di latar belakang).

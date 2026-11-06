@@ -2,7 +2,7 @@
 Pengirim notifikasi Web Push (standar W3C Push API) tanpa pustaka pihak ketiga selain `cryptography`.
 - Enkripsi isi pesan: RFC 8291 (Message Encryption for Web Push) dengan pengodean aes128gcm (RFC 8188).
 - Identitas server: VAPID (RFC 8292), tanda tangan JWT ES256.
-Dipakai scripts/peringatan.py – Fire Hotspot PRCF.
+Dipakai scripts/peringatan.py – Pantau Rimbak PRCF.
 """
 import base64, hashlib, hmac, json, os, struct, time, urllib.parse, urllib.request
 from cryptography.hazmat.primitives.asymmetric import ec
