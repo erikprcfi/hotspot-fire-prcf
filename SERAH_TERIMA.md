@@ -44,7 +44,7 @@ Kerjakan bagian PERTAMA yang belum dicentang, satu bagian per sesi:
       layar masuk email/kata sandi/kode ID (opsional), gating tampilan HD per kode, halaman daftar kode ID setelah unggah SHP,
       tulis `apps_script/Kode_Database_Pengguna_v12.gs.txt` (turunan v11; aksi: cek_email, masuk, daftar dgn hash, kode_simpan/kode_ambil
       untuk wilayah SHP di Drive). Pengguna memasang v12 sendiri. Uji di Playwright dengan server tiruan.
-- [ ] Sesi B – Audit & perbaiki semua lapisan peta (lihat butir 4): uji tiap lapisan menghasilkan ubin di Kalbar & lokasi lain Indonesia
+- [x] Sesi B (SELESAI 6 Nov) – Audit & perbaiki semua lapisan peta (lihat butir 4): uji tiap lapisan menghasilkan ubin di Kalbar & lokasi lain Indonesia
       (mis. Riau, Papua, Aceh); ganti sumber lokal-saja dengan sumber resmi nasional/global atau beri label jelas.
 - [ ] Sesi C – Penyegaran tampilan untuk presentasi: beranda & peta lebih profesional (web dan HP berbeda tata letak), nama/ikon Android
       (strings.xml app_name, mipmap adaptif dari assets/logo_pr.svg), kop laporan Pantau Rimbak.
@@ -61,6 +61,17 @@ Kerjakan bagian PERTAMA yang belum dicentang, satu bagian per sesi:
 - Apps Script v12 sudah dikirim ke pengguna (tidak di repo: berisi ID Sheet/folder). Pengguna perlu memasangnya.
 - BELUM: data semua alat untuk wilayah SHP (tahap data nasional); titik panas di peta mode umum masih data wilayah Kapuas Hulu & sekitar.
 - Risiko Play Store: persetujuan berbagi lokasi GPS ke PRCF masih WAJIB saat masuk/daftar – untuk rilis publik sebaiknya opsional.
+
+## Catatan Sesi B (6 Nov) – hasil uji ubin per lapisan di Kalbar, Riau, Papua, Aceh (Playwright, 0 error halaman)
+- Semua lapisan NASA/CAMS berfungsi di 4 lokasi: fire (WMS FIRMS), true color, CO, AOD (sebagian 404 = tidak ada data/awan, wajar), smoke & PM2.5 (CAMS), indeks aerosol OMPS.
+- Perbaikan: OMPS & OPERA tertunda beberapa hari di GIBS → `terbaru()` di nasa_layers.js mencari tanggal terbaru yang benar-benar ada (≤20 hari).
+- BARU (seluruh Indonesia): 'dist' NASA OPERA DIST-ALERT (gangguan vegetasi 30 m, gabungan 8 hari) & 'distann' OPERA DIST-ANN (tahunan, produk 2025-01-01);
+  piksel "tidak ada gangguan" (18,18,18) dibuat transparan (HideTile). Colormap resmi: gibs.earthdata.nasa.gov/colormaps/v1.3/OPERA_Vegetation_Disturbance_Status.xml
+- Kehilangan tutupan pohon: ubin resmi Hansen GFC v1.13 global (storage.googleapis.com/earthenginepartners-hansen/tiles/gfc_v1.13/loss_alpha) + ubin per-tahun lokal Kapuas Hulu di atasnya.
+- Bekas terbakar & peringatan perubahan hutan = analisis PRCF untuk HD dampingan → diberi label jelas & disembunyikan di mode umum; nasional diarahkan ke OPERA.
+- Mode umum otomatis menyalakan lapisan titik api NASA FIRMS (seluruh dunia). Angin (Open-Meteo ECMWF) memang global.
+- Apps Script v12 SUDAH dipasang pengguna (diverifikasi: layanan "Pantau Rimbak – database pengguna v12", cek_email berfungsi).
+- Daftar titik panas & statistik masih dari data FIRMS wilayah Kapuas Hulu (pipeline) → nasional = tahap data nasional.
 
 ## Cara kerja hemat kuota (paket Pro pengguna)
 Satu bagian per sesi/percakapan; uji, commit ke `pantau-rimbak`, perbarui file ini, laporkan singkat dalam bahasa Indonesia.

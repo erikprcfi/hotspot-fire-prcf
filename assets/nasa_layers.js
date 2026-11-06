@@ -31,6 +31,12 @@ const LAYERS = [
   { id: 'ai', nm: 'Indeks aerosol asap (OMPS)', short: 'Asap · Indeks aerosol', gibs: 'OMPS_Aerosol_Index', m: 'GoogleMapsCompatible_Level6', ext: 'png', z: 6, op: .72,
     desc: 'Indeks aerosol ultraungu OMPS (Suomi NPP): mendeteksi asap dan debu, termasuk di atas awan. Gabungan 2 hari. Resolusi ±50 km.', since: '2012-02-01', days: 2,
     legend: 'https://gibs.earthdata.nasa.gov/legends/OMPS_Aerosol_Index_H.svg' },
+  { id: 'dist', nm: 'Gangguan vegetasi terbaru (NASA OPERA)', short: 'Gangguan vegetasi · OPERA DIST-ALERT', gibs: 'OPERA_L3_DIST-ALERT-HLS_Color_Index', m: 'GoogleMapsCompatible_Level12', ext: 'png', z: 12, op: .95, days: 8,
+    hide: [[18, 18, 18]],
+    desc: 'Status gangguan/kehilangan vegetasi dari NASA JPL OPERA DIST-ALERT (citra Landsat & Sentinel-2 HLS, 30 m), seluruh dunia termasuk Indonesia: pembukaan lahan, penebangan, bekas terbakar. Gabungan 8 hari pengamatan sampai tanggal terpilih. Kuning = terkonfirmasi < 50 % kehilangan tajuk, merah = terkonfirmasi ≥ 50 %, biru-hijau = deteksi awal/sementara, abu-abu = gangguan sudah selesai.', since: '2023-01-01', legend: null },
+  { id: 'distann', nm: 'Gangguan vegetasi tahunan (NASA OPERA)', short: 'Gangguan vegetasi tahunan · OPERA DIST-ANN', gibs: 'OPERA_L3_DIST-ANN-HLS_Color_Index', m: 'GoogleMapsCompatible_Level12', ext: 'png', z: 12, op: .95, fixed: '2025-01-01',
+    hide: [[18, 18, 18]],
+    desc: 'Rekap tahunan gangguan vegetasi terkonfirmasi dari NASA JPL OPERA DIST-ANN (HLS 30 m), produk bertanggal 2025-01-01. Kuning = < 50 % kehilangan tajuk, merah = ≥ 50 %, abu-abu = gangguan selesai.', since: '2023-01-01', legend: null },
 ];
 const iso = d => d.toISOString().slice(0, 10);
 const yesterdayWIB = () => iso(new Date(Date.now() + 7 * 36e5 - 864e5));
@@ -48,13 +54,36 @@ const CamsWMS = L.TileLayer.WMS.extend({
     im.onerror = e => done(e, cv); im.src = this.getTileUrl(c); return cv;
   }
 });
+// Ubin GIBS dengan warna "tanpa data/tidak ada gangguan" dibuat transparan (lapisan OPERA)
+const HideTile = L.TileLayer.extend({
+  createTile(c, done) {
+    const cv = document.createElement('canvas'), s = this.getTileSize(); cv.width = s.x; cv.height = s.y;
+    const im = new Image(); im.crossOrigin = 'anonymous'; const hide = this.options.hide || [];
+    im.onload = () => { try { const g = cv.getContext('2d'); g.drawImage(im, 0, 0, s.x, s.y); const D = g.getImageData(0, 0, s.x, s.y), a = D.data;
+        for (let i = 0; i < a.length; i += 4) { if (!a[i + 3]) continue; for (const k of hide) if (Math.abs(a[i] - k[0]) < 6 && Math.abs(a[i + 1] - k[1]) < 6 && Math.abs(a[i + 2] - k[2]) < 6) { a[i + 3] = 0; break; } }
+        g.putImageData(D, 0, 0); } catch (e) { } done(null, cv); };
+    im.onerror = () => done(null, cv); im.src = this.getTileUrl(c); return cv;
+  }
+});
 function tiles(L0, d, h, extra = {}) {  // satu bingkai lapisan untuk tanggal d (dan jam UTC h untuk CAMS)
   const o = { pane: 'nasa', updateWhenZooming: false, keepBuffer: 3, ...extra };
   if (L0.cams) return new CamsWMS(CAMS, { hide: L0.hide, layers: L0.cams, styles: L0.style || '', format: 'image/png', transparent: true, version: '1.3.0', time: `${d}T${pad(h)}:00:00Z`, tileSize: 512, attribution: 'Copernicus Atmosphere Monitoring Service (CAMS) · ECMWF', ...o });
   if (L0.wms) return L.tileLayer.wms('https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi', { layers: L0.wms, format: 'image/png', transparent: true, version: '1.3.0', time: d, tileSize: 512, updateWhenIdle: true, ...o });
   const alt = L0.pick ? L0.pick(d) : null, ids = L0.multi || [(alt && alt.gibs) || L0.gibs];
-  const g = L.layerGroup(ids.map((id, k) => L.tileLayer(`${BASE}${id}/default/${d}/${L0.m}/{z}/{y}/{x}.${L0.ext}`, { maxNativeZoom: L0.z, maxZoom: 18, tileSize: 256, attribution: k ? '' : `NASA GIBS · ${L0.short} · ${d}`, ...o })));
+  if (L0.fixed) d = L0.fixed;
+  const mk = (u, op) => L0.hide ? new HideTile(u, { hide: L0.hide, ...op }) : L.tileLayer(u, op);
+  const g = L.layerGroup(ids.map((id, k) => mk(`${BASE}${id}/default/${d}/${L0.m}/{z}/{y}/{x}.${L0.ext}`, { maxNativeZoom: L0.z, maxZoom: 18, tileSize: 256, attribution: k ? '' : `NASA GIBS · ${L0.short} · ${d}`, ...o })));
   g.setOpacity = v => g.eachLayer(t => t.setOpacity(v)); return g;
+}
+// Ketersediaan data GIBS berbeda per produk (mis. OMPS & OPERA tertunda beberapa hari): cari tanggal terbaru yang benar-benar ada (≤ 20 hari ke belakang)
+const ADA = {};
+async function terbaru(L0, d) {
+  if (!L0 || L0.hourly || L0.wms || L0.cams || L0.fixed || !L0.gibs) return null;
+  const id = (L0.multi || [L0.gibs])[0];
+  for (let k = 0; k <= 20; k++) { const t = addDay(d, -k); const key = id + t; if (ADA[key] === undefined) {
+      try { const r = await fetch(`${BASE}${id}/default/${t}/${L0.m}/0/0/0.${L0.ext}`, { cache: 'force-cache' }); ADA[key] = r.ok; } catch (e) { ADA[key] = false; } }
+    if (ADA[key]) return t; }
+  return null;
 }
 function create(map, opt = {}) {
   const pane = map.getPane('nasa') || map.createPane('nasa'); pane.style.zIndex = 355;
@@ -68,7 +97,7 @@ function create(map, opt = {}) {
     pane.style.opacity = L0.op;  // transparansi diterapkan pada gabungan, bukan per hari
     if (L0.hourly) { layer = tiles(L0, date, hour); layer.addTo(map); return fire(); }
     const days = L0.days || 1; layer = L.layerGroup();
-    for (let k = days - 1; k >= 0; k--) tiles(L0, addDay(date, -k), 0).addTo(layer);  // hari paling baru digambar paling atas
+    for (let k = days - 1; k >= 0; k--) tiles(L0, addDay(date, -k), 0, k ? { attribution: '' } : {}).addTo(layer);  // hari paling baru digambar paling atas
     layer.addTo(map); fire();
   }
   /* Animasi pergerakan asap/awan: memutar citra harian NASA beberapa hari terakhir (data asli per hari, bukan efek buatan) */
@@ -93,7 +122,7 @@ function create(map, opt = {}) {
   }
   const api = {
     LAYERS, get id() { return cur; }, get date() { return date; }, get layer() { return LAYERS.find(l => l.id === cur) || null; }, get label() { const L0 = LAYERS.find(l => l.id === cur); if (!L0) return ''; const alt = L0.pick ? L0.pick(date) : null; return (alt && alt.short) || L0.short; },
-    set(id) { if (anim) stopAnim(true); cur = id || null; const L0 = LAYERS.find(l => l.id === cur); if (L0 && L0.hourly) { const t = hh3(); date = t.d; hour = t.h; try { localStorage.setItem('fh_nasa', JSON.stringify({ id: cur })); } catch (e) { } return draw(); } if (L0 && L0.today && date === yesterdayWIB()) date = iso(new Date(Date.now() + 7 * 36e5)); if (L0 && !L0.today && date > yesterdayWIB()) date = yesterdayWIB(); if (L0 && date < L0.since) date = L0.since; try { localStorage.setItem('fh_nasa', JSON.stringify({ id: cur })); } catch (e) { } draw(); },
+    set(id) { if (anim) stopAnim(true); cur = id || null; const L0 = LAYERS.find(l => l.id === cur); if (L0 && L0.hourly) { const t = hh3(); date = t.d; hour = t.h; try { localStorage.setItem('fh_nasa', JSON.stringify({ id: cur })); } catch (e) { } return draw(); } if (L0 && L0.today && date === yesterdayWIB()) date = iso(new Date(Date.now() + 7 * 36e5)); if (L0 && !L0.today && date > yesterdayWIB()) date = yesterdayWIB(); if (L0 && date < L0.since) date = L0.since; try { localStorage.setItem('fh_nasa', JSON.stringify({ id: cur })); } catch (e) { } draw(); terbaru(L0, date).then(d => { if (d && d !== date && cur === (L0 && L0.id)) { date = d; draw(); } }); },
     setDate(d) { const L0 = LAYERS.find(l => l.id === cur); if (L0 && L0.hourly) { date = d; return draw(); } const max = L0 && L0.today ? iso(new Date(Date.now() + 7 * 36e5)) : yesterdayWIB(); if (d > max) d = max; if (L0 && d < L0.since) d = L0.since; date = d; draw(); },
     step(n) { if (anim) stopAnim(true); const L0 = LAYERS.find(l => l.id === cur); if (L0 && L0.hourly) { const t = new Date(new Date(`${date}T${pad(hour)}:00:00Z`).getTime() + n * 3 * 36e5); date = iso(t); hour = t.getUTCHours(); return draw(); } api.setDate(addDay(date, n)); },
     get timeLabel() { const L0 = LAYERS.find(l => l.id === cur); if (!L0 || !L0.hourly) return date; const w = new Date(new Date(`${date}T${pad(hour)}:00:00Z`).getTime() + 7 * 36e5); const now = Date.now(); const tt = new Date(`${date}T${pad(hour)}:00:00Z`).getTime(); return `${iso(w)} ${pad(w.getUTCHours())}.00 WIB${tt > now ? ' (prakiraan)' : ''}`; }, play, stop: () => stopAnim(), get playing() { return !!anim; }, get animInfo() { if (!anim) return null; const lab = ([d, h]) => anim.hourly ? (() => { const w = new Date(new Date(`${d}T${pad(h)}:00:00Z`).getTime() + 7 * 36e5); return `${w.getUTCDate()}/${w.getUTCMonth() + 1} ${pad(w.getUTCHours())}.00`; })() : d; return { i: anim.i, n: anim.frames.length, from: lab(anim.stamps[0]), to: lab(anim.stamps[anim.stamps.length - 1]), hourly: anim.hourly }; }, maxDate: () => { const L0 = LAYERS.find(l => l.id === cur); if (L0 && L0.hourly) return addDay(iso(new Date()), 4); return L0 && L0.today ? iso(new Date(Date.now() + 7 * 36e5)) : yesterdayWIB(); }, onChange(f) { subs.push(f); }
