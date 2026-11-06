@@ -878,6 +878,7 @@ function siteLayers(){if(!MAP||!SITE)return;ACT.clearLayers();
 let IMGT=0;function imgInfo(){clearTimeout(IMGT);IMGT=setTimeout(async()=>{const k=['terbaik','s2026','eox','esri'].find(x=>MAP.hasLayer(base[x]));const c=$('#imgChip');const nb=$('#nasaBar');if(!k||(nb&&!nb.hidden)){c.hidden=true;return;}const m=MAP.getCenter();const t=await FHCitra.info(k,m.lat,m.lng,MAP.getZoom());c.textContent='🛰 '+t;c.hidden=false;},400);}
 /* ---------- akses (kode ID): admin = semua HD · kode HD = satu HD · tanpa kode = mode umum · kode wilayah = SHP pengguna ---------- */
 let ALLOW=null,PR_MODE='',SITEL=null,WILL=null;
+const NAS_OK=['sebaran','hujan','udara','satelit','cuaca','hutan','tutupan','karbon','kejadian','grafik','bekas','lahankritis','laporan','unduh'];   // alat versi seluruh Indonesia (assets/nasional.js)
 const UMUM_OK=['peta','p3d','angin','kompas','satelit','ai','lokasi','analisis','sistem','pilih','wilayah','kode'];
 const visSites=()=>SITES.filter(x=>!ALLOW||ALLOW.has(x.id));
 const isUmum=()=>!!ALLOW&&!ALLOW.size;
@@ -1395,7 +1396,7 @@ function hubUmum(el){   // mode umum / wilayah sendiri: tanpa data Hutan Desa da
    <div class="hx-status" style="--sc:#38BDF8"><span class="hx-ring"><i></i></span><span><b>${shp?'Wilayah tersimpan aman':'Pantau titik api, angin & cuaca di mana pun'}</b><small>${shp?'Hanya terbuka dengan email, kata sandi dan kode ID Anda.':'Data kawasan Hutan Desa dampingan PRCF terbuka dengan kode ID. Daftarkan wilayah Anda sendiri dengan mengunggah SHP.'}</small></span></div>
    <div class="hx-cta"><button class="hx-btn pri" data-u="peta">Buka peta</button><button class="hx-btn" data-u="analisis">${shp?'Analisis wilayah saya':'Daftarkan wilayah (SHP)'}</button><button class="hx-btn" data-u="lokasi">Cuaca di lokasi saya</button><button class="hx-btn" data-u="kode">Masuk dengan kode ID</button></div>`;
   el.querySelectorAll('.hx-kpi,.hx-wx,.hx-side').forEach(x=>x.remove());
-  el.querySelectorAll('.hx-t[data-hub]').forEach(t=>{if(!UMUM_OK.includes(t.dataset.hub)&&!(window.FHNasional&&FHNasional.punya(t.dataset.hub))){t.classList.add('hx-lock');t.title='Khusus program Hutan Desa dampingan PRCF (perlu kode ID)';}});
+  el.querySelectorAll('.hx-t[data-hub]').forEach(t=>{if(!UMUM_OK.includes(t.dataset.hub)&&!NAS_OK.includes(t.dataset.hub)){t.classList.add('hx-lock');t.title='Khusus program Hutan Desa dampingan PRCF (perlu kode ID)';}});
   el.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>hubGo(b.dataset.u));
 }
 function hubRender(){const el=$('#hub');if(!el)return;
