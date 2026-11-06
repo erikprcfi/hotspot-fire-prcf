@@ -95,6 +95,7 @@ function css() {
   .ak-hero .lg b{display:block;font-size:19px;letter-spacing:-.01em}.ak-hero .lg small{opacity:.75;font-size:12px}
   .ak-hero.tall{padding-bottom:120px}.ak-hero h1{position:relative;z-index:1;margin:26px 0 6px;font-size:26px;line-height:1.15;letter-spacing:-.02em}.ak-hero p{position:relative;z-index:1;margin:0;opacity:.85;font-size:14px;max-width:34ch}
   .ak-card{position:relative;margin:-48px 14px 24px;background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:18px 16px}
+@media (min-width:760px){.ak-hero{padding-left:calc(50% - 250px);padding-right:calc(50% - 250px)}.ak-card{max-width:520px;margin-left:auto;margin-right:auto;padding:22px 24px}.ak{background:radial-gradient(90% 60% at 50% 0%,rgba(30,122,88,.08),transparent) var(--bg)}}
   .ak-step{display:flex;gap:6px;margin-bottom:14px}.ak-step i{flex:1;height:4px;border-radius:4px;background:var(--line)}.ak-step i.on{background:var(--brand-3,#1E7A58)}
   .ak h2{margin:0 0 2px;font-size:18px}.ak .mut{color:var(--muted);font-size:13px;margin:0 0 14px}
   .ak-f{display:grid;gap:12px}.ak-l{display:grid;gap:5px;font-size:12.5px;font-weight:700;color:var(--muted)}

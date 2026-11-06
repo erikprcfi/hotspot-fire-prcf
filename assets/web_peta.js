@@ -9,16 +9,18 @@
 if (!window.FH_WEB) return;
 const BASE = (document.currentScript && document.currentScript.src ? new URL('../', document.currentScript.src).href : './');
 const $ = s => document.querySelector(s), esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const EN = () => document.documentElement.lang === 'en';
+const EN = () => !!(window.FHLang && FHLang.get() === 'en');
 const T = (id, en) => EN() ? en : id;
-const GRUP = [
+const GRUP_F = () => [
   [T('Api & citra satelit', 'Fire & satellite imagery'), ['fire', 'true']],
   [T('Asap & kualitas udara', 'Smoke & air quality'), ['smoke', 'pm25', 'aod', 'ai', 'co']],
   [T('Gangguan vegetasi', 'Vegetation disturbance'), ['dist', 'distann']]
 ];
 const SUMBER = { fire: 'NASA FIRMS · GIBS', true: 'NASA GIBS · VIIRS', co: 'NASA GIBS · AIRS', aod: 'NASA GIBS · VIIRS', smoke: 'Copernicus CAMS · ECMWF', pm25: 'Copernicus CAMS · ECMWF', ai: 'NASA GIBS · OMPS', dist: 'NASA OPERA · HLS', distann: 'NASA OPERA · HLS' };
-const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-const HARI = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+const BULAN_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'], BULAN_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const BULAN = new Proxy([], { get: (_, k) => (EN() ? BULAN_EN : BULAN_ID)[k] });
+const HARI_ID = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'], HARI_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const HARI = new Proxy([], { get: (_, k) => (EN() ? HARI_EN : HARI_ID)[k] });
 const iso = d => d.toISOString().slice(0, 10);
 const addDay = (s, n) => iso(new Date(new Date(s + 'T00:00:00Z').getTime() + n * 864e5));
 const pad = n => String(n).padStart(2, '0');
@@ -189,7 +191,7 @@ function panel() {
       <div class="wp-h4">${T('Titik panas', 'Hotspots')}</div>
       <button class="wp-ly cb" id="wpHot" aria-pressed="false"><i></i><span><b>${T('Titik panas Indonesia · 7 hari', 'Indonesia hotspots · 7 days')}</b><small>NASA FIRMS NRT · VIIRS & MODIS · ${T('merah ≤24 jam, oranye ≤3 hari, kuning ≤7 hari', 'red ≤24 h, orange ≤3 d, yellow ≤7 d')}</small></span></button>
       <div class="wp-note" id="wpHotNote"></div>
-      ${GRUP.map(([g, ids]) => `<div class="wp-h4">${g}</div>${ids.map(id => { const l = FHNasa.LAYERS.find(x => x.id === id); return l ? `<button class="wp-ly" data-ly="${id}" aria-pressed="false"><i></i><span><b>${esc(l.nm)}</b><small>${SUMBER[id] || ''}</small></span></button><div class="wp-det" data-det="${id}" hidden></div>` : ''; }).join('')}`).join('')}
+      ${GRUP_F().map(([g, ids]) => `<div class="wp-h4">${g}</div>${ids.map(id => { const l = FHNasa.LAYERS.find(x => x.id === id); return l ? `<button class="wp-ly" data-ly="${id}" aria-pressed="false"><i></i><span><b>${esc(l.nm)}</b><small>${SUMBER[id] || ''}</small></span></button><div class="wp-det" data-det="${id}" hidden></div>` : ''; }).join('')}`).join('')}
       <div class="wp-h4">${T('Lapisan lain', 'More layers')}</div>
       <button class="wp-more" id="wpMore">▤ ${T('Peta dasar, tutupan hutan, batas wilayah…', 'Basemap, forest cover, boundaries…')}</button>
       <div class="wp-h4">${T('Ringkasan titik panas', 'Hotspot summary')}</div>

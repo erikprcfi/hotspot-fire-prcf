@@ -114,3 +114,9 @@ Satu bagian per sesi/percakapan; uji, commit ke `pantau-rimbak`, perbarui file i
   P.4/V-SET/2013 dgn 2 dari 4 kriteria, air & terbangun tidak dinilai) bila peta resmi tidak menjangkau. Uji Kapuas Hulu vs peta resmi: tidak kritis 80/70 %, kritis 1,4/4,7 %.
 - nasional.js: + Lintasan satelit untuk lokasi mana pun. app.html: perbaikan closeAll (history.go(-n) hanya memicu satu popstate).
 - Panduan rilis Play Store (Word) dikirim ke pengguna.
+
+## Catatan 7 Nov dini hari (sesi terjadwal 02.10)
+- Website wajib masuk sama dengan HP: assets/web.js tidak dimuat lagi; layar masuk/daftar akun.js dipakai di website (tampil terpusat ≤520 px di desktop).
+  Diuji: 9 skenario masuk (umum, HDNL, Jemah, kode salah, sandi salah, belum daftar, SHP, admin) di app.html?web=1 tanpa error.
+- Bahasa Inggris: nasional.js, web_peta.js, kartu WorldCover/indikasi lahan kritis + PDF di analisis.js.
+- Tutupan lahan di luar Kalbar hanya data terbuka (GLAD UMD + ESA WorldCover); probe layanan KLHK dihapus dari muat_klhk.

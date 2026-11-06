@@ -13,7 +13,7 @@
 const BASE = (document.currentScript && document.currentScript.src ? new URL('../', document.currentScript.src).href : './');
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const N0 = n => Math.round(n).toLocaleString('id-ID'), N1 = n => (Math.round(n * 10) / 10).toLocaleString('id-ID');
+const N0 = n => Math.round(n).toLocaleString(LOC()), N1 = n => (Math.round(n * 10) / 10).toLocaleString(LOC());
 const BLN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 const hariWIB = t => new Date(t + 7 * 36e5).toISOString().slice(0, 10);
 const rad = x => x * Math.PI / 180;
@@ -21,6 +21,9 @@ const km = (a, b, c, d) => 2 * 6371 * Math.asin(Math.sqrt(Math.sin(rad(c - a) / 
 const st = { get: (k, d) => { try { const v = localStorage.getItem('fhn_' + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }, set: (k, v) => { try { localStorage.setItem('fhn_' + k, JSON.stringify(v)); } catch (e) { } } };
 const akses = () => (window.FHAkun && FHAkun.akses ? FHAkun.akses() : { mode: 'umum' });
 const toast = m => window.toastMsg ? toastMsg(m) : 0;
+const EN = () => !!(window.FHLang && FHLang.get() === 'en'), I = (id, en) => EN() ? en : id;
+const BLN_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], B = m => (EN() ? BLN_EN : BLN)[m];
+const LOC = () => EN() ? 'en-US' : 'id-ID';
 
 /* ---------- lokasi yang dihitung ---------- */
 function ringsOf(g) { if (!g) return []; if (g.type === 'Feature') return ringsOf(g.geometry); if (g.type === 'FeatureCollection') return g.features.flatMap(ringsOf); if (g.type === 'Polygon') return [g.coordinates]; if (g.type === 'MultiPolygon') return g.coordinates; return []; }
@@ -33,7 +36,7 @@ function lokasi() {
   if (A.mode === 'shp' && A.geojson) {
     const polys = ringsOf(A.geojson); let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
     polys.forEach(P => P[0].forEach(([x, y]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }));
-    if (polys.length) return { lat: (y0 + y1) / 2, lon: (x0 + x1) / 2, label: A.nama || 'Wilayah saya', polys, bbox: [x0, y0, x1, y1], shp: true };
+    if (polys.length) return { lat: (y0 + y1) / 2, lon: (x0 + x1) / 2, label: A.nama || I('Wilayah saya', 'My area'), polys, bbox: [x0, y0, x1, y1], shp: true };
   }
   const L0 = st.get('lok', null) || (() => { try { const s = JSON.parse(localStorage.getItem('fh_lokasi') || 'null'); return s && s.lat ? s : null; } catch (e) { return null; } })();
   return L0 && L0.lat != null ? { lat: L0.lat, lon: L0.lon, label: L0.label || `${L0.lat.toFixed(3)}, ${L0.lon.toFixed(3)}` } : null;
@@ -45,17 +48,17 @@ async function setLok(lat, lon, src) {
 }
 function lokBar(L, ulang) {
   const shp = L && L.shp;
-  return `<div class="card" style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:10px"><span style="font-size:20px">${shp ? '🗺️' : '📍'}</span><span style="flex:1;min-width:0"><small class="muted" style="display:block;font-size:11px">${shp ? 'Wilayah terdaftar Anda' : 'Lokasi yang dihitung'}</small><b style="display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${L ? esc(L.label) : 'Belum dipilih'}</b><small class="muted" style="font-size:11px">${L ? `${L.lat.toFixed(4)}, ${L.lon.toFixed(4)}` : ''}</small></span>
-   ${shp ? '' : `<button class="chip" data-nl="gps">GPS</button><button class="chip" data-nl="peta">Tengah peta</button>`}</div>`;
+  return `<div class="card" style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:10px"><span style="font-size:20px">${shp ? '🗺️' : '📍'}</span><span style="flex:1;min-width:0"><small class="muted" style="display:block;font-size:11px">${shp ? I('Wilayah terdaftar Anda', 'Your registered area') : I('Lokasi yang dihitung', 'Location analysed')}</small><b style="display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${L ? esc(L.label) : I('Belum dipilih', 'Not selected yet')}</b><small class="muted" style="font-size:11px">${L ? `${L.lat.toFixed(4)}, ${L.lon.toFixed(4)}` : ''}</small></span>
+   ${shp ? '' : `<button class="chip" data-nl="gps">GPS</button><button class="chip" data-nl="peta">${I('Tengah peta', 'Map centre')}</button>`}</div>`;
 }
 function bindLok(ulang) {
   $$('[data-nl]').forEach(b => b.onclick = () => {
     if (b.dataset.nl === 'peta') { const m = window.FHApp && FHApp.map && FHApp.map(); if (!m) return; const c = m.getCenter(); setLok(c.lat, c.lng, 'peta').then(ulang); return; }
-    if (!navigator.geolocation) return toast('GPS tidak tersedia di perangkat ini');
-    b.textContent = 'Mencari…'; navigator.geolocation.getCurrentPosition(p => setLok(p.coords.latitude, p.coords.longitude, 'gps').then(ulang), () => { b.textContent = 'GPS'; toast('Izinkan akses lokasi lalu coba lagi'); }, { enableHighAccuracy: true, timeout: 15000 });
+    if (!navigator.geolocation) return toast(I('GPS tidak tersedia di perangkat ini', 'GPS is not available on this device'));
+    b.textContent = I('Mencari…', 'Locating…'); navigator.geolocation.getCurrentPosition(p => setLok(p.coords.latitude, p.coords.longitude, 'gps').then(ulang), () => { b.textContent = 'GPS'; toast(I('Izinkan akses lokasi lalu coba lagi', 'Allow location access and try again')); }, { enableHighAccuracy: true, timeout: 15000 });
   });
 }
-const perluLok = (ulang) => `${lokBar(null)}<div class="empty">Pilih lokasi dulu: ketuk <b>GPS</b> untuk posisi Anda, atau geser peta ke wilayah yang ingin dipantau lalu ketuk <b>Tengah peta</b>.</div>`;
+const perluLok = (ulang) => `${lokBar(null)}<div class="empty">${I('Pilih lokasi dulu: ketuk <b>GPS</b> untuk posisi Anda, atau geser peta ke wilayah yang ingin dipantau lalu ketuk <b>Tengah peta</b>.', 'Choose a location first: tap <b>GPS</b> for your position, or move the map to the area you want to monitor and tap <b>Map centre</b>.')}</div>`;
 
 /* ---------- grafik batang sederhana ---------- */
 function bars(lbl, val, o = {}) {
@@ -96,19 +99,19 @@ function sebaran(opt = {}) {
     const near = F.length ? F.reduce((a, b) => a.d < b.d ? a : b) : null;
     body.innerHTML = `${lokBar(L)}
      ${L.shp ? '' : `<div class="seg" style="margin-bottom:8px">${[5, 25, 50, 100].map(r => `<button class="chip" data-r="${r}" aria-pressed="${R === r}">≤ ${r} km</button>`).join('')}</div>`}
-     <div class="seg" style="margin-bottom:10px">${[[1, '24 jam'], [3, '3 hari'], [7, '7 hari']].map(([h, t]) => `<button class="chip" data-h="${h}" aria-pressed="${H === h}">${t}</button>`).join('')}</div>
-     ${!D ? '<div class="empty">Memuat titik panas NASA FIRMS…</div>' : err ? `<div class="empty">Data titik panas tidak dapat dimuat (${esc(err)}). Periksa internet lalu coba lagi.</div>` : `
-     <div class="stat3"><div class="card"><b>${N0(F.length)}</b><span>titik ${L.shp ? 'di dalam wilayah' : '≤ ' + R + ' km'}</span></div><div class="card"><b>${near ? N1(near.d) : '–'}</b><span>km titik terdekat dari ${L.shp ? 'pusat wilayah' : 'lokasi'}</span></div><div class="card"><b>${F.length ? N1(Math.max(...F.map(p => p.frp || 0))) : '–'}</b><span>FRP tertinggi (MW)</span></div></div>
-     <div class="h2">Titik panas per hari (WIB)</div><div class="card chart">${bars(days.map(d => `${+d.slice(8)} ${BLN[+d.slice(5, 7) - 1]}`), perH, { aria: 'titik panas per hari' })}</div>
-     <div class="h2">Per satelit</div><div class="group">${Object.keys(sens).length ? Object.entries(sens).sort((a, b) => b[1] - a[1]).map(([s, n]) => `<div class="row"><span class="m"><b>${esc(s)}</b></span><b class="num">${N0(n)}</b></div>`).join('') : '<div class="empty">Tidak ada deteksi pada periode ini.</div>'}</div>
-     <div class="h2">Titik terbaru</div><div class="group">${F.slice(0, 60).map((p, i) => { const w = new Date(p.when + 7 * 36e5); return `<button class="row tap" data-p="${i}" style="width:100%;text-align:left"><span class="m"><b>${w.getUTCDate()} ${BLN[w.getUTCMonth()]} · ${String(w.getUTCHours()).padStart(2, '0')}.${String(w.getUTCMinutes()).padStart(2, '0')} WIB</b><small>${esc(p.sensor)} · FRP ${N1(p.frp || 0)} MW · ${p.la.toFixed(4)}, ${p.lo.toFixed(4)}</small></span><b class="num">${N1(p.d)} km</b></button>`; }).join('') || '<div class="empty">Tidak ada titik panas pada periode & jarak ini. 🌿</div>'}</div>
-     <p class="small muted" style="margin:12px 4px">Sumber: NASA FIRMS near real-time (VIIRS 375 m & MODIS 1 km), salinan resmi diperbarui ±3 jam, disaring ke daratan Indonesia (batas OCHA COD-AB/BPS-BIG). Pembaruan: ${esc((D.upd || '').replace('T', ' ').slice(0, 16))} UTC. Satu kebakaran bisa terdeteksi beberapa kali oleh satelit berbeda. Riwayat 2016–sekarang: <b>Analisis area</b>.</p>`}`;
+     <div class="seg" style="margin-bottom:10px">${[[1, I('24 jam', '24 hours')], [3, I('3 hari', '3 days')], [7, I('7 hari', '7 days')]].map(([h, t]) => `<button class="chip" data-h="${h}" aria-pressed="${H === h}">${t}</button>`).join('')}</div>
+     ${!D ? `<div class="empty">${I('Memuat titik panas NASA FIRMS…', 'Loading NASA FIRMS hotspots…')}</div>` : err ? `<div class="empty">${I('Data titik panas tidak dapat dimuat', 'Hotspot data could not be loaded')} (${esc(err)}). ${I('Periksa internet lalu coba lagi.', 'Check your connection and try again.')}</div>` : `
+     <div class="stat3"><div class="card"><b>${N0(F.length)}</b><span>${I('titik', 'hotspots')} ${L.shp ? I('di dalam wilayah', 'inside the area') : '≤ ' + R + ' km'}</span></div><div class="card"><b>${near ? N1(near.d) : '–'}</b><span>${I('km titik terdekat dari ' + (L.shp ? 'pusat wilayah' : 'lokasi'), 'km to nearest hotspot from the ' + (L.shp ? 'area centre' : 'location'))}</span></div><div class="card"><b>${F.length ? N1(Math.max(...F.map(p => p.frp || 0))) : '–'}</b><span>${I('FRP tertinggi (MW)', 'Highest FRP (MW)')}</span></div></div>
+     <div class="h2">${I('Titik panas per hari (WIB)', 'Hotspots per day (WIB)')}</div><div class="card chart">${bars(days.map(d => `${+d.slice(8)} ${B(+d.slice(5, 7) - 1)}`), perH, { aria: I('titik panas per hari', 'hotspots per day') })}</div>
+     <div class="h2">${I('Per satelit', 'By satellite')}</div><div class="group">${Object.keys(sens).length ? Object.entries(sens).sort((a, b) => b[1] - a[1]).map(([s, n]) => `<div class="row"><span class="m"><b>${esc(s)}</b></span><b class="num">${N0(n)}</b></div>`).join('') : `<div class="empty">${I('Tidak ada deteksi pada periode ini.', 'No detections in this period.')}</div>`}</div>
+     <div class="h2">${I('Titik terbaru', 'Latest hotspots')}</div><div class="group">${F.slice(0, 60).map((p, i) => { const w = new Date(p.when + 7 * 36e5); return `<button class="row tap" data-p="${i}" style="width:100%;text-align:left"><span class="m"><b>${w.getUTCDate()} ${B(w.getUTCMonth())} · ${String(w.getUTCHours()).padStart(2, '0')}.${String(w.getUTCMinutes()).padStart(2, '0')} WIB</b><small>${esc(p.sensor)} · FRP ${N1(p.frp || 0)} MW · ${p.la.toFixed(4)}, ${p.lo.toFixed(4)}</small></span><b class="num">${N1(p.d)} km</b></button>`; }).join('') || `<div class="empty">${I('Tidak ada titik panas pada periode & jarak ini.', 'No hotspots in this period and distance.')} 🌿</div>`}</div>
+     <p class="small muted" style="margin:12px 4px">${I('Sumber: NASA FIRMS near real-time (VIIRS 375 m & MODIS 1 km), salinan resmi diperbarui ±3 jam, disaring ke daratan Indonesia (batas OCHA COD-AB/BPS-BIG). Pembaruan', 'Source: NASA FIRMS near real-time (VIIRS 375 m & MODIS 1 km), official copy updated every ~3 hours, filtered to Indonesian land (OCHA COD-AB/BPS-BIG boundaries). Updated')}: ${esc((D.upd || '').replace('T', ' ').slice(0, 16))} UTC. ${I('Satu kebakaran bisa terdeteksi beberapa kali oleh satelit berbeda. Riwayat 2016–sekarang: <b>Analisis area</b>.', 'One fire can be detected several times by different satellites. History 2016–present: <b>Area analysis</b>.')}</p>`}`;
     bindLok(muat);
     $$('[data-r]').forEach(b => b.onclick = () => { R = +b.dataset.r; st.set('rad', R); muat(); });
     $$('[data-h]').forEach(b => b.onclick = () => { H = +b.dataset.h; draw(); });
     $$('[data-p]').forEach(b => b.onclick = () => { const p = F[+b.dataset.p]; if (window.FHApp) { FHApp.go('home'); setTimeout(() => FHApp.lihat(p.la, p.lo, 13), 300); } });
   };
-  openPage('Titik Panas · Indonesia', 'NASA FIRMS · 7 hari', '', muat);
+  openPage(I('Titik Panas · Indonesia', 'Hotspots · Indonesia'), I('NASA FIRMS · 7 hari', 'NASA FIRMS · 7 days'), '', muat);
 }
 
 /* ---------- 2. Riwayat hujan & suhu ERA5 sejak 2001 ---------- */
@@ -120,37 +123,37 @@ function hujan() {
     const k = `${L.lat.toFixed(2)},${L.lon.toFixed(2)}`, end = hariWIB(Date.now() - 6 * 864e5);
     try {
       D = ERA[k] || st.get('era_' + k + '_' + end, null) || (ERA[k] = await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${L.lat.toFixed(4)}&longitude=${L.lon.toFixed(4)}&start_date=2001-01-01&end_date=${end}&daily=precipitation_sum,temperature_2m_max&timezone=Asia%2FJakarta&models=era5`).then(r => r.json()).then(j => { if (j.error) throw new Error(j.reason || 'galat'); return j.daily; })); ERA[k] = D; try { Object.keys(localStorage).filter(x => x.startsWith('fhn_era_')).forEach(x => localStorage.removeItem(x)); } catch (e) { } st.set('era_' + k + '_' + end, D);
-    } catch (e) { err = /limit/i.test(e.message) ? 'batas harian layanan Open-Meteo tercapai, coba lagi besok' : e.message; delete ERA[k]; D = null; }
+    } catch (e) { err = /limit/i.test(e.message) ? I('batas harian layanan Open-Meteo tercapai, coba lagi besok', 'Open-Meteo daily limit reached, try again tomorrow') : e.message; delete ERA[k]; D = null; }
     if (D && !Y) Y = +D.time[D.time.length - 1].slice(0, 4);
     draw();
   };
   const draw = () => {
     const L = lokasi(), body = $('#pageBody'); if (!body) return;
     if (!L) { body.innerHTML = perluLok(); bindLok(muat); return; }
-    if (!D) { body.innerHTML = `${lokBar(L)}${err ? `<div class="empty">Data ERA5 tidak dapat dimuat (${esc(err)}). Periksa internet lalu coba lagi.</div>` : '<div class="empty">Memuat reanalisis ERA5 sejak 2001…</div>'}`; bindLok(muat); return; }
+    if (!D) { body.innerHTML = `${lokBar(L)}${err ? `<div class="empty">${I('Data ERA5 tidak dapat dimuat', 'ERA5 data could not be loaded')} (${esc(err)}). ${I('Periksa internet lalu coba lagi.', 'Check your connection and try again.')}</div>` : `<div class="empty">${I('Memuat reanalisis ERA5 sejak 2001…', 'Loading ERA5 reanalysis since 2001…')}</div>`}`; bindLok(muat); return; }
     const t = D.time, p = D.precipitation_sum, tx = D.temperature_2m_max, yrs = [...new Set(t.map(s => +s.slice(0, 4)))];
     const tahun = {}, bulan = {}; t.forEach((s, i) => { if (p[i] == null) return; const y = +s.slice(0, 4), m = +s.slice(5, 7); (tahun[y] = tahun[y] || { p: 0, n: 0 }); tahun[y].p += p[i]; tahun[y].n++; const kk = y + '-' + m; (bulan[kk] = bulan[kk] || { p: 0, hk: 0, tx: 0, n: 0 }); bulan[kk].p += p[i]; if (p[i] < 1) bulan[kk].hk++; if (tx[i] != null) { bulan[kk].tx += tx[i]; bulan[kk].n++; } });
-    const normal = m => { const v = yrs.filter(y => y < Y && bulan[y + '-' + m]).map(y => bulan[y + '-' + m].p); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+    const lengkap = yrs.filter(y => tahun[y] && tahun[y].n >= 360), normal = m => { const v = lengkap.filter(y => y !== Y && bulan[y + '-' + m]).map(y => bulan[y + '-' + m].p); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
     const ms = [...Array(12)].map((_, i) => i + 1), BY = ms.map(m => bulan[Y + '-' + m] ? bulan[Y + '-' + m].p : null), NR = ms.map(normal);
     const yl = yrs.filter(y => tahun[y] && tahun[y].n >= 360);
     body.innerHTML = `${lokBar(L)}
      <div class="seg" style="margin-bottom:10px;flex-wrap:wrap">${yrs.slice(-8).map(y => `<button class="chip" data-y="${y}" aria-pressed="${y === Y}">${y}</button>`).join('')}</div>
-     <div class="stat3"><div class="card"><b>${N0(BY.reduce((a, b) => a + (b || 0), 0))}</b><span>mm hujan ${Y}${Y === yrs[yrs.length - 1] ? ' (s.d. ' + esc(t[t.length - 1].slice(8) + ' ' + BLN[+t[t.length - 1].slice(5, 7) - 1]) + ')' : ''}</span></div><div class="card"><b>${N0(ms.reduce((a, m) => a + (bulan[Y + '-' + m] ? bulan[Y + '-' + m].hk : 0), 0))}</b><span>hari kering (&lt;1 mm) ${Y}</span></div><div class="card"><b>${yl.length ? N0(yl.reduce((a, y) => a + tahun[y].p, 0) / yl.length) : '–'}</b><span>mm/tahun rata-rata ${yl[0] || ''}–${yl[yl.length - 1] || ''}</span></div></div>
-     <div class="h2">Hujan bulanan ${Y} dibanding rata-rata</div><div class="card chart">${bars(ms.map(m => BLN[m - 1]), BY, { unit: 'mm', col: (v, i) => NR[i] != null && v < NR[i] * .6 ? '#D93025' : v > (NR[i] || 0) * 1.4 ? '#2F7FD1' : '#3B9C6E', aria: 'hujan bulanan' })}
-      <div class="legend"><span><i style="background:#D93025"></i>&lt;60% normal (kering)</span><span><i style="background:#3B9C6E"></i>mendekati normal</span><span><i style="background:#2F7FD1"></i>&gt;140% normal (basah)</span></div></div>
-     <div class="h2">Rata-rata bulanan ${yrs[0]}–${Y - 1}</div><div class="card chart">${bars(ms.map(m => BLN[m - 1]), NR, { unit: 'mm', col: '#7C9C8A', aria: 'normal bulanan' })}</div>
-     <div class="h2">Total hujan per tahun</div><div class="card chart">${bars(yl.map(y => "'" + String(y).slice(2)), yl.map(y => tahun[y].p), { unit: 'mm', col: '#2F7FD1', every: Math.ceil(yl.length / 13), aria: 'hujan tahunan' })}</div>
-     <div class="h2">Rekap ${Y}</div><div class="group">${ms.filter(m => bulan[Y + '-' + m]).map(m => { const b = bulan[Y + '-' + m]; return `<div class="row"><span class="m"><b>${BLN[m - 1]} ${Y}</b><small>${b.hk} hari kering · suhu maks. rata-rata ${b.n ? N1(b.tx / b.n) : '–'} °C · normal ${NR[m - 1] != null ? N0(NR[m - 1]) : '–'} mm</small></span><b class="num">${N0(b.p)} mm</b></div>`; }).join('')}</div>
-     <p class="small muted" style="margin:12px 4px">Sumber: reanalisis ECMWF ERA5 (Copernicus Climate Change Service, resolusi ±25 km) via Open-Meteo Historical Weather API, harian sejak 2001 hingga ±6 hari lalu, waktu WIB. Reanalisis adalah model berbasis pengamatan, bukan penakar hujan lokal; cocok untuk pola musim dan anomali kekeringan.</p>`;
+     <div class="stat3"><div class="card"><b>${N0(BY.reduce((a, b) => a + (b || 0), 0))}</b><span>${I('mm hujan', 'mm rainfall')} ${Y}${Y === yrs[yrs.length - 1] ? ' (' + I('s.d.', 'to') + ' ' + esc(t[t.length - 1].slice(8) + ' ' + B(+t[t.length - 1].slice(5, 7) - 1)) + ')' : ''}</span></div><div class="card"><b>${N0(ms.reduce((a, m) => a + (bulan[Y + '-' + m] ? bulan[Y + '-' + m].hk : 0), 0))}</b><span>${I('hari kering', 'dry days')} (&lt;1 mm) ${Y}</span></div><div class="card"><b>${yl.length ? N0(yl.reduce((a, y) => a + tahun[y].p, 0) / yl.length) : '–'}</b><span>${I('mm/tahun rata-rata', 'mm/year average')} ${yl[0] || ''}–${yl[yl.length - 1] || ''}</span></div></div>
+     <div class="h2">${I('Hujan bulanan', 'Monthly rainfall')} ${Y} ${I('dibanding rata-rata', 'vs average')}</div><div class="card chart">${bars(ms.map(m => B(m - 1)), BY, { unit: 'mm', col: (v, i) => NR[i] != null && v < NR[i] * .6 ? '#D93025' : v > (NR[i] || 0) * 1.4 ? '#2F7FD1' : '#3B9C6E', aria: I('hujan bulanan', 'monthly rainfall') })}
+      <div class="legend"><span><i style="background:#D93025"></i>&lt;60% ${I('normal (kering)', 'of normal (dry)')}</span><span><i style="background:#3B9C6E"></i>${I('mendekati normal', 'near normal')}</span><span><i style="background:#2F7FD1"></i>&gt;140% ${I('normal (basah)', 'of normal (wet)')}</span></div></div>
+     <div class="h2">${I('Rata-rata bulanan', 'Monthly average')} ${lengkap[0]}–${lengkap[lengkap.length - 1]}${lengkap.includes(Y) ? ' ' + I('(tanpa ' + Y + ')', '(excl. ' + Y + ')') : ''}</div><div class="card chart">${bars(ms.map(m => B(m - 1)), NR, { unit: 'mm', col: '#7C9C8A', aria: I('normal bulanan', 'monthly normal') })}</div>
+     <div class="h2">${I('Total hujan per tahun', 'Total rainfall per year')}</div><div class="card chart">${bars(yl.map(y => "'" + String(y).slice(2)), yl.map(y => tahun[y].p), { unit: 'mm', col: '#2F7FD1', every: Math.ceil(yl.length / 13), aria: I('hujan tahunan', 'annual rainfall') })}</div>
+     <div class="h2">${I('Rekap', 'Summary')} ${Y}</div><div class="group">${ms.filter(m => bulan[Y + '-' + m]).map(m => { const b = bulan[Y + '-' + m]; return `<div class="row"><span class="m"><b>${B(m - 1)} ${Y}</b><small>${b.hk} ${I('hari kering · suhu maks. rata-rata', 'dry days · mean max. temperature')} ${b.n ? N1(b.tx / b.n) : '–'} °C · normal ${NR[m - 1] != null ? N0(NR[m - 1]) : '–'} mm</small></span><b class="num">${N0(b.p)} mm</b></div>`; }).join('')}</div>
+     <p class="small muted" style="margin:12px 4px">${I('Sumber: reanalisis ECMWF ERA5 (Copernicus Climate Change Service, resolusi ±25 km) via Open-Meteo Historical Weather API, harian sejak 2001 hingga ±6 hari lalu, waktu WIB. Reanalisis adalah model berbasis pengamatan, bukan penakar hujan lokal; cocok untuk pola musim dan anomali kekeringan.', 'Source: ECMWF ERA5 reanalysis (Copernicus Climate Change Service, ~25 km resolution) via the Open-Meteo Historical Weather API, daily since 2001 up to ~6 days ago, WIB time. Reanalysis is an observation-based model, not a local rain gauge; suitable for seasonal patterns and drought anomalies.')}</p>`;
     bindLok(() => { Y = null; muat(); });
     $$('[data-y]').forEach(b => b.onclick = () => { Y = +b.dataset.y; draw(); });
   };
-  openPage('Riwayat Hujan & Suhu', 'ERA5 · sejak 2001', '', muat);
+  openPage(I('Riwayat Hujan & Suhu', 'Rainfall & Temperature History'), I('ERA5 · sejak 2001', 'ERA5 · since 2001'), '', muat);
 }
 
 /* ---------- 3. Kualitas udara CAMS 30 hari ---------- */
 function udara() {
-  const KT = [[15.5, 'Baik', '#2E9E5B'], [55.4, 'Sedang', '#3B6FD1'], [150.4, 'Tidak Sehat', '#E8A317'], [250.4, 'Sangat Tidak Sehat', '#D93025'], [1e9, 'Berbahaya', '#6B1B1B']], kat = v => KT.find(k => v <= k[0]);
+  const KT = [[15.5, I('Baik', 'Good'), '#2E9E5B'], [55.4, I('Sedang', 'Moderate'), '#3B6FD1'], [150.4, I('Tidak Sehat', 'Unhealthy'), '#E8A317'], [250.4, I('Sangat Tidak Sehat', 'Very unhealthy'), '#D93025'], [1e9, I('Berbahaya', 'Hazardous'), '#6B1B1B']], kat = v => KT.find(k => v <= k[0]);
   let D = null, err = '';
   const muat = async () => {
     const L = lokasi(); D = null; err = ''; draw(); if (!L) return;
@@ -165,35 +168,35 @@ function udara() {
   const draw = () => {
     const L = lokasi(), body = $('#pageBody'); if (!body) return;
     if (!L) { body.innerHTML = perluLok(); bindLok(muat); return; }
-    if (D === null || !D.length) { body.innerHTML = `${lokBar(L)}<div class="empty">${D === null ? 'Memuat data CAMS…' : 'Data CAMS tidak dapat dimuat' + (err ? ' (' + esc(err) + ')' : '') + '.'}</div>`; bindLok(muat); return; }
+    if (D === null || !D.length) { body.innerHTML = `${lokBar(L)}<div class="empty">${D === null ? I('Memuat data CAMS…', 'Loading CAMS data…') : I('Data CAMS tidak dapat dimuat', 'CAMS data could not be loaded') + (err ? ' (' + esc(err) + ')' : '') + '.'}</div>`; bindLok(muat); return; }
     const past = D.filter(x => !x.fc), rata = past.reduce((a, x) => a + x.m, 0) / Math.max(1, past.length), top = past.reduce((a, x) => x.m > a.m ? x : a, past[0] || D[0]);
     body.innerHTML = `${lokBar(L)}
-     <div class="stat3"><div class="card"><b>${N1(rata)}</b><span>PM2.5 rata-rata harian 30 hari, µg/m³</span></div><div class="card"><b>${N1(top.m)}</b><span>tertinggi · ${esc(+top.d.slice(8) + ' ' + BLN[+top.d.slice(5, 7) - 1])}</span></div><div class="card"><b style="color:${kat(rata)[2]}">${kat(rata)[1]}</b><span>kategori rata-rata (BMKG)</span></div></div>
-     <div class="h2">PM2.5 rata-rata harian · 30 hari + prakiraan</div><div class="card chart">${bars(D.map(x => +x.d.slice(8)), D.map(x => Math.round(x.m * 10) / 10), { unit: 'µg/m³', fmt: N1, col: (v, i) => D[i].fc ? '#B9A6E0' : kat(v)[2], every: 3, aria: 'PM2.5 harian' })}
-      <div class="legend">${KT.slice(0, 4).map(k => `<span><i style="background:${k[2]}"></i>${k[1]}</span>`).join('')}<span><i style="background:#B9A6E0"></i>Prakiraan</span></div></div>
-     <div class="h2">Jumlah hari per kategori (30 hari)</div><div class="group">${KT.map(k => `<div class="row"><span class="ico-sq" style="background:${k[2]};width:14px;height:14px;border-radius:4px"></span><span class="m"><b>${k[1]}</b></span><b class="num">${past.filter(x => kat(x.m) === k).length} hari</b></div>`).join('')}</div>
-     <p class="small muted" style="margin:12px 4px">Sumber: Copernicus Atmosphere Monitoring Service (CAMS) global, ECMWF – via Open-Meteo Air Quality API (model ±40 km, bukan alat ukur lokal). Rata-rata harian dari nilai per jam (≥18 jam), waktu WIB. Kategori PM2.5 mengikuti BMKG.</p>`;
+     <div class="stat3"><div class="card"><b>${N1(rata)}</b><span>${I('PM2.5 rata-rata harian 30 hari, µg/m³', 'PM2.5 30-day mean of daily values, µg/m³')}</span></div><div class="card"><b>${N1(top.m)}</b><span>${I('tertinggi', 'highest')} · ${esc(+top.d.slice(8) + ' ' + B(+top.d.slice(5, 7) - 1))}</span></div><div class="card"><b style="color:${kat(rata)[2]}">${kat(rata)[1]}</b><span>${I('kategori rata-rata (BMKG)', 'average category (BMKG)')}</span></div></div>
+     <div class="h2">${I('PM2.5 rata-rata harian · 30 hari + prakiraan', 'Daily mean PM2.5 · 30 days + forecast')}</div><div class="card chart">${bars(D.map(x => +x.d.slice(8)), D.map(x => Math.round(x.m * 10) / 10), { unit: 'µg/m³', fmt: N1, col: (v, i) => D[i].fc ? '#B9A6E0' : kat(v)[2], every: 3, aria: I('PM2.5 harian', 'daily PM2.5') })}
+      <div class="legend">${KT.slice(0, 4).map(k => `<span><i style="background:${k[2]}"></i>${k[1]}</span>`).join('')}<span><i style="background:#B9A6E0"></i>${I('Prakiraan', 'Forecast')}</span></div></div>
+     <div class="h2">${I('Jumlah hari per kategori (30 hari)', 'Days per category (30 days)')}</div><div class="group">${KT.map(k => `<div class="row"><span class="ico-sq" style="background:${k[2]};width:14px;height:14px;border-radius:4px"></span><span class="m"><b>${k[1]}</b></span><b class="num">${past.filter(x => kat(x.m) === k).length} ${I('hari', 'days')}</b></div>`).join('')}</div>
+     <p class="small muted" style="margin:12px 4px">${I('Sumber: Copernicus Atmosphere Monitoring Service (CAMS) global, ECMWF – via Open-Meteo Air Quality API (model ±40 km, bukan alat ukur lokal). Rata-rata harian dari nilai per jam (≥18 jam), waktu WIB. Kategori PM2.5 mengikuti BMKG.', 'Source: Copernicus Atmosphere Monitoring Service (CAMS) global, ECMWF – via the Open-Meteo Air Quality API (~40 km model, not a local sensor). Daily means from hourly values (≥18 hours), WIB time. PM2.5 categories follow BMKG (Indonesia).')}</p>`;
     bindLok(muat);
   };
-  openPage('Kualitas Udara', 'Copernicus CAMS', '', muat);
+  openPage(I('Kualitas Udara', 'Air Quality'), 'Copernicus CAMS', '', muat);
 }
 
 /* ---------- 4. Alat yang dihitung lewat Analisis area (server) ---------- */
 const VIA_ANALISIS = {
-  hutan: ['Kehilangan & tutupan hutan', 'Hansen/UMD Global Forest Change v1.13 (2001–2025) untuk wilayah Anda.'],
-  tutupan: ['Tutupan & penggunaan lahan', 'GLAD/University of Maryland 2000–2020 (30 m) dan ESA WorldCover 2021 (10 m) untuk wilayah Anda; peta KLHK dipakai bila tersedia.'],
-  karbon: ['Emisi & stok karbon', 'Model fluks karbon hutan GFW (Harris dkk. 2021) dan metode FREL untuk wilayah Anda.'],
-  kejadian: ['Riwayat titik panas', 'Arsip resmi NASA FIRMS untuk Indonesia sejak 2016 + tahun berjalan, dihitung di dalam batas wilayah Anda.'],
-  grafik: ['Grafik titik panas tahunan', 'Arsip resmi NASA FIRMS sejak 2016, per tahun & per bulan, di dalam batas wilayah Anda.'],
-  bekas: ['Perubahan & gangguan lahan', 'Kehilangan tutupan pohon tahunan (Hansen) di wilayah Anda; gangguan vegetasi terbaru juga tampil di peta (lapisan NASA OPERA).'],
-  lahankritis: ['Lahan kritis', 'Peta Lahan Kritis resmi dipakai untuk Kabupaten Kapuas Hulu. Di wilayah lain dihitung INDIKASI lahan kritis dari data terbuka (penutupan tajuk ESA WorldCover 2021 + kemiringan lereng Copernicus DEM, skoring Kemenhut) – bukan peta resmi.'],
-  laporan: ['Laporan PDF', 'Laporan lengkap analisis wilayah Anda (PDF) dibuat dari halaman Analisis area.'],
-  unduh: ['Unduh data', 'Hasil analisis wilayah Anda dapat diunduh sebagai laporan PDF dan tabel CSV (Excel) dari halaman Analisis area.']
+  hutan: [['Kehilangan & tutupan hutan', 'Forest loss & cover'], ['Hansen/UMD Global Forest Change v1.13 (2001–2025) untuk wilayah Anda.', 'Hansen/UMD Global Forest Change v1.13 (2001–2025) for your area.']],
+  tutupan: [['Tutupan & penggunaan lahan', 'Land cover & land use'], ['GLAD/University of Maryland 2000–2020 (30 m) dan ESA WorldCover 2021 (10 m) untuk wilayah Anda – data terbuka resmi.', 'GLAD/University of Maryland 2000–2020 (30 m) and ESA WorldCover 2021 (10 m) for your area – official open data.']],
+  karbon: [['Emisi & stok karbon', 'Carbon emissions & stocks'], ['Model fluks karbon hutan GFW (Harris dkk. 2021) dan metode FREL untuk wilayah Anda.', 'GFW forest carbon flux model (Harris et al. 2021) and the FREL method for your area.']],
+  kejadian: [['Riwayat titik panas', 'Hotspot history'], ['Arsip resmi NASA FIRMS untuk Indonesia sejak 2016 + tahun berjalan, dihitung di dalam batas wilayah Anda.', 'Official NASA FIRMS archive for Indonesia since 2016 + the current year, counted inside your area boundary.']],
+  grafik: [['Grafik titik panas tahunan', 'Annual hotspot charts'], ['Arsip resmi NASA FIRMS sejak 2016, per tahun & per bulan, di dalam batas wilayah Anda.', 'Official NASA FIRMS archive since 2016, per year & month, inside your area boundary.']],
+  bekas: [['Perubahan & gangguan lahan', 'Land change & disturbance'], ['Kehilangan tutupan pohon tahunan (Hansen) di wilayah Anda; gangguan vegetasi terbaru juga tampil di peta (lapisan NASA OPERA).', 'Annual tree cover loss (Hansen) in your area; recent vegetation disturbance is also shown on the map (NASA OPERA layer).']],
+  lahankritis: [['Lahan kritis', 'Critical land'], ['Peta Lahan Kritis resmi dipakai untuk Kabupaten Kapuas Hulu. Di wilayah lain dihitung INDIKASI lahan kritis dari data terbuka (penutupan tajuk ESA WorldCover 2021 + kemiringan lereng Copernicus DEM, skoring Kemenhut) – bukan peta resmi.', 'The official Critical Land Map is used for Kapuas Hulu Regency. Elsewhere an INDICATION of critical land is computed from open data (ESA WorldCover 2021 canopy + Copernicus DEM slope, Ministry of Forestry scoring) – not an official map.']],
+  laporan: [['Laporan PDF', 'PDF report'], ['Laporan lengkap analisis wilayah Anda (PDF) dibuat dari halaman Analisis area.', 'A full analysis report for your area (PDF) is generated from the Area analysis page.']],
+  unduh: [['Unduh data', 'Download data'], ['Hasil analisis wilayah Anda dapat diunduh sebagai laporan PDF dan tabel CSV (Excel) dari halaman Analisis area.', 'Your area analysis can be downloaded as a PDF report and a CSV (Excel) table from the Area analysis page.']]
 };
 function lewatAnalisis(k) {
-  const [jd, ket] = VIA_ANALISIS[k], A = akses(), shp = A.mode === 'shp';
-  window.openSheet(`<h3>${esc(jd)}</h3><p class="sub">${esc(ket)}</p><p class="sub">${shp ? `Wilayah <b>${esc(A.nama)}</b> sudah terdaftar – hasilnya ada di <b>Analisis area</b>.` : 'Untuk wilayah mana pun di Indonesia: unggah batas wilayah (SHP/GeoJSON/KML) di <b>Analisis area</b>. Perhitungan memakai data resmi yang sama dengan 6 Hutan Desa dampingan PRCF.'}</p>
-   <button class="btn pri full tap" id="nlAn">${shp ? 'Buka analisis wilayah saya' : 'Analisis wilayah (unggah SHP)'}</button>`);
+  const [[jd0, jd1], [k0, k1]] = VIA_ANALISIS[k], jd = I(jd0, jd1), ket = I(k0, k1), A = akses(), shp = A.mode === 'shp';
+  window.openSheet(`<h3>${esc(jd)}</h3><p class="sub">${esc(ket)}</p><p class="sub">${shp ? I(`Wilayah <b>${esc(A.nama)}</b> sudah terdaftar – hasilnya ada di <b>Analisis area</b>.`, `Area <b>${esc(A.nama)}</b> is registered – results are in <b>Area analysis</b>.`) : I('Untuk wilayah mana pun di Indonesia: unggah batas wilayah (SHP/GeoJSON/KML) di <b>Analisis area</b>. Perhitungan memakai data resmi yang sama dengan 6 Hutan Desa dampingan PRCF.', 'For any area in Indonesia: upload a boundary (SHP/GeoJSON/KML) in <b>Area analysis</b>. Calculations use the same official data as the 6 Village Forests supported by PRCF.')}</p>
+   <button class="btn pri full tap" id="nlAn">${shp ? I('Buka analisis wilayah saya', 'Open my area analysis') : I('Analisis wilayah (unggah SHP)', 'Analyse an area (upload SHP)')}</button>`);
   $('#nlAn').onclick = () => { history.back(); setTimeout(() => window.FHApp && FHApp.hubGo('analisis'), 120); };
 }
 
@@ -204,13 +207,13 @@ function satelit() {
   const draw = () => {
     const L = lokasi(), body = $('#pageBody'); if (!body) return;
     if (!L) { body.innerHTML = perluLok(); bindLok(muat); return; }
-    const jam = t => { const w = new Date(t.getTime() + 7 * 36e5); return `${w.getUTCDate()} ${BLN[w.getUTCMonth()]} · ${String(w.getUTCHours()).padStart(2, '0')}.${String(w.getUTCMinutes()).padStart(2, '0')} WIB`; };
-    body.innerHTML = `${lokBar(L)}${P === null ? '<div class="empty">Menghitung lintasan satelit…</div>' : !P.length ? `<div class="empty">Lintasan tidak dapat dihitung${err ? ' (' + esc(err) + ')' : ''}.</div>` : `
-     <div class="h2">Satelit pendeteksi titik panas berikutnya</div><div class="group">${P.slice(0, 12).map(x => `<div class="row"><span class="m"><b>${esc(x.nama)} · ${esc(x.sensor)}</b><small>${jam(x.t)} · ${x.siang ? 'siang' : 'malam'} · ${N0(x.km)} km dari jejak orbit${x.tepi ? ' (tepi sapuan)' : ''}</small></span></div>`).join('')}</div>
-     <p class="small muted" style="margin:12px 4px">Orbit dari TLE CelesTrak (diperbarui otomatis tiap 3 jam), propagasi SGP4. Satelit dihitung melintas bila lokasi berada di dalam lebar sapuan sensor (MODIS 2.330 km, VIIRS 3.060 km). Titik panas biasanya muncul di NASA FIRMS ±3 jam setelah lintasan.</p>`}`;
+    const jam = t => { const w = new Date(t.getTime() + 7 * 36e5); return `${w.getUTCDate()} ${B(w.getUTCMonth())} · ${String(w.getUTCHours()).padStart(2, '0')}.${String(w.getUTCMinutes()).padStart(2, '0')} WIB`; };
+    body.innerHTML = `${lokBar(L)}${P === null ? `<div class="empty">${I('Menghitung lintasan satelit…', 'Computing satellite passes…')}</div>` : !P.length ? `<div class="empty">${I('Lintasan tidak dapat dihitung', 'Passes could not be computed')}${err ? ' (' + esc(err) + ')' : ''}.</div>` : `
+     <div class="h2">${I('Satelit pendeteksi titik panas berikutnya', 'Next hotspot-detecting satellites')}</div><div class="group">${P.slice(0, 12).map(x => `<div class="row"><span class="m"><b>${esc(x.nama)} · ${esc(x.sensor)}</b><small>${jam(x.t)} · ${x.siang ? I('siang', 'day') : I('malam', 'night')} · ${N0(x.km)} ${I('km dari jejak orbit', 'km from ground track')}${x.tepi ? I(' (tepi sapuan)', ' (swath edge)') : ''}</small></span></div>`).join('')}</div>
+     <p class="small muted" style="margin:12px 4px">${I('Orbit dari TLE CelesTrak (diperbarui otomatis tiap 3 jam), propagasi SGP4. Satelit dihitung melintas bila lokasi berada di dalam lebar sapuan sensor (MODIS 2.330 km, VIIRS 3.060 km). Titik panas biasanya muncul di NASA FIRMS ±3 jam setelah lintasan.', 'Orbits from CelesTrak TLEs (updated automatically every 3 hours), SGP4 propagation. A satellite counts as passing when the location is inside the sensor swath (MODIS 2,330 km, VIIRS 3,060 km). Hotspots usually appear in NASA FIRMS ~3 hours after the pass.')}</p>`}`;
     bindLok(muat);
   };
-  openPage('Lintasan Satelit', 'Jadwal satelit lewat · SGP4', '', muat);
+  openPage(I('Lintasan Satelit', 'Satellite Passes'), I('Jadwal satelit lewat · SGP4', 'Pass schedule · SGP4'), '', muat);
 }
 
 const ALAT = { sebaran, hujan, udara, satelit, cuaca: () => window.FHApp && FHApp.hubGo('lokasi') };
