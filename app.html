@@ -541,6 +541,7 @@ body.is-off .offline{display:block}
 .clampx.open{display:block;-webkit-line-clamp:unset}
 .clampx-t{display:inline-flex;align-items:center;gap:4px;margin:2px 0 6px;padding:0;border:0;background:none;color:var(--brand-3,#1E7A58);font:700 11.5px var(--f);cursor:pointer}
 html.web [data-noweb]{display:none!important}
+body:not(.pr-umum) .umum-only{display:none!important}body.pr-umum #fabList,body.pr-umum #fabSat,body.pr-umum #fabFocus,body.pr-umum #rpForm,body.pr-umum #topcards,body.pr-umum #sumpanel,body.pr-umum #eye,body.pr-umum .fc-mode .seg2,body.pr-umum [data-sec="unduh"],body.pr-umum [data-sec="peringatan"]{display:none!important}   /* mode umum / wilayah SHP: tanpa data Hutan Desa dampingan */
 .hx-t.hx-lock{opacity:.5;filter:grayscale(.6)}.hx-t.hx-lock::after{content:'🔒';position:absolute;top:8px;right:9px;font-size:13px}.hx-t{position:relative}
 /* Pantau Rimbak · website: semua kelompok alat terbuka sebagai kisi (tidak dilipat seperti di HP) */
 html.web .hx-acc{grid-template-rows:1fr!important}html.web .hx-acc>.hx-grid{overflow:visible!important;padding:2px 2px 6px!important}
@@ -648,6 +649,7 @@ html.web .ab-t small{letter-spacing:.02em}
 
 <!-- ================= LAPORAN ================= -->
 <section class="view" id="v-lap" data-title="Laporan" data-sub="Buat laporan PDF, Word & CSV">
+  <div class="pad umum-only" id="lapUmum"></div>
   <div class="pad" id="rpForm">
     <select id="rpPreset" class="vh" tabindex="-1" aria-hidden="true"><option value="bulan_lalu">Bulan lalu</option><option value="bulan_ini">Bulan ini</option><option value="3_bulan">3 bulan terakhir</option><option value="tahun_lalu" selected>Tahun lalu</option><option value="tahun_ini">Tahun ini</option><option value="12_bulan">12 bulan terakhir</option><option value="semua">Semua data</option><option value="kustom">Kustom</option></select>
     <select id="rpWil" class="vh" tabindex="-1" aria-hidden="true"><option value="desa25" selected>desa25</option><option value="desa5">desa5</option><option value="kh">kh</option></select>
@@ -830,8 +832,9 @@ function go(v,push=true){
   closeAll();
   const from=CUR;CUR=v;if(!BOOT&&from!==v)try{FHAlat.pakai('v_'+v);}catch(e){}$$('.view').forEach(e=>e.classList.remove('on'));const el=$(views[v]);el.classList.add('on');
   $$('#tabbar button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.v===v)));
+  try{if(v==='fc'&&isUmum()&&FCMODE!=='saya')fcMode('saya');}catch(e){}
   setBar(el.dataset.title,el.dataset.sub,false);if(v==='fc'&&FCMODE==='saya')setBar('Cuaca di lokasi saya','ECMWF · CAMS · FDRS',false);
-  if(v==='home'&&MAP)setTimeout(()=>{MAP.invalidateSize();if(!MAPSEEN&&SITE){MAPSEEN=true;try{applySite(SITE.id,false);}catch(e){}}},60);
+  if(v==='home'&&MAP)setTimeout(()=>{MAP.invalidateSize();let u=false;try{u=isUmum();}catch(e){}if(u&&!MAPSEEN){MAPSEEN=true;if(WILL)try{MAP.fitBounds(WILL.getBounds(),{padding:[30,30]});}catch(e){}else MAP.setView([-2.5,118],5);}if(!MAPSEEN&&SITE){MAPSEEN=true;try{applySite(SITE.id,false);}catch(e){}}},60);
   if(v==='dash')hubRender();
   try{sideMark();}catch(e){}
   if(v==='data')loadHist();
@@ -849,7 +852,7 @@ function back(){if(BACK.length)history.back();}
 $('#abBack').onclick=back;
 function meUI(){if(!window.FHAkun)return;const u=FHAkun.user();$('#abMe').innerHTML=FHAkun.avatar(34);$('#abMe').style.display=u?'':'none';
   $('#pfCard').style.display=u?'flex':'none';if(u)$('#pfCard').innerHTML=`${FHAkun.avatar(56)}<span style="flex:1;min-width:0"><b style="display:block;font-size:16px">${esc(u.nama)}</b><small class="muted" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(u.email)}</small><small style="color:var(--brand-3);font-weight:700">Lihat &amp; ubah profil</small></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="color:var(--faint)"><path d="M9 5l7 7-7 7"/></svg>`;}
-if(window.FHAkun){FHAkun.init({pushLayer,back,lokasi:()=>SITE?SITE.hd_nama:''});FHAkun.onChange(meUI);FHAkun.onChange(()=>{try{sapa();}catch(e){}});FHAkun.onChange(()=>{try{if(CUR==='dash')hubRender();}catch(e){}});FHAkun.onChange(()=>{try{sideRender();}catch(e){}});window.FHSiteNama=()=>SITE?SITE.hd_nama:'';window.FHSiteObj=()=>SITE;window.FHApp={map:()=>MAP,api:()=>NASA,go:(...x)=>go(...x),hubGo:k=>hubGo(k),lihat:(la,lo,z)=>MAP&&MAP.setView([la,lo],z||9,{animate:false}),nasa:id=>NASA&&NASA.set(id),closeAll:()=>closeAll(),detail:p=>detail(p)};window.FHSites=()=>SITES;window.FHSiteIdx=()=>SI;window.FHAll=()=>ALL;window.openPage=openPage;window.openSheet=(...x)=>openSheet(...x);window.toastMsg=(...a)=>toastMsg(...a);$('#abMe').onclick=()=>FHAkun.openProfile();$('#pfCard').onclick=()=>FHAkun.openProfile();}
+if(window.FHAkun){FHAkun.init({pushLayer,back,lokasi:()=>SITE?SITE.hd_nama:''});FHAkun.onChange(meUI);FHAkun.onChange(()=>{try{sapa();}catch(e){}});FHAkun.onChange(()=>{try{if(CUR==='dash')hubRender();}catch(e){}});FHAkun.onChange(()=>{try{sideRender();}catch(e){}});window.FHSiteNama=()=>{try{if(isUmum())return '';}catch(e){}return SITE?SITE.hd_nama:'';};window.FHSiteObj=()=>SITE;window.FHApp={map:()=>MAP,api:()=>NASA,go:(...x)=>go(...x),hubGo:k=>hubGo(k),lihat:(la,lo,z)=>MAP&&MAP.setView([la,lo],z||9,{animate:false}),nasa:id=>NASA&&NASA.set(id),closeAll:()=>closeAll(),detail:p=>detail(p)};window.FHSites=()=>SITES;window.FHSiteIdx=()=>SI;window.FHAll=()=>ALL;window.openPage=openPage;window.openSheet=(...x)=>openSheet(...x);window.toastMsg=(...a)=>toastMsg(...a);$('#abMe').onclick=()=>FHAkun.openProfile();$('#pfCard').onclick=()=>FHAkun.openProfile();}
 function closeAll(){const n=BACK.length;if(!n)return;while(BACK.length)BACK.pop()();SKIP+=1;history.go(-n);}   // history.go(-n) memicu SATU popstate
 
 /* sheet */
@@ -893,9 +896,15 @@ function aksesApply(){
   if(WILL&&MAP){MAP.removeLayer(WILL);WILL=null;}
   if(A.mode==='shp'&&A.geojson&&MAP&&window.L){WILL=L.geoJSON(A.geojson,{style:{color:'#38BDF8',weight:2.4,fillColor:'#38BDF8',fillOpacity:.08},interactive:false}).addTo(MAP);try{MAP.fitBounds(WILL.getBounds(),{padding:[30,30]});}catch(e){}}
   if(ALLOW.size){if(!SITE||!ALLOW.has(SITE.id))applySite([...ALLOW][0],false);else applySite(SITE.id,false);}
-  else{try{if(NASA&&!NASA.id)NASA.set('fire');}catch(e){}const nm=A.mode==='shp'?'Wilayah: '+A.nama:'Mode umum';['v-home','v-data','v-lap','v-fc'].forEach(v=>{const e=$('#'+v);if(e)e.dataset.sub=nm;});$('#abSub').textContent=nm;}
+  else{try{if(ACT)ACT.clearLayers();if(MAP){MAPSEEN=false;if(!WILL)MAP.setView([-2.5,118],5);}}catch(e){}try{if(NASA&&!NASA.id)NASA.set('fire');}catch(e){}const nm=A.mode==='shp'?'Wilayah: '+A.nama:'Mode umum';['v-home','v-data','v-lap','v-fc'].forEach(v=>{const e=$('#'+v);if(e)e.dataset.sub=nm;});$('#abSub').textContent=nm;}
+  try{renderMap();}catch(e){}lapUmum();
   try{if(CUR==='dash')hubRender();}catch(e){}
 }
+function lapUmum(){const el=$('#lapUmum');if(!el)return;const A=window.FHAkun&&FHAkun.akses?FHAkun.akses():{mode:'umum'},shp=A.mode==='shp';
+  el.innerHTML=`<div class="card" style="padding:18px"><h3 style="margin:0 0 6px">${shp?'Laporan wilayah Anda':'Belum ada wilayah untuk dilaporkan'}</h3>
+   <p class="muted" style="margin:0 0 14px">${shp?`Laporan PDF dan tabel CSV untuk <b>${esc(A.nama)}</b> dibuat dari hasil <b>Analisis area</b> (tutupan lahan, hutan, karbon, titik panas, lahan kritis).`:'Laporan titik panas Hutan Desa dampingan PRCF hanya terbuka dengan <b>kode ID</b>. Untuk wilayah Anda sendiri di mana pun di Indonesia, unggah batas wilayah (SHP) – laporannya dibuat otomatis dari hasil analisis.'}</p>
+   <div style="display:grid;gap:10px"><button class="btn pri full tap" data-lu="analisis">${shp?'Buka analisis & unduh laporan':'Unggah SHP & buat laporan'}</button>${shp?'':'<button class="btn full tap" data-lu="kode">Masuk dengan kode ID</button>'}</div></div>`;
+  el.querySelectorAll('[data-lu]').forEach(b=>b.onclick=()=>hubGo(b.dataset.lu));}
 function umumInfo(){const A=window.FHAkun&&FHAkun.akses?FHAkun.akses():{mode:'umum'};
   openSheet(`<h3>${A.mode==='shp'?'Data wilayah Anda':'Data Hutan Desa terkunci'}</h3><p class="sub">${A.mode==='shp'?`Wilayah <b>${esc(A.nama)}</b> sudah tersimpan dengan kode ID Anda. Analisis lahan, hutan &amp; karbon untuk wilayah ini tersedia di <b>Analisis lahan &amp; karbon</b>.`:'Alat ini menampilkan data kawasan Hutan Desa dampingan Yayasan PRCF Indonesia dan hanya terbuka dengan <b>kode ID</b> kawasan.'}</p>
    <div class="opts"><button class="optc" data-u="analisis"><span class="rd"></span><span><b>Daftarkan wilayah Anda (unggah SHP)</b><small>Batas wilayah Anda dianalisis otomatis, lalu lindungi dengan kode ID pilihan Anda</small></span></button>
@@ -920,7 +929,7 @@ function initMap(){
   SITEL=L.layerGroup().addTo(MAP);drawSites();
   const gridL=L.geoJSON(G.grid,{style:{color:'#fff',weight:.5,opacity:.55,fill:false},interactive:false});
   const lbl=L.layerGroup();for(const f of G.grid.features){const c=f.geometry.coordinates[0];let x=0,y=0;const n=c.length-1;for(let i=0;i<n;i++){x+=c[i][0];y+=c[i][1];}lbl.addLayer(L.marker([y/n,x/n],{interactive:false,icon:L.divIcon({className:'petak-lbl',html:esc(f.properties.PETAK),iconSize:[24,10],iconAnchor:[12,5]})}));}
-  MAP.on('zoomend',()=>{const z=MAP.getZoom();z>=13?gridL.addTo(MAP):MAP.removeLayer(gridL);z>=15?lbl.addTo(MAP):MAP.removeLayer(lbl);});
+  MAP.on('zoomend',()=>{const z=MAP.getZoom();let u=false;try{u=isUmum();}catch(e){}z>=13&&!u?gridL.addTo(MAP):MAP.removeLayer(gridL);z>=15&&!u?lbl.addTo(MAP):MAP.removeLayer(lbl);});   // petak patroli hanya untuk akses Hutan Desa
   B.kh=L.geoJSON(kh).getBounds();B.all=L.latLngBounds(SITES.map(x=>L.geoJSON(x.buf5).getBounds()).reduce((a,b)=>a.extend(b)));
   ptsL=L.layerGroup().addTo(MAP);
   NASA=FHNasa.create(MAP);NASA.onChange(nasaUI);
@@ -930,7 +939,7 @@ let NASA=null, BTL=null, TCL=null, PHL=null;
 function nasaUI(){imgInfo();const L0=NASA.layer,bar=$('#nasaBar');bar.hidden=!L0;if(!L0){nasaUI._on=0;return;}$('#nbName').textContent=(L0.cams?'Copernicus · ':'NASA · ')+NASA.label+(L0.hourly?' · '+NASA.timeLabel:'');if(!nasaUI._on){nasaUI._on=1;$('#topcards').classList.add('cards-off');$('#eyeX').style.display='none';}const pl=$('#nbPlay');pl.textContent=NASA.playing?'⏸':'▶';pl.classList.toggle('on',NASA.playing);const an=$('#nbAnim'),ai=NASA.animInfo;an.hidden=!ai;if(ai)an.innerHTML=`<span>${ai.hourly?'Prakiraan':'Pergerakan'} ${ai.from} → ${ai.to}</span><i style="width:${(ai.i+1)/ai.n*100}%"></i>`;const i=$('#nbDate');i.value=NASA.date;i.max=NASA.maxDate();i.min=L0.since;
   const lg=$('#nbLg');if(L0.legend){lg.src=L0.legend;lg.hidden=false;}else lg.hidden=true;}
 const FOCI=[['r25','Radius 25 km'],['desa','Desa'],['hd','Hutan Desa'],['all','Semua lokasi'],['kh','Kapuas Hulu']];let FI=0;
-$('#fab3d').onclick=()=>{if(!window.FH3D)return;let viaBack=false;pushLayer(()=>{viaBack=true;FH3D.close();});FH3D.open({sites:SITES,site:SITE,points:ALL,onClose:()=>{if(!viaBack)back();}});};
+$('#fab3d').onclick=()=>{if(!window.FH3D)return;let viaBack=false;pushLayer(()=>{viaBack=true;FH3D.close();});let u=false;try{u=isUmum();}catch(e){}FH3D.open({sites:u?[]:SITES,site:u?null:SITE,points:u?[]:ALL,onClose:()=>{if(!viaBack)back();}});};
 $('#fabFocus').onclick=()=>{FI=(FI+1)%FOCI.length;const [k,n0]=FOCI[FI];const n=k==='desa'?'Desa '+dNm():k==='hd'?SITE.hd_nama:n0;MAP.flyToBounds(B[k],{...PADV,duration:.8});const l=$('#focusLbl');l.textContent='Fokus: '+n;l.classList.add('on');clearTimeout(l._t);l._t=setTimeout(()=>l.classList.remove('on'),1300);};
 $('#eye').onclick=()=>{const off=$('#topcards').classList.toggle('cards-off');$('#eyeX').style.display=off?'none':'';store.set('cards',!off);};
 if(store.get('cards',true)===false){$('#topcards').classList.add('cards-off');$('#eyeX').style.display='none';}
@@ -946,7 +955,7 @@ function filtered(){const now=Date.now();return (PERX?RPTS:ALL).filter(p=>SENF.i
 const perTxt=()=>PERX?PERX.lbl:PER===0?'semua data (400 hari)':PER===1?'24 jam terakhir':PER===365?'1 tahun terakhir':PER+' hari terakhir';
 function markerColor(p){return CMODE==='zone'?css(ZCOL[zIdx(p)]):css(CCOL[confLvl(p)]);}
 function renderMap(){
-  if(!MAP)return; ptsL.clearLayers(); const F=filtered();
+  if(!MAP)return; ptsL.clearLayers(); try{if(isUmum())return;}catch(e){} const F=filtered();
   for(const p of [...F].reverse()){
     const col=markerColor(p), size=zIdx(p)<=1?24:19, hh=Math.round(size*1.18); const near=zIdx(p)<=2;
     const html=`<div class="hs-icon" style="position:relative;width:${size}px;height:${hh}px">${near?`<svg width="${size*2}" height="${size*2}" style="position:absolute;left:${-size/2}px;top:${hh-size*1.5}px;overflow:visible"><circle class="pulse-ring" cx="${size}" cy="${size}" r="${size*.8}" fill="none" stroke="${css('--hi')}" stroke-width="2.5"/></svg>`:''}${flameSVG(col,size,fresh(p))}${VERIF[p.k]?'<span class="vbadge">✓</span>':''}</div>`;
@@ -1034,7 +1043,7 @@ addEventListener('online',()=>{netUI();loadVerif(true);});addEventListener('offl
 document.addEventListener('DOMContentLoaded',()=>{const v=document.getElementById('vfNew');if(v)v.onclick=()=>openVerif(null);netUI();setTimeout(()=>{loadVerif(false);luringUI();},2500);});
 /* ---------- kompas ---------- */
 let KOMP=null;
-function openKompas(target){closeAll();setTimeout(()=>openPage('Kompas','Arah · GPS · matahari','<div class="pad" id="kpBox"></div>',()=>{KOMP=FHKompas.mount($('#kpBox'),{target:target||null,hotspots:ALL});const pg=$('#page');const ob=new MutationObserver(()=>{if(!pg.classList.contains('on')){if(KOMP)KOMP.destroy();KOMP=null;ob.disconnect();}});ob.observe(pg,{attributes:true,attributeFilter:['class']});}),80);}
+function openKompas(target){closeAll();setTimeout(()=>openPage('Kompas','Arah · GPS · matahari','<div class="pad" id="kpBox"></div>',()=>{KOMP=FHKompas.mount($('#kpBox'),{target:target||null,hotspots:(()=>{try{return isUmum()?[]:ALL;}catch(e){return ALL;}})()});const pg=$('#page');const ob=new MutationObserver(()=>{if(!pg.classList.contains('on')){if(KOMP)KOMP.destroy();KOMP=null;ob.disconnect();}});ob.observe(pg,{attributes:true,attributeFilter:['class']});}),80);}
 /* ---------- angin ---------- */
 let WIND=null;
 function windOn(v){if(!window.FHAngin||!MAP)return;if(!WIND)WIND=FHAngin.layer(MAP,{z:450});const fb=$('#fabWind');
@@ -1098,6 +1107,8 @@ function prMount(){if(!window.FHPeringatan||!$('#prBox'))return;FHPeringatan.mou
 async function baraData(){   // seluruh data aplikasi yang relevan → konteks Bara Api (+ ringkasan untuk sapaan)
   const L=[],now=Date.now(),wib=t=>new Date(t).toLocaleString('id-ID',{timeZone:'Asia/Jakarta',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})+' WIB',f1=x=>x==null||isNaN(x)?'-':(+x).toLocaleString('id-ID',{maximumFractionDigits:1});
   const KL=(FC&&FC.kelas)||['Rendah','Sedang','Tinggi','Ekstrem'];
+  let um=false;try{um=isUmum();}catch(e){}
+  if(um){const A=window.FHAkun&&FHAkun.akses?FHAkun.akses():{mode:'umum'};return {teks:'Waktu: '+wib(now)+'. Pengguna memakai mode '+(A.mode==='shp'?'wilayah SHP sendiri ('+A.nama+')':'umum')+' tanpa kode ID Hutan Desa: JANGAN memakai atau menyebut data Hutan Desa dampingan PRCF (titik panas, status, patroli, laporan). Jawab dengan pengetahuan umum dan sarankan alat seluruh Indonesia di aplikasi (titik panas 7 hari, cuaca di lokasi, analisis SHP).',ringkas:{umum:true,sapa:greet()}};}
   try{await loadHist();}catch(e){}
   const W=ALL.filter(p=>now-p.when<=7*864e5+36e5),last=ALL.reduce((m,p)=>p.when>m?p.when:m,0);
   L.push('Waktu: '+wib(now)+'. Lokasi Hutan Desa yang sedang dibuka: '+(SITE?SITE.hd_nama:'-')+'.');
@@ -1396,6 +1407,8 @@ function hubUmum(el){   // mode umum / wilayah sendiri: tanpa data Hutan Desa da
    <div class="hx-status" style="--sc:#38BDF8"><span class="hx-ring"><i></i></span><span><b>${shp?'Wilayah tersimpan aman':'Pantau titik api, angin & cuaca di mana pun'}</b><small>${shp?'Hanya terbuka dengan email, kata sandi dan kode ID Anda.':'Data kawasan Hutan Desa dampingan PRCF terbuka dengan kode ID. Daftarkan wilayah Anda sendiri dengan mengunggah SHP.'}</small></span></div>
    <div class="hx-cta"><button class="hx-btn pri" data-u="peta">Buka peta</button><button class="hx-btn" data-u="analisis">${shp?'Analisis wilayah saya':'Daftarkan wilayah (SHP)'}</button><button class="hx-btn" data-u="lokasi">Cuaca di lokasi saya</button><button class="hx-btn" data-u="kode">Masuk dengan kode ID</button></div>`;
   el.querySelectorAll('.hx-kpi,.hx-wx,.hx-side').forEach(x=>x.remove());
+  const SUBU={peta:'Titik api NASA · seluruh Indonesia',sebaran:'7 hari · di sekitar lokasi Anda',kejadian:'Arsip FIRMS sejak 2016 · per SHP',angin:'ECMWF · seluruh Indonesia',kompas:'Arah & matahari',cuaca:'Cuaca di lokasi Anda',hujan:'ERA5 sejak 2001 · lokasi Anda',udara:'PM2.5 CAMS · lokasi Anda',hutan:'Hansen/UMD · per SHP',bekas:'Hansen & NASA OPERA',analisis:'Unggah SHP · seluruh Indonesia',tutupan:'GLAD UMD & ESA WorldCover',lahankritis:'Indikasi dari data terbuka',karbon:'GFW & FREL · per SHP',grafik:'Arsip FIRMS · per SHP',laporan:'PDF dari Analisis area',unduh:'PDF & CSV analisis'};
+  el.querySelectorAll('[data-sub]').forEach(e=>{const k=e.dataset.sub;e.classList.remove('v');e.textContent=SUBU[k]!=null?SUBU[k]:(UMUM_OK.includes(k)||NAS_OK.includes(k)?e.textContent:'Khusus Hutan Desa dampingan');});
   el.querySelectorAll('.hx-t[data-hub]').forEach(t=>{if(!UMUM_OK.includes(t.dataset.hub)&&!NAS_OK.includes(t.dataset.hub)){t.classList.add('hx-lock');t.title='Khusus program Hutan Desa dampingan PRCF (perlu kode ID)';}});
   el.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>hubGo(b.dataset.u));
 }
@@ -1440,7 +1453,7 @@ function hubRender(){const el=$('#hub');if(!el)return;
     el.querySelectorAll('.hx-sec.open').forEach(x=>{x.classList.remove('open');x.querySelector('.hx-h').setAttribute('aria-expanded','false');});
     if(buka){sec.classList.add('open');h.setAttribute('aria-expanded','true');HUB_OPEN=sec.dataset.g;setTimeout(()=>{const v=document.getElementById('v-dash'),r=sec.getBoundingClientRect();if(r.bottom>innerHeight-40||r.top<70)v.scrollBy({top:r.top-110,behavior:'smooth'});},320);}else HUB_OPEN=null;};});
   /* nilai hidup di kartu */
-  const sub=(k,t)=>{const e=el.querySelector(`[data-sub="${k}"]`);if(e&&t){e.textContent=t;e.classList.add('v');}};
+  const sub=(k,t)=>{let u=false;try{u=isUmum();}catch(e){}if(u)return;const e=el.querySelector(`[data-sub="${k}"]`);if(e&&t){e.textContent=t;e.classList.add('v');}};   // mode umum: tanpa nilai Hutan Desa
   sub('peta',`${st.r25} titik ≤25 km · 7 hari`);if(H)sub('cuaca',`${n1(H.tmaks)}° · hujan ${n1(H.hujan)} mm`);if(pm!=null)sub('udara',`PM2.5 ${pm} · ${un||''}`);if(H)sub('angin',`maks ${n1(H.angin_maks)} km/jam`);
   try{if(window.FHVerif)FHVerif.all().then(L=>{const n=(L||[]).filter(r=>!r.terkirim).length;if(n)sub('cek',`${n} laporan menunggu sinyal`);}).catch(()=>{});}catch(e){}
   hubHutan(SITE.id).then(A=>{const h=A&&A.hutan;if(!h||!document.getElementById('hxHut'))return;$('#hxHut').innerHTML=`${n1(h.hutan_tersisa_2025_ha)}<em>ha</em>`;$('#hxHutS').textContent=`${n1(h.persen_hilang)}% hilang sejak 2000 · Hansen GFC`;
