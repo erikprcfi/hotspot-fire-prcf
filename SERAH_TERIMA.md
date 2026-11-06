@@ -38,5 +38,17 @@ Presentasi ke Gubernur Kalbar (> 1 minggu lagi); rencana rilis publik Play Store
 - [ ] Audit & perbaikan lapisan peta – baru audit awal (di atas).
 - [ ] Data nasional, desain ulang, laporan, uji akhir – belum.
 
+## Rencana sesi terjadwal (disetujui pengguna; batas ±40% kuota mingguan minggu ini)
+Kerjakan bagian PERTAMA yang belum dicentang, satu bagian per sesi:
+- [ ] Sesi A – Login sekali daftar + kode ID: ubah `assets/akun.js` (cek email di server: sudah terdaftar → layar masuk; belum → daftar),
+      layar masuk email/kata sandi/kode ID (opsional), gating tampilan HD per kode, halaman daftar kode ID setelah unggah SHP,
+      tulis `apps_script/Kode_Database_Pengguna_v12.gs.txt` (turunan v11; aksi: cek_email, masuk, daftar dgn hash, kode_simpan/kode_ambil
+      untuk wilayah SHP di Drive). Pengguna memasang v12 sendiri. Uji di Playwright dengan server tiruan.
+- [ ] Sesi B – Audit & perbaiki semua lapisan peta (lihat butir 4): uji tiap lapisan menghasilkan ubin di Kalbar & lokasi lain Indonesia
+      (mis. Riau, Papua, Aceh); ganti sumber lokal-saja dengan sumber resmi nasional/global atau beri label jelas.
+- [ ] Sesi C – Penyegaran tampilan untuk presentasi: beranda & peta lebih profesional (web dan HP berbeda tata letak), nama/ikon Android
+      (strings.xml app_name, mipmap adaptif dari assets/logo_pr.svg), kop laporan Pantau Rimbak.
+- [ ] Sesi D – Uji menyeluruh semua alat/navigasi (Playwright), perbaiki error, rangkuman siap-gabung untuk pengguna.
+
 ## Cara kerja hemat kuota (paket Pro pengguna)
 Satu bagian per sesi/percakapan; uji, commit ke `pantau-rimbak`, perbarui file ini, laporkan singkat dalam bahasa Indonesia.
