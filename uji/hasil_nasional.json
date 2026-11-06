@@ -1,5 +1,5 @@
 {
- "dijalankan_utc": "2026-11-06T14:49:42Z",
+ "dijalankan_utc": "2026-11-06T15:20:58Z",
  "firms_key": true,
  "hasil": {
   "Bengkulu (Seluma)": {
@@ -16,6 +16,54 @@
     "luas_ha": 3083.5
    },
    "lahan_kritis": null,
+   "tutupan_2021": [
+    [
+     "Tutupan pohon",
+     97.76
+    ],
+    [
+     "Lahan pertanian",
+     1.67
+    ],
+    [
+     "Lahan terbangun",
+     0.25
+    ],
+    [
+     "Padang rumput",
+     0.2
+    ],
+    [
+     "Lahan terbuka / vegetasi jarang",
+     0.08
+    ],
+    [
+     "Badan air permanen",
+     0.04
+    ]
+   ],
+   "lk_indikasi": [
+    [
+     "Tidak kritis",
+     35.62
+    ],
+    [
+     "Potensial kritis",
+     62.02
+    ],
+    [
+     "Agak kritis",
+     1.33
+    ],
+    [
+     "Kritis",
+     1.02
+    ],
+    [
+     "Sangat kritis",
+     0.01
+    ]
+   ],
    "titik_panas": {
     "periode": "2016–2026",
     "per_tahun": {
@@ -105,9 +153,9 @@
      "MODIS 2023",
      "MODIS 2024",
      "MODIS 2025",
-     "VIIRS S-NPP 2026 (NRT s.d. 2026-11-05)",
-     "VIIRS NOAA-20 2026 (NRT s.d. 2026-11-05)",
-     "MODIS 2026 (NRT s.d. 2026-11-05)"
+     "VIIRS S-NPP 2026 (FIRMS API SP/NRT s.d. 2026-11-05)",
+     "VIIRS NOAA-20 2026 (FIRMS API SP/NRT s.d. 2026-11-05)",
+     "MODIS 2026 (FIRMS API SP/NRT s.d. 2026-11-05)"
     ],
     "per_bulan": {
      "2016-05": 1,
@@ -230,7 +278,7 @@
      "persen_desa_tercakup": 0.6
     }
    ],
-   "detik": 207
+   "detik": 196
   },
   "Papua (Merauke)": {
    "klhk_tahun": [],
@@ -246,6 +294,50 @@
     "luas_ha": 3059.7
    },
    "lahan_kritis": null,
+   "tutupan_2021": [
+    [
+     "Tutupan pohon",
+     60.05
+    ],
+    [
+     "Lahan basah herba",
+     27.07
+    ],
+    [
+     "Padang rumput",
+     12.69
+    ],
+    [
+     "Semak belukar",
+     0.17
+    ],
+    [
+     "Lahan terbuka / vegetasi jarang",
+     0.01
+    ]
+   ],
+   "lk_indikasi": [
+    [
+     "Tidak kritis",
+     48.31
+    ],
+    [
+     "Potensial kritis",
+     9.59
+    ],
+    [
+     "Agak kritis",
+     10.03
+    ],
+    [
+     "Kritis",
+     32.06
+    ],
+    [
+     "Sangat kritis",
+     0.01
+    ]
+   ],
    "titik_panas": {
     "periode": "2016–2026",
     "per_tahun": {
@@ -335,9 +427,9 @@
      "MODIS 2023",
      "MODIS 2024",
      "MODIS 2025",
-     "VIIRS S-NPP 2026 (NRT s.d. 2026-11-05)",
-     "VIIRS NOAA-20 2026 (NRT s.d. 2026-11-05)",
-     "MODIS 2026 (NRT s.d. 2026-11-05)"
+     "VIIRS S-NPP 2026 (FIRMS API SP/NRT s.d. 2026-11-05)",
+     "VIIRS NOAA-20 2026 (FIRMS API SP/NRT s.d. 2026-11-05)",
+     "MODIS 2026 (FIRMS API SP/NRT s.d. 2026-11-05)"
     ],
     "per_bulan": {
      "2016-01": 8,
@@ -391,7 +483,7 @@
      "persen_desa_tercakup": 1.0
     }
    ],
-   "detik": 152
+   "detik": 189
   },
   "Aceh (Aceh Barat)": {
    "klhk_tahun": [],
@@ -407,6 +499,62 @@
     "luas_ha": 3082.3
    },
    "lahan_kritis": null,
+   "tutupan_2021": [
+    [
+     "Tutupan pohon",
+     92.85
+    ],
+    [
+     "Padang rumput",
+     4.55
+    ],
+    [
+     "Lahan pertanian",
+     2.37
+    ],
+    [
+     "Lahan terbangun",
+     0.2
+    ],
+    [
+     "Semak belukar",
+     0.03
+    ],
+    [
+     "Lahan basah herba",
+     0.01
+    ],
+    [
+     "Badan air permanen",
+     0.0
+    ],
+    [
+     "Lahan terbuka / vegetasi jarang",
+     0.0
+    ]
+   ],
+   "lk_indikasi": [
+    [
+     "Tidak kritis",
+     81.78
+    ],
+    [
+     "Potensial kritis",
+     11.11
+    ],
+    [
+     "Agak kritis",
+     3.58
+    ],
+    [
+     "Kritis",
+     3.51
+    ],
+    [
+     "Sangat kritis",
+     0.01
+    ]
+   ],
    "titik_panas": {
     "periode": "2016–2026",
     "per_tahun": {
@@ -496,9 +644,9 @@
      "MODIS 2023",
      "MODIS 2024",
      "MODIS 2025",
-     "VIIRS S-NPP 2026 (NRT s.d. 2026-11-05)",
-     "VIIRS NOAA-20 2026 (NRT s.d. 2026-11-05)",
-     "MODIS 2026 (NRT s.d. 2026-11-05)"
+     "VIIRS S-NPP 2026 (FIRMS API SP/NRT s.d. 2026-11-05)",
+     "VIIRS NOAA-20 2026 (FIRMS API SP/NRT s.d. 2026-11-05)",
+     "MODIS 2026 (FIRMS API SP/NRT s.d. 2026-11-05)"
     ],
     "per_bulan": {
      "2016-02": 2,
@@ -636,9 +784,9 @@
      "persen_desa_tercakup": 0.1
     }
    ],
-   "detik": 124
+   "detik": 189
   }
  },
  "layanan_klhk": {},
- "detik_layanan": 20
+ "detik_layanan": 19
 }

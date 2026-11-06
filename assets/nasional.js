@@ -181,14 +181,14 @@ function udara() {
 /* ---------- 4. Alat yang dihitung lewat Analisis area (server) ---------- */
 const VIA_ANALISIS = {
   hutan: ['Kehilangan & tutupan hutan', 'Hansen/UMD Global Forest Change v1.13 (2001–2025) untuk wilayah Anda.'],
-  tutupan: ['Tutupan & penggunaan lahan', 'GLAD Global Land Cover & Land Use 2000–2020; peta KLHK bila tersedia untuk wilayah tersebut.'],
+  tutupan: ['Tutupan & penggunaan lahan', 'GLAD/University of Maryland 2000–2020 (30 m) dan ESA WorldCover 2021 (10 m) untuk wilayah Anda; peta KLHK dipakai bila tersedia.'],
   karbon: ['Emisi & stok karbon', 'Model fluks karbon hutan GFW (Harris dkk. 2021) dan metode FREL untuk wilayah Anda.'],
   kejadian: ['Riwayat titik panas', 'Arsip resmi NASA FIRMS untuk Indonesia sejak 2016 + tahun berjalan, dihitung di dalam batas wilayah Anda.'],
   grafik: ['Grafik titik panas tahunan', 'Arsip resmi NASA FIRMS sejak 2016, per tahun & per bulan, di dalam batas wilayah Anda.'],
   bekas: ['Perubahan & gangguan lahan', 'Kehilangan tutupan pohon tahunan (Hansen) di wilayah Anda; gangguan vegetasi terbaru juga tampil di peta (lapisan NASA OPERA).'],
-  lahankritis: ['Lahan kritis', 'Peta Lahan Kritis resmi hanya tersedia untuk Kabupaten Kapuas Hulu; di luar itu analisis menampilkan tutupan lahan & kehilangan hutan sebagai gantinya.'],
-  laporan: ['Laporan PDF & Word', 'Laporan lengkap analisis wilayah Anda (PDF & Word) dibuat dari halaman Analisis area.'],
-  unduh: ['Unduh data', 'Hasil analisis wilayah Anda dapat diunduh (PDF, Word, CSV, GeoJSON) dari halaman Analisis area.']
+  lahankritis: ['Lahan kritis', 'Peta Lahan Kritis resmi dipakai untuk Kabupaten Kapuas Hulu. Di wilayah lain dihitung INDIKASI lahan kritis dari data terbuka (penutupan tajuk ESA WorldCover 2021 + kemiringan lereng Copernicus DEM, skoring Kemenhut) – bukan peta resmi.'],
+  laporan: ['Laporan PDF', 'Laporan lengkap analisis wilayah Anda (PDF) dibuat dari halaman Analisis area.'],
+  unduh: ['Unduh data', 'Hasil analisis wilayah Anda dapat diunduh sebagai laporan PDF dan tabel CSV (Excel) dari halaman Analisis area.']
 };
 function lewatAnalisis(k) {
   const [jd, ket] = VIA_ANALISIS[k], A = akses(), shp = A.mode === 'shp';
@@ -197,7 +197,23 @@ function lewatAnalisis(k) {
   $('#nlAn').onclick = () => { history.back(); setTimeout(() => window.FHApp && FHApp.hubGo('analisis'), 120); };
 }
 
-const ALAT = { sebaran, hujan, udara, cuaca: () => window.FHApp && FHApp.hubGo('lokasi') };
+/* ---------- 5. Lintasan satelit pendeteksi titik panas di lokasi ---------- */
+function satelit() {
+  let P = null, err = '';
+  const muat = async () => { const L = lokasi(); P = null; err = ''; draw(); if (!L || !window.FHLintas) return; try { const X = await FHLintas.next(L.lat, L.lon, 12); P = (X && X.list) || (Array.isArray(X) ? X : []); } catch (e) { err = e.message || String(e); P = []; } draw(); };
+  const draw = () => {
+    const L = lokasi(), body = $('#pageBody'); if (!body) return;
+    if (!L) { body.innerHTML = perluLok(); bindLok(muat); return; }
+    const jam = t => { const w = new Date(t.getTime() + 7 * 36e5); return `${w.getUTCDate()} ${BLN[w.getUTCMonth()]} · ${String(w.getUTCHours()).padStart(2, '0')}.${String(w.getUTCMinutes()).padStart(2, '0')} WIB`; };
+    body.innerHTML = `${lokBar(L)}${P === null ? '<div class="empty">Menghitung lintasan satelit…</div>' : !P.length ? `<div class="empty">Lintasan tidak dapat dihitung${err ? ' (' + esc(err) + ')' : ''}.</div>` : `
+     <div class="h2">Satelit pendeteksi titik panas berikutnya</div><div class="group">${P.slice(0, 12).map(x => `<div class="row"><span class="m"><b>${esc(x.nama)} · ${esc(x.sensor)}</b><small>${jam(x.t)} · ${x.siang ? 'siang' : 'malam'} · ${N0(x.km)} km dari jejak orbit${x.tepi ? ' (tepi sapuan)' : ''}</small></span></div>`).join('')}</div>
+     <p class="small muted" style="margin:12px 4px">Orbit dari TLE CelesTrak (diperbarui otomatis tiap 3 jam), propagasi SGP4. Satelit dihitung melintas bila lokasi berada di dalam lebar sapuan sensor (MODIS 2.330 km, VIIRS 3.060 km). Titik panas biasanya muncul di NASA FIRMS ±3 jam setelah lintasan.</p>`}`;
+    bindLok(muat);
+  };
+  openPage('Lintasan Satelit', 'Jadwal satelit lewat · SGP4', '', muat);
+}
+
+const ALAT = { sebaran, hujan, udara, satelit, cuaca: () => window.FHApp && FHApp.hubGo('lokasi') };
 Object.keys(VIA_ANALISIS).forEach(k => ALAT[k] = () => lewatAnalisis(k));
 window.FHNasional = { punya: k => !!ALAT[k], buka: k => ALAT[k](), lokasi, setLok, titik };
 })();

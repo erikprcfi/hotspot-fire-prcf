@@ -49,7 +49,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
   <div class="lg"><img src="assets/logo_pr.svg" alt=""><div><b>Pantau Rimbak</b><small>Yayasan PRCF Indonesia</small></div></div>
   <div class="lang" role="group" aria-label="Bahasa · Language"><button type="button" data-set="id">ID</button><button type="button" data-set="en">EN</button></div>
   <h1><span data-l="id">Kebijakan Privasi</span><span data-l="en">Privacy Policy</span></h1>
-  <p><span data-l="id">Berlaku sejak 27 Oktober 2026 · Disusun berdasarkan Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi (UU PDP).</span><span data-l="en">Effective 27 October 2026 · Prepared under Indonesian Law No. 27 of 2022 on Personal Data Protection.</span></p>
+  <p><span data-l="id">Berlaku sejak 27 Oktober 2026, diperbarui 6 November 2026 · Disusun berdasarkan Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi (UU PDP).</span><span data-l="en">Effective 27 October 2026, updated 6 November 2026 · Prepared under Indonesian Law No. 27 of 2022 on Personal Data Protection.</span></p>
   <a class="back" id="kembali" href="index.html">‹ <span data-l="id">Kembali</span><span data-l="en">Back</span></a>
 <script>(function(){var k=document.getElementById('kembali'),r=document.referrer||'';try{if(r&&new URL(r).host===location.host){k.href=r;k.onclick=function(e){if(history.length>1){e.preventDefault();history.back();}};}}catch(e){}})();</script>
 </div></header>
@@ -74,7 +74,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 <tr><td>Lokasi tim lapangan</td><td>Koordinat GPS, ketelitian (meter), kecepatan, persentase baterai, waktu, status online/offline</td><td>Hanya bila Anda menyetujui berbagi lokasi (lihat bagian 3)</td></tr>
 <tr><td>Laporan cek lapangan</td><td>Hasil pemeriksaan titik panas, catatan, foto, koordinat & ketelitian GPS pelapor, nama & email pelapor</td><td>Saat Anda mengirim laporan</td></tr>
 <tr><td>Bara Api (asisten AI)</td><td>Pertanyaan dan jawaban obrolan. Foto satwa/tumbuhan yang Anda kirim hanya diteruskan ke Google Gemini untuk dianalisis dan <b>tidak disimpan</b> PRCF</td><td>Saat Anda memakai Bara Api</td></tr>
-<tr><td>Analisis lahan</td><td>File batas area (SHP/zip) yang Anda unggah beserta hasil analisisnya</td><td>Saat Anda mengunggah</td></tr>
+<tr><td>Analisis lahan</td><td>File batas area (SHP/zip) yang Anda unggah beserta hasil analisisnya; kode ID wilayah yang Anda buat disimpan sebagai sidik satu arah (bukan teks asli). Hanya terbuka untuk akun Anda.</td><td>Saat Anda mengunggah</td></tr>
 <tr><td>Peringatan dini</td><td>Hutan Desa yang Anda pilih, alamat langganan notifikasi HP, pilihan email peringatan</td><td>Saat Anda berlangganan</td></tr>
 </table></div>
 <p class="note"><b>Kata sandi tidak pernah dikirim</b> ke server mana pun. Kata sandi hanya disimpan di HP Anda dalam bentuk sidik terenkripsi satu arah (PBKDF2-SHA-256).</p>
@@ -83,7 +83,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 
 <section id="lokasi"><h2>3. Berbagi lokasi tim lapangan</h2>
 <ul>
-<li><b>Persetujuan:</b> berbagi lokasi hanya aktif bila Anda mencentang persetujuan saat mendaftar atau masuk. Persetujuan dapat ditarik kapan saja melalui <b>Profil → Bagikan lokasi</b>.</li>
+<li><b>Persetujuan (opsional):</b> berbagi lokasi <b>tidak wajib</b> untuk memakai aplikasi. Fitur ini hanya aktif bila Anda mencentang persetujuan saat mendaftar/masuk atau menyalakannya di <b>Profil → Bagikan lokasi</b> setelah membaca penjelasannya. Persetujuan dapat ditarik kapan saja di tempat yang sama.</li>
 <li><b>Kapan dikirim:</b> di aplikasi web, selama aplikasi terbuka di layar. Di aplikasi Android, selama aplikasi berjalan, termasuk saat layar mati. Android selalu menampilkan notifikasi tetap "Lokasi dibagikan ke admin PRCF" selama pelacakan berjalan, dan simbol pin di bilah atas aplikasi menunjukkan statusnya.</li>
 <li><b>Siapa yang melihat:</b> hanya admin Yayasan PRCF Indonesia yang ditetapkan. Server memeriksa ulang hak admin pada setiap permintaan. Sesama pengguna tidak dapat melihat lokasi Anda.</li>
 <li><b>Tujuan:</b> keselamatan tim di lapangan, koordinasi patroli kebakaran, dan pertolongan bila terjadi keadaan darurat. Data lokasi tidak dipakai untuk penilaian kinerja otomatis dan tidak dijual atau dibagikan untuk iklan.</li>
@@ -140,7 +140,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 <li>mendapat informasi tentang pemrosesan data Anda (kebijakan ini);</li>
 <li>melihat dan memperbaiki data Anda (melalui menu <b>Profil</b>, atau dengan menghubungi kami);</li>
 <li>meminta salinan data Anda;</li>
-<li>meminta penghapusan data (<b>Profil → Hapus akun</b>, atau dengan menghubungi kami);</li>
+<li>meminta penghapusan data (<b>Profil → Hapus akun</b>, atau lewat halaman <a href="hapus-akun.html">Hapus akun</a>);</li>
 <li>menarik persetujuan, termasuk berbagi lokasi (<b>Profil → Bagikan lokasi</b>);</li>
 <li>mengajukan keberatan atau meminta pembatasan pemrosesan;</li>
 <li>mengajukan pengaduan kepada lembaga pelindungan data pribadi.</li>
@@ -176,7 +176,7 @@ Admin aplikasi Pantau Rimbak: <a href="mailto:erik.prcfi@gmail.com">erik.prcfi@g
 <tr><td>Field team location</td><td>GPS coordinates, accuracy (metres), speed, battery level, time, online/offline status</td><td>Only if you agree to share your location (section 3)</td></tr>
 <tr><td>Field check reports</td><td>Hotspot check results, notes, photos, reporter GPS position &amp; accuracy, reporter name &amp; email</td><td>When you submit a report</td></tr>
 <tr><td>Bara Api (AI assistant)</td><td>Chat questions and answers. Photos of wildlife/plants are only passed to Google Gemini for analysis and are <b>not stored</b> by PRCF</td><td>When you use Bara Api</td></tr>
-<tr><td>Land analysis</td><td>Boundary files (SHP/zip) you upload and their analysis results</td><td>When you upload</td></tr>
+<tr><td>Land analysis</td><td>Boundary files (SHP/zip) you upload and their analysis results; the area ID code you create is stored as a one-way hash (not plain text). Only accessible to your account.</td><td>When you upload</td></tr>
 <tr><td>Early warning</td><td>Selected Village Forests, phone notification subscription, email alert preference</td><td>When you subscribe</td></tr>
 </table></div>
 <p class="note"><b>Your password is never sent</b> to any server. It is stored only on your phone as a one-way encrypted fingerprint (PBKDF2-SHA-256).</p>
@@ -185,7 +185,7 @@ Admin aplikasi Pantau Rimbak: <a href="mailto:erik.prcfi@gmail.com">erik.prcfi@g
 
 <section id="en-loc"><h2>3. Field team location sharing</h2>
 <ul>
-<li><b>Consent:</b> location sharing is only active if you tick the consent box when registering or signing in. You can withdraw consent at any time in <b>Profile → Share location</b>.</li>
+<li><b>Consent (optional):</b> location sharing is <b>not required</b> to use the app. It is only active if you tick the consent box when registering/signing in or turn it on in <b>Profile → Share location</b> after reading the explanation. You can withdraw consent at any time in the same place.</li>
 <li><b>When it is sent:</b> in the web app, while the app is open on screen. In the Android app, while the app is running, including when the screen is off. Android always shows a persistent notification ("Location shared with PRCF admin") while tracking is active, and a pin symbol in the app’s top bar shows the status.</li>
 <li><b>Who can see it:</b> only designated Yayasan PRCF Indonesia admins. The server re-checks admin rights on every request. Other users cannot see your location.</li>
 <li><b>Purpose:</b> field team safety, fire patrol coordination and emergency assistance. Location data is not used for automated performance assessment and is not sold or shared for advertising.</li>
@@ -242,7 +242,7 @@ Admin aplikasi Pantau Rimbak: <a href="mailto:erik.prcfi@gmail.com">erik.prcfi@g
 <li>be informed about how your data is processed (this policy);</li>
 <li>access and correct your data (in the <b>Profile</b> menu, or by contacting us);</li>
 <li>request a copy of your data;</li>
-<li>request deletion of your data (<b>Profile → Delete account</b>, or by contacting us);</li>
+<li>request deletion of your data (<b>Profile → Delete account</b>, or via the <a href="hapus-akun.html">Delete account</a> page);</li>
 <li>withdraw consent, including location sharing (<b>Profile → Share location</b>);</li>
 <li>object to or request restriction of processing;</li>
 <li>lodge a complaint with the personal data protection authority.</li>

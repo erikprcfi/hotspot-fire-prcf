@@ -42,8 +42,8 @@ public class PerangkatPlugin extends Plugin {
     public void bebasBaterai(PluginCall call) {
         Context c = getContext(); PowerManager pm = (PowerManager) c.getSystemService(Context.POWER_SERVICE);
         if (pm != null && !pm.isIgnoringBatteryOptimizations(c.getPackageName())) {
-            try { Intent i = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS); i.setData(Uri.parse("package:" + c.getPackageName())); getActivity().startActivity(i); }
-            catch (Exception e) { try { getActivity().startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)); } catch (Exception ignored) { } }
+            // Kebijakan Google Play: tanpa izin REQUEST_IGNORE_BATTERY_OPTIMIZATIONS – buka halaman pengaturan, pengguna memilih sendiri
+            try { getActivity().startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)); } catch (Exception ignored) { }
         }
         call.resolve();
     }

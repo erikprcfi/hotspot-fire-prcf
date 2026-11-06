@@ -100,6 +100,9 @@ function analisisCSV(L) {   // format panjang: satu baris per area Ã— kategori Ã
     R.push([nm, 'Area', 'Luas (piksel 30 m di dalam batas)', '', a.luas_ha, 'ha', 'perhitungan']);
     for (const y of a.tahun_tutupan) for (const k of Object.keys(a.tutupan_lahan_ha[y])) if (a.tutupan_lahan_ha[y][k]) R.push([nm, 'Tutupan lahan', kn(k), y, a.tutupan_lahan_ha[y][k], 'ha', S.tutupan_lahan]);
     for (const [k, v] of Object.entries(a.perubahan_2000_2020_ha || {})) { const [x, y] = k.split('>'); R.push([nm, 'Perubahan lahan 2000-2020', `${kn(x)} -> ${kn(y)}`, '2000-2020', v, 'ha', S.tutupan_lahan]); }
+    if (a.tutupan_2021 && a.tutupan_2021.kelas) for (const k of a.tutupan_2021.kelas) R.push([nm, 'Tutupan lahan 2021 (10 m)', k.nama, '2021', k.ha, 'ha', a.tutupan_2021.sumber]);
+    if (a.lahan_kritis && a.lahan_kritis.kelas_ha) for (const [k, v] of Object.entries(a.lahan_kritis.kelas_ha)) R.push([nm, 'Lahan kritis (peta resmi)', k, a.lahan_kritis.tahun, v, 'ha', a.lahan_kritis.sumber]);
+    else if (a.lahan_kritis_indikasi && a.lahan_kritis_indikasi.kelas) for (const k of a.lahan_kritis_indikasi.kelas) R.push([nm, 'Indikasi lahan kritis (bukan peta resmi)', k.nama, '2021', k.ha, 'ha', a.lahan_kritis_indikasi.sumber]);
     R.push([nm, 'Hutan', 'Hutan tahun 2000 (tajuk >= 30%)', '2000', a.hutan.hutan_2000_ha, 'ha', S.kehilangan_pohon]);
     for (const [y, v] of Object.entries(a.hutan.kehilangan_per_tahun_ha)) R.push([nm, 'Hutan', 'Kehilangan tutupan pohon', y, v, 'ha', S.kehilangan_pohon]);
     R.push([nm, 'Hutan', 'Kehilangan tutupan pohon total', '2001-2025', a.hutan.kehilangan_total_ha, 'ha', S.kehilangan_pohon]);
