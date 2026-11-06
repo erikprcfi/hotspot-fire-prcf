@@ -13,7 +13,26 @@ const SCALE = [[0, '#9EC9FF'], [2, '#5FD1C6'], [4, '#7BE07A'], [6, '#F2E35B'], [
 const colOf = s => { let c = SCALE[0][1]; for (const [v, k] of SCALE) if (s >= v) c = k; return c; };
 const fmt = new Intl.DateTimeFormat('id-ID', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
 const cache = {};
+const BASE = (document.currentScript && document.currentScript.src ? new URL('../', document.currentScript.src).href : './');
+let NAS = null, NAS_T = 0;
+function nasional() {   // grid angin seluruh Indonesia (ECMWF IFS open data, data/angin/indonesia.json, diperbarui pipeline) – tanpa batas permintaan Open-Meteo
+  if (NAS && Date.now() - NAS_T < 30 * 6e4) return NAS;
+  NAS_T = Date.now();
+  NAS = fetch(BASE + 'data/angin/indonesia.json', { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(d => {
+    const dec = b64 => { const bin = atob(b64), a = new Float32Array(bin.length); for (let i = 0; i < bin.length; i++) { let x = bin.charCodeAt(i); if (x > 127) x -= 256; a[i] = x * d.skala; } return a; };
+    if (Date.now() - d.waktu[d.waktu.length - 1] > 0) throw new Error('data angin kedaluwarsa');
+    return { w: d.w, s: d.s, step: d.step, nx: d.nx, ny: d.ny, time: d.waktu, U: d.u.map(dec), V: d.v.map(dec), sumber: d.sumber, run: d.run_utc, nasional: true };
+  });
+  NAS.catch(() => { NAS = null; });
+  return NAS;
+}
 async function grid(b, z) {
+  const G0 = await nasional().catch(() => null);   // dipakai bila pusat tampilan peta berada di dalam cakupan grid nasional (88–150° BT, 18° LS–12° LU)
+  const c = b.getCenter();   // pusat tampilan di dalam grid nasional → pakai grid nasional (di luar cakupannya partikel tidak digambar)
+  if (G0 && c.lng >= G0.w && c.lng <= G0.w + (G0.nx - 1) * G0.step && c.lat >= G0.s && c.lat <= G0.s + (G0.ny - 1) * G0.step) return G0;
+  return gridOM(b, z);
+}
+async function gridOM(b, z) {
   const span = Math.max(b.getEast() - b.getWest(), b.getNorth() - b.getSouth());
   let step = Math.max(.25, Math.ceil(span / 12 / .25) * .25);
   const w = Math.floor((b.getWest() - step) / step) * step, e = Math.ceil((b.getEast() + step) / step) * step, s = Math.max(-85, Math.floor((b.getSouth() - step) / step) * step), n = Math.min(85, Math.ceil((b.getNorth() + step) / step) * step);
@@ -74,8 +93,8 @@ function layer(map, opt = {}) {
     for (const c in groups) { const g = groups[c]; ctx.strokeStyle = c; ctx.beginPath(); for (let i = 0; i < g.length; i += 4) { ctx.moveTo(g[i], g[i + 1]); ctx.lineTo(g[i + 2], g[i + 3]); } ctx.stroke(); }
   }
   async function load() {
-    const my = ++seq; try { const g = await grid(map.getBounds(), map.getZoom()); if (my !== seq || !on) return; const first = !G; G = g; if (first) h = hourNow(); build(); paint(); }
-    catch (e) { if (panelEl) panelEl.querySelector('.fha-t').textContent = 'Data angin belum dapat dimuat (periksa internet)'; }
+    const my = ++seq; try { const g = await grid(map.getBounds(), map.getZoom()); if (my !== seq || !on) return; const first = !G || G.time !== g.time, tSel = G && G.time[h]; G = g; if (first) { h = hourNow(); if (tSel) { let k = 0; g.time.forEach((t, i) => { if (Math.abs(t - tSel) < Math.abs(g.time[k] - tSel)) k = i; }); h = k; } } build(); paint(); }
+    catch (e) { console.warn('angin:', e && e.message); if (panelEl) panelEl.querySelector('.fha-t').textContent = 'Data angin belum dapat dimuat (periksa internet)'; }
   }
   const onMoveStart = () => { field = null; ctx.clearRect(0, 0, W, H); };
   const onMoveEnd = () => { build(); load(); };
@@ -95,7 +114,7 @@ function layer(map, opt = {}) {
       el.innerHTML = `<div class="fha-p"><div class="fha-row"><b>💨 Angin 10 m · ECMWF</b><span class="fha-t" style="font-weight:500;opacity:.9">memuat…</span><button class="fha-x" aria-label="Tutup">×</button></div>
         <div class="fha-row"><button class="fha-pl" aria-label="Putar">▶</button><input type="range" min="0" max="71" value="0" aria-label="Jam prakiraan"></div>
         <div class="fha-lg">${SCALE.map(x => `<i style="background:${x[1]}"></i>`).join('')}</div><div class="fha-lgt">${SCALE.map(x => `<span>${Math.round(x[0] * 3.6)}</span>`).join('')}<span>km/jam</span></div>
-        <div style="font-size:10px;opacity:.75">Model ECMWF IFS 0,25° via Open-Meteo · garis bergerak ke arah tiupan angin</div></div>`;
+        <div style="font-size:10px;opacity:.75">Model ECMWF IFS 0,25° (data terbuka ECMWF) · garis bergerak ke arah tiupan angin</div></div>`;
       el.querySelector('.fha-pl').onclick = () => setPlay(!play);
       el.querySelector('input').oninput = e => { setPlay(false); setHour(+e.target.value); };
       el.querySelector('.fha-x').onclick = () => { api.off(); onClose && onClose(); };
