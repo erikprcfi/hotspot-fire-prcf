@@ -300,7 +300,7 @@ def hitung_titik_panas(geom, tahun=None, cache="/tmp/firms_cache"):
                             contoh.append([t, r["acq_time"], k, round(la, 5), round(lo, 5), r.get("confidence", ""), float(r.get("frp") or 0)])
                     tgl_sudah |= tgl_ini
                 d += datetime.timedelta(days=n)
-            if ok: tersedia.append(f"{k} {y} (NRT s.d. {d1.isoformat()})")
+            if ok: tersedia.append(f"{k} {y} (FIRMS API SP/NRT s.d. {d1.isoformat()})")
     contoh.sort(reverse=True)
     ada = sorted({int(w) for t in tersedia for w in t.replace("(", " ").split() if w.isdigit() and len(w) == 4 and int(w) in set(tahun)})
     per = {y: v for y, v in per.items() if int(y) in ada}   # tahun tanpa berkas data tidak ditampilkan sebagai nol
