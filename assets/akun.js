@@ -229,7 +229,7 @@ const hero = (h, p, cls = '') => `<div class="ak-hero ${cls}"><div class="lg"><i
 const privacy = `<div class="ak-note">${svg('shield', 18)}<span>Biodata dan foto disimpan di HP ini dan dikirim ke <b>database pengguna Yayasan PRCF Indonesia</b> untuk administrasi pengguna aplikasi. Data tidak dibagikan ke pihak lain. <b>Kata sandi tidak pernah dikirim</b>; di HP disimpan terenkripsi satu arah. <a href="kebijakan-privasi.html" data-kp style="color:var(--brand-3,#1E7A58);font-weight:700">Kebijakan Privasi</a></span></div>`;
 const SETUJU = 'Saya menyetujui biodata dan foto saya disimpan dan diolah oleh Yayasan PRCF Indonesia untuk administrasi pengguna aplikasi Pantau Rimbak, sesuai UU No. 27 Tahun 2022 tentang Pelindungan Data Pribadi. Saya dapat mengubah atau menghapus akun kapan saja.';
 
-const SETUJU_LOK = 'Saya menyetujui lokasi GPS HP saya dikirim ke Yayasan PRCF Indonesia setiap kali aplikasi dibuka, untuk keselamatan dan koordinasi tim di lapangan. Lokasi hanya dapat dilihat admin PRCF dan riwayatnya dihapus otomatis setelah 30 hari (UU No. 27 Tahun 2022). Berbagi lokasi dapat dimatikan di Profil.';
+const SETUJU_LOK = '<b>Opsional – untuk tim lapangan PRCF.</b> Saya bersedia lokasi GPS HP saya dikirim ke Yayasan PRCF Indonesia selama aplikasi dibuka, dan di Android juga saat aplikasi berjalan di latar belakang (ditandai notifikasi tetap), untuk keselamatan dan koordinasi patroli. Lokasi hanya dapat dilihat admin PRCF dan riwayatnya dihapus otomatis setelah 30 hari (UU No. 27 Tahun 2022). Tidak wajib untuk memakai aplikasi; dapat dimatikan kapan saja di Profil.';
 const lokChk = () => `<label class="ak-chk"><input type="checkbox" id="akLok"><span>${svg('pin', 16)} ${SETUJU_LOK} <a href="kebijakan-privasi.html" data-kp style="color:var(--brand-3,#1E7A58);font-weight:700">Kebijakan Privasi</a></span></label>`;
 function kebijakan() {   // Kebijakan Privasi dibuka di lembar (tidak meninggalkan formulir yang sedang diisi)
   const sh = document.createElement('div'); sh.className = 'ak-sheet ak';
@@ -295,11 +295,10 @@ function registerScreen(onDone, notice) {
     if (!check(d, ['pw'])) return;
     if (d.querySelector('#ak_pw2').value !== d.querySelector('#ak_pw').value) { setErr(d, 'pw2', 'Kata sandi tidak sama.'); return; } setErr(d, 'pw2', '');
     if (!d.querySelector('#akOk').checked) { toast('Centang persetujuan penyimpanan data'); return; }
-    if (!d.querySelector('#akLok').checked) { toast('Centang persetujuan berbagi lokasi'); return; }
     const b = d.querySelector('#akDaftar'); b.disabled = true; b.textContent = 'Menyimpan…';
     try {
       const h = await hashPw(d.querySelector('#ak_pw').value);
-      U = { skema: SKEMA, nama: v('nama').replace(/\s+/g, ' '), lahir: v('lahir'), alamat: v('alamat'), email: v('email').toLowerCase(), hp: normHP(v('hp')), foto, dibuat: new Date().toISOString(), diubah: new Date().toISOString(), pw: h, id, token, verifikasi: new Date().toISOString(), setuju: true, setujuT: new Date().toISOString() }; setujuLok();
+      U = { skema: SKEMA, nama: v('nama').replace(/\s+/g, ' '), lahir: v('lahir'), alamat: v('alamat'), email: v('email').toLowerCase(), hp: normHP(v('hp')), foto, dibuat: new Date().toISOString(), diubah: new Date().toISOString(), pw: h, id, token, verifikasi: new Date().toISOString(), setuju: true, setujuT: new Date().toISOString() }; if (d.querySelector('#akLok') && d.querySelector('#akLok').checked) setujuLok(); else { U.lokasiSetuju = false; U.lokasiOn = false; } U.lokasiDitanya = true;
       if (ENDPOINT) { const p = { aksi: 'daftar', id, token, lokasi: OPT.lokasi ? OPT.lokasi() : '', perangkat: dev(), versi: VERSI, profil: { nama: U.nama, lahir: U.lahir, alamat: U.alamat, email: U.email, hp: '+62 ' + fmtHP(U.hp).slice(1), dibuat: U.dibuat, diubah: U.diubah }, foto: foto ? foto.split(',')[1] : '' };
         const j = await api(p, 45000); if (!j.ok) { b.disabled = false; b.textContent = 'Daftar & masuk'; toast(j.diblokir ? 'Email ini diblokir admin PRCF' : 'Ditolak server: ' + (j.galat || 'periksa biodata')); if (!j.diblokir) step(1); return; }
         U.terkirim = true; U.pingT = Date.now(); U.sinkronT = new Date().toISOString(); }
@@ -348,7 +347,7 @@ function dariServer(srv, em) {   // akun dari server (masuk lintas perangkat) di
 async function selesaiMasuk(d, kid, onDone) {
   const b = d.querySelector('#akIn');
   try { AKSES = await aksesDari(kid); } catch (e) { setErr(d, 'kid', e.message); if (b) { b.disabled = false; b.textContent = 'Masuk'; } return false; }
-  if (!U.lokasiSetuju) setujuLok();
+  { const c = d.querySelector('#akLok'); if (c && c.checked) setujuLok(); if (c) U.lokasiDitanya = true; }
   await put('akun', U); await put('akses', AKSES).catch(() => { }); await put('kunciMasuk', { n: 0, t: 0 }); await put('sesi', { masuk: true, t: Date.now() });
   try { sessionStorage.setItem('pr_sesi', '1'); } catch (e) { }
   SESI = true; d.remove(); notify(); toast(AKSES.mode === 'hd' ? 'Masuk · data Hutan Desa terbuka' : AKSES.mode === 'shp' ? 'Masuk · wilayah ' + AKSES.nama : `Selamat datang, ${U.nama.split(' ')[0]}`); onDone(); flush(true); return true;
@@ -360,10 +359,10 @@ function loginScreen(onDone, notice) {   // layar pertama saat aplikasi dibuka: 
      <div class="ak-f">${field('email', 'Email', 'mail', 'email', U ? U.email : '', 'autocomplete="username" inputmode="email" autocapitalize="off"')}${field('pw', 'Kata sandi', 'lock', 'password', '', 'autocomplete="current-password"')}
      ${field('kid', 'Kode ID (opsional)', 'shield', 'text', '', 'autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Kode kawasan / proyek"')}
      <p class="mut" style="font-size:12.5px;margin:-2px 2px 4px">Kode ID membuka data Hutan Desa atau wilayah yang Anda daftarkan. Kosongkan bila tidak punya – aplikasi tampil dalam mode umum.</p>
-     ${U && U.lokasiSetuju ? '' : lokChk()}<button class="ak-btn" id="akIn">Masuk</button></div>
+     ${U && (U.lokasiSetuju || U.lokasiDitanya) ? '' : lokChk()}<button class="ak-btn" id="akIn">Masuk</button></div>
      <button class="ak-link" id="akLupa">Lupa kata sandi?</button>
      <div style="border-top:1px solid #E3E9E5;margin:14px 0 12px"></div><p class="mut" style="text-align:center;margin:0 0 8px">Belum punya akun? Daftar sekali saja.</p><button class="ak-btn alt" id="akDf">Daftar akun baru</button></div>`); bindLok(d); bindEyes(d);
-  const lokOk = () => { const c = d.querySelector('#akLok'); if (c && !c.checked) { toast('Centang persetujuan berbagi lokasi'); return false; } return true; };
+  const lokOk = () => true;   // berbagi lokasi opsional (kebijakan Google Play: tidak boleh menjadi syarat memakai aplikasi)
   const val = () => ({ em: d.querySelector('#ak_email').value.trim().toLowerCase(), pw: d.querySelector('#ak_pw').value, kid: d.querySelector('#ak_kid').value });
   const go = async () => {
     const { em, pw, kid } = val(), b = d.querySelector('#akIn'); ['email', 'pw', 'kid'].forEach(k => setErr(d, k, ''));
@@ -438,10 +437,10 @@ function openProfile() {
     d.querySelector('#pfFoto').onclick = async () => { const r = await photoMenu(); if (r === undefined) return; U.foto = r; U.diubah = new Date().toISOString(); await put('akun', U); notify(); render(); mark('foto'); toast(r ? 'Foto profil diperbarui' : 'Foto profil dihapus'); };
     d.querySelectorAll('[data-ed]').forEach(b => b.onclick = () => editSheet(b.dataset.ed, render));
     d.querySelector('#pfPw').onclick = () => pwSheet(render);
-    d.querySelector('#pfLok').onclick = async () => { if (!U.lokasiSetuju || U.lokasiOn === false) { setujuLok(); mintaGPS(); } else U.lokasiOn = false; await put('akun', U); notify(); render(); };
+    d.querySelector('#pfLok').onclick = async () => { const simpan = async () => { await put('akun', U); notify(); render(); }; if (!U.lokasiSetuju || U.lokasiOn === false) confirmSheet('Bagikan lokasi ke tim PRCF?', SETUJU_LOK.replace(/<[^>]+>/g, ''), 'Setuju & bagikan', async () => { setujuLok(); mintaGPS(); await simpan(); }); else { U.lokasiOn = false; await simpan(); } };
     d.querySelector('#pfPriv').onclick = () => { if (!U.setuju) consentSheet(render); else kebijakan(); };
     d.querySelector('#pfOut').onclick = () => confirmSheet('Keluar dari akun?', 'Anda perlu memasukkan kata sandi untuk masuk kembali.', 'Keluar', async () => { await put('sesi', { masuk: false, t: Date.now() }); try { sessionStorage.removeItem('pr_sesi'); } catch (e) { } await del('akses').catch(() => { }); AKSES = { mode: 'umum' }; SESI = false; closeProfile(true); notify(); loginScreen(() => { location.reload(); }); });
-    d.querySelector('#pfDel').onclick = () => confirmSheet('Hapus akun dari perangkat?', 'Biodata, foto dan kata sandi di HP ini akan dihapus permanen, dan biodata serta foto Anda di database PRCF ikut dihapus. Data pemantauan kebakaran tidak terpengaruh.', 'Hapus akun', async () => { await sendDelete(); await del('akun'); await del('sesi'); U = null; SESI = false; closeProfile(true); notify(); registerScreen(() => { }); });
+    d.querySelector('#pfDel').onclick = () => confirmSheet('Hapus akun?', 'Akun dihapus permanen dari HP ini dan dari database PRCF: biodata, foto, kata sandi, riwayat lokasi, wilayah SHP beserta kode ID dan hasil analisisnya. Data publik titik panas & peta tidak terpengaruh.', 'Hapus akun', async () => { await sendDelete(); await del('akun'); await del('sesi'); U = null; SESI = false; closeProfile(true); notify(); registerScreen(() => { }); });
   };
   render();
   if (OPT.pushLayer) OPT.pushLayer(() => closeProfile(false));
@@ -488,7 +487,7 @@ async function gate(next) {   // setiap aplikasi dibuka: layar masuk (email, kat
   notify();
   if (!ENDPOINT && !UJI) return next();
   let sesi = false; try { sesi = sessionStorage.getItem('pr_sesi') === '1'; } catch (e) { }
-  if (U && sesi && U.lokasiSetuju) { AKSES = (await get('akses').catch(() => null)) || { mode: 'umum' }; SESI = true; next(); notify(); flush(true); return; }
+  if (U && sesi) { AKSES = (await get('akses').catch(() => null)) || { mode: 'umum' }; SESI = true; next(); notify(); flush(true); return; }
   loginScreen(next);
 }
 function avatar(px = 34) { return `<span class="ak-mini" style="width:${px}px;height:${px}px">${U ? avatarInner(U) : svg('user', Math.round(px * .55))}</span>`; }

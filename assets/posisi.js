@@ -62,7 +62,7 @@ function natMulai() {   // Android: pelacakan latar belakang
   })).then(id => { WID = id; }).catch(() => { WID = null; });
   WID = 'menunggu';
   Promise.resolve(DV && DV.izinNotifikasi()).catch(() => { }).then(() => setTimeout(pasang, 600)).then(() => {
-    try { if (DV && !localStorage.getItem('fh_baterai')) { localStorage.setItem('fh_baterai', '1'); setTimeout(() => DV.bebasBaterai().catch(() => { }), 4000); } } catch (e) { } });
+    try { if (DV && !localStorage.getItem('fh_baterai')) { localStorage.setItem('fh_baterai', '1'); setTimeout(() => { if (!window.openSheet) return; window.openSheet(`<h3>Agar lokasi tetap terkirim</h3><p class="sub">Beberapa HP menghentikan aplikasi di latar belakang untuk menghemat baterai. Bila berbagi lokasi sering terputus, buka pengaturan baterai lalu pilih <b>Pantau Rimbak → Tidak dioptimalkan</b>. Ini pilihan Anda dan dapat diubah kapan saja.</p><button class="btn pri full tap" id="psBat">Buka pengaturan baterai</button><button class="btn full tap" style="margin-top:8px" onclick="history.back()">Nanti saja</button>`); const b = document.getElementById('psBat'); if (b) b.onclick = () => { history.back(); DV.bebasBaterai().catch(() => { }); }; }, 4000); } } catch (e) { } });
 }
 function natStop() { const BG = NAT() && FHNative.plugin('BackgroundGeolocation'); if (BG && WID && WID !== 'menunggu') BG.removeWatcher({ id: WID }).catch(() => { }); WID = null; }
 function onErr(e) { GPS = e && e.code === 1 ? 'ditolak' : e && e.code === 2 ? 'tidak' : GPS === 'ok' ? 'ok' : 'mencari'; ui(); if (e && e.code === 1) kirim(); }
