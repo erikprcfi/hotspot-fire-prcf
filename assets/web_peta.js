@@ -13,10 +13,11 @@ const EN = () => !!(window.FHLang && FHLang.get() === 'en');
 const T = (id, en) => EN() ? en : id;
 const GRUP_F = () => [
   [T('Api & citra satelit', 'Fire & satellite imagery'), ['fire', 'true']],
+  [T('Bahaya kebakaran', 'Fire danger'), ['fwi']],
   [T('Asap & kualitas udara', 'Smoke & air quality'), ['smoke', 'pm25', 'aod', 'ai', 'co']],
   [T('Gangguan vegetasi', 'Vegetation disturbance'), ['dist', 'distann']]
 ];
-const SUMBER = { fire: 'NASA FIRMS · GIBS', true: 'NASA GIBS · VIIRS', co: 'NASA GIBS · AIRS', aod: 'NASA GIBS · VIIRS', smoke: 'Copernicus CAMS · ECMWF', pm25: 'Copernicus CAMS · ECMWF', ai: 'NASA GIBS · OMPS', dist: 'NASA OPERA · HLS', distann: 'NASA OPERA · HLS' };
+const SUMBER = { fwi: 'Copernicus EMS · GWIS (ECMWF) · prakiraan 8 hari', fire: 'NASA FIRMS · GIBS', true: 'NASA GIBS · VIIRS', co: 'NASA GIBS · AIRS', aod: 'NASA GIBS · VIIRS', smoke: 'Copernicus CAMS · ECMWF', pm25: 'Copernicus CAMS · ECMWF', ai: 'NASA GIBS · OMPS', dist: 'NASA OPERA · HLS', distann: 'NASA OPERA · HLS' };
 const BULAN_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'], BULAN_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const BULAN = new Proxy([], { get: (_, k) => (EN() ? BULAN_EN : BULAN_ID)[k] });
 const HARI_ID = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'], HARI_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
