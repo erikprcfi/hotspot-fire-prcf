@@ -471,6 +471,8 @@ body.is-off .offline{display:block}
 .hx-t:active{transform:scale(.98)}
 .hx-ic{position:relative;z-index:1;flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;color:#fff;background:linear-gradient(150deg,var(--c1),var(--c2));box-shadow:0 8px 16px -10px var(--c2),inset 0 1px 0 rgba(255,255,255,.3)}
 .hx-ic svg{width:22px;height:22px;overflow:visible}.hx-ic b{font:800 13px/1 var(--f);letter-spacing:.03em}
+.hx-ic:has(svg.i3){width:48px;height:48px;border-radius:15px;background:radial-gradient(90% 90% at 50% 18%,color-mix(in srgb,var(--c1) 30%,transparent),color-mix(in srgb,var(--c1) 12%,transparent));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c1) 22%,transparent)}
+.hx-ic svg.i3{width:40px;height:40px}.side-i .si:has(svg.i3){width:30px;height:30px;background:color-mix(in srgb,var(--c1) 16%,transparent)}.side-i .si svg.i3{width:26px;height:26px}
 .hx-tx{position:relative;z-index:1;min-width:0;display:grid;gap:1px}
 .hx-tx b{font-size:13.5px;font-weight:700;line-height:1.25}
 .hx-tx small{font-size:11.5px;color:var(--muted);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -766,6 +768,7 @@ html.web .ab-t small{letter-spacing:.02em}
 <script src="assets/nasa_layers.js?v=62"></script>
 <script src="assets/citra.js?v=62"></script>
 <script src="assets/akun.js?v=62"></script>
+<script src="assets/ikon3d.js?v=1"></script>
 <!-- assets/web.js (masuk khusus website) tidak dipakai lagi: website memakai layar masuk yang sama dengan aplikasi HP (assets/akun.js) -->
 <script>
 (function(){
@@ -1363,6 +1366,7 @@ const IC={
  admin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="9" rx="2"/><rect x="13.5" y="3" width="7.5" height="5" rx="2"/><rect x="13.5" y="11" width="7.5" height="10" rx="2"/><rect x="3" y="15" width="7.5" height="6" rx="2"/></svg>',
  sistem:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path class="a-pulse-l" d="M2 12h4l2.5-6 4 12 2.5-6H22"/></svg>',
  satelit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><g class="a-orbit"><rect x="9.5" y="9.5" width="5" height="5" rx="1" fill="currentColor"/><path d="M8 12H3M21 12h-5" stroke-width="3"/></g><circle cx="12" cy="12" r="9.5" opacity=".35" stroke-dasharray="2 3"/></svg>'};
+try{if(window.FHIkon3D)FHIkon3D.pasang(IC);}catch(e){}   // ikon menu bergaya 3D (assets/ikon3d.js)
 const SECT={pengaturan:['Profil','Akun & pengaturan'],peringatan:['Peringatan dini','Notifikasi HP & email'],unduh:['Unduh data','CSV · SHP · GeoJSON · KML'],patroli:['Laporan patroli','Temuan & cek lapangan'],luring:['Peta luring','Tanpa sinyal'],sistem:['Status sistem','Pembaruan · basis data · sumber NASA']};
 let INFOSEC=null;
 function bukaSec(sec){INFOSEC=sec;go('info');pushLayer(()=>go('dash',false));setBar(SECT[sec][0],SECT[sec][1],true);}
