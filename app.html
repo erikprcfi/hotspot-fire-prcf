@@ -541,6 +541,7 @@ body.is-off .offline{display:block}
 .clampx.open{display:block;-webkit-line-clamp:unset}
 .clampx-t{display:inline-flex;align-items:center;gap:4px;margin:2px 0 6px;padding:0;border:0;background:none;color:var(--brand-3,#1E7A58);font:700 11.5px var(--f);cursor:pointer}
 html.web [data-noweb]{display:none!important}
+img[src*="effis.emergency"]{width:auto!important;max-width:170px;height:auto!important;display:block;margin:6px auto 0!important;border-radius:6px}   /* legenda FWI GWIS berukuran kecil – jangan diperbesar */
 body:not(.pr-umum) .umum-only{display:none!important}body.pr-umum #fabList,body.pr-umum #fabSat,body.pr-umum #fabFocus,body.pr-umum #rpForm,body.pr-umum #topcards,body.pr-umum #sumpanel,body.pr-umum #eye,body.pr-umum .fc-mode .seg2,body.pr-umum [data-sec="unduh"],body.pr-umum [data-sec="peringatan"]{display:none!important}   /* mode umum / wilayah SHP: tanpa data Hutan Desa dampingan */
 .hx-t.hx-lock{opacity:.5;filter:grayscale(.6)}.hx-t.hx-lock::after{content:'🔒';position:absolute;top:8px;right:9px;font-size:13px}.hx-t{position:relative}
 /* Pantau Rimbak · website: semua kelompok alat terbuka sebagai kisi (tidak dilipat seperti di HP) */
@@ -936,7 +937,7 @@ function initMap(){
   $('#nbX').onclick=()=>NASA.set(null);$('#nbPrev').onclick=()=>NASA.step(-1);$('#nbNext').onclick=()=>NASA.step(1);$('#nbDate').onchange=e=>e.target.value&&NASA.setDate(e.target.value);$('#nbPlay').onclick=()=>NASA.playing?NASA.stop():NASA.play(7);
 }
 let NASA=null, BTL=null, TCL=null, PHL=null;
-function nasaUI(){imgInfo();const L0=NASA.layer,bar=$('#nasaBar');bar.hidden=!L0;if(!L0){nasaUI._on=0;return;}$('#nbName').textContent=(L0.cams?'Copernicus · ':'NASA · ')+NASA.label+(L0.hourly?' · '+NASA.timeLabel:'');if(!nasaUI._on){nasaUI._on=1;$('#topcards').classList.add('cards-off');$('#eyeX').style.display='none';}const pl=$('#nbPlay');pl.textContent=NASA.playing?'⏸':'▶';pl.classList.toggle('on',NASA.playing);const an=$('#nbAnim'),ai=NASA.animInfo;an.hidden=!ai;if(ai)an.innerHTML=`<span>${ai.prakiraan?'Prakiraan':'Pergerakan'} ${ai.from} → ${ai.to}</span><i style="width:${(ai.i+1)/ai.n*100}%"></i>`;const i=$('#nbDate');i.value=NASA.date;i.max=NASA.maxDate();i.min=L0.since;
+function nasaUI(){imgInfo();const L0=NASA.layer,bar=$('#nasaBar');bar.hidden=!L0;if(!L0){nasaUI._on=0;return;}$('#nbName').textContent=(L0.cams||L0.effis?'Copernicus · ':'NASA · ')+NASA.label+(L0.hourly?' · '+NASA.timeLabel:'');if(!nasaUI._on){nasaUI._on=1;$('#topcards').classList.add('cards-off');$('#eyeX').style.display='none';}const pl=$('#nbPlay');pl.textContent=NASA.playing?'⏸':'▶';pl.classList.toggle('on',NASA.playing);const an=$('#nbAnim'),ai=NASA.animInfo;an.hidden=!ai;if(ai)an.innerHTML=`<span>${ai.prakiraan?'Prakiraan':'Pergerakan'} ${ai.from} → ${ai.to}</span><i style="width:${(ai.i+1)/ai.n*100}%"></i>`;const i=$('#nbDate');i.value=NASA.date;i.max=NASA.maxDate();i.min=L0.since;
   const lg=$('#nbLg');if(L0.legend){lg.src=L0.legend;lg.hidden=false;}else lg.hidden=true;}
 const FOCI=[['r25','Radius 25 km'],['desa','Desa'],['hd','Hutan Desa'],['all','Semua lokasi'],['kh','Kapuas Hulu']];let FI=0;
 $('#fab3d').onclick=()=>{if(!window.FH3D)return;let viaBack=false;pushLayer(()=>{viaBack=true;FH3D.close();});let u=false;try{u=isUmum();}catch(e){}FH3D.open({sites:u?[]:SITES,site:u?null:SITE,points:u?[]:ALL,onClose:()=>{if(!viaBack)back();}});};
