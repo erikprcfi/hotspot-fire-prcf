@@ -35,7 +35,7 @@ const LAYERS = [
     desc: 'Fire Weather Index (FWI) harian dari Global Wildfire Information System – Copernicus Emergency Management Service, dihitung dari model cuaca ECMWF (±9 km): kemudahan api menyala dan menjalar menurut suhu, kelembapan, angin dan hujan. Hari ini dan prakiraan hingga ±8 hari ke depan. Indeks cuaca, bukan deteksi api – kelas mengikuti skala GWIS (rendah <11,2 … sangat ekstrem >70).',
     legend: 'https://maps.effis.emergency.copernicus.eu/gwis?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetLegendGraphic&LAYER=ecmwf.fwi&FORMAT=image/png' },
   { id: 'dist', nm: 'Gangguan vegetasi terbaru (NASA OPERA)', short: 'Gangguan vegetasi · OPERA DIST-ALERT', gibs: 'OPERA_L3_DIST-ALERT-HLS_Color_Index', m: 'GoogleMapsCompatible_Level12', ext: 'png', z: 12, op: .95, days: 8,
-    hide: [[18, 18, 18]],
+    hide: [[18, 18, 18]], pal: [[18, 18, 18], [0, 85, 85], [0, 136, 136], [137, 127, 78], [222, 224, 67], [224, 27, 7], [228, 135, 39], [119, 119, 119], [221, 221, 221]],
     desc: 'Status gangguan/kehilangan vegetasi dari NASA JPL OPERA DIST-ALERT (citra Landsat & Sentinel-2 HLS, 30 m), seluruh dunia termasuk Indonesia: pembukaan lahan, penebangan, bekas terbakar. Gabungan 8 hari pengamatan sampai tanggal terpilih. Kuning = terkonfirmasi < 50 % kehilangan tajuk, merah = terkonfirmasi ≥ 50 %, biru-hijau = deteksi awal/sementara, abu-abu = gangguan sudah selesai.', since: '2023-01-01', legend: null },
   { id: 'distann', nm: 'Gangguan vegetasi tahunan (NASA OPERA)', short: 'Gangguan vegetasi tahunan · OPERA DIST-ANN', gibs: 'OPERA_L3_DIST-ANN-HLS_Color_Index', m: 'GoogleMapsCompatible_Level12', ext: 'png', z: 12, op: .95, fixed: '2025-01-01',
     hide: [[18, 18, 18]],
@@ -57,15 +57,25 @@ const CamsWMS = L.TileLayer.WMS.extend({
     im.onerror = e => done(e, cv); im.src = this.getTileUrl(c); return cv;
   }
 });
-// Ubin GIBS dengan warna "tanpa data/tidak ada gangguan" dibuat transparan (lapisan OPERA)
+// Ubin GIBS dengan warna "tanpa data/tidak ada gangguan" dibuat transparan (lapisan OPERA).
+// Server GIBS kadang mengirim ubin OPERA DIST-ALERT yang rusak (derau putih/bergaris; acak, URL yang sama bisa normal bila diminta ulang).
+// Bila opsi `pal` (palet warna resmi lapisan) diisi: ubin yang memuat > 1 % piksel di luar palet dianggap rusak → diminta ulang
+// (maks. 3 kali); bila tetap rusak, ubin dikosongkan (tidak ditampilkan) daripada menampilkan gambar yang salah.
 const HideTile = L.TileLayer.extend({
   createTile(c, done) {
     const cv = document.createElement('canvas'), s = this.getTileSize(); cv.width = s.x; cv.height = s.y;
-    const im = new Image(); im.crossOrigin = 'anonymous'; const hide = this.options.hide || [];
-    im.onload = () => { try { const g = cv.getContext('2d'); g.drawImage(im, 0, 0, s.x, s.y); const D = g.getImageData(0, 0, s.x, s.y), a = D.data;
-        for (let i = 0; i < a.length; i += 4) { if (!a[i + 3]) continue; for (const k of hide) if (Math.abs(a[i] - k[0]) < 6 && Math.abs(a[i + 1] - k[1]) < 6 && Math.abs(a[i + 2] - k[2]) < 6) { a[i + 3] = 0; break; } }
-        g.putImageData(D, 0, 0); } catch (e) { } done(null, cv); };
-    im.onerror = () => done(null, cv); im.src = this.getTileUrl(c); return cv;
+    const hide = this.options.hide || [], pal = this.options.pal, url = this.getTileUrl(c);
+    const dekat = (a, i, k, t) => Math.abs(a[i] - k[0]) < t && Math.abs(a[i + 1] - k[1]) < t && Math.abs(a[i + 2] - k[2]) < t;
+    const muat = coba => { const im = new Image(); im.crossOrigin = 'anonymous';
+      im.onload = () => { try { const g = cv.getContext('2d'); g.clearRect(0, 0, s.x, s.y); g.drawImage(im, 0, 0, s.x, s.y); const D = g.getImageData(0, 0, s.x, s.y), a = D.data;
+          if (pal) { let n = 0, asing = 0;
+            for (let i = 0; i < a.length; i += 4) { if (!a[i + 3]) continue; n++; if (a[i + 3] < 250 || !pal.some(k => dekat(a, i, k, 4))) { asing++; a[i + 3] = 0; } }
+            if (n && asing > n * 0.01) { if (coba < 3) { muat(coba + 1); return; } g.clearRect(0, 0, s.x, s.y); done(null, cv); return; } }
+          for (let i = 0; i < a.length; i += 4) { if (!a[i + 3]) continue; for (const k of hide) if (dekat(a, i, k, 6)) { a[i + 3] = 0; break; } }
+          g.putImageData(D, 0, 0); } catch (e) { } done(null, cv); };
+      im.onerror = () => { if (coba < 2) muat(coba + 1); else done(null, cv); };
+      im.src = coba ? url + (url.includes('?') ? '&' : '?') + 'ulang=' + coba + '_' + Date.now() % 1e6 : url; };
+    muat(0); return cv;
   }
 });
 function maksTgl(L0) { const t = iso(new Date(Date.now() + 7 * 36e5)); return L0 && L0.fc ? addDay(t, L0.fc) : L0 && L0.today ? t : yesterdayWIB(); }   // tanggal terakhir yang boleh dipilih (prakiraan FWI s.d. +8 hari)
@@ -76,7 +86,7 @@ function tiles(L0, d, h, extra = {}) {  // satu bingkai lapisan untuk tanggal d 
   if (L0.wms) return L.tileLayer.wms('https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi', { layers: L0.wms, format: 'image/png', transparent: true, version: '1.3.0', time: d, tileSize: 512, updateWhenIdle: true, ...o });
   const alt = L0.pick ? L0.pick(d) : null, ids = L0.multi || [(alt && alt.gibs) || L0.gibs];
   if (L0.fixed) d = L0.fixed;
-  const mk = (u, op) => L0.hide ? new HideTile(u, { hide: L0.hide, ...op }) : L.tileLayer(u, op);
+  const mk = (u, op) => L0.hide ? new HideTile(u, { hide: L0.hide, pal: L0.pal, ...op }) : L.tileLayer(u, op);
   const g = L.layerGroup(ids.map((id, k) => mk(`${BASE}${id}/default/${d}/${L0.m}/{z}/{y}/{x}.${L0.ext}`, { maxNativeZoom: L0.z, maxZoom: 18, tileSize: 256, attribution: k ? '' : `NASA GIBS · ${L0.short} · ${d}`, ...o })));
   g.setOpacity = v => g.eachLayer(t => t.setOpacity(v)); return g;
 }
