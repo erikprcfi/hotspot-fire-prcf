@@ -1,5 +1,5 @@
 {
- "terakhir_cek_utc": "2026-11-08T22:06:54Z",
+ "terakhir_cek_utc": "2026-11-09T06:30:06Z",
  "titik_baru": 0,
  "arsip_tahunan_diperbarui": 0,
  "jumlah_catatan": 83199,
@@ -45,10 +45,10 @@
    "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Sun, 08 Nov 2026 21:49:09 GMT",
-   "ukuran_byte": 319903,
-   "sha256": "9f0773600a473672eeefdf0be3631872b6cdfe91d6adfc26e47b0e1900adb1e3",
-   "baris_total": 3908,
+   "last_modified": "Mon, 09 Nov 2026 05:54:24 GMT",
+   "ukuran_byte": 83003,
+   "sha256": "2fb20db12d6e782b84b3fbea269eea81685132201dc338923ca882b59c190d61",
+   "baris_total": 1013,
    "baris_di_kotak": 0
   },
   {
@@ -58,10 +58,10 @@
    "doi": "10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Sun, 08 Nov 2026 21:42:33 GMT",
-   "ukuran_byte": 2112758,
-   "sha256": "f25d4444263b914942ed76c48f93162439315898bfe8aa93edcb9d2204759e1d",
-   "baris_total": 25208,
+   "last_modified": "Mon, 09 Nov 2026 05:43:27 GMT",
+   "ukuran_byte": 1884938,
+   "sha256": "2f2e927b40d0651c14d0a87f612f3ad9e8dfd90d0fe85640fb66da507b468681",
+   "baris_total": 22481,
    "baris_di_kotak": 5
   },
   {
@@ -71,10 +71,10 @@
    "doi": "10.5067/VIIRS/VJ214IMG_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Sun, 08 Nov 2026 21:45:38 GMT",
-   "ukuran_byte": 2201225,
-   "sha256": "aac39183b1c8524e934489e22ef00f39476e0677ab9e29560b52c5a853453987",
-   "baris_total": 26252,
+   "last_modified": "Mon, 09 Nov 2026 05:47:56 GMT",
+   "ukuran_byte": 1990793,
+   "sha256": "8b957a73da35fdcb647ba35f39f9917b7b636d537a535570d7ca52a65086f3fd",
+   "baris_total": 23751,
    "baris_di_kotak": 0
   },
   {
@@ -84,10 +84,10 @@
    "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Sun, 08 Nov 2026 21:47:50 GMT",
-   "ukuran_byte": 396425,
-   "sha256": "6cf1bd2f804b4aa44807de17901b3bc19572768c32c2d531bac0972fc2677ada",
-   "baris_total": 5143,
+   "last_modified": "Mon, 09 Nov 2026 05:51:48 GMT",
+   "ukuran_byte": 369252,
+   "sha256": "4e1e0f3d81b5c6481943b6a9112f24df4428d808a8808648447acddda97a3251",
+   "baris_total": 4792,
    "baris_di_kotak": 1
   }
  ],
@@ -127,12 +127,6 @@
  },
  "sistem": {
   "riwayat": [
-   {
-    "t": "2026-11-02T11:08:11Z",
-    "baru": 0,
-    "ok": 4,
-    "n": 4
-   },
    {
     "t": "2026-11-02T21:43:37Z",
     "baru": 0,
@@ -270,14 +264,20 @@
     "baru": 0,
     "ok": 4,
     "n": 4
+   },
+   {
+    "t": "2026-11-09T06:30:06Z",
+    "baru": 0,
+    "ok": 4,
+    "n": 4
    }
   ],
   "jadwal_cron_utc": "17 */3 * * *",
   "latensi_median_jam": 3.7,
   "latensi_n": 21,
   "arsip_terverifikasi": 48,
-  "hari_cuaca": 9442,
-  "jumlah_pembaruan_tercatat": 94
+  "hari_cuaca": 9443,
+  "jumlah_pembaruan_tercatat": 95
  },
  "sumber_doi": {
   "VIIRS_SNPP": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002",
