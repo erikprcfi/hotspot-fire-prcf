@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  actions: write   # untuk menjadwalkan ulang dirinya (jadwal GitHub sering tertunda berjam-jam)
 
 concurrency:
   group: analisis-shp
@@ -15,7 +16,7 @@ concurrency:
 jobs:
   analisis:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 70
     steps:
       - name: Cek antrean
         id: cek
@@ -23,8 +24,15 @@ jobs:
           ANALISIS_KEY: ${{ secrets.ANALISIS_KEY }}
         run: |
           if [ -z "$ANALISIS_KEY" ]; then echo "n=0" >> $GITHUB_OUTPUT; exit 0; fi
-          N=$(curl -sL -m 60 "https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec?pekerja=$ANALISIS_KEY&cek=1" | python3 -c "import json,sys;print(json.load(sys.stdin).get('menunggu',0))" || echo 0)
-          echo "antrean: $N"; echo "n=$N" >> $GITHUB_OUTPUT
+          # Jadwal */5 menit di GitHub kenyataannya berjalan tiap 4–8 jam. Karena itu pekerja ini menunggu antrean
+          # hingga ±25 menit (cek tiap 2 menit), lalu langkah terakhir menjalankan ulang dirinya sendiri.
+          for i in $(seq 1 13); do
+            N=$(curl -sL -m 60 "https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec?pekerja=$ANALISIS_KEY&cek=1" | python3 -c "import json,sys;print(int(json.load(sys.stdin).get('menunggu',0)))" 2>/dev/null || echo 0)
+            echo "cek $i: antrean $N"
+            if [ "$N" != "0" ]; then break; fi
+            [ $i -lt 13 ] && sleep 120
+          done
+          echo "n=$N" >> $GITHUB_OUTPUT
       - uses: actions/checkout@v4
         if: steps.cek.outputs.n != '0'
       - uses: actions/setup-python@v5
@@ -55,3 +63,8 @@ jobs:
           FIRMS_CACHE: /tmp/firms_cache
           FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
         run: python scripts/analisis_antrean.py
+      - name: Lanjutkan pemantauan antrean
+        if: always() && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run analisis.yml --repo "$GITHUB_REPOSITORY" --ref main || echo "gagal menjadwalkan ulang; jadwal cron tetap berjalan"

@@ -6,7 +6,7 @@ Keluaran: data/tle.json
 import json, os, sys, time, urllib.request, datetime
 SAT = [  # nama, NORAD, sensor, lebar sapuan (km)
     ('Terra', 25994, 'MODIS', 2330), ('Aqua', 27424, 'MODIS', 2330),
-    ('Suomi NPP', 37849, 'VIIRS', 3060), ('NOAA-20', 43013, 'VIIRS', 3060), ('NOAA-21', 54234, 'VIIRS', 3060)]
+    ('NOAA-20', 43013, 'VIIRS', 3060), ('NOAA-21', 54234, 'VIIRS', 3060)]
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'tle.json')
 res = []
 for nm, nid, sen, sw in SAT:

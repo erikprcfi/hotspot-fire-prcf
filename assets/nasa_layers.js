@@ -17,8 +17,9 @@ const LAYERS = [
   { id: 'co', nm: 'Karbon monoksida (CO) dari asap', short: 'CO · AIRS 500 hPa', gibs: 'AIRS_L2_Carbon_Monoxide_500hPa_Volume_Mixing_Ratio_Day', m: 'GoogleMapsCompatible_Level6', ext: 'png', z: 6, op: .72,
     desc: 'Gas CO di ketinggian ±5,5 km dari satelit AIRS (Aqua), seperti tampilan NASA Eyes on the Earth. Gabungan 3 hari pengamatan (sampai tanggal terpilih) agar celah lintasan satelit tertutup. Merah/ungu = asap kebakaran tebal. Resolusi ±45 km.', since: '2002-09-01', days: 3,
     legend: 'https://gibs.earthdata.nasa.gov/legends/AIRS_Carbon_Monoxide_Volume_Mixing_Ratio_H.svg' },
-  { id: 'aod', nm: 'Ketebalan kabut asap (AOD) · VIIRS', short: 'Asap · AOD VIIRS', gibs: 'VIIRS_NOAA20_AOD_Deep_Blue_Land_Ocean', multi: ['VIIRS_SNPP_AOD_Deep_Blue_Land_Ocean', 'VIIRS_NOAA20_AOD_Deep_Blue_Land_Ocean'], m: 'GoogleMapsCompatible_Level6', ext: 'png', z: 6, op: .75,
-    desc: 'Aerosol Optical Depth hasil pengamatan satelit VIIRS (S-NPP & NOAA-20, algoritma Deep Blue), gabungan 2 lintasan. Makin merah = makin pekat asap/partikel. Catatan: asap yang sangat tebal atau tertutup awan kadang tidak terbaca satelit (tampak kosong); gunakan lapisan CAMS di bawah untuk peta tanpa celah.', since: '2018-02-24',
+  { id: 'aod', nm: 'Ketebalan kabut asap (AOD) · VIIRS', short: 'Asap · AOD VIIRS', gibs: 'VIIRS_NOAA20_AOD_Deep_Blue_Land_Ocean', multi: ['VIIRS_NOAA20_AOD_Deep_Blue_Land_Ocean', 'VIIRS_NOAA21_AOD_Deep_Blue_Land_Ocean'],
+    pick: d => d < '2023-03-01' ? { multi: ['VIIRS_SNPP_AOD_Deep_Blue_Land_Ocean', 'VIIRS_NOAA20_AOD_Deep_Blue_Land_Ocean'] } : null, m: 'GoogleMapsCompatible_Level6', ext: 'png', z: 6, op: .75,
+    desc: 'Aerosol Optical Depth hasil pengamatan satelit VIIRS (NOAA-20 & NOAA-21; sebelum Maret 2023: S-NPP & NOAA-20; algoritma Deep Blue), gabungan 2 lintasan. Makin merah = makin pekat asap/partikel. Catatan: asap yang sangat tebal atau tertutup awan kadang tidak terbaca satelit (tampak kosong); gunakan lapisan CAMS di bawah untuk peta tanpa celah.', since: '2018-02-24',
     legend: 'https://gibs.earthdata.nasa.gov/legends/MODIS_VIIRS_AOD_H.svg' },
   { id: 'smoke', nm: 'Asap kebakaran (AOD biomassa) · CAMS/ECMWF', short: 'Asap kebakaran · CAMS', cams: 'composition_bbaod550', style: 'sh_BuYlRd_aod', op: .62, hourly: true,
     hide: [[210, 214, 234], [167, 174, 214], [135, 145, 190], [162, 167, 144]],
@@ -28,8 +29,8 @@ const LAYERS = [
     hide: [[49, 254, 0], [49, 206, 0]],
     desc: 'Konsentrasi partikel halus PM2.5 di permukaan (µg/m³) menurut model Copernicus CAMS (ECMWF), per 3 jam, termasuk prakiraan. Hanya nilai ≥ 36 µg/m³ (di atas kategori “rendah” DAQI) yang diwarnai, sisanya transparan agar citra asli terlihat. Hasil model, bukan alat ukur.', since: '',
     legend: 'https://eccharts.ecmwf.int/wms/?token=public&request=GetLegend&layers=composition_pm2p5&styles=sh_all_pm2p5_defra_daqi&width=350&height=50' },
-  { id: 'ai', nm: 'Indeks aerosol asap (OMPS)', short: 'Asap · Indeks aerosol', gibs: 'OMPS_Aerosol_Index', m: 'GoogleMapsCompatible_Level6', ext: 'png', z: 6, op: .72,
-    desc: 'Indeks aerosol ultraungu OMPS (Suomi NPP): mendeteksi asap dan debu, termasuk di atas awan. Gabungan 2 hari. Resolusi ±50 km.', since: '2012-02-01', days: 2,
+  { id: 'ai', nm: 'Indeks aerosol asap (OMPS)', short: 'Asap · Indeks aerosol', gibs: 'OMPS_NOAA20_NadirMapper_AerosolIndex_380', pick: d => d < '2026-11-02' ? { gibs: 'OMPS_Aerosol_Index' } : null, m: 'GoogleMapsCompatible_Level6', ext: 'png', z: 6, op: .72,
+    desc: 'Indeks aerosol ultraungu OMPS (NOAA-20; sampai 1 November 2026: Suomi NPP, yang berhenti beroperasi 2 November 2026): mendeteksi asap dan debu, termasuk di atas awan. Gabungan 2 hari. Resolusi ±50 km.', since: '2012-02-01', days: 2,
     legend: 'https://gibs.earthdata.nasa.gov/legends/OMPS_Aerosol_Index_H.svg' },
   { id: 'fwi', nm: 'Bahaya kebakaran (FWI) · Copernicus GWIS', short: 'Bahaya kebakaran · FWI', effis: 'ecmwf.fwi', op: .7, today: true, fc: 8, since: '2018-01-01',
     desc: 'Fire Weather Index (FWI) harian dari Global Wildfire Information System – Copernicus Emergency Management Service, dihitung dari model cuaca ECMWF (±9 km): kemudahan api menyala dan menjalar menurut suhu, kelembapan, angin dan hujan. Hari ini dan prakiraan hingga ±8 hari ke depan. Indeks cuaca, bukan deteksi api – kelas mengikuti skala GWIS (rendah <11,2 … sangat ekstrem >70).',
@@ -84,7 +85,7 @@ function tiles(L0, d, h, extra = {}) {  // satu bingkai lapisan untuk tanggal d 
   if (L0.cams) return new CamsWMS(CAMS, { hide: L0.hide, layers: L0.cams, styles: L0.style || '', format: 'image/png', transparent: true, version: '1.3.0', time: `${d}T${pad(h)}:00:00Z`, tileSize: 512, attribution: 'Copernicus Atmosphere Monitoring Service (CAMS) · ECMWF', ...o });
   if (L0.effis) return L.tileLayer.wms('https://maps.effis.emergency.copernicus.eu/gwis', { layers: L0.effis, format: 'image/png', transparent: true, version: '1.3.0', time: d, tileSize: 512, updateWhenIdle: true, attribution: 'Copernicus EMS · GWIS (ECMWF)', ...o });
   if (L0.wms) return L.tileLayer.wms('https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi', { layers: L0.wms, format: 'image/png', transparent: true, version: '1.3.0', time: d, tileSize: 512, updateWhenIdle: true, ...o });
-  const alt = L0.pick ? L0.pick(d) : null, ids = L0.multi || [(alt && alt.gibs) || L0.gibs];
+  const alt = L0.pick ? L0.pick(d) : null, ids = (alt && alt.multi) || L0.multi || [(alt && alt.gibs) || L0.gibs];
   if (L0.fixed) d = L0.fixed;
   const mk = (u, op) => L0.hide ? new HideTile(u, { hide: L0.hide, pal: L0.pal, ...op }) : L.tileLayer(u, op);
   const g = L.layerGroup(ids.map((id, k) => mk(`${BASE}${id}/default/${d}/${L0.m}/{z}/{y}/{x}.${L0.ext}`, { maxNativeZoom: L0.z, maxZoom: 18, tileSize: 256, attribution: k ? '' : `NASA GIBS · ${L0.short} · ${d}`, ...o })));

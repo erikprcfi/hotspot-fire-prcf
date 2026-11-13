@@ -685,7 +685,7 @@ def system_health(recs):
     lat.sort()
     idx_f = os.path.join(PROV, "arsip_tahunan_index.json")
     cu = os.path.join(DATA, "cuaca.json")
-    return {"riwayat": runs, "jadwal_cron_utc": "17 */3 * * *",
+    return {"riwayat": runs, "jadwal_cron_utc": "17 */3 * * * + 47 1-23/3 * * *",
             "latensi_median_jam": round(lat[len(lat) // 2], 1) if len(lat) >= 5 else None, "latensi_n": len(lat),
             "arsip_terverifikasi": len(json.load(open(idx_f))) if os.path.exists(idx_f) else 0,
             "hari_cuaca": len(json.load(open(cu))["t"]) if os.path.exists(cu) else 0,

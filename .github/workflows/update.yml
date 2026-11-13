@@ -3,6 +3,7 @@ name: Perbarui titik panas FIRMS
 on:
   schedule:
     - cron: "17 */3 * * *"   # setiap 3 jam (UTC)
+    - cron: "47 1-23/3 * * *"   # jadwal tambahan: GitHub sering menunda/melewatkan jadwal, data tertinggal 5–9 jam
   workflow_dispatch:
   push:
     branches: [main]

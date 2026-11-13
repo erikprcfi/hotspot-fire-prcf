@@ -136,3 +136,11 @@ Satu bagian per sesi/percakapan; uji, commit ke `pantau-rimbak`, perbarui file i
 - Panduan (alat 'panduan'): arti titik panas/keyakinan/FRP, PM2.5, pencegahan, tautan resmi (tanpa nomor telepon yang tidak terverifikasi).
 - Tombol Bagikan (navigator.share → WhatsApp/salin) di Indonesia hari ini, Sebaran titik panas, Panduan.
 - update.yml: pipeline FIRMS kini juga jalan saat push (run push menggantikan run terjadwal yang tertunda, sehingga data sempat beku 16:47Z–).
+
+## Catatan 13 Nov 2026 – pemeliharaan rutin
+- Suomi NPP berhenti beroperasi 2 Nov 2026 (NASA/NOAA). Lapisan indeks aerosol OMPS kini memakai NOAA-20 (`OMPS_NOAA20_NadirMapper_AerosolIndex_380`,
+  palet sama dengan OMPS_Aerosol_Index sehingga legenda lama tetap berlaku); tanggal < 2 Nov 2026 tetap Suomi NPP. AOD VIIRS kini NOAA-20 + NOAA-21
+  (< Mar 2023: S-NPP + NOAA-20). Suomi NPP dihapus dari daftar lintasan satelit (scripts/tle.py). Arsip FIRMS S-NPP lama tetap dipakai apa adanya.
+  Catatan: indikator Plan Vivo "titik panas di dalam HD per tahun" memakai VIIRS S-NPP → tahun 2026 dan seterusnya perlu diputuskan pindah ke NOAA-20.
+- Jadwal GitHub sangat tertunda (FIRMS "tiap 3 jam" nyatanya 5–9 jam; analisis "tiap 5 menit" nyatanya 4–8 jam):
+  update.yml + jadwal tambahan "47 1-23/3"; analisis.yml menunggu antrean ±25 menit lalu menjalankan ulang dirinya (workflow_dispatch, actions: write).
