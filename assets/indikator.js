@@ -21,7 +21,8 @@ async function kumpul(s, k) {
   const ALL = window.FHAll ? FHAll() : [], now = Date.now();
   const [BT, A] = await Promise.all([J('data/bekas_terbakar/indeks.json').catch(() => null), J(`data/analisis/${s.id}_hd.json`)]);
   const H = A.hutan || {}, K = A.karbon || {}, F = A.emisi_frel || {}, TP = (A.titik_panas || {}).per_tahun || {};
-  const tpY = Object.fromEntries(Object.entries(TP).map(([y, v]) => [y, v['VIIRS S-NPP'] || 0]));
+  // Suomi NPP berhenti 2 Nov 2026: mulai 2026 dihitung dari VIIRS NOAA-20 (sensor & orbit sama)
+  const tpY = Object.fromEntries(Object.entries(TP).map(([y, v]) => [y, (+y >= 2026 ? v['VIIRS NOAA-20'] : v['VIIRS S-NPP']) || 0]));
   const bt = {}; Object.values((BT && BT.musim) || {}).forEach(m => { if (m.lokasi === s.id && m.status === 'selesai' && m.luas_ha != null) { const y = m.awal.slice(0, 4); bt[y] = (bt[y] || 0) + m.luas_ha; } });
   const y12 = p => now - p.when <= 365 * 864e5, near = ALL.filter(p => p.ls && p.ls[k] <= 5 && y12(p)).length, inside = ALL.filter(p => p.ls && p.ls[k] <= 0 && y12(p)).length;
   const lossY = H.kehilangan_per_tahun_ha || {}, thn = ['2021', '2022', '2023', '2024', '2025'];
@@ -51,8 +52,8 @@ function baris(r) { const n1 = X().n1, v = (x, d) => x == null ? '–' : n1(x, d
     ['Titik panas ≤5 km 12 bulan terakhir', v(r.near, 0), 'titik', 'NASA FIRMS NRT'], ['Bekas terbakar terpetakan ≤5 km', v(r.btTot, 2), 'ha', 'Sentinel-2 dNBR'],
     ['Emisi bruto karbon hutan', v(r.emisi, 0), 'tCO₂e/thn', 'Harris dkk. 2021'], ['Serapan bruto karbon hutan', v(r.serap, 0), 'tCO₂/thn', 'Harris dkk. 2021'],
     ['Fluks karbon bersih', v(r.fluks, 0), 'tCO₂e/thn', 'Harris dkk. 2021'], ['Stok karbon total 2000', v(r.stok, 0), 'tC', 'Harris dkk. 2021']]; }
-function tahunan(r) { const ys = []; for (let y = 2016; y <= 2025; y++) ys.push(String(y)); return ys.map(y => [y, r.lossY[y] || 0, r.tpY[y] || 0, r.bt[y] || 0]); }
-const SUMBER = ['Titik panas: NASA FIRMS (VIIRS S-NPP 375 m arsip SP; NRT untuk 12 bulan terakhir).', 'Hutan & kehilangan tutupan pohon: Hansen/UMD/Google/USGS/NASA Global Forest Change GFC-2025-v1.13, 30 m, CC BY 4.0. Hutan = tutupan tajuk 2000 ≥ 30%.',
+function tahunan(r) { const ys = [], yM = Math.max(2025, ...Object.keys(r.tpY || {}).map(Number).filter(Boolean)); for (let y = 2016; y <= yM; y++) ys.push(String(y)); return ys.map(y => [y, r.lossY[y] || 0, r.tpY[y] || 0, r.bt[y] || 0]); }
+const SUMBER = ['Titik panas: NASA FIRMS (VIIRS S-NPP 375 m arsip SP sampai 2025; mulai 2026 VIIRS NOAA-20 karena Suomi NPP berhenti beroperasi 2 November 2026; NRT untuk 12 bulan terakhir).', 'Hutan & kehilangan tutupan pohon: Hansen/UMD/Google/USGS/NASA Global Forest Change GFC-2025-v1.13, 30 m, CC BY 4.0. Hutan = tutupan tajuk 2000 ≥ 30%.',
   'Tutupan lahan, deforestasi/degradasi & emisi FREL: basis data tutupan lahan yang sama dengan alat Tutupan lahan & Emisi karbon – peta tahunan lokal yang sudah di-groundcheck bila ada (Nanga Lauk: peta tahunan PRCF 2006–2026), selain itu Peta Penutupan Lahan KLHK 2020 (1:250.000) + Hansen GFC v1.13; emisi dengan rumus templat PRCF (kepadatan karbon per tipe hutan × 0,47 × 44/12).',
   'Karbon: Harris dkk. 2021 (Nat. Clim. Change) & Gibbs dkk. 2025 (ESSD), data publik World Resources Institute, CC BY 4.0. Fluks bersih negatif = hutan menyerap lebih banyak daripada melepas.',
   'Bekas terbakar: indeks dNBR citra Sentinel-2 L2A (ESA Copernicus) yang dihitung otomatis Pantau Rimbak untuk musim api ≤ 5 km dari Hutan Desa; musim tertutup awan tidak dihitung.'];
