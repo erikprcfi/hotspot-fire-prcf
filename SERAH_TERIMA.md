@@ -163,3 +163,4 @@ Live ke main bila semua uji lulus.
   (lsBox; prBox HD disembunyikan di umum), meteogram tidak dimuat otomatis saat hemat. Kebijakan privasi diperbarui (lokasi tersimpan di HP, log galat anonim, mode tamu).
   Apps Script v14 (aksi log_galat, lembar "Log Galat") dikirim ke pengguna – BELUM dipasang; sebelum dipasang galat menunggu di antrean HP.
   Uji: 9 skenario login lulus; 31 alat HP+web lulus; mode tamu lokal & live lulus. Pengujian otomatis perlu localStorage fh_panduan_v1=1 agar panduan tidak menutupi layar.
+- 15 Nov 05.05 WIB: Apps Script v14 sudah dipasang pengguna (GET = v14, aksi log_galat menjawab ok).
