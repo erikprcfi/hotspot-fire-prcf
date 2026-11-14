@@ -12,7 +12,9 @@ const cache = {};
 async function load(lat, lon) {
   const k = lat.toFixed(2) + ',' + lon.toFixed(2); if (cache[k] && Date.now() - cache[k].t < 30 * 6e4) return cache[k].d;
   const u = `https://ensemble-api.open-meteo.com/v1/ensemble?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&models=ecmwf_ifs025&hourly=temperature_2m,precipitation,wind_speed_10m&forecast_days=15&timezone=auto`;
-  let e; for (let t = 0; t < 3; t++) { try { const ac = new AbortController(), to = setTimeout(() => ac.abort(), 25000); const r = await fetch(u, { signal: ac.signal }); clearTimeout(to); if (r.ok) { const d = await r.json(); cache[k] = { t: Date.now(), d }; return d; } e = new Error('HTTP ' + r.status); } catch (x) { e = x; } await new Promise(o => setTimeout(o, 900 * (t + 1))); }
+  let e; for (let t = 0; t < 3; t++) { try { const ac = new AbortController(), to = setTimeout(() => ac.abort(), 25000); const r = await fetch(u, { signal: ac.signal }); clearTimeout(to); if (r.ok) { const d = await r.json(); cache[k] = { t: Date.now(), d }; try { localStorage.setItem('fh_mg_' + k, JSON.stringify({ t: Date.now(), d })); } catch (x) { } return d; } e = new Error('HTTP ' + r.status); if (r.status === 429) await new Promise(o => setTimeout(o, 2500 * (t + 1))); } catch (x) { e = x; } await new Promise(o => setTimeout(o, 900 * (t + 1))); }
+  // Layanan sibuk/terputus: pakai hasil terakhir yang tersimpan di perangkat (maks. 24 jam) daripada kartu kosong
+  try { const o = JSON.parse(localStorage.getItem('fh_mg_' + k) || 'null'); if (o && Date.now() - o.t < 864e5) { cache[k] = o; return o.d; } } catch (x) { }
   throw e;
 }
 function daily(d) {
