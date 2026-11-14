@@ -158,3 +158,8 @@ Satu bagian per sesi/percakapan; uji, commit ke `pantau-rimbak`, perbarui file i
 3 Log error → Apps Script v14 (aksi log_error ke Sheet); antre di HP sampai server siap.
 8 Panduan singkat pertama buka (3–4 layar). 9 Mode hemat data (otomatis saat sinyal lemah + saklar di Profil).
 Live ke main bila semua uji lulus.
+- SELESAI & LIVE (pa-v82, 15 Nov dini hari): assets/pelengkap.js (FHGalat, FHHemat, FHPanduanAwal), assets/lokasi_saya.js (FHLokasiSaya),
+  akun.js mode tamu (localStorage pr_tamu; FHAkun.tamu(), FHAkun.layarMasuk()), app.html: tamuUI/appUI di Profil, peringatan dibuka di mode umum
+  (lsBox; prBox HD disembunyikan di umum), meteogram tidak dimuat otomatis saat hemat. Kebijakan privasi diperbarui (lokasi tersimpan di HP, log galat anonim, mode tamu).
+  Apps Script v14 (aksi log_galat, lembar "Log Galat") dikirim ke pengguna – BELUM dipasang; sebelum dipasang galat menunggu di antrean HP.
+  Uji: 9 skenario login lulus; 31 alat HP+web lulus; mode tamu lokal & live lulus. Pengujian otomatis perlu localStorage fh_panduan_v1=1 agar panduan tidak menutupi layar.
