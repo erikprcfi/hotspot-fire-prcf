@@ -144,3 +144,10 @@ Satu bagian per sesi/percakapan; uji, commit ke `pantau-rimbak`, perbarui file i
   Catatan: indikator Plan Vivo "titik panas di dalam HD per tahun" memakai VIIRS S-NPP → tahun 2026 dan seterusnya perlu diputuskan pindah ke NOAA-20.
 - Jadwal GitHub sangat tertunda (FIRMS "tiap 3 jam" nyatanya 5–9 jam; analisis "tiap 5 menit" nyatanya 4–8 jam):
   update.yml + jadwal tambahan "47 1-23/3"; analisis.yml menunggu antrean ±25 menit lalu menjalankan ulang dirinya (workflow_dispatch, actions: write).
+
+## Catatan 14 Nov 2026 – pemeliharaan total & persiapan Play Store
+- analisis.yml: langkah "Jaga kesegaran data FIRMS" memicu update.yml bila pembaruan terakhir > 150 menit (jadwal GitHub tetap tertunda hingga 7–8 jam).
+- app.html: kolom S-NPP di panel peta hanya tampil bila periode masih berisi data S-NPP.
+- aplikasi-android/play-store/: ikon 512, grafis fitur 1024×500, 6 tangkapan layar 1080×1920, teks listing.
+- APK di unduh/ masih identitas lama org.prcfindonesia.firehotspot (berisi izin REQUEST_IGNORE_BATTERY_OPTIMIZATIONS & SCHEDULE_EXACT_ALARM).
+  Untuk Play Store: bangun AAB baru (org.prcfindonesia.pantaurimbak, versionCode ≥ 3) dengan kunci unggah pengguna.

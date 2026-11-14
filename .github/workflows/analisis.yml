@@ -63,6 +63,22 @@ jobs:
           FIRMS_CACHE: /tmp/firms_cache
           FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
         run: python scripts/analisis_antrean.py
+      - name: Jaga kesegaran data FIRMS
+        if: always() && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Jadwal update.yml sering tertunda >6 jam. Pekerja ini berjalan terus, jadi ia memicu pembaruan
+          # bila pembaruan terakhir sudah >150 menit dan tidak ada yang sedang berjalan/menunggu.
+          R=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/update.yml/runs?per_page=5" --jq '[.workflow_runs[]|{s:.status,t:.created_at}]') || exit 0
+          python3 - "$R" <<'PY' && gh workflow run update.yml --repo "$GITHUB_REPOSITORY" --ref main || true
+          import json,sys,datetime as d
+          r=json.loads(sys.argv[1])
+          if any(x['s']!='completed' for x in r): sys.exit(1)
+          t=max(d.datetime.fromisoformat(x['t'].replace('Z','+00:00')) for x in r) if r else None
+          age=(d.datetime.now(d.timezone.utc)-t).total_seconds()/60 if t else 999
+          print('umur pembaruan terakhir (menit):',round(age)); sys.exit(0 if age>150 else 1)
+          PY
       - name: Lanjutkan pemantauan antrean
         if: always() && github.ref == 'refs/heads/main'
         env:

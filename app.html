@@ -966,7 +966,9 @@ function renderMap(){
     L.marker([p.la,p.lo],{icon:L.divIcon({className:'',html,iconSize:[size+8,hh+8],iconAnchor:[(size+8)/2,(hh+8)*.62]}),keyboard:false}).on('click',()=>detail(p)).addTo(ptsL);
   }
   // summary panel
-  $('#spGrid').innerHTML=SENS.map(s=>{const A=F.filter(p=>sensOf(p)===s.id);const c={hi:0,md:0,lo:0};A.forEach(p=>c[confLvl(p)]++);const dim=SENF.includes(s.id)?'':'opacity:.35';
+  /* Suomi NPP berhenti 2 Nov 2026: kolom S-NPP hanya tampil bila periode ini masih berisi datanya */
+  const SENV=SENS.filter(s=>s.id!=='SNPP'||F.some(p=>sensOf(p)==='SNPP'));$('#spGrid').style.gridTemplateColumns=SENV.length<4?'1.35fr 1.05fr 1.05fr':'';
+  $('#spGrid').innerHTML=SENV.map(s=>{const A=F.filter(p=>sensOf(p)===s.id);const c={hi:0,md:0,lo:0};A.forEach(p=>c[confLvl(p)]++);const dim=SENF.includes(s.id)?'':'opacity:.35';
     return `<div class="sp-col" style="${dim}"><h4>${s.nm}<b>${A.length}</b></h4>${['hi','md','lo'].map(k=>`<div class="sp-row">${flameSVG(css(CCOL[k]),12)}<span>${c[k]}</span></div>`).join('')}</div>`;}).join('');
   $('#spPer').textContent=`NASA · ${perTxt()} ▾`;
   // latest card
