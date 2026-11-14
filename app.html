@@ -544,7 +544,7 @@ body.is-off .offline{display:block}
 .clampx-t{display:inline-flex;align-items:center;gap:4px;margin:2px 0 6px;padding:0;border:0;background:none;color:var(--brand-3,#1E7A58);font:700 11.5px var(--f);cursor:pointer}
 html.web [data-noweb]{display:none!important}
 img[src*="effis.emergency"]{width:auto!important;max-width:170px;height:auto!important;display:block;margin:6px auto 0!important;border-radius:6px}   /* legenda FWI GWIS berukuran kecil – jangan diperbesar */
-body:not(.pr-umum) .umum-only{display:none!important}body.pr-umum #fabList,body.pr-umum #fabSat,body.pr-umum #fabFocus,body.pr-umum #rpForm,body.pr-umum #topcards,body.pr-umum #sumpanel,body.pr-umum #eye,body.pr-umum .fc-mode .seg2,body.pr-umum [data-sec="unduh"],body.pr-umum [data-sec="peringatan"]{display:none!important}   /* mode umum / wilayah SHP: tanpa data Hutan Desa dampingan */
+body:not(.pr-umum) .umum-only{display:none!important}body.pr-umum #fabList,body.pr-umum #fabSat,body.pr-umum #fabFocus,body.pr-umum #rpForm,body.pr-umum #topcards,body.pr-umum #sumpanel,body.pr-umum #eye,body.pr-umum .fc-mode .seg2,body.pr-umum [data-sec="unduh"]{display:none!important}   /* mode umum / wilayah SHP: tanpa data Hutan Desa dampingan */
 .hx-t.hx-lock{opacity:.5;filter:grayscale(.6)}.hx-t.hx-lock::after{content:'🔒';position:absolute;top:8px;right:9px;font-size:13px}.hx-t{position:relative}
 /* Pantau Rimbak · website: semua kelompok alat terbuka sebagai kisi (tidak dilipat seperti di HP) */
 html.web .hx-acc{grid-template-rows:1fr!important}html.web .hx-acc>.hx-grid{overflow:visible!important;padding:2px 2px 6px!important}
@@ -552,6 +552,7 @@ html.web .hx-sec{margin-top:28px}html.web .hx-sec .hx-h{min-height:64px;margin-b
 html.web .hx-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))!important;gap:14px!important}
 html.web .ab-t small{letter-spacing:.02em}
 </style>
+<script src="assets/pelengkap.js?v=1"></script>
 </head>
 <body>
 
@@ -697,8 +698,8 @@ html.web .ab-t small{letter-spacing:.02em}
 <!-- ================= INFO ================= -->
 <section class="view" id="v-info" data-title="Profil" data-sub="Akun &amp; pengaturan">
   <div class="pad">
-    <div data-sec="pengaturan"><button class="group tap" id="pfCard" style="display:flex;gap:14px;align-items:center;padding:14px;width:100%;text-align:left;margin-bottom:6px"></button></div>
-    <div data-sec="peringatan"><div class="group" id="prBox"></div></div>
+    <div data-sec="pengaturan"><button class="group tap" id="pfCard" style="display:flex;gap:14px;align-items:center;padding:14px;width:100%;text-align:left;margin-bottom:6px"></button><div class="group" id="pfTamu" style="display:none;padding:16px;margin-bottom:10px"></div><div class="group" id="pfApp" style="padding:4px 14px;margin:8px 0 6px"></div></div>
+    <div data-sec="peringatan"><div class="group" id="lsBox" style="margin-bottom:12px"></div><div class="group" id="prBox"></div></div>
     <div data-sec="unduh">
     <div class="h2" id="dlHead" style="margin-top:4px">Desa Nanga Lauk &amp; radius 25 km</div>
     <div class="group" style="padding:14px" id="dlx"></div>
@@ -764,10 +765,10 @@ html.web .ab-t small{letter-spacing:.02em}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="assets/bahasa.js?v=62"></script>
-<script src="assets/kamus_en.js?v=62"></script>
+<script src="assets/kamus_en.js?v=62b"></script>
 <script src="assets/nasa_layers.js?v=63"></script>
 <script src="assets/citra.js?v=62"></script>
-<script src="assets/akun.js?v=62"></script>
+<script src="assets/akun.js?v=63"></script>
 <script src="assets/ikon3d.js?v=1"></script>
 <!-- assets/web.js (masuk khusus website) tidak dipakai lagi: website memakai layar masuk yang sama dengan aplikasi HP (assets/akun.js) -->
 <script>
@@ -842,7 +843,7 @@ function go(v,push=true){
   if(v==='dash')hubRender();
   try{sideMark();}catch(e){}
   if(v==='data')loadHist();
-  if(v==='info'){const sec=INFOSEC||'pengaturan';INFOSEC=null;$$('#v-info [data-sec]').forEach(e=>e.hidden=e.dataset.sec!==sec);setBar(SECT[sec][0],SECT[sec][1],false);el.scrollTop=0;
+  if(v==='info'){try{appUI();}catch(e){}const sec=INFOSEC||'pengaturan';INFOSEC=null;$$('#v-info [data-sec]').forEach(e=>e.hidden=e.dataset.sec!==sec);setBar(SECT[sec][0],SECT[sec][1],false);el.scrollTop=0;
     if(sec!=='pengaturan')$$('#tabbar button').forEach(b=>b.setAttribute('aria-selected','false'));if(sec==='peringatan')prMount();}
   if(v==='ai'&&window.FHBara&&!$('#aiBox').firstChild)FHBara.mount($('#aiBox'),{dock:true,akun:()=>{const u=window.FHAkun&&FHAkun.user();return u&&u.token?{id:u.id,token:u.token,nama:u.nama}:null;},data:baraData});
   if(push){const h=v==='dash'?location.pathname+location.search:'#'+v;
@@ -854,9 +855,20 @@ let SKIP=0;
 window.addEventListener('popstate',()=>{if(SKIP>0){SKIP--;return;}const c=BACK.pop();if(c)c();else if(CUR!=='dash')go('dash',false);});
 function back(){if(BACK.length)history.back();}
 $('#abBack').onclick=back;
-function meUI(){if(!window.FHAkun)return;const u=FHAkun.user();$('#abMe').innerHTML=FHAkun.avatar(34);$('#abMe').style.display=u?'':'none';
+function tamuUI(tm){const el=$('#pfTamu');if(!el)return;el.style.display=tm?'':'none';appUI();if(!tm)return;const E=window.FHLang&&FHLang.get()==='en';
+  el.innerHTML=`<div style="display:flex;gap:12px;align-items:flex-start"><span style="font-size:26px">👤</span><span style="flex:1"><b style="display:block;font-size:15.5px">${E?'Guest mode':'Mode tamu'}</b><small class="muted" style="display:block;line-height:1.5;margin-top:2px">${E?'Hotspots, maps, forecasts and air quality are open without an account. Sign in to use Bara Api, upload an SHP area, open Village Forest data with an ID code, or record patrols.':'Titik panas, peta, prakiraan, dan kualitas udara terbuka tanpa akun. Masuk untuk memakai Bara Api, mengunggah wilayah SHP, membuka data Hutan Desa dengan kode ID, atau mencatat patroli.'}</small></span></div><button class="btn pri full tap" id="pfMasuk" style="width:100%;margin-top:12px">${E?'Sign in / Register':'Masuk / Daftar akun'}</button>`;
+  $('#pfMasuk').onclick=()=>FHAkun.layarMasuk();}
+function appUI(){const el=$('#pfApp');if(!el)return;const E=window.FHLang&&FHLang.get()==='en',H=window.FHHemat,v=H?H.setelan():'auto';
+  const row=(ic,t,sub,right,id)=>`<div class="tap" ${id?`id="${id}"`:''} style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);cursor:${id?'pointer':'default'}"><span style="font-size:20px;width:26px;text-align:center">${ic}</span><span style="flex:1;min-width:0"><b style="display:block;font-size:14px">${t}</b><small class="muted" style="display:block;font-size:12px;line-height:1.4">${sub}</small></span>${right||''}</div>`;
+  el.innerHTML=`<div class="h2" style="margin:10px 0 2px">${E?'App settings':'Pengaturan aplikasi'}</div>`+
+   row('📶',E?'Data saver':'Mode hemat data',(E?'Lighter maps & fewer images on weak signal. ':'Peta lebih ringan & lebih sedikit gambar saat sinyal lemah. ')+(H&&H.aktif()?(E?'Currently ON':'Sedang AKTIF'):(E?'Currently off':'Sedang mati')),`<select id="pfHemat" style="padding:7px 8px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:inherit;font:600 13px var(--f)"><option value="auto"${v==='auto'?' selected':''}>${E?'Automatic':'Otomatis'}</option><option value="on"${v==='on'?' selected':''}>${E?'On':'Aktif'}</option><option value="off"${v==='off'?' selected':''}>${E?'Off':'Mati'}</option></select>`)+
+   row('📍',E?'Watch my locations':'Pantau lokasi saya',E?'Alerts for new hotspots near up to 3 saved locations':'Peringatan titik panas baru di sekitar hingga 3 lokasi tersimpan','<span class="muted">›</span>','pfLok')+
+   row('📘',E?'Quick guide':'Panduan singkat',E?'What a hotspot means and how to read the map':'Arti titik panas dan cara membaca peta','<span class="muted">›</span>','pfPanduan');
+  const sel=$('#pfHemat');if(sel)sel.onchange=()=>{H.set(sel.value);appUI();};
+  $('#pfLok').onclick=()=>hubGo('peringatan');$('#pfPanduan').onclick=()=>window.FHPanduanAwal&&FHPanduanAwal.buka();}
+function meUI(){if(!window.FHAkun)return;const u=FHAkun.user(),tm=FHAkun.tamu&&FHAkun.tamu();$('#abMe').innerHTML=tm?'<span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;margin-right:8px;border-radius:99px;background:rgba(255,255,255,.18);color:#fff;font:700 12.5px var(--f,system-ui)">'+(window.FHLang&&FHLang.get()==='en'?'Sign in':'Masuk')+'</span>':FHAkun.avatar(34);$('#abMe').style.display=(u||tm)?'':'none';$('#abMe').dataset.tamu=tm?'1':'';tamuUI(tm);
   $('#pfCard').style.display=u?'flex':'none';if(u)$('#pfCard').innerHTML=`${FHAkun.avatar(56)}<span style="flex:1;min-width:0"><b style="display:block;font-size:16px">${esc(u.nama)}</b><small class="muted" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(u.email)}</small><small style="color:var(--brand-3);font-weight:700">Lihat &amp; ubah profil</small></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="color:var(--faint)"><path d="M9 5l7 7-7 7"/></svg>`;}
-if(window.FHAkun){FHAkun.init({pushLayer,back,lokasi:()=>SITE?SITE.hd_nama:''});FHAkun.onChange(meUI);FHAkun.onChange(()=>{try{sapa();}catch(e){}});FHAkun.onChange(()=>{try{if(CUR==='dash')hubRender();}catch(e){}});FHAkun.onChange(()=>{try{sideRender();}catch(e){}});window.FHSiteNama=()=>{try{if(isUmum())return '';}catch(e){}return SITE?SITE.hd_nama:'';};window.FHSiteObj=()=>SITE;window.FHApp={map:()=>MAP,api:()=>NASA,go:(...x)=>go(...x),hubGo:k=>hubGo(k),lihat:(la,lo,z)=>MAP&&MAP.setView([la,lo],z||9,{animate:false}),nasa:id=>NASA&&NASA.set(id),closeAll:()=>closeAll(),detail:p=>detail(p)};window.FHSites=()=>SITES;window.FHSiteIdx=()=>SI;window.FHAll=()=>ALL;window.openPage=openPage;window.openSheet=(...x)=>openSheet(...x);window.toastMsg=(...a)=>toastMsg(...a);$('#abMe').onclick=()=>FHAkun.openProfile();$('#pfCard').onclick=()=>FHAkun.openProfile();}
+if(window.FHAkun){FHAkun.init({pushLayer,back,lokasi:()=>SITE?SITE.hd_nama:''});FHAkun.onChange(meUI);FHAkun.onChange(()=>{try{sapa();}catch(e){}});FHAkun.onChange(()=>{try{if(CUR==='dash')hubRender();}catch(e){}});FHAkun.onChange(()=>{try{sideRender();}catch(e){}});window.FHSiteNama=()=>{try{if(isUmum())return '';}catch(e){}return SITE?SITE.hd_nama:'';};window.FHSiteObj=()=>SITE;window.FHApp={map:()=>MAP,api:()=>NASA,go:(...x)=>go(...x),hubGo:k=>hubGo(k),lihat:(la,lo,z)=>MAP&&MAP.setView([la,lo],z||9,{animate:false}),nasa:id=>NASA&&NASA.set(id),closeAll:()=>closeAll(),detail:p=>detail(p)};window.FHSites=()=>SITES;window.FHSiteIdx=()=>SI;window.FHAll=()=>ALL;window.openPage=openPage;window.openSheet=(...x)=>openSheet(...x);window.toastMsg=(...a)=>toastMsg(...a);$('#abMe').onclick=()=>{if(FHAkun.tamu&&FHAkun.tamu())return FHAkun.layarMasuk();FHAkun.openProfile();};$('#pfCard').onclick=()=>FHAkun.openProfile();}
 function closeAll(){const n=BACK.length;if(!n)return;while(BACK.length)BACK.pop()();SKIP+=1;history.go(-n);}   // history.go(-n) memicu SATU popstate
 
 /* sheet */
@@ -886,7 +898,7 @@ let IMGT=0;function imgInfo(){clearTimeout(IMGT);IMGT=setTimeout(async()=>{const
 /* ---------- akses (kode ID): admin = semua HD · kode HD = satu HD · tanpa kode = mode umum · kode wilayah = SHP pengguna ---------- */
 let ALLOW=null,PR_MODE='',SITEL=null,WILL=null;
 const NAS_OK=['ringkas','panduan','sebaran','hujan','udara','satelit','cuaca','hutan','tutupan','karbon','kejadian','grafik','bekas','lahankritis','laporan','unduh'];   // alat versi seluruh Indonesia (assets/nasional.js)
-const UMUM_OK=['peta','p3d','angin','kompas','satelit','ai','lokasi','analisis','sistem','pilih','wilayah','kode'];
+const UMUM_OK=['peta','p3d','angin','kompas','satelit','ai','lokasi','analisis','sistem','pilih','wilayah','kode','peringatan'];
 const visSites=()=>SITES.filter(x=>!ALLOW||ALLOW.has(x.id));
 const isUmum=()=>!!ALLOW&&!ALLOW.size;
 function drawSites(){if(!SITEL)return;SITEL.clearLayers();if(!ALLOW)return;
@@ -918,7 +930,7 @@ function umumInfo(){const A=window.FHAkun&&FHAkun.akses?FHAkun.akses():{mode:'um
 window.FHAkses=()=>({mode:PR_MODE,allow:ALLOW?[...ALLOW]:null,site:SITE&&SITE.id,sub:$('#abSub').textContent,will:!!WILL,umum:isUmum()});
 function masukKode(){if(window.FHAkun&&FHAkun.keluarUntukKode)FHAkun.keluarUntukKode();}
 function initMap(){
-  MAP=L.map('map',{zoomControl:false,preferCanvas:true,attributionControl:true,zoomSnap:.25});window.FHMAPA=MAP;
+  MAP=L.map('map',{zoomControl:false,preferCanvas:true,attributionControl:true,zoomSnap:.25});window.FHMAPA=MAP;try{window.FHHemat&&FHHemat.peta(MAP);}catch(e){}
   {const C=FHCitra.leaflet(L);base.terbaik=C.terbaik;base.s2026=C.s2026;base.eox=C.eox;base.esri=C.esri;base.s2026.on('tileerror',()=>{if(MAP.hasLayer(base.s2026)&&!base._fb){base._fb=1;}});}
   base.osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,maxNativeZoom:18,attribution:'© OpenStreetMap',updateWhenZooming:false,keepBuffer:3});
   base.topo=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,maxNativeZoom:18,attribution:'Esri',updateWhenZooming:false,keepBuffer:3});
@@ -1109,7 +1121,7 @@ $('#fabLayer').onclick=()=>{const cur=store.get('base','terbaik');
 
 /* ---------- lokasi Hutan Desa ---------- */
 const AN_CACHE={};
-function prMount(){if(!window.FHPeringatan||!$('#prBox'))return;FHPeringatan.mount($('#prBox'),{akun:()=>{const u=window.FHAkun&&FHAkun.user();return u&&u.token?{id:u.id,token:u.token,email:u.email}:null;},situs:SITES.map(x=>({id:x.id,nama:x.hd_nama})),aktif:SITE?SITE.id:null});}
+function prMount(){if(window.FHLokasiSaya&&$('#lsBox'))FHLokasiSaya.mount($('#lsBox'));{let u=false;try{u=isUmum();}catch(e){}if($('#prBox'))$('#prBox').style.display=u?'none':'';if(u)return;}if(!window.FHPeringatan||!$('#prBox'))return;FHPeringatan.mount($('#prBox'),{akun:()=>{const u=window.FHAkun&&FHAkun.user();return u&&u.token?{id:u.id,token:u.token,email:u.email}:null;},situs:SITES.map(x=>({id:x.id,nama:x.hd_nama})),aktif:SITE?SITE.id:null});}
 async function baraData(){   // seluruh data aplikasi yang relevan → konteks Bara Api (+ ringkasan untuk sapaan)
   const L=[],now=Date.now(),wib=t=>new Date(t).toLocaleString('id-ID',{timeZone:'Asia/Jakarta',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})+' WIB',f1=x=>x==null||isNaN(x)?'-':(+x).toLocaleString('id-ID',{maximumFractionDigits:1});
   const KL=(FC&&FC.kelas)||['Rendah','Sedang','Tinggi','Ekstrem'];
@@ -1312,7 +1324,7 @@ async function load(first){
     STATUS=s; if(first)spMsg(`${N(s.jumlah_catatan)} deteksi tersinkron ✓`);
     renderMap(); statusCard(); liveChip(); sysPanel(); downloads(); dataMocks(); renderFC();
   }catch(e){console.error(e);if(first)spMsg('Tidak ada sinyal — memakai data tersimpan');liveChip();if(!G){$('#stTxt').textContent='Data belum tersedia. Sambungkan internet lalu ketuk ⟳.';}}
-  if(first){const deep=location.hash.length>1||new URLSearchParams(location.search).get('lokasi');const go0=()=>{if(isUmum()){}else if(window.FH_WEB){if(visSites().length>1&&!deep&&!store.get('site',null))chooser(false);}else if(visSites().length>1&&!deep){if(window.FHBeranda)FHBeranda.show({sapa:()=>{const n=window.FHAkun&&FHAkun.firstName&&FHAkun.firstName();return greet()+(n?', '+n+' 🌿':'');},pesan:semangat,hotspots:()=>ALL,ringkas:()=>{const S=SITES.map((x,k)=>siteStatus(k));return {n:SITES.length,aman:S.filter(o=>o.lvl==='ok').length,dekat:S.reduce((a,o)=>a+o.r25,0)};},onNext:()=>chooser(false)});else chooser(false);}};if(window.FHAkun)FHAkun.gate(()=>{aksesApply();go0();});else{aksesApply();go0();}hideSplash();}
+  if(first){const deep=location.hash.length>1||new URLSearchParams(location.search).get('lokasi');const go0=()=>{if(isUmum()){}else if(window.FH_WEB){if(visSites().length>1&&!deep&&!store.get('site',null))chooser(false);}else if(visSites().length>1&&!deep){if(window.FHBeranda)FHBeranda.show({sapa:()=>{const n=window.FHAkun&&FHAkun.firstName&&FHAkun.firstName();return greet()+(n?', '+n+' 🌿':'');},pesan:semangat,hotspots:()=>ALL,ringkas:()=>{const S=SITES.map((x,k)=>siteStatus(k));return {n:SITES.length,aman:S.filter(o=>o.lvl==='ok').length,dekat:S.reduce((a,o)=>a+o.r25,0)};},onNext:()=>chooser(false)});else chooser(false);}};if(window.FHAkun)FHAkun.gate(()=>{aksesApply();go0();setTimeout(()=>{try{window.FHPanduanAwal&&FHPanduanAwal.mungkin();}catch(e){}},900);});else{aksesApply();go0();}hideSplash();}
 }
 $('#abRefresh').onclick=async e=>{const b=e.currentTarget;b.style.transition='transform .8s';b.style.transform='rotate(360deg)';await load();setTimeout(()=>{b.style.transition='none';b.style.transform='';},850);};
 
@@ -1796,7 +1808,7 @@ if('serviceWorker' in navigator){const HAD=!!navigator.serviceWorker.controller;
 <script src="assets/udara.js?v=62"></script>
 <script src="assets/musiman.js?v=62"></script>
 <script src="assets/wilayah.js?v=62"></script>
-<script src="assets/meteogram.js?v=63"></script>
+<script src="assets/meteogram.js?v=64"></script>
 <script src="assets/cari_lokasi.js?v=62"></script>
 <script src="assets/lintasan.js?v=62"></script>
 <script src="assets/angin.js?v=62"></script>
@@ -1804,6 +1816,7 @@ if('serviceWorker' in navigator){const HAD=!!navigator.serviceWorker.controller;
 <script src="assets/titik_id.js?v=62"></script>
 <script src="assets/web_peta.js?v=1"></script>
 <script src="assets/nasional.js?v=1"></script>
+<script src="assets/lokasi_saya.js?v=1"></script>
 <script src="assets/beranda.js?v=62"></script>
 <script>window.FH_VERIF_URL=window.FH_VERIF_URL||'https://script.google.com/macros/s/AKfycbwQz_--p7liI6ig1X6jsDCbdpElAJahItVrnVQqxkqBzLJLzvSJojk8eUSEHWzJgY-PoQ/exec';/* URL Apps Script penerima laporan verifikasi lapangan */</script>
 <script src="assets/verifikasi.js?v=62"></script>

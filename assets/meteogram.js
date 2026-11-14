@@ -79,8 +79,14 @@ function css() {
   .mg-note{font-size:11.5px;color:var(--muted,#667);line-height:1.45;margin:8px 0 0}`;
   document.head.appendChild(st);
 }
-async function mount(el, lat, lon) {
-  css(); el.innerHTML = '<div class="mg-skel"></div>';
+async function mount(el, lat, lon, paksa) {
+  css();
+  if (!paksa && window.FHHemat && FHHemat.aktif() && !cache[lat.toFixed(2) + ',' + lon.toFixed(2)]) {   // mode hemat data: data ensemble ±1–2 MB baru dimuat bila diminta
+    const E = window.FHLang && FHLang.get() === 'en';
+    el.innerHTML = `<div class="mg" style="text-align:center;padding:18px"><div style="font-size:13px;color:var(--muted,#667);margin-bottom:10px">${E ? 'Data saver is on: the 15-day ensemble forecast (±1–2 MB) is not loaded automatically.' : 'Mode hemat data aktif: prakiraan ensemble 15 hari (±1–2 MB) tidak dimuat otomatis.'}</div><button class="mg-load" style="padding:10px 16px;border-radius:12px;border:0;background:#1E7A58;color:#fff;font:700 13px var(--f,system-ui);cursor:pointer">${E ? 'Load forecast' : 'Muat prakiraan'}</button></div>`;
+    el.querySelector('.mg-load').onclick = () => mount(el, lat, lon, true); return;
+  }
+  el.innerHTML = '<div class="mg-skel"></div>';
   try {
     const D = daily(await load(lat, lon)); if (!D.length) throw new Error('data kosong');
     const d0 = D[0], wk = D.slice(0, 7), rainy = wk.filter(x => x.p1 >= 50).length, wet = wk.reduce((a, x) => a + x.pr.p50, 0);
