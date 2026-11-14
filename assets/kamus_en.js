@@ -4,6 +4,10 @@
  */
 FHLang.tambah({ terapkan: false,
 frasa: {
+"Lanjut tanpa akun →": "Continue without an account →",
+"Lihat titik panas tanpa akun →": "View hotspots without an account →",
+"Titik panas, peta, prakiraan & kualitas udara terbuka tanpa akun. Bara Api, unggah SHP, kode ID & patroli perlu akun.": "Hotspots, maps, forecasts & air quality are open without an account. Bara Api, SHP upload, ID codes & patrols need an account.",
+"Mode tamu · fitur umum terbuka. Masuk kapan saja dari Profil.": "Guest mode · public features are open. Sign in any time from Profile.",
 "Menghubungkan ke NASA FIRMS…": "Connecting to NASA FIRMS…",
 "Offline · menampilkan data terakhir": "Offline · showing latest data",
 "Curah hujan ERA5 & risiko": "ERA5 rainfall & risk",

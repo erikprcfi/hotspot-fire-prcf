@@ -20,7 +20,7 @@ async function api(body, ms = 30000) { const ctl = new AbortController(), tm = s
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const BLN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 const tglID = s => { if (!s) return ''; const [y, m, d] = s.split('-').map(Number); return `${d} ${BLN[m - 1]} ${y}`; };
-let U = null, OPT = {}, SESI = false; const subs = [];
+let U = null, OPT = {}, SESI = false, TAMU = false; const subs = [];
 
 /* ---------- penyimpanan ---------- */
 function db() { return new Promise((ok, no) => { const r = indexedDB.open(DBN, 1); r.onupgradeneeded = () => r.result.createObjectStore(ST); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); }); }
@@ -311,7 +311,7 @@ function registerScreen(onDone, notice) {
       if (ENDPOINT) { try { await api({ aksi: 'sandi_set', id, token, pw: d.querySelector('#ak_pw').value }, 30000); } catch (e) { } }
       AKSES = { mode: 'umum' }; await put('akses', AKSES).catch(() => { }); try { sessionStorage.setItem('pr_sesi', '1'); } catch (e) { }
       await put('akun', U); await put('sesi', { masuk: true, t: Date.now() }); try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) { }
-      SESI = true; d.remove(); notify(); toast(`Selamat datang, ${U.nama.split(' ')[0]}!`); onDone();
+      SESI = true; TAMU = false; try { localStorage.removeItem('pr_tamu'); } catch (e) { } d.remove(); notify(); toast(`Selamat datang, ${U.nama.split(' ')[0]}!`); onDone();
     } catch (e) { console.error(e); b.disabled = false; b.textContent = 'Daftar & masuk'; toast('Gagal mendaftar: periksa internet lalu coba lagi'); }
   };
 }
@@ -362,12 +362,14 @@ function loginScreen(onDone, notice) {   // layar pertama saat aplikasi dibuka: 
   NEXT = onDone; document.querySelectorAll('.ak').forEach(x => x.remove());
   const d = screen(hero('Masuk ke Pantau Rimbak', 'Monitoring · Reporting · Verification Hutan Desa', 'tall') +
     `<div class="ak-card">${notice ? `<div class="ak-note" style="background:#FFF4E5;margin-bottom:12px">${svg('shield', 18)}<span>${esc(notice)}</span></div>` : ''}
+     <button class="ak-btn alt" id="akTamu0" style="margin:0 0 14px">Lihat titik panas tanpa akun →</button>
      <div class="ak-f">${field('email', 'Email', 'mail', 'email', U ? U.email : '', 'autocomplete="username" inputmode="email" autocapitalize="off"')}${field('pw', 'Kata sandi', 'lock', 'password', '', 'autocomplete="current-password"')}
      ${field('kid', 'Kode ID (opsional)', 'shield', 'text', '', 'autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Kode kawasan / proyek"')}
      <p class="mut" style="font-size:12.5px;margin:-2px 2px 4px">Kode ID membuka data Hutan Desa atau wilayah yang Anda daftarkan. Kosongkan bila tidak punya – aplikasi tampil dalam mode umum.</p>
      ${U && (U.lokasiSetuju || U.lokasiDitanya) ? '' : lokChk()}<button class="ak-btn" id="akIn">Masuk</button></div>
      <button class="ak-link" id="akLupa">Lupa kata sandi?</button>
-     <div style="border-top:1px solid #E3E9E5;margin:14px 0 12px"></div><p class="mut" style="text-align:center;margin:0 0 8px">Belum punya akun? Daftar sekali saja.</p><button class="ak-btn alt" id="akDf">Daftar akun baru</button></div>`); bindLok(d); bindEyes(d);
+     <div style="border-top:1px solid #E3E9E5;margin:14px 0 12px"></div><p class="mut" style="text-align:center;margin:0 0 8px">Belum punya akun? Daftar sekali saja.</p><button class="ak-btn alt" id="akDf">Daftar akun baru</button>
+     <button class="ak-link" id="akTamu" style="display:block;margin:14px auto 2px;font-weight:700">Lanjut tanpa akun →</button><p class="mut" style="text-align:center;font-size:12px;margin:0">Titik panas, peta, prakiraan &amp; kualitas udara terbuka tanpa akun. Bara Api, unggah SHP, kode ID &amp; patroli perlu akun.</p></div>`); bindLok(d); bindEyes(d);
   const lokOk = () => true;   // berbagi lokasi opsional (kebijakan Google Play: tidak boleh menjadi syarat memakai aplikasi)
   const val = () => ({ em: d.querySelector('#ak_email').value.trim().toLowerCase(), pw: d.querySelector('#ak_pw').value, kid: d.querySelector('#ak_kid').value });
   const go = async () => {
@@ -392,6 +394,8 @@ function loginScreen(onDone, notice) {   // layar pertama saat aplikasi dibuka: 
   };
   d.querySelector('#akIn').onclick = go; ['#ak_pw', '#ak_kid'].forEach(q => d.querySelector(q).onkeydown = e => { if (e.key === 'Enter') go(); });
   d.querySelector('#akDf').onclick = () => { d.remove(); registerScreen(onDone); };
+  const tamuGo = () => { TAMU = true; AKSES = { mode: 'umum' }; try { localStorage.setItem('pr_tamu', '1'); } catch (e) { } d.remove(); notify(); toast('Mode tamu · fitur umum terbuka. Masuk kapan saja dari Profil.'); onDone(); };
+  d.querySelector('#akTamu').onclick = tamuGo; d.querySelector('#akTamu0').onclick = tamuGo;
   d.querySelector('#akLupa').onclick = () => { const { em, kid } = val(); if (V.email(em)) { setErr(d, 'email', 'Isi email akun Anda dulu.'); return; } if (!lokOk()) return;
     resetPwSheet(em, async () => { await selesaiMasuk(d, kid, onDone); }); };
 }
@@ -494,8 +498,10 @@ async function gate(next) {   // setiap aplikasi dibuka: layar masuk (email, kat
   if (!ENDPOINT && !UJI) return next();
   let sesi = false; try { sesi = sessionStorage.getItem('pr_sesi') === '1'; } catch (e) { }
   if (U && sesi) { AKSES = (await get('akses').catch(() => null)) || { mode: 'umum' }; SESI = true; next(); notify(); flush(true); return; }
+  let tamu = false; try { tamu = localStorage.getItem('pr_tamu') === '1'; } catch (e) { }
+  if (tamu) { TAMU = true; AKSES = { mode: 'umum' }; next(); notify(); return; }   // mode tamu: tanpa akun, fitur umum saja
   loginScreen(next);
 }
 function avatar(px = 34) { return `<span class="ak-mini" style="width:${px}px;height:${px}px">${U ? avatarInner(U) : svg('user', Math.round(px * .55))}</span>`; }
-window.FHAkun = { init: o => { OPT = o || {}; css(); }, gate, akses: () => AKSES, daftarKode, keluarUntukKode: async () => { try { sessionStorage.removeItem('pr_sesi'); } catch (e) { } SESI = false; notify(); loginScreen(() => location.reload(), 'Masukkan email, kata sandi dan kode ID kawasan/wilayah Anda.'); }, kodeHD: async k => HDK[await sha('pantau-rimbak|' + kodeN(k))] || null, openProfile, avatar, user: () => U, masuk: () => SESI && !!U, api: (b, ms) => api(b, ms), endpoint: () => ENDPOINT, perangkat: () => dev(), onChange: f => subs.push(f), firstName: () => U ? U.nama.split(' ')[0] : '' };
+window.FHAkun = { init: o => { OPT = o || {}; css(); }, gate, akses: () => AKSES, tamu: () => TAMU && !SESI, layarMasuk: () => loginScreen(() => location.reload()), daftarKode, keluarUntukKode: async () => { try { sessionStorage.removeItem('pr_sesi'); } catch (e) { } SESI = false; notify(); loginScreen(() => location.reload(), 'Masukkan email, kata sandi dan kode ID kawasan/wilayah Anda.'); }, kodeHD: async k => HDK[await sha('pantau-rimbak|' + kodeN(k))] || null, openProfile, avatar, user: () => U, masuk: () => SESI && !!U, api: (b, ms) => api(b, ms), endpoint: () => ENDPOINT, perangkat: () => dev(), onChange: f => subs.push(f), firstName: () => U ? U.nama.split(' ')[0] : '' };
 })();

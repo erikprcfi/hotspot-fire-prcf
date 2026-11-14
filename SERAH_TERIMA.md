@@ -151,3 +151,10 @@ Satu bagian per sesi/percakapan; uji, commit ke `pantau-rimbak`, perbarui file i
 - aplikasi-android/play-store/: ikon 512, grafis fitur 1024×500, 6 tangkapan layar 1080×1920, teks listing.
 - APK di unduh/ masih identitas lama org.prcfindonesia.firehotspot (berisi izin REQUEST_IGNORE_BATTERY_OPTIMIZATIONS & SCHEDULE_EXACT_ALARM).
   Untuk Play Store: bangun AAB baru (org.prcfindonesia.pantaurimbak, versionCode ≥ 3) dengan kunci unggah pengguna.
+
+## RENCANA 14 Nov malam (cabang fitur-tamu-notif) – disetujui pengguna
+1 Mode tamu: semua fitur umum tanpa akun KECUALI Bara Api, unggah SHP, kode ID HD, patroli (tetap wajib akun).
+2 Notifikasi titik panas lokasi tersimpan (tahap 1, tanpa Firebase): lokal saat aplikasi dibuka/berjalan.
+3 Log error → Apps Script v14 (aksi log_error ke Sheet); antre di HP sampai server siap.
+8 Panduan singkat pertama buka (3–4 layar). 9 Mode hemat data (otomatis saat sinyal lemah + saklar di Profil).
+Live ke main bila semua uji lulus.

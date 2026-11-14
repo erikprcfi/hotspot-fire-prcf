@@ -49,7 +49,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
   <div class="lg"><img src="assets/logo_pr.svg" alt=""><div><b>Pantau Rimbak</b><small>Yayasan PRCF Indonesia</small></div></div>
   <div class="lang" role="group" aria-label="Bahasa · Language"><button type="button" data-set="id">ID</button><button type="button" data-set="en">EN</button></div>
   <h1><span data-l="id">Kebijakan Privasi</span><span data-l="en">Privacy Policy</span></h1>
-  <p><span data-l="id">Berlaku sejak 27 Oktober 2026, diperbarui 6 November 2026 · Disusun berdasarkan Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi (UU PDP).</span><span data-l="en">Effective 27 October 2026, updated 6 November 2026 · Prepared under Indonesian Law No. 27 of 2022 on Personal Data Protection.</span></p>
+  <p><span data-l="id">Berlaku sejak 27 Oktober 2026, diperbarui 15 November 2026 · Disusun berdasarkan Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi (UU PDP).</span><span data-l="en">Effective 27 October 2026, updated 15 November 2026 · Prepared under Indonesian Law No. 27 of 2022 on Personal Data Protection.</span></p>
   <a class="back" id="kembali" href="index.html">‹ <span data-l="id">Kembali</span><span data-l="en">Back</span></a>
 <script>(function(){var k=document.getElementById('kembali'),r=document.referrer||'';try{if(r&&new URL(r).host===location.host){k.href=r;k.onclick=function(e){if(history.length>1){e.preventDefault();history.back();}};}}catch(e){}})();</script>
 </div></header>
@@ -76,7 +76,10 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 <tr><td>Bara Api (asisten AI)</td><td>Pertanyaan dan jawaban obrolan. Foto satwa/tumbuhan yang Anda kirim hanya diteruskan ke Google Gemini untuk dianalisis dan <b>tidak disimpan</b> PRCF</td><td>Saat Anda memakai Bara Api</td></tr>
 <tr><td>Analisis lahan</td><td>File batas area (SHP/zip) yang Anda unggah beserta hasil analisisnya; kode ID wilayah yang Anda buat disimpan sebagai sidik satu arah (bukan teks asli). Hanya terbuka untuk akun Anda.</td><td>Saat Anda mengunggah</td></tr>
 <tr><td>Peringatan dini</td><td>Hutan Desa yang Anda pilih, alamat langganan notifikasi HP, pilihan email peringatan</td><td>Saat Anda berlangganan</td></tr>
+<tr><td>Lokasi tersimpan (Pantau lokasi saya)</td><td>Hingga 3 koordinat dan radius yang Anda simpan. <b>Hanya disimpan di perangkat Anda</b> dan tidak dikirim ke PRCF; pemeriksaan titik panas dilakukan di perangkat</td><td>Saat Anda menyimpan lokasi</td></tr>
+<tr><td>Catatan galat (anonim)</td><td>Pesan galat teknis aplikasi, nama berkas/halaman, versi aplikasi, mode (tamu/umum/Hutan Desa), jenis sistem operasi & peramban, lebar layar. <b>Tanpa</b> nama, email, lokasi, atau isi data Anda</td><td>Saat terjadi galat, untuk memperbaiki aplikasi</td></tr>
 </table></div>
+<p class="note"><b>Mode tamu:</b> Anda dapat memakai fitur umum (titik panas, peta, prakiraan, kualitas udara) tanpa akun. Dalam mode tamu PRCF tidak menerima data pribadi apa pun; hanya catatan galat anonim di atas.</p>
 <p class="note"><b>Kata sandi tidak pernah disimpan dalam bentuk asli.</b> Kata sandi dikirim terenkripsi (HTTPS) ke server PRCF, lalu hanya disimpan sebagai sidik satu arah (HMAC-SHA-256 berulang dengan garam acak dan kunci rahasia server) agar Anda dapat masuk dari HP atau website mana pun. Di HP juga tersimpan sidik satu arah (PBKDF2-SHA-256).</p>
 <p>Pengguna aplikasi minimal berusia 17 tahun. Kami tidak dengan sengaja mengumpulkan data anak.</p>
 </section>
@@ -178,7 +181,10 @@ Admin aplikasi Pantau Rimbak: <a href="mailto:erik.prcfi@gmail.com">erik.prcfi@g
 <tr><td>Bara Api (AI assistant)</td><td>Chat questions and answers. Photos of wildlife/plants are only passed to Google Gemini for analysis and are <b>not stored</b> by PRCF</td><td>When you use Bara Api</td></tr>
 <tr><td>Land analysis</td><td>Boundary files (SHP/zip) you upload and their analysis results; the area ID code you create is stored as a one-way hash (not plain text). Only accessible to your account.</td><td>When you upload</td></tr>
 <tr><td>Early warning</td><td>Selected Village Forests, phone notification subscription, email alert preference</td><td>When you subscribe</td></tr>
+<tr><td>Saved locations (Watch my locations)</td><td>Up to 3 coordinates and radii you save. <b>Stored only on your device</b> and not sent to PRCF; hotspot checks run on the device</td><td>When you save a location</td></tr>
+<tr><td>Error logs (anonymous)</td><td>Technical error message, file/page name, app version, mode (guest/public/Village Forest), operating system & browser type, screen width. <b>No</b> name, email, location or your data</td><td>When an error occurs, to fix the app</td></tr>
 </table></div>
+<p class="note"><b>Guest mode:</b> you can use public features (hotspots, map, forecasts, air quality) without an account. In guest mode PRCF receives no personal data; only the anonymous error logs above.</p>
 <p class="note"><b>Your password is never stored in plain form.</b> It is sent encrypted (HTTPS) to the PRCF server and stored only as a one-way hash (iterated HMAC-SHA-256 with a random salt and a server secret) so you can sign in from any phone or website. The phone also keeps a one-way hash (PBKDF2-SHA-256).</p>
 <p>App users must be at least 17 years old. We do not knowingly collect children’s data.</p>
 </section>
