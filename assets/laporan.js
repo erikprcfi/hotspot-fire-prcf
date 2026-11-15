@@ -589,6 +589,7 @@ async function exportPDF(M, F, T) {
   H1('Rekapitulasi'); CAP('Tabel 1. Deteksi per zona dan sensor'); TAB(T.zona, 8);
   CAP(`Tabel 2. Deteksi dan curah hujan per ${M.unit}`); TAB(T.periode, 7.5);
   if (T.petak.length > 1) { CAP('Tabel 3. Petak patroli dengan titik panas'); TAB(T.petak, 7.5, { columnStyles: { 2: { cellWidth: 120 } } }); }
+  if (T.tindak && T.tindak.length > 1) { CAP('Tabel 4. Tindak lanjut dan verifikasi lapangan'); P(tindakRingkas(T.tindak), 8.5, MUTED); TAB(T.tindak.slice(0, 201), 7.5); }
   H1(`Kejadian api di desa & radius 5 km (${M.events.length})`);
   if (T.ev.length > 1) { if (M.events.length > CAP_EVENTS) P(`Ditampilkan ${CAP_EVENTS} kejadian (diurutkan dari zona terdekat). Seluruh kejadian ada di file CSV.`, 8.5, MUTED); TAB(T.ev, 7); } else P('Tidak ada kejadian pada periode ini.');
   BLK(XB[1]); BLK(XB[2]);
@@ -653,6 +654,7 @@ async function exportDOCX(M, F, T) {
   if (F.sensor) main.push(await img(F.sensor, 16.5)); if (F.season) main.push(await img(F.season, 16.5)); if (F.ctx) main.push(await img(F.ctx, 16.5));
   main.push(H('Rekapitulasi'), CAPd('Tabel 1. Deteksi per zona dan sensor'), TB(T.zona), P(''), CAPd(`Tabel 2. Deteksi dan curah hujan per ${M.unit}`), TB(T.periode));
   if (T.petak.length > 1) main.push(P(''), CAPd('Tabel 3. Petak patroli dengan titik panas'), TB(T.petak));
+  if (T.tindak && T.tindak.length > 1) main.push(P(''), CAPd('Tabel 4. Tindak lanjut dan verifikasi lapangan'), P(tindakRingkas(T.tindak), { size: 17, color: '5B6A61' }), TB(T.tindak.slice(0, 201), 14));
   main.push(H(`Kejadian api di desa & radius 5 km (${M.events.length})`));
   if (T.ev.length > 1) { if (M.events.length > CAP_EVENTS) main.push(P(`Ditampilkan ${CAP_EVENTS} kejadian (zona terdekat lebih dulu). Seluruh kejadian ada di file CSV.`, { size: 17, color: '5B6A61' })); main.push(TB(T.ev, 14)); } else main.push(P('Tidak ada kejadian pada periode ini.'));
   main.push(...BLKd(XB[1]), ...BLKd(XB[2]));
@@ -683,6 +685,21 @@ function dl(blob, name) { const u = URL.createObjectURL(blob); const a = documen
 function fname(M, ext) { const n = fnameId(M, ext); return window.FHLang && FHLang.get() === 'en' ? n.replace('laporan_titik_panas', 'hotspot_report').replace('data_titik_panas', 'hotspot_data').replace('_sd_', '_to_').replace('_desa_', '_village_').replace('_kabupaten_', '_regency_') : n; }
 function fnameId(M, ext) { return `laporan_titik_panas_${SITE ? SITE.id + '_' : ''}${M.wilKey}_${M.a}_sd_${M.b}.${ext}`.replace('laporan_titik_panas', ext === 'csv' ? 'data_titik_panas' : 'laporan_titik_panas'); }
 
+/* ---------- tindak lanjut & verifikasi lapangan (hanya bila pengguna masuk; tanpa nama petugas) ---------- */
+async function tindakTabel(a, b) {
+  const A = window.FHAlat; if (!A || !A.akun || !A.akun()) return null;
+  const j = await A.api({ aksi: 'tindak_daftar' }, 30000); if (!j || !j.ok) return null;
+  const t0 = Date.parse(a + 'T00:00:00Z') - 7 * 36e5, t1 = Date.parse(b + 'T23:59:59Z') - 7 * 36e5, hd = SITE ? SITE.hd_nama : '';
+  const R = Object.values(j.status || {}).filter(x => x.dt && x.dt >= t0 && x.dt <= t1 && (!hd || !x.hd || x.hd === hd)).sort((p, q) => p.dt - q.dt);
+  if (!R.length) return [];
+  const w = ms => { const d = new Date(ms + 7 * 36e5); return d.toISOString().slice(0, 16).replace('T', ' '); };
+  return [['No', 'Deteksi satelit (WIB)', 'Jenis', 'Status', 'Hasil verifikasi', 'Dicek di lapangan (WIB)'], ...R.map((x, i) => [String(i + 1), w(x.dt), x.jenis || 'Titik panas', x.s || 'Terdeteksi', x.h || '–', (x.w && x.w.cek) || '–'])];
+}
+function tindakRingkas(T) {
+  const R = T.slice(1), dicek = R.filter(r => r[5] !== '–' || r[4] !== '–').length, hs = {}; R.forEach(r => { if (r[4] !== '–') hs[r[4]] = (hs[r[4]] || 0) + 1; });
+  return `${R.length} kejadian tercatat di sistem tindak lanjut, ${dicek} di antaranya sudah dicek di lapangan.` + (Object.keys(hs).length ? ' Hasil: ' + Object.entries(hs).map(([h, n]) => `${h.toLowerCase()} ${n}`).join(', ') + '.' : '');
+}
+
 /* ---------------- UI ---------------- */
 function presetRange(p) {
   const now = new Date(Date.now() + 7 * 36e5); const y = now.getUTCFullYear(), m = now.getUTCMonth(); const today = iso(now);
@@ -706,6 +723,7 @@ async function run(kind) {
     status('Mengambil data dan menyusun laporan…');
     const key = [a, b, $('#rpWil').value, $('#rpSen').value, window.FH_SITE || ''].join('|');
     if (!LAST || LAST.key !== key) { const M = await buildModel(a, b, $('#rpWil').value, $('#rpSen').value); const F = figures(M), T = tables(M); LAST = { key, M, F, T }; preview(M, F, T); }
+    if (!LAST.tl) { LAST.tl = 1; try { LAST.T.tindak = await tindakTabel(a, b); } catch (e) { LAST.T.tindak = null; } }
     const { M, F, T } = LAST;
     if (kind === 'pdf') { status('Membuat PDF…'); const n = await exportPDF(M, F, T); status(`PDF selesai (${n} halaman) dan sudah diunduh.`); }
     else if (kind === 'docx') { status('Membuat Word…'); await exportDOCX(M, F, T); status('File Word selesai dan sudah diunduh.'); }
@@ -720,6 +738,9 @@ function init() {
   const apply = () => { const r = presetRange(sel.value); if (r) { $('#rpFrom').value = r[0] < '2001-01-01' ? '2001-01-01' : r[0]; $('#rpTo').value = r[1]; } LAST = null; };
   sel.addEventListener('change', apply); ['#rpFrom', '#rpTo', '#rpWil', '#rpSen'].forEach(s => $(s).addEventListener('change', () => { if (s === '#rpFrom' || s === '#rpTo') sel.value = 'kustom'; LAST = null; }));
   apply();
+  const bl = $('#rpBulan'); if (bl) { const n = new Date(Date.now() + 7 * 36e5); bl.max = n.toISOString().slice(0, 7);
+    bl.addEventListener('change', () => { const m = /^(\d{4})-(\d{2})$/.exec(bl.value); if (!m) return; const y = +m[1], mo = +m[2] - 1, f = iso(new Date(Date.UTC(y, mo, 1))), l = iso(new Date(Date.UTC(y, mo + 1, 0))), t = iso(new Date(Date.now() + 7 * 36e5));
+      $('#rpFrom').value = f; $('#rpTo').value = l > t ? t : l; sel.value = 'kustom'; sel.dispatchEvent(new Event('sync')); document.querySelectorAll('[data-for="rpPreset"] .chip').forEach(c => c.setAttribute('aria-pressed', 'false')); LAST = null; }); }
   $('#rpLihat').addEventListener('click', () => run('lihat')); $('#rpPdf').addEventListener('click', () => run('pdf'));
   $('#rpDocx').addEventListener('click', () => run('docx')); $('#rpCsv').addEventListener('click', () => run('csv'));
   $('#rpTo').max = iso(new Date(Date.now() + 7 * 36e5));

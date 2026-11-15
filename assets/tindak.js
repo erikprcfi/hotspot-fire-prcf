@@ -10,6 +10,8 @@
 'use strict';
 const X = () => window.FHAlat, esc = s => X().esc(s);
 const ST = ['Terdeteksi', 'Ditugaskan', 'Dicek di lapangan', 'Ditangani', 'Selesai'];
+// v15: hasil pemeriksaan lapangan (untuk statistik verifikasi satelit vs lapangan)
+const HASIL = ['Api / kebakaran aktif', 'Bekas terbakar', 'Pembakaran lahan terkendali', 'Bukan api (sumber panas lain)', 'Tidak dapat dicek'];
 const WR = { 'Terdeteksi': ['#FEE2E2', '#991B1B'], 'Ditugaskan': ['#FEF3C7', '#92400E'], 'Dicek di lapangan': ['#DBEAFE', '#1E40AF'], 'Ditangani': ['#E0E7FF', '#3730A3'], 'Selesai': ['#DCFCE7', '#166534'] };
 let DATA = null, WAKTU = 0;
 async function muat(paksa) {
@@ -27,20 +29,21 @@ function ubah(p, selesai) {
     const cur = D.status[p.k] || {}, sNow = cur.s || 'Terdeteksi', u = A.akun();
     const host = document.createElement('div'); host.className = 'wb-dlg tl-dlg'; host.style.cssText = 'position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:16px;background:rgba(4,12,8,.55);backdrop-filter:blur(4px)';
     host.innerHTML = `<div class="fa" style="width:min(520px,100%);max-height:92vh;overflow:auto;background:var(--surface);color:var(--fg);border-radius:24px;padding:20px;box-shadow:0 30px 80px -20px rgba(0,0,0,.6)">
-      <div><h4 style="margin:0;font-size:18px">Tindak lanjut titik panas</h4><p class="fa-note">${esc(A.wib(p.when))} · ${esc(sat(p))} · ${p.la.toFixed(5)}, ${p.lo.toFixed(5)}</p><div style="margin-top:6px">Status sekarang: ${pill(sNow)}${cur.p ? ` · petugas <b>${esc(cur.p)}</b>` : ''}</div></div>
+      <div><h4 style="margin:0;font-size:18px">Tindak lanjut titik panas</h4><p class="fa-note">${esc(A.wib(p.when))} · ${esc(sat(p))} · ${p.la.toFixed(5)}, ${p.lo.toFixed(5)}</p><div style="margin-top:6px">Status sekarang: ${pill(sNow)}${cur.p ? ` · petugas <b>${esc(cur.p)}</b>` : ''}${cur.h ? ` · hasil: <b>${esc(cur.h)}</b>` : ''}</div></div>
       <div><h5>Status baru</h5><div class="fa-chips" data-n="s" style="--c:#9F1239">${ST.slice(1).map(s => `<button type="button" aria-pressed="${s === sNow}">${esc(s)}</button>`).join('')}</div></div>
+      <div id="tlHasilW" style="display:${['Dicek di lapangan', 'Ditangani', 'Selesai'].includes(sNow) ? '' : 'none'}"><h5>Hasil pemeriksaan lapangan</h5><select id="tlHasil"><option value="">– belum diisi –</option>${HASIL.map(h => `<option${h === cur.h ? ' selected' : ''}>${esc(h)}</option>`).join('')}</select><p class="fa-note" style="margin-top:4px">Dipakai untuk statistik kecocokan deteksi satelit dengan kondisi lapangan.</p></div>
       <div><h5>Petugas</h5>${D.admin ? `<select id="tlP"><option value="">– tidak diubah –</option>${D.tim.map(t => `<option value="${esc(t.id)}">${esc(t.nama)}</option>`).join('')}</select>` : `<label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="tlSaya" ${cur.saya ? 'checked disabled' : ''}> Tugaskan ke saya (${esc(u.nama)})</label>`}</div>
       <div><h5>Catatan</h5><textarea id="tlC" rows="3" maxlength="300" placeholder="mis. tim berangkat 14.00, api sudah padam, lahan ladang warga"></textarea></div>
       ${cur.r ? `<details><summary style="cursor:pointer;font-weight:700;font-size:13px">Riwayat</summary><pre style="white-space:pre-wrap;font:12px/1.5 var(--f-data,monospace);margin:8px 0 0">${esc(cur.r)}</pre></details>` : ''}
       <div class="fa-row"><button class="fa-btn" id="tlX">Batal</button><button class="fa-btn pri" style="--c:#9F1239" id="tlOk">Simpan</button></div><p class="fa-err" id="tlE"></p></div>`;
     document.body.appendChild(host); host.onclick = e => { if (e.target === host) host.remove(); };
-    const g = host.querySelector('[data-n=s]'); g.querySelectorAll('button').forEach(b => b.onclick = () => g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))));
+    const g = host.querySelector('[data-n=s]'); g.querySelectorAll('button').forEach(b => b.onclick = () => { g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); host.querySelector('#tlHasilW').style.display = ['Dicek di lapangan', 'Ditangani', 'Selesai'].includes(b.textContent) ? '' : 'none'; });
     host.querySelector('#tlX').onclick = () => host.remove();
     host.querySelector('#tlOk').onclick = async () => {
       const s = (g.querySelector('[aria-pressed=true]') || {}).textContent; if (!s) return host.querySelector('#tlE').textContent = 'Pilih status.';
       const pid = D.admin ? host.querySelector('#tlP').value : (host.querySelector('#tlSaya').checked && !cur.saya ? u.id : '');
       const b = host.querySelector('#tlOk'); b.disabled = true; b.textContent = 'Menyimpan…';
-      try { const j = await A.api({ aksi: 'tindak_set', kode: p.k, status: s, petugas_id: pid, catatan: host.querySelector('#tlC').value.trim(), deteksi_ms: +p.when, la: p.la, lo: p.lo, hd: window.FHSiteNama ? FHSiteNama() : '', jenis: 'titik' }, 30000);
+      try { const j = await A.api({ aksi: 'tindak_set', kode: p.k, status: s, petugas_id: pid, catatan: host.querySelector('#tlC').value.trim(), hasil: host.querySelector('#tlHasilW').style.display === 'none' ? '' : host.querySelector('#tlHasil').value, deteksi_ms: +p.when, la: p.la, lo: p.lo, hd: window.FHSiteNama ? FHSiteNama() : '', jenis: 'titik' }, 30000);
         if (!j.ok) { host.querySelector('#tlE').textContent = j.galat || 'Gagal'; b.disabled = false; b.textContent = 'Simpan'; return; }
         DATA = null; host.remove(); A.toast('Tindak lanjut tersimpan ✓'); A.pakai('tindak_ubah'); selesai && selesai(s); }
       catch (e) { host.querySelector('#tlE').textContent = 'Tidak ada koneksi.'; b.disabled = false; b.textContent = 'Simpan'; }
