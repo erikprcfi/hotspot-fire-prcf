@@ -164,3 +164,10 @@ Live ke main bila semua uji lulus.
   Apps Script v14 (aksi log_galat, lembar "Log Galat") dikirim ke pengguna – BELUM dipasang; sebelum dipasang galat menunggu di antrean HP.
   Uji: 9 skenario login lulus; 31 alat HP+web lulus; mode tamu lokal & live lulus. Pengujian otomatis perlu localStorage fh_panduan_v1=1 agar panduan tidak menutupi layar.
 - 15 Nov 05.05 WIB: Apps Script v14 sudah dipasang pengguna (GET = v14, aksi log_galat menjawab ok).
+
+## RENCANA 15 Nov siang (cabang fitur-lapor-luring) – disetujui pengguna
+2 Laporan masyarakat: akun terverifikasi melapor (asap/api/pembukaan lahan + foto + GPS); tampil publik setelah admin verifikasi;
+  nama/email pelapor hanya untuk admin. Butuh Apps Script v15 (pengguna bersedia memasang).
+3 Peta luring untuk umum (unduh ubin peta + titik panas wilayah sekitar). 5 Statistik verifikasi lapangan (cek lapangan/tindak).
+6 Laporan bulanan PDF dibuat di aplikasi saat diminta (pilih bulan; HD/SHP). 7 Ekspor KML/GeoJSON/CSV (tanpa data pribadi).
+Live ke main bila semua uji lulus.
