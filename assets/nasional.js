@@ -269,6 +269,6 @@ function panduan() {
 }
 
 const ALAT = { sebaran, hujan, udara, satelit, ringkas, panduan, cuaca: () => window.FHApp && FHApp.hubGo('lokasi') };
-Object.keys(VIA_ANALISIS).forEach(k => ALAT[k] = () => lewatAnalisis(k));
+Object.keys(VIA_ANALISIS).forEach(k => ALAT[k] = () => (k === 'unduh' && window.FHEkspor) ? FHEkspor.open() : lewatAnalisis(k));
 window.FHNasional = { punya: k => !!ALAT[k], buka: k => ALAT[k](), lokasi, setLok, titik, bagikan };
 })();

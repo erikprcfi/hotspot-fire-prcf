@@ -73,6 +73,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 <tr><td>Data penggunaan</td><td>Jenis & versi sistem operasi HP, versi aplikasi, Hutan Desa yang dipantau, waktu terakhir aktif, jumlah membuka aplikasi</td><td>Saat aplikasi dibuka</td></tr>
 <tr><td>Lokasi tim lapangan</td><td>Koordinat GPS, ketelitian (meter), kecepatan, persentase baterai, waktu, status online/offline</td><td>Hanya bila Anda menyetujui berbagi lokasi (lihat bagian 3)</td></tr>
 <tr><td>Laporan cek lapangan</td><td>Hasil pemeriksaan titik panas, catatan, foto, koordinat & ketelitian GPS pelapor, nama & email pelapor</td><td>Saat Anda mengirim laporan</td></tr>
+<tr><td>Laporan warga (asap, api, pembukaan lahan)</td><td>Jenis kejadian, keterangan, foto (maks. 3), koordinat & ketelitian GPS, waktu kejadian, nama & email pelapor. <b>Nama, email, dan foto pelapor hanya dilihat admin PRCF</b>. Setelah diverifikasi admin, yang tampil ke publik hanya jenis, waktu, wilayah, catatan admin, dan lokasi yang dibulatkan ±100 m</td><td>Saat Anda mengirim laporan (perlu akun terverifikasi)</td></tr>
 <tr><td>Bara Api (asisten AI)</td><td>Pertanyaan dan jawaban obrolan. Foto satwa/tumbuhan yang Anda kirim hanya diteruskan ke Google Gemini untuk dianalisis dan <b>tidak disimpan</b> PRCF</td><td>Saat Anda memakai Bara Api</td></tr>
 <tr><td>Analisis lahan</td><td>File batas area (SHP/zip) yang Anda unggah beserta hasil analisisnya; kode ID wilayah yang Anda buat disimpan sebagai sidik satu arah (bukan teks asli). Hanya terbuka untuk akun Anda.</td><td>Saat Anda mengunggah</td></tr>
 <tr><td>Peringatan dini</td><td>Hutan Desa yang Anda pilih, alamat langganan notifikasi HP, pilihan email peringatan</td><td>Saat Anda berlangganan</td></tr>
@@ -123,6 +124,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 <ul>
 <li><b>Riwayat posisi:</b> 30 hari, lalu dihapus otomatis.</li>
 <li><b>Biodata & foto profil:</b> selama akun aktif. Saat Anda memilih <b>Profil → Hapus akun</b>, biodata, foto profil, dan seluruh data posisi Anda dihapus dari database PRCF.</li>
+<li><b>Laporan warga:</b> laporan terverifikasi tampil di peta publik selama 180 hari; arsip laporan disimpan untuk pelaporan program dan dapat dihapus atas permintaan Anda.</li>
 <li><b>Laporan cek lapangan, riwayat obrolan Bara Api, dan hasil analisis:</b> disimpan sebagai arsip program selama dibutuhkan untuk pelaporan dan keamanan layanan. Data ini dapat dihapus atas permintaan Anda.</li>
 <li><b>Data di HP Anda:</b> tersimpan di penyimpanan aplikasi dan terhapus bila Anda menghapus akun atau aplikasi.</li>
 </ul>
@@ -178,6 +180,7 @@ Admin aplikasi Pantau Rimbak: <a href="mailto:erik.prcfi@gmail.com">erik.prcfi@g
 <tr><td>Usage data</td><td>Phone operating system &amp; version, app version, monitored Village Forest, last active time, number of app opens</td><td>When the app is opened</td></tr>
 <tr><td>Field team location</td><td>GPS coordinates, accuracy (metres), speed, battery level, time, online/offline status</td><td>Only if you agree to share your location (section 3)</td></tr>
 <tr><td>Field check reports</td><td>Hotspot check results, notes, photos, reporter GPS position &amp; accuracy, reporter name &amp; email</td><td>When you submit a report</td></tr>
+<tr><td>Community reports (smoke, fire, land clearing)</td><td>Incident type, description, photos (max. 3), GPS position &amp; accuracy, time seen, reporter name &amp; email. <b>Reporter name, email and photos are visible to PRCF admins only</b>. After admin verification, only the type, time, area, admin note and a location rounded to ±100 m are shown publicly</td><td>When you send a report (verified account required)</td></tr>
 <tr><td>Bara Api (AI assistant)</td><td>Chat questions and answers. Photos of wildlife/plants are only passed to Google Gemini for analysis and are <b>not stored</b> by PRCF</td><td>When you use Bara Api</td></tr>
 <tr><td>Land analysis</td><td>Boundary files (SHP/zip) you upload and their analysis results; the area ID code you create is stored as a one-way hash (not plain text). Only accessible to your account.</td><td>When you upload</td></tr>
 <tr><td>Early warning</td><td>Selected Village Forests, phone notification subscription, email alert preference</td><td>When you subscribe</td></tr>
@@ -228,6 +231,7 @@ Admin aplikasi Pantau Rimbak: <a href="mailto:erik.prcfi@gmail.com">erik.prcfi@g
 <ul>
 <li><b>Location history:</b> 30 days, then deleted automatically.</li>
 <li><b>Account details &amp; profile photo:</b> while your account is active. When you choose <b>Profile → Delete account</b>, your details, profile photo and all your location data are deleted from the PRCF database.</li>
+<li><b>Community reports:</b> verified reports are shown on the public map for 180 days; the report archive is kept for programme reporting and can be deleted at your request.</li>
 <li><b>Field check reports, Bara Api chat history and analysis results:</b> kept as programme records for as long as needed for reporting and service security. They can be deleted at your request.</li>
 <li><b>Data on your phone:</b> stored in app storage and removed when you delete your account or the app.</li>
 </ul>

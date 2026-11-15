@@ -164,3 +164,17 @@ Live ke main bila semua uji lulus.
   Apps Script v14 (aksi log_galat, lembar "Log Galat") dikirim ke pengguna – BELUM dipasang; sebelum dipasang galat menunggu di antrean HP.
   Uji: 9 skenario login lulus; 31 alat HP+web lulus; mode tamu lokal & live lulus. Pengujian otomatis perlu localStorage fh_panduan_v1=1 agar panduan tidak menutupi layar.
 - 15 Nov 05.05 WIB: Apps Script v14 sudah dipasang pengguna (GET = v14, aksi log_galat menjawab ok).
+
+## RENCANA 15 Nov siang (cabang fitur-lapor-luring) – disetujui pengguna
+2 Laporan masyarakat: akun terverifikasi melapor (asap/api/pembukaan lahan + foto + GPS); tampil publik setelah admin verifikasi;
+  nama/email pelapor hanya untuk admin. Butuh Apps Script v15 (pengguna bersedia memasang).
+3 Peta luring untuk umum (unduh ubin peta + titik panas wilayah sekitar). 5 Statistik verifikasi lapangan (cek lapangan/tindak).
+6 Laporan bulanan PDF dibuat di aplikasi saat diminta (pilih bulan; HD/SHP). 7 Ekspor KML/GeoJSON/CSV (tanpa data pribadi).
+Live ke main bila semua uji lulus.
+
+### Hasil 15 Nov (gelombang 2) – SELESAI
+- `assets/lapor.js` (FHLapor): laporan warga (akun terverifikasi; foto ≤3; GPS/tengah peta; antrean luring IndexedDB 'fh-lapor'), "Laporan saya", antrean verifikasi admin (pelapor+email+tautan foto hanya admin), daftar & lapisan peta publik (belah ketupat oranye, hanya Terverifikasi, ±100 m).
+- `assets/fitur_umum.js`: FHEkspor (unduh umum CSV/GeoJSON/KML, titik panas radius + laporan warga terverifikasi, tanpa data pribadi; menggantikan 'unduh' mode umum), FHVerifStat (statistik_verifikasi), FHLuringUmum (peta luring mode umum di lokasi pilihan + ubin data/titik_id), FHLaporPage.
+- Hub: 'lapor' & 'statistik' baru (UMUM_OK juga 'luring'); laporan.js: pemilih bulan #rpBulan + Tabel 4 tindak lanjut & verifikasi (bila pengguna masuk; tanpa nama petugas); tindak.js: pilihan "Hasil pemeriksaan lapangan" (#tlHasil).
+- Server: Apps Script v15 (berkas TIDAK di repo, berisi rahasia) – dikirim ke pengguna; sebelum dipasang, fitur menampilkan pesan "perlu v15" dan laporan tetap antre di HP.
+- Uji: scratchpad/uji_gel2.js (21/21), uji_bulan*.js, uji_hasil.js, uji_alat.js.
