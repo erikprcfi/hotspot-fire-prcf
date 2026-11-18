@@ -13,7 +13,8 @@ const DBN = 'fh-akun', ST = 'kv', ITER = 210000;
 // URL aplikasi web Google Apps Script (database pengguna PRCF). Kosong = belum aktif, data tetap di HP.
 const UJI = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && !/[?&]ujiakun=1/.test(location.search);   // pengujian lokal tidak menulis ke database asli
 const ENDPOINT = UJI ? '' : (window.FH_AKUN_URL || 'https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec');
-const KUNCI = 'fh-prcf-2026-akun', VERSI = '2026.11a', SKEMA = 2;   // SKEMA 2: email wajib terverifikasi; akun lama direset
+const KUNCI = 'fh-prcf-2026-akun', VERSI = '2026.11b', SKEMA = 2;
+const SESI_HARI = 30;   // tetap masuk di HP ini; diperpanjang otomatis setiap tersambung ke server   // SKEMA 2: email wajib terverifikasi; akun lama direset
 async function api(body, ms = 30000) { const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), ms);
   try { const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ kunci: KUNCI, bahasa: (window.FHLang && FHLang.get()) === 'en' ? 'en' : 'id' }, body)), signal: ctl.signal }); return await r.json(); }
   finally { clearTimeout(tm); } }
@@ -52,7 +53,7 @@ async function flush(ping) {
     if (first || U.kirimFoto) p.foto = U.foto ? U.foto.split(',')[1] : '';
     const j = await api(p);
     if (j.diblokir || j.daftar_ulang) { syncing = false; return reset(j.diblokir ? 'blokir' : 'ulang', j.galat); }
-    if (j.ok) { U.terkirim = true; U.kirimProfil = false; U.kirimFoto = false; if (first || doPing) U.pingT = Date.now(); U.sinkronT = new Date().toISOString(); await put('akun', U); notify(); }
+    if (j.ok) { put('sesi', { masuk: true, t: Date.now() }).catch(() => { }); U.terkirim = true; U.kirimProfil = false; U.kirimFoto = false; if (first || doPing) U.pingT = Date.now(); U.sinkronT = new Date().toISOString(); await put('akun', U); notify(); }
     else console.warn('Database pengguna menolak:', j.galat);
   } catch (e) { console.warn('Sinkron akun tertunda:', e.message); } finally { syncing = false; }
 }
@@ -329,8 +330,9 @@ async function aksesDari(kode) {   // → {mode:'hd', situs} | {mode:'shp', nama
   const h = await sha('pantau-rimbak|' + k); if (HDK[h]) return { mode: 'hd', situs: HDK[h] };
   if (!U || !U.id) throw new Error('Masuk dengan akun dulu.');
   const ck = 'wilayah:' + await sha(U.id + '|' + k);
-  if (!ENDPOINT || navigator.onLine === false) { const c = await get(ck).catch(() => null); if (c) return c; throw new Error(ENDPOINT ? 'Kode ID wilayah perlu internet saat pertama dipakai di perangkat ini.' : 'Kode ID tidak dikenal.'); }
-  let j; try { j = await api({ aksi: 'wilayah_ambil', id: U.id, token: U.token, kode: k }, 45000); } catch (e) { const c = await get(ck).catch(() => null); if (c) return c; throw new Error('Gagal memeriksa kode ID. Periksa internet.'); }
+  if (!ENDPOINT || navigator.onLine === false) { const c = await get(ck).catch(() => null); if (c) return c; throw new Error(ENDPOINT ? 'Kode ID wilayah ini perlu internet saat pertama dipakai di HP ini.' : 'Kode ID tidak dikenal.'); }
+  const c0 = await get(ck).catch(() => null);
+  let j; try { j = await api({ aksi: 'wilayah_ambil', id: U.id, token: U.token, kode: k }, c0 ? 8000 : 45000); } catch (e) { if (c0) return c0; throw new Error('Kode ID wilayah ini perlu internet saat pertama dipakai di HP ini.'); }
   if (j.ok) { const o = { mode: 'shp', nama: j.nama || 'Wilayah saya', geojson: JSON.parse(j.geojson) }; await put(ck, o).catch(() => { }); return o; }
   if (SERVER_LAMA(j)) throw new Error('Kode ID wilayah belum aktif di server PRCF (menunggu pembaruan). Kosongkan kode untuk mode umum.');
   throw new Error(j.galat || 'Kode ID tidak dikenal.');
@@ -379,15 +381,17 @@ function loginScreen(onDone, notice) {   // layar pertama saat aplikasi dibuka: 
     if (L.n >= 5 && Date.now() - L.t < 5 * 6e4) { setErr(d, 'pw', `Terlalu banyak percobaan. Coba lagi ${Math.ceil((5 * 6e4 - (Date.now() - L.t)) / 6e4)} menit lagi, atau pakai "Lupa kata sandi".`); return; }
     b.disabled = true; b.textContent = 'Memeriksa…';
     const ulang = m => { b.disabled = false; b.textContent = 'Masuk'; if (m) setErr(d, m[0], m[1]); };
-    let srv = null; if (ENDPOINT && navigator.onLine !== false) { try { srv = await api({ aksi: 'masuk', email: em, pw }, 30000); } catch (e) { srv = null; } }
     const lokalCocok = async () => !!(U && U.email === em && U.pw && (await hashPw(pw, U.pw.salt)).hash === U.pw.hash);
+    const adaLokal = !!(U && U.email === em && U.pw);   // HP ini pernah masuk: jangan menunggu lama saat sinyal lemah
+    let srv = null; if (ENDPOINT && navigator.onLine !== false) { b.textContent = 'Memeriksa…'; try { srv = await api({ aksi: 'masuk', email: em, pw }, adaLokal ? 8000 : 30000); } catch (e) { srv = null; } }
+    if (!srv && adaLokal) b.textContent = 'Tanpa sinyal · memeriksa di HP…';
     if (srv && srv.ok) { dariServer(srv, em); U.pw = await hashPw(pw); }
     else if (srv && srv.diblokir) { ulang(); return reset('blokir', srv.galat); }
     else if (srv && srv.belum_daftar) return ulang(['email', 'Email ini belum terdaftar. Tekan "Daftar akun baru".']);
     else if (srv && srv.perlu_sandi) { if (!(await lokalCocok())) return ulang(['pw', srv.galat]); api({ aksi: 'sandi_set', id: U.id, token: U.token, pw }).catch(() => { }); }
     else if (srv && !srv.ok && !SERVER_LAMA(srv)) return ulang(['pw', srv.galat || 'Email atau kata sandi salah.']);
     else {   // tanpa internet / server lama: periksa akun di perangkat ini
-      if (!U || U.email !== em) return ulang(['email', navigator.onLine === false ? 'Perangkat ini belum pernah masuk dengan email tersebut. Sambungkan internet untuk masuk.' : 'Email belum terdaftar di perangkat ini.']);
+      if (!U || U.email !== em) return ulang(['email', 'Tidak ada sinyal, dan HP ini belum pernah masuk dengan email tersebut. Masuk pertama kali perlu internet; setelah itu bisa tanpa sinyal.']);
       if (!(await lokalCocok())) { const n = (L.n >= 5 ? 0 : L.n) + 1; await put('kunciMasuk', { n, t: Date.now() }); return ulang(['pw', n >= 5 ? 'Kata sandi salah 5 kali. Dikunci 5 menit.' : `Kata sandi salah. Sisa percobaan: ${5 - n}.`]); }
     }
     await selesaiMasuk(d, kid, onDone);
@@ -437,7 +441,7 @@ function openProfile() {
       <div class="ak-sec">
        <div class="ak-grp"><div class="ak-prog"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>Kelengkapan profil</span><span>${pct}%</span></div><div class="bar" style="margin-top:8px"><i style="width:${pct}%"></i></div><p>${pct < 100 ? (U.foto ? 'Lengkapi biodata Anda.' : 'Tambahkan foto profil agar profil Anda lengkap.') : 'Profil Anda sudah lengkap.'}</p></div></div>
        <div class="ak-grp"><h3>Biodata</h3>${items.map(([k, l, ic, v]) => `<button class="ak-row" data-ed="${k}"><span class="ic">${svg(ic)}</span><span class="m"><small>${l}</small><b class="${v ? '' : 'empty'}"${v && k !== 'lahir' ? ' data-notr' : ''}>${esc(v || 'Belum diisi')}</b></span><span class="ch">${svg('edit', 18)}</span></button>`).join('')}</div>
-       <div class="ak-grp"><h3>Keamanan</h3><button class="ak-row" id="pfPw"><span class="ic">${svg('lock')}</span><span class="m"><b>Ubah kata sandi</b><small>Terakhir diubah ${tglID((U.pwDiubah || U.dibuat).slice(0, 10))}</small></span><span class="ch">${svg('chev', 18)}</span></button>
+       <div class="ak-grp"><h3>Keamanan</h3><button class="ak-row" id="pfKode"><span class="ic">${svg('shield')}</span><span class="m"><b>Kode ID kawasan</b><small>${AKSES.mode === 'hd' ? 'Hutan Desa dampingan' : AKSES.mode === 'shp' ? esc(AKSES.nama || 'Wilayah saya') : 'Belum diisi · mode umum'}</small></span></button><button class="ak-row" id="pfPw"><span class="ic">${svg('lock')}</span><span class="m"><b>Ubah kata sandi</b><small>Terakhir diubah ${tglID((U.pwDiubah || U.dibuat).slice(0, 10))}</small></span><span class="ch">${svg('chev', 18)}</span></button>
         <button class="ak-row" id="pfPriv" style="align-items:flex-start"><span class="ic">${svg('shield')}</span><span class="m"><b>Privasi data</b><small style="font-weight:500;margin-top:2px;line-height:1.45">${U.setuju ? `Biodata dan foto tersinkron ke database pengguna Yayasan PRCF Indonesia${U.sinkronT ? ' (terakhir ' + tglID(U.sinkronT.slice(0, 10)) + ')' : ' (menunggu pengiriman)'}. Kata sandi hanya disimpan sebagai sidik satu arah. Menghapus akun juga menghapus data Anda di database. Ketuk untuk membaca Kebijakan Privasi.` : 'Biodata hanya tersimpan di HP ini. Ketuk untuk menyetujui pengiriman ke database PRCF.'}</small></span></button></div>
        <div class="ak-grp"><button class="ak-row" id="pfLok"><span class="ic">${svg('pin')}</span><span class="m"><b>Bagikan lokasi</b><small>Hanya admin PRCF · riwayat 30 hari</small></span><span class="ak-sw${U.lokasiOn !== false && U.lokasiSetuju ? ' on' : ''}" aria-hidden="true"><i></i></span></button></div>
        <div class="ak-grp"><button class="ak-row" id="pfOut"><span class="ic">${svg('out')}</span><span class="m"><b>Keluar</b><small>Perlu kata sandi untuk masuk lagi</small></span></button>
@@ -447,9 +451,10 @@ function openProfile() {
     d.querySelector('#pfFoto').onclick = async () => { const r = await photoMenu(); if (r === undefined) return; U.foto = r; U.diubah = new Date().toISOString(); await put('akun', U); notify(); render(); mark('foto'); toast(r ? 'Foto profil diperbarui' : 'Foto profil dihapus'); };
     d.querySelectorAll('[data-ed]').forEach(b => b.onclick = () => editSheet(b.dataset.ed, render));
     d.querySelector('#pfPw').onclick = () => pwSheet(render);
+    d.querySelector('#pfKode').onclick = () => kodeSheet(() => location.reload());
     d.querySelector('#pfLok').onclick = async () => { const simpan = async () => { await put('akun', U); notify(); render(); }; if (!U.lokasiSetuju || U.lokasiOn === false) confirmSheet('Bagikan lokasi ke tim PRCF?', SETUJU_LOK.replace(/<[^>]+>/g, ''), 'Setuju & bagikan', async () => { setujuLok(); mintaGPS(); await simpan(); }); else { U.lokasiOn = false; await simpan(); } };
     d.querySelector('#pfPriv').onclick = () => { if (!U.setuju) consentSheet(render); else kebijakan(); };
-    d.querySelector('#pfOut').onclick = () => confirmSheet('Keluar dari akun?', 'Anda perlu memasukkan kata sandi untuk masuk kembali.', 'Keluar', async () => { await put('sesi', { masuk: false, t: Date.now() }); try { sessionStorage.removeItem('pr_sesi'); } catch (e) { } await del('akses').catch(() => { }); AKSES = { mode: 'umum' }; SESI = false; closeProfile(true); notify(); loginScreen(() => { location.reload(); }); });
+    d.querySelector('#pfOut').onclick = () => confirmSheet('Keluar dari akun?', 'Anda perlu memasukkan kata sandi untuk masuk kembali. Masuk kembali saat tidak ada sinyal hanya bisa di HP yang pernah dipakai masuk.', 'Keluar', async () => { await put('sesi', { masuk: false, t: Date.now() }); try { sessionStorage.removeItem('pr_sesi'); } catch (e) { } await del('akses').catch(() => { }); AKSES = { mode: 'umum' }; SESI = false; closeProfile(true); notify(); loginScreen(() => { location.reload(); }); });
     d.querySelector('#pfDel').onclick = () => confirmSheet('Hapus akun?', 'Akun dihapus permanen dari HP ini dan dari database PRCF: biodata, foto, kata sandi, riwayat lokasi, wilayah SHP beserta kode ID dan hasil analisisnya. Data publik titik panas & peta tidak terpengaruh.', 'Hapus akun', async () => { await sendDelete(); await del('akun'); await del('sesi'); U = null; SESI = false; closeProfile(true); notify(); registerScreen(() => { }); });
   };
   render();
@@ -467,6 +472,18 @@ function editSheet(k, after) {
       if (!(await mxAda(v))) { setErr(sh, 'email', 'Domain email ini tidak menerima email.'); return; }
       const box = sh.querySelector('.ak-f'); otpBox(box, v, U.id, async t => { U.email = v; U.token = t; U.diubah = new Date().toISOString(); await put('akun', U); sh.remove(); notify(); after(); toast('Email diperbarui & terverifikasi'); mark('profil'); }); return; }
     U[k] = v; U.diubah = new Date().toISOString(); await put('akun', U); sh.remove(); notify(); after(); toast('Tersimpan'); mark('profil'); };
+}
+function kodeSheet(after) {   // ganti/isi kode ID tanpa keluar akun; kode Hutan Desa diperiksa di HP sehingga bisa tanpa sinyal
+  const sh = document.createElement('div'); sh.className = 'ak-sheet ak';
+  const kini = AKSES.mode === 'hd' ? 'Hutan Desa dampingan' : AKSES.mode === 'shp' ? 'Wilayah: ' + (AKSES.nama || '') : 'Mode umum (tanpa kode)';
+  sh.innerHTML = `<div class="in"><div class="gr"></div><h2>Kode ID kawasan</h2><p class="mut">Sekarang: <b>${esc(kini)}</b>. Masukkan kode ID baru, atau kosongkan untuk mode umum. Kode Hutan Desa bisa dipakai tanpa sinyal; kode wilayah SHP perlu internet saat pertama kali di HP ini.</p><div class="ak-f">${field('kid', 'Kode ID', 'shield', 'text', '', 'autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Kode kawasan / proyek"')}<div class="ak-two"><button class="ak-btn alt" data-x>Batal</button><button class="ak-btn" data-ok>Terapkan</button></div></div></div>`;
+  document.body.appendChild(sh); setTimeout(() => { try { sh.querySelector('#ak_kid').focus(); } catch (e) { } }, 200);
+  sh.onclick = e => { if (e.target === sh) sh.remove(); }; sh.querySelector('[data-x]').onclick = () => sh.remove();
+  const ok = sh.querySelector('[data-ok]');
+  ok.onclick = async () => { setErr(sh, 'kid', ''); ok.disabled = true; ok.textContent = 'Memeriksa…';
+    try { AKSES = await aksesDari(sh.querySelector('#ak_kid').value); } catch (e) { setErr(sh, 'kid', e.message); ok.disabled = false; ok.textContent = 'Terapkan'; return; }
+    await put('akses', AKSES).catch(() => { }); sh.remove(); notify(); toast(AKSES.mode === 'hd' ? 'Data Hutan Desa terbuka' : AKSES.mode === 'shp' ? 'Wilayah ' + AKSES.nama : 'Mode umum'); after && after(); };
+  sh.querySelector('#ak_kid').onkeydown = e => { if (e.key === 'Enter') ok.click(); };
 }
 function pwSheet(after) {
   const sh = document.createElement('div'); sh.className = 'ak-sheet ak';
@@ -497,11 +514,12 @@ async function gate(next) {   // setiap aplikasi dibuka: layar masuk (email, kat
   notify();
   if (!ENDPOINT && !UJI) return next();
   let sesi = false; try { sesi = sessionStorage.getItem('pr_sesi') === '1'; } catch (e) { }
+  if (U && !sesi && U.pw) { const S = await get('sesi').catch(() => null); if (S && S.masuk && Date.now() - S.t < SESI_HARI * 864e5) { sesi = true; try { sessionStorage.setItem('pr_sesi', '1'); } catch (e) { } } }
   if (U && sesi) { AKSES = (await get('akses').catch(() => null)) || { mode: 'umum' }; SESI = true; next(); notify(); flush(true); return; }
   let tamu = false; try { tamu = localStorage.getItem('pr_tamu') === '1'; } catch (e) { }
   if (tamu) { TAMU = true; AKSES = { mode: 'umum' }; next(); notify(); return; }   // mode tamu: tanpa akun, fitur umum saja
   loginScreen(next);
 }
 function avatar(px = 34) { return `<span class="ak-mini" style="width:${px}px;height:${px}px">${U ? avatarInner(U) : svg('user', Math.round(px * .55))}</span>`; }
-window.FHAkun = { init: o => { OPT = o || {}; css(); }, gate, akses: () => AKSES, tamu: () => TAMU && !SESI, layarMasuk: () => loginScreen(() => location.reload()), daftarKode, keluarUntukKode: async () => { try { sessionStorage.removeItem('pr_sesi'); } catch (e) { } SESI = false; notify(); loginScreen(() => location.reload(), 'Masukkan email, kata sandi dan kode ID kawasan/wilayah Anda.'); }, kodeHD: async k => HDK[await sha('pantau-rimbak|' + kodeN(k))] || null, openProfile, avatar, user: () => U, masuk: () => SESI && !!U, api: (b, ms) => api(b, ms), endpoint: () => ENDPOINT, perangkat: () => dev(), onChange: f => subs.push(f), firstName: () => U ? U.nama.split(' ')[0] : '' };
+window.FHAkun = { init: o => { OPT = o || {}; css(); }, gate, akses: () => AKSES, tamu: () => TAMU && !SESI, layarMasuk: () => loginScreen(() => location.reload()), daftarKode, keluarUntukKode: async () => { if (SESI && U) return kodeSheet(() => location.reload()); try { sessionStorage.removeItem('pr_sesi'); } catch (e) { } SESI = false; notify(); loginScreen(() => location.reload(), 'Masukkan email, kata sandi dan kode ID kawasan/wilayah Anda.'); }, gantiKode: () => kodeSheet(() => location.reload()), kodeHD: async k => HDK[await sha('pantau-rimbak|' + kodeN(k))] || null, openProfile, avatar, user: () => U, masuk: () => SESI && !!U, api: (b, ms) => api(b, ms), endpoint: () => ENDPOINT, perangkat: () => dev(), onChange: f => subs.push(f), firstName: () => U ? U.nama.split(' ')[0] : '' };
 })();

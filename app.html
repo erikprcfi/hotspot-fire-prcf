@@ -552,7 +552,7 @@ html.web .hx-sec{margin-top:28px}html.web .hx-sec .hx-h{min-height:64px;margin-b
 html.web .hx-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))!important;gap:14px!important}
 html.web .ab-t small{letter-spacing:.02em}
 </style>
-<script src="assets/pelengkap.js?v=1"></script>
+<script src="assets/pelengkap.js?v=2"></script>
 </head>
 <body>
 
@@ -769,7 +769,7 @@ html.web .ab-t small{letter-spacing:.02em}
 <script src="assets/kamus_en.js?v=63"></script>
 <script src="assets/nasa_layers.js?v=63"></script>
 <script src="assets/citra.js?v=62"></script>
-<script src="assets/akun.js?v=63"></script>
+<script src="assets/akun.js?v=64"></script>
 <script src="assets/ikon3d.js?v=1"></script>
 <!-- assets/web.js (masuk khusus website) tidak dipakai lagi: website memakai layar masuk yang sama dengan aplikasi HP (assets/akun.js) -->
 <script>
@@ -1314,8 +1314,10 @@ function liveChip(){const el=$('#live');if(!STATUS){el.className='live off';retu
 window.addEventListener('online',()=>{liveChip();load();});window.addEventListener('offline',liveChip);
 
 /* ---------- data load ---------- */
-const J=u=>fetch(u+(u.includes('?')?'&':'?')+'t='+Date.now()).then(r=>{if(!r.ok)throw new Error(u);return r.json();});
+let SEGAR=false;   // muat ulang/penyegaran: minta data terbaru dari jaringan (bukan salinan HP)
+const J=u=>fetch(u+(u.includes('?')?'&':'?')+'t='+Date.now()+(SEGAR?'&segar=1':'')).then(r=>{if(!r.ok)throw new Error(u);return r.json();});
 async function load(first){
+  SEGAR=!first;
   try{
     if(first)spMsg('Memuat batas wilayah…');
     if(!G){G=await J('data/geo.json');SITES=G.sites||[];initMap();applySite(new URLSearchParams(location.search).get('lokasi')||store.get('site','nangalauk'),false);}
@@ -1802,6 +1804,8 @@ try{sideRender();}catch(e){}
 {const AL=new URLSearchParams(location.search).get('alat');if(AL){let n=0;const t=setInterval(()=>{if(SITE||++n>40){clearInterval(t);if(SITE)try{hubGo(AL);}catch(e){}}},250);}}
 const h0=location.hash.replace('#','');go(views[h0]?h0:'dash');BOOT=false;
 load(true);setInterval(()=>{if(navigator.onLine)load();},10*60*1000);
+// bila saat dibuka memakai salinan di HP (sinyal lemah), periksa ringan 20 dtk kemudian: muat ulang hanya jika data di server lebih baru
+setTimeout(async()=>{try{if(!navigator.onLine||!STATUS)return;SEGAR=true;const s=await J('data/status.json');if(s&&s.terakhir_cek_utc&&s.terakhir_cek_utc!==STATUS.terakhir_cek_utc)load();}catch(e){}},20000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&STATUS&&Date.now()-new Date(STATUS.terakhir_cek_utc)>30*6e4)load();});
 if('serviceWorker' in navigator){const HAD=!!navigator.serviceWorker.controller;navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{});let RL=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(RL||!HAD)return;RL=true;location.reload();});}
 })();

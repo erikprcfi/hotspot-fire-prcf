@@ -56,6 +56,12 @@ if (!document.getElementById('fh-hemat-css')) {
   (document.head || document.documentElement).appendChild(st);
 }
 terapkan();
+// HP ringan (RAM ≤ 4 GB atau ≤ 4 inti): matikan efek kaca buram & animasi latar yang berat agar tampilan tetap lancar
+try { const ram = navigator.deviceMemory || 8, inti = navigator.hardwareConcurrency || 8;
+  if (ram <= 4 || inti <= 4 || String(baca('fh_ringan', '')) === '1') { document.documentElement.classList.add('ringan');
+    const st = document.createElement('style'); st.id = 'fh-ringan-css';
+    st.textContent = `html.ringan *{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}html.ringan .glass{background:rgba(12,32,24,.9)!important}html.ringan .hx-glass{background:rgba(10,30,22,.72)!important}html.ringan .hx-img{animation:none!important;will-change:auto!important}html.ringan .hx-img.f1,html.ringan .hx-img.f2,html.ringan .hx-img.f3{display:none!important}`;
+    (document.head || document.documentElement).appendChild(st); } } catch (e) { }
 try { const c = navigator.connection; c && c.addEventListener && c.addEventListener('change', terapkan); } catch (e) { }
 // Ubin peta: saat hemat, ubin di luar layar tidak disimpan (keepBuffer 0) dan baru dimuat setelah peta berhenti digeser
 function petaHemat(map) { if (!map || map._fhHemat) return; map._fhHemat = 1;
