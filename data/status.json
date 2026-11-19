@@ -1,5 +1,5 @@
 {
- "terakhir_cek_utc": "2026-11-19T19:26:06Z",
+ "terakhir_cek_utc": "2026-11-19T23:16:53Z",
  "titik_baru": 0,
  "arsip_tahunan_diperbarui": 0,
  "jumlah_catatan": 83204,
@@ -58,10 +58,10 @@
    "doi": "10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Thu, 19 Nov 2026 18:42:12 GMT",
-   "ukuran_byte": 947294,
-   "sha256": "e3d6efe2d52b0ce7c659876928b1fd57e6763fc791afe5a32e93aae752f8d9c0",
-   "baris_total": 11294,
+   "last_modified": "Thu, 19 Nov 2026 22:42:16 GMT",
+   "ukuran_byte": 970275,
+   "sha256": "23f65a8252b6ed73d4fac879dd983d7b35adfd4bdd1e252de288ee5045202dff",
+   "baris_total": 11568,
    "baris_di_kotak": 2
   },
   {
@@ -71,10 +71,10 @@
    "doi": "10.5067/VIIRS/VJ214IMG_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Thu, 19 Nov 2026 18:44:43 GMT",
-   "ukuran_byte": 978649,
-   "sha256": "a6136ebef47c346cad5725e7e3d390228086ad4b52f9ae411e41b6c2f61d51f1",
-   "baris_total": 11657,
+   "last_modified": "Thu, 19 Nov 2026 22:44:46 GMT",
+   "ukuran_byte": 998909,
+   "sha256": "0efdce82cbc33bf8e21bd54dcbfd19e0fc6979cd7226485b09660f880c357975",
+   "baris_total": 11898,
    "baris_di_kotak": 0
   },
   {
@@ -84,18 +84,14 @@
    "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Thu, 19 Nov 2026 18:46:47 GMT",
-   "ukuran_byte": 158038,
-   "sha256": "d1cb46283ec56766227ef8c9d99da228f33623e2b323bf64ec306111b84853a2",
-   "baris_total": 2039,
+   "last_modified": "Thu, 19 Nov 2026 22:46:44 GMT",
+   "ukuran_byte": 159230,
+   "sha256": "bb704e322001a59352f46f099a17e46bfa771cf1c04836c538b70c7fdf29b856",
+   "baris_total": 2055,
    "baris_di_kotak": 1
   }
  ],
  "cakupan": {
-  "SP MODIS Terra/Aqua 1 km": [
-   "2001-02-25",
-   "2026-08-31"
-  ],
   "SP VIIRS S-NPP 375 m": [
    "2012-01-29",
    "2026-07-31"
@@ -103,6 +99,10 @@
   "SP VIIRS NOAA-20 375 m": [
    "2018-04-01",
    "2026-07-31"
+  ],
+  "SP MODIS Terra/Aqua 1 km": [
+   "2001-02-25",
+   "2026-08-31"
   ],
   "SP VIIRS NOAA-21 375 m": [
    "2026-01-13",
@@ -127,12 +127,6 @@
  },
  "sistem": {
   "riwayat": [
-   {
-    "t": "2026-11-17T16:02:06Z",
-    "baru": 0,
-    "ok": 4,
-    "n": 4
-   },
    {
     "t": "2026-11-17T17:08:02Z",
     "baru": 0,
@@ -270,6 +264,12 @@
     "baru": 0,
     "ok": 4,
     "n": 4
+   },
+   {
+    "t": "2026-11-19T23:16:53Z",
+    "baru": 0,
+    "ok": 4,
+    "n": 4
    }
   ],
   "jadwal_cron_utc": "17 */3 * * * + 47 1-23/3 * * *",
@@ -277,7 +277,7 @@
   "latensi_n": 26,
   "arsip_terverifikasi": 48,
   "hari_cuaca": 9453,
-  "jumlah_pembaruan_tercatat": 177
+  "jumlah_pembaruan_tercatat": 178
  },
  "sumber_doi": {
   "VIIRS_SNPP": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002",
