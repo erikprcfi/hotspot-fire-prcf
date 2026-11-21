@@ -303,7 +303,8 @@ def hitung_titik_panas(geom, tahun=None, cache="/tmp/firms_cache"):
     ada = sorted({int(w) for t in tersedia for w in t.replace("(", " ").split() if w.isdigit() and len(w) == 4 and int(w) in set(tahun)})
     per = {y: v for y, v in per.items() if int(y) in ada}   # tahun tanpa berkas data tidak ditampilkan sebagai nol
     if not ada: return None
-    return {"periode": f"{min(ada)}–{max(ada)}", "per_tahun": per, "per_bulan": dict(sorted(bulan.items())), "terbaru": contoh[:50],
+    hilang = [y for y in tahun if y not in ada and min(ada) <= y <= max(ada)]   # celah arsip: ditampilkan jujur, bukan dianggap nol
+    return {"periode": f"{min(ada)}–{max(ada)}", "tahun_tidak_tersedia": hilang, "per_tahun": per, "per_bulan": dict(sorted(bulan.items())), "terbaru": contoh[:50],
             "total": sum(sum(v.values()) for v in per.values()), "arsip_dipakai": tersedia,
             "catatan": "Hanya deteksi tipe 0 (dugaan kebakaran vegetasi). Satu kebakaran bisa terdeteksi oleh beberapa satelit/lintasan, jadi jumlah titik ≠ jumlah kejadian. Tahun berjalan diambil dari NASA FIRMS API (Standard Processing, lalu NRT untuk hari-hari terakhir) karena arsip tahunannya belum terbit."}
 

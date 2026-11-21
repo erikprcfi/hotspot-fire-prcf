@@ -27,6 +27,20 @@ def terbuka(g, lk_resmi):   # data terbuka nasional: tutupan 2021 (ESA WorldCove
         except Exception as e: print("  indikasi lahan kritis gagal:", e)
     return out
 
+def hitung(geojson, nama=None):
+    """Hitung semua analisis untuk satu poligon (dipakai pekerja antrean & uji)."""
+    g = make_valid(shape(geojson)); g = g if g.geom_type in ("Polygon", "MultiPolygon") else g.buffer(0)
+    if g.is_empty or g.geom_type not in ("Polygon", "MultiPolygon"): raise ValueError("geometri bukan poligon yang sah")
+    luas_geo = abs(Geod(ellps="WGS84").geometry_area_perimeter(g)[0]) / 1e4
+    if luas_geo > 260000: raise ValueError(f"luas {luas_geo:.0f} ha melebihi batas 250.000 ha")
+    x0, y0, x1, y1 = g.bounds
+    if x0 < 94 or x1 > 142 or y0 < -12 or y1 > 7: raise ValueError("area harus berada di wilayah Indonesia")
+    r = {"nama": nama or "Area unggahan", "jenis": "SHP unggahan pengguna", "dibuat_utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+         "sumber": SUMBER, "kelas": [{"kode": k, "nama": n, "warna": c} for k, n, _, c in KELAS], "tahun_tutupan": TAHUN_LC,
+         "geometri": mapping(g.simplify(0.0002, preserve_topology=True)), "luas_geodesik_ha": round(luas_geo, 1)}
+    kd = muat_klhk(bbox=g.bounds); r.update(hitung_raster(g, kd)); r["lahan_kritis"] = LK.untuk_area(g, kd); r.update(terbuka(g, r["lahan_kritis"])); r["sumber"] = dict(r["sumber"], **{k: v["sumber"] for k, v in (("tutupan_2021", r.get("tutupan_2021")), ("lahan_kritis_indikasi", r.get("lahan_kritis_indikasi"))) if v}); r["titik_panas"] = hitung_titik_panas(g, cache=os.environ.get("FIRMS_CACHE", "/tmp/firms_cache")); r["wilayah"] = wilayah(g)
+    return r
+
 def main():
     if not KEY or not URL: print("ANALISIS_KEY/AKUN_URL belum diatur – lewati"); return
     q = json.loads(urllib.request.urlopen(f"{URL}?pekerja={KEY}", timeout=120).read())
@@ -34,16 +48,7 @@ def main():
     for t in q.get("tugas", []):
         aid = t["aid"]; print("analisis", aid, t.get("nama"))
         try:
-            g = make_valid(shape(t["geojson"])); g = g if g.geom_type in ("Polygon", "MultiPolygon") else g.buffer(0)
-            if g.is_empty or g.geom_type not in ("Polygon", "MultiPolygon"): raise ValueError("geometri bukan poligon yang sah")
-            luas_geo = abs(Geod(ellps="WGS84").geometry_area_perimeter(g)[0]) / 1e4
-            if luas_geo > 260000: raise ValueError(f"luas {luas_geo:.0f} ha melebihi batas 250.000 ha")
-            x0, y0, x1, y1 = g.bounds
-            if x0 < 94 or x1 > 142 or y0 < -12 or y1 > 7: raise ValueError("area harus berada di wilayah Indonesia")
-            r = {"nama": t.get("nama") or "Area unggahan", "jenis": "SHP unggahan pengguna", "dibuat_utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                 "sumber": SUMBER, "kelas": [{"kode": k, "nama": n, "warna": c} for k, n, _, c in KELAS], "tahun_tutupan": TAHUN_LC,
-                 "geometri": mapping(g.simplify(0.0002, preserve_topology=True)), "luas_geodesik_ha": round(luas_geo, 1)}
-            kd = muat_klhk(bbox=g.bounds); r.update(hitung_raster(g, kd)); r["lahan_kritis"] = LK.untuk_area(g, kd); r.update(terbuka(g, r["lahan_kritis"])); r["sumber"] = dict(r["sumber"], **{k: v["sumber"] for k, v in (("tutupan_2021", r.get("tutupan_2021")), ("lahan_kritis_indikasi", r.get("lahan_kritis_indikasi"))) if v}); r["titik_panas"] = hitung_titik_panas(g, cache=os.environ.get("FIRMS_CACHE", "/tmp/firms_cache")); r["wilayah"] = wilayah(g)
+            r = hitung(t["geojson"], t.get("nama"))
             print(post({"aksi": "pekerja_hasil", "kunci": "fh-prcf-2026-akun", "kunci_pekerja": KEY, "aid": aid, "hasil": json.loads(json.dumps(r, default=float))}))
         except Exception as e:
             traceback.print_exc()

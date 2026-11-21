@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <script>window.FH_WEB=/[?&]web=1/.test(location.search);if(window.FH_WEB)document.documentElement.classList.add("web");</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<script src="assets/asli.js?v=1"></script>
 <title>Pantau Rimbak</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0B3B2C">
@@ -1694,7 +1695,7 @@ const PAGES={
     <div class="stat3" style="margin-top:10px"><div class="card" style="box-shadow:none;background:var(--surface-2)"><b>${N1(tot)}</b><span>ha total terdeteksi</span></div><div class="card" style="box-shadow:none;background:var(--surface-2)"><b>${done.length}</b><span>musim api dianalisa</span></div><div class="card" style="box-shadow:none;background:var(--surface-2)"><b>${M.length-done.length}</b><span>menunggu citra / tertutup awan</span></div></div>
     ${ys.length?`<div class="chart" style="margin-top:8px">${barChart(ys,[{c:'#C2441F',v:ys.map(y=>Math.round(yr[y]))}],{h:150})}</div>`:''}</div>
    ${M.map(m=>m.status==='selesai'?`<div class="h2">${esc(dName(m.awal).t)} ${m.awal.slice(0,4)} – ${esc(dName(m.akhir).t)} ${m.akhir.slice(0,4)}</div>
-    <div class="card">${m.luas_ha>0?`<div class="ba" data-id="${esc(m.id)}"><img src="data/bekas_terbakar/${esc(m.id)}_sesudah.png" alt="Sesudah"><div class="top"><img src="data/bekas_terbakar/${esc(m.id)}_sebelum.png" alt="Sebelum"></div><img class="mk" src="data/bekas_terbakar/${esc(m.id)}_masker.png" alt=""><div class="bar"></div><span class="lb" style="left:8px">Sebelum · ${esc(m.tanggal_sebelum[0])}…</span><span class="lb" style="right:8px">Sesudah · ${esc(m.tanggal_sesudah.at(-1))}</span><input type="range" min="0" max="100" value="50" aria-label="Geser sebelum/sesudah"></div>
+    <div class="card">${m.luas_ha>0?`<div class="ba" data-id="${esc(m.id)}"><img src="${window.FH_BASIS||''}data/bekas_terbakar/${esc(m.id)}_sesudah.png" alt="Sesudah"><div class="top"><img src="${window.FH_BASIS||''}data/bekas_terbakar/${esc(m.id)}_sebelum.png" alt="Sebelum"></div><img class="mk" src="${window.FH_BASIS||''}data/bekas_terbakar/${esc(m.id)}_masker.png" alt=""><div class="bar"></div><span class="lb" style="left:8px">Sebelum · ${esc(m.tanggal_sebelum[0])}…</span><span class="lb" style="right:8px">Sesudah · ${esc(m.tanggal_sesudah.at(-1))}</span><input type="range" min="0" max="100" value="50" aria-label="Geser sebelum/sesudah"></div>
      <label class="small" style="display:flex;gap:6px;align-items:center;margin-top:8px"><input type="checkbox" class="mkT" checked>Tampilkan area terbakar (kuning)</label>`:''}
      <div class="bt-sum"><div><b>${N1(m.luas_ha)}</b><span>ha bekas terbakar</span></div><div><b>${m.n_kejadian}</b><span>kejadian · ${m.n_deteksi} deteksi</span></div><div><b>${m.cerah_persen}%</b><span>wilayah cerah dianalisa</span></div></div>
      <div class="small muted">Keparahan (dNBR): rendah–sedang ${N1(m.luas_rendah_sedang_ha)} ha · sedang–tinggi ${N1(m.luas_sedang_tinggi_ha)} ha · tinggi ${N1(m.luas_tinggi_ha)} ha. Citra sebelum: ${m.tanggal_sebelum.join(', ')}; sesudah: ${m.tanggal_sesudah.join(', ')} (Sentinel-2 L2A).</div></div>`
@@ -1828,7 +1829,7 @@ if('serviceWorker' in navigator){const HAD=!!navigator.serviceWorker.controller;
 <script>window.FH_VERIF_URL=window.FH_VERIF_URL||'https://script.google.com/macros/s/AKfycbwQz_--p7liI6ig1X6jsDCbdpElAJahItVrnVQqxkqBzLJLzvSJojk8eUSEHWzJgY-PoQ/exec';/* URL Apps Script penerima laporan verifikasi lapangan */</script>
 <script src="assets/verifikasi.js?v=62"></script>
 <script src="assets/luring.js?v=62"></script>
-<script src="assets/analisis.js?v=63"></script>
+<script src="assets/analisis.js?v=64"></script>
 <script src="assets/bara.js?v=62"></script>
 <script src="assets/peringatan.js?v=64"></script>
 <script src="assets/peta_ecmwf.js?v=62"></script>

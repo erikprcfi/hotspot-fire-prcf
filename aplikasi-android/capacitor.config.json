@@ -2,14 +2,40 @@
   "appId": "org.prcfindonesia.pantaurimbak",
   "appName": "Pantau Rimbak",
   "webDir": "www",
-  "server": {
-    "url": "https://erikprcfi.github.io/hotspot-fire-prcf/app.html",
-    "errorPath": "offline.html",
-    "allowNavigation": ["erikprcfi.github.io"]
-  },
   "android": {
-    "useLegacyBridge": true,
     "allowMixedContent": false,
-    "backgroundColor": "#0B3B2C"
+    "backgroundColor": "#0B3B2C",
+    "webContentsDebuggingEnabled": false,
+    "useLegacyBridge": true
+  },
+  "server": {
+    "androidScheme": "https",
+    "hostname": "localhost"
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DARK",
+      "initialViewportFitValueHint": "cover"
+    },
+    "SplashScreen": {
+      "launchShowDuration": 400,
+      "launchAutoHide": true,
+      "backgroundColor": "#0B3B2C",
+      "showSpinner": false
+    },
+    "CapacitorUpdater": {
+      "autoUpdate": false,
+      "appReadyTimeout": 15000,
+      "resetWhenUpdate": true,
+      "autoDeleteFailed": true,
+      "autoDeletePrevious": true,
+      "statsUrl": "",
+      "updateUrl": "",
+      "channelUrl": ""
+    },
+    "CapacitorHttp": {
+      "enabled": false
+    }
   }
 }

@@ -1,0 +1,59 @@
+name: Paket pembaruan aplikasi Android
+# Setiap kali kode aplikasi berubah: susun isi aplikasi (www) lalu terbitkan paket pembaruan di GitHub Pages.
+# Aplikasi Android memeriksa aplikasi/paket/terbaru.json saat ada sinyal, mengunduh paket di belakang layar,
+# dan memakainya saat dibuka berikutnya (kembali otomatis ke versi sebelumnya bila versi baru gagal dimuat).
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app.html'
+      - 'assets/**'
+      - 'kebijakan-privasi.html'
+      - 'syarat.html'
+      - 'hapus-akun.html'
+      - 'aplikasi-android/siapkan-www.mjs'
+      - 'aplikasi-android/package.json'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: paket-aplikasi
+  cancel-in-progress: false
+jobs:
+  paket:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 200
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Pasang pustaka
+        run: cd aplikasi-android && npm ci --no-audit --no-fund
+      - name: Susun paket
+        run: |
+          cd aplikasi-android
+          node siapkan-www.mjs --zip /tmp/paket.zip
+          V=$(node -p "require('./www/versi.json').versi")
+          mkdir -p ../aplikasi/paket
+          rm -f ../aplikasi/paket/*.zip
+          cp /tmp/paket.zip "../aplikasi/paket/pantau-rimbak-$V.zip"
+          SHA=$(sha256sum /tmp/paket.zip | cut -d' ' -f1)
+          UK=$(stat -c %s /tmp/paket.zip)
+          printf '{"versi":"%s","url":"aplikasi/paket/pantau-rimbak-%s.zip","sha256":"%s","ukuran":%s,"min_kode":3,"dibuat":"%s"}\n' "$V" "$V" "$SHA" "$UK" "$(date -u +%FT%TZ)" > ../aplikasi/paket/terbaru.json
+          cat ../aplikasi/paket/terbaru.json
+      - name: Terbitkan
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A aplikasi/paket
+          git diff --cached --quiet && { echo "Tidak ada perubahan paket"; exit 0; }
+          git commit -m "Paket aplikasi $(node -p "require('./aplikasi-android/www/versi.json').versi")"
+          for i in 1 2 3 4 5; do
+            git push && exit 0
+            git pull --rebase origin main || { git rebase --abort; git pull --no-rebase --no-edit -X ours origin main; }
+            sleep $((i*5))
+          done
+          exit 1

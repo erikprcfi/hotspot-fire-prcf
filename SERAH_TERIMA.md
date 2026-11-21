@@ -178,3 +178,17 @@ Live ke main bila semua uji lulus.
 - Hub: 'lapor' & 'statistik' baru (UMUM_OK juga 'luring'); laporan.js: pemilih bulan #rpBulan + Tabel 4 tindak lanjut & verifikasi (bila pengguna masuk; tanpa nama petugas); tindak.js: pilihan "Hasil pemeriksaan lapangan" (#tlHasil).
 - Server: Apps Script v15 (berkas TIDAK di repo, berisi rahasia) – dikirim ke pengguna; sebelum dipasang, fitur menampilkan pesan "perlu v15" dan laporan tetap antre di HP.
 - Uji: scratchpad/uji_gel2.js (21/21), uji_bulan*.js, uji_hasil.js, uji_alat.js.
+
+### 18 Nov – Tetap masuk & kecepatan buka
+- akun.js: sesi tersimpan 30 hari (diperpanjang saat tersambung server); masuk tanpa sinyal ±8 dtk; lembar "Kode ID kawasan" di Profil.
+- sw.js (situs): kode dari HP lalu diperbarui di belakang; halaman 2,5 dtk / data 3 dtk lalu salinan terakhir; data statis dari HP.
+
+### 21 Nov – APLIKASI ANDROID ASLI (tanpa Chrome / tanpa situs dibungkus)
+- `aplikasi-android/capacitor.config.json`: TIDAK lagi memakai `server.url`; seluruh kode dibundel di APK (`www` dibuat oleh `aplikasi-android/siapkan-www.mjs`, di-gitignore).
+- `siapkan-www.mjs`: salin app.html→index.html + aset + halaman hukum; pustaka CDN (Leaflet, MapLibre, jsPDF, ExcelJS, JSZip, proj4, docx) & huruf (Plus Jakarta Sans, IBM Plex Mono) dari node_modules ke `www/vendor` dan rujukan ditulis ulang; salinan data bawaan (±8 MB); `versi.json` = waktu commit kode (YYYYMMDDHHmm); `--zip` = paket pembaruan (tanpa data).
+- `assets/asli.js` (dimuat pertama di app.html; di web hanya FH_BASIS=''): fetch data/ → server (batas 3 dtk; 15 menit salinan segar; data statis dari HP; `segar=1` 20 dtk) → salinan HP (Cache 'pa-data-asli') → salinan bawaan APK → jawaban 504 "luring" (tanpa galat tak tertangani); ubin peta luring dari Cache 'pa-tiles' (tambal L.TileLayer.createTile); tanpa service worker; tombol Kembali Android; pembaruan kode via @capgo/capacitor-updater mode manual (aplikasi/paket/terbaru.json → download → next; notifyAppReady; appReadyTimeout 15 dtk = rollback otomatis; statsUrl kosong = tanpa telemetri).
+- `.github/workflows/aplikasi.yml`: setiap perubahan kode → terbitkan `aplikasi/paket/pantau-rimbak-<versi>.zip` + `terbaru.json` (min_kode 3).
+- `.github/workflows/aplikasi-apk.yml` (manual): APK uji + AAB rilis; bertanda tangan bila secrets ANDROID_KEYSTORE_BASE64/…PASSWORD/KEY_ALIAS/KEY_PASSWORD diisi.
+- Android: versionCode 3 / versionName 2.0.0; layar pembuka Android 12+ hijau hutan + ikon; SystemBars insets 'css'; PerangkatPlugin.status() kini mengembalikan `kode` (versionCode).
+- Perbaikan analisis SHP: arah cincin poligon (signedArea) terbalik → SHP multi-poligon/berlubang (tutupan lahan, kawasan hutan) ditolak "terlalu kecil" – DIPERBAIKI; bbox tanpa spread (SHP besar); cek konsistensi FREL kini membandingkan metode yang sama; titik_panas.tahun_tidak_tersedia (celah arsip ditampilkan jujur).
+- `scripts/analisis_antrean.py`: perhitungan dipisah ke `hitung(geojson, nama)`; `scripts/uji_analisis.py` menguji mesin analisis tanpa antrean produksi (cabang `uji-analisis`).

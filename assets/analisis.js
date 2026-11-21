@@ -37,7 +37,7 @@ function readSHP(buf) {
   if (!polys.length) throw new Error('SHP tidak berisi poligon.');
   return polys;
 }
-const signedArea = r => { let s = 0; for (let i = 0, j = r.length - 1; i < r.length; j = i++) s += (r[j][0] - r[i][0]) * (r[j][1] + r[i][1]); return s / 2; };   // >0 = searah jarum jam
+const signedArea = r => { let s = 0; for (let i = 0, j = r.length - 1; i < r.length; j = i++) s += (r[i][0] - r[j][0]) * (r[i][1] + r[j][1]); return s / 2; };   // >0 = searah jarum jam (sumbu y ke atas)
 const inRing = (p, r) => { let c = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) if ((r[i][1] > p[1]) !== (r[j][1] > p[1]) && p[0] < (r[j][0] - r[i][0]) * (p[1] - r[i][1]) / (r[j][1] - r[i][1]) + r[i][0]) c = !c; return c; };
 function toMulti(recs) {   // aturan shapefile: cincin luar searah jarum jam, lubang berlawanan
   const out = [];
@@ -72,14 +72,14 @@ async function bacaZip(file) {
   if (!find('.shx') || !find('.dbf')) throw new Error('Shapefile tidak lengkap: wajib ada .shp, .shx dan .dbf.');
   const recs = readSHP(await z.file(shp[0]).async('arraybuffer'));
   const prjF = find('.prj'), prj = prjF ? (await z.file(prjF).async('string')).trim() : '';
-  let mp = toMulti(recs); const flat = mp.coordinates.flat(2), xs = flat.map(p => p[0]), ys = flat.map(p => p[1]);
-  const geog = Math.max(...xs.map(Math.abs)) <= 180 && Math.max(...ys.map(Math.abs)) <= 90;
+  let mp = toMulti(recs); const bb = mp2 => { let a = Infinity, b = Infinity, c = -Infinity, d = -Infinity; for (const p of mp2.coordinates) for (const r of p) for (const q of r) { if (q[0] < a) a = q[0]; if (q[1] < b) b = q[1]; if (q[0] > c) c = q[0]; if (q[1] > d) d = q[1]; } return [a, b, c, d]; };   // tanpa spread: aman untuk SHP besar
+  const b0 = bb(mp), geog = Math.max(Math.abs(b0[0]), Math.abs(b0[2])) <= 180 && Math.max(Math.abs(b0[1]), Math.abs(b0[3])) <= 90;
   if (prj && !/^GEOGCS/i.test(prj)) {
     const proj4 = await loadJS(LIB.proj4, 'proj4'); let f; try { f = proj4(prj, 'EPSG:4326'); } catch (e) { throw new Error('Sistem koordinat (.prj) tidak dikenali. Simpan ulang SHP dalam WGS 1984 atau UTM.'); }
     mp = { type: 'MultiPolygon', coordinates: mp.coordinates.map(p => p.map(r => r.map(c => f.forward([c[0], c[1]])))) };
   } else if (!prj && !geog) throw new Error('Berkas .prj tidak ada dan koordinat bukan derajat. Sertakan .prj dalam zip.');
   else if (prj && /GEOGCS/i.test(prj) && !/WGS[ _]?(19)?84|D_WGS_1984|DGN95|SRGI/i.test(prj)) throw new Error('Datum geografis tidak didukung. Gunakan WGS 1984 (EPSG:4326) atau UTM WGS 84.');
-  const c2 = mp.coordinates.flat(2), bx = [Math.min(...c2.map(p => p[0])), Math.min(...c2.map(p => p[1])), Math.max(...c2.map(p => p[0])), Math.max(...c2.map(p => p[1]))];
+  const bx = bb(mp);
   if (bx[0] < 94 || bx[2] > 142 || bx[1] < -12 || bx[3] > 7) throw new Error('Area harus berada di wilayah Indonesia.');
   const ha = areaHa(mp);
   if (!(ha > 0.5)) throw new Error('Luas poligon terlalu kecil (< 0,5 ha) atau tidak valid.');
@@ -225,7 +225,7 @@ function viewer(el, R, back) {
       return `<div class="fan-card"><h3>Titik panas ${penuh() ? T.periode + ' · ' + N(T.total) : rLbl() + ' · ' + N(yrs.reduce((a, y) => a + S.reduce((b, k) => b + T.per_tahun[y][k], 0), 0))} deteksi</h3>${!penuh() && RY[0] < Object.keys(T.per_tahun)[0] ? `<p class="mut">Arsip titik panas untuk analisis ini tersedia ${esc(T.periode)}; tahun sebelumnya tidak dihitung.</p>` : ''}${bars(yrs.map(y => S.reduce((a, s) => a + T.per_tahun[y][s], 0)), yrs, '#E8590C', 'titik')}
        <table><tr><th>Tahun</th>${S.map(s => `<th>${s}</th>`).join('')}</tr>${yrs.map(y => `<tr><td>${y}</td>${S.map(s => `<td>${N(T.per_tahun[y][s])}</td>`).join('')}</tr>`).join('')}</table>
        ${T.terbaru.length ? `<h3 style="margin-top:14px">Deteksi terbaru</h3><table><tr><th>Tanggal (UTC)</th><th>Satelit</th><th>FRP MW</th></tr>${T.terbaru.slice(0, 12).map(r => `<tr><td>${r[0]} ${String(r[1]).padStart(4, '0').replace(/(\d\d)(\d\d)/, '$1:$2')}</td><td>${esc(r[2])}</td><td>${N(r[6], 1)}</td></tr>`).join('')}</table>` : ''}
-       <p class="fan-src">${esc(T.catatan)} Sumber: arsip tahunan resmi NASA FIRMS untuk Indonesia${T.arsip_dipakai.some(a => /NRT/.test(a)) ? ' + NASA FIRMS API untuk tahun berjalan' : ''} (${T.arsip_dipakai.length} berkas).</p></div>`; },
+       ${T.tahun_tidak_tersedia && T.tahun_tidak_tersedia.length ? `<p class="fan-err" style="font-size:12.5px">Arsip NASA FIRMS tahun ${T.tahun_tidak_tersedia.join(', ')} belum dapat diunduh saat analisis dibuat, sehingga tahun tersebut tidak ditampilkan (bukan berarti nol titik panas).</p>` : ''}<p class="fan-src">${esc(T.catatan)} Sumber: arsip tahunan resmi NASA FIRMS untuk Indonesia${T.arsip_dipakai.some(a => /NRT/.test(a)) ? ' + NASA FIRMS API untuk tahun berjalan' : ''} (${T.arsip_dipakai.length} berkas).</p></div>`; },
     () => `<div class="fan-card"><h3>Wilayah administrasi yang tercakup</h3>${R.wilayah && R.wilayah.length ? `<table><tr><th>Desa/Kelurahan</th><th>Kecamatan</th><th>Kab/Kota</th><th>% desa tercakup</th></tr>${R.wilayah.slice(0, 25).map(w => `<tr><td>${esc(w.desa)}</td><td>${esc(w.kec)}</td><td>${esc(w.kab.replace('Kabupaten ', 'Kab. '))}</td><td>${N(w.persen_desa_tercakup, 1)}</td></tr>`).join('')}</table>` : '<p class="mut">Tidak ada data wilayah.</p>'}
        <p class="fan-src">Batas desa BPS/BIG (OCHA COD-AB 2020), nama Kepmendagri No. 300.2.2-2430 Tahun 2025.</p>
        <h3 style="margin-top:14px">Sumber data & metode</h3><ul class="mut" style="padding-left:18px">${Object.values(R.sumber || {}).map(s => `<li>${esc(s)}</li>`).join('')}</ul>
@@ -250,7 +250,7 @@ function cekKonsistensi(R) {
   const ls = Object.values(R.hutan.kehilangan_per_tahun_ha).reduce((p, c) => p + c, 0); add('Jumlah kehilangan per tahun = total', `${fmt1(ls)} vs ${fmt1(R.hutan.kehilangan_total_ha)} ha`, Math.abs(ls - R.hutan.kehilangan_total_ha) <= 0.2);
   add('Kehilangan hutan <= hutan tahun 2000', `${fmt1(R.hutan.kehilangan_total_ha)} <= ${fmt1(R.hutan.hutan_2000_ha)} ha`, R.hutan.kehilangan_total_ha <= R.hutan.hutan_2000_ha + 0.1);
   const em = Object.values(R.karbon.emisi_per_tahun_kehilangan_tCO2e).reduce((p, c) => p + c, 0); add('Emisi per tahun kehilangan <= emisi bruto total', `${fmtI(em)} <= ${fmtI(C.emisi_bruto_total_tCO2e)} tCO2e`, em <= C.emisi_bruto_total_tCO2e + 2);
-  if (R.emisi_frel && R.emisi_frel.periode_2020_2025 && window.FHKarbon) { const K = FHKarbon, A = K.awalHD(R, 2020, 2025); if (A) { const e = K.hitungHD(A, K.param({ y0: 2020, y1: 2025, eff: .9, leak: .05, buf: .135 })).m.d3, v = R.emisi_frel.periode_2020_2025.emisi_tCO2e; add('FREL 2020-2025: hitungan aplikasi = hitungan server', `${fmtI(e)} vs ${fmtI(v)} tCO2e`, Math.abs(e - v) <= Math.max(1, Math.abs(v) * 0.001)); } }
+  if (R.emisi_frel && R.emisi_frel.periode_2020_2025 && window.FHKarbon) { const K = FHKarbon, R0 = Object.assign({}, R, { emisi_frel: Object.assign({}, R.emisi_frel, { hilang_kode_ha: null }) }), A = K.awalHD(R0, 2020, 2025); /* metode dasar yang sama dengan server (tanpa model peta KLHK 2025) */ if (A) { const e = K.hitungHD(A, K.param({ y0: 2020, y1: 2025, eff: .9, leak: .05, buf: .135 })).m.d3, v = R.emisi_frel.periode_2020_2025.emisi_tCO2e; add('FREL 2020-2025 (metode dasar): hitungan aplikasi = hitungan server', `${fmtI(e)} vs ${fmtI(v)} tCO2e`, Math.abs(e - v) <= Math.max(1, Math.abs(v) * 0.001)); } }
   if (R.titik_panas) { const t = Object.values(R.titik_panas.per_tahun).reduce((p, o) => p + Object.values(o).reduce((a, b) => a + b, 0), 0); add('Jumlah titik panas per tahun = total', `${fmtI(t)} = ${fmtI(R.titik_panas.total)}`, t === R.titik_panas.total); }
   if (R.luas_geodesik_ha) add('Luas piksel vs luas poligon geodesik', `${fmt1(R.luas_ha)} vs ${fmt1(R.luas_geodesik_ha)} ha (selisih karena aturan pusat piksel 30 m)`, Math.abs(R.luas_ha - R.luas_geodesik_ha) <= Math.max(1, R.luas_geodesik_ha * 0.03));
   return out;
@@ -317,7 +317,7 @@ async function pdfHasil(R) {
       TAB([['Tipe hutan (periode 2020-2025)', 'Luas 2020 (ha)', 'Deforestasi (ha)', 'Degradasi (ha)', 'Luas 2025 (ha)', 'Pengurangan C (Mg C)'], ...Hh.r.map((x, j) => [['Hutan Lahan Kering Primer', 'Hutan Lahan Kering Sekunder', 'Hutan Rawa Primer', 'Hutan Rawa Sekunder'][j], fmt1(x.D), fmt1(x.E), fmt1(x.F), fmt1(x.C), fmt1(x.K)]), ['Emisi 2020-2025 (tCO2e)', '', '', '', '', fmtI(Hh.m.d3)]], 7.6);
       TAB([['Tahun', 'Emisi (tCO2e)'], ...yrs.map((v, i) => [String(v), fmtI(ey[i])])], 7.4);
       (F.keterbatasan || []).forEach(x => P('- ' + x, 8)); (F.sumber || []).forEach(x => P('- ' + x, 7.8, [90, 100, 95])); } }
-  if (T) { H1(`Titik panas ${T.periode}`); P(`${T.catatan} Sumber: ${R.sumber.titik_panas}.`, 8.3, [90, 100, 95]); const ty = Object.keys(T.per_tahun), S = Object.keys(T.per_tahun[ty[0]]);
+  if (T) { H1(`Titik panas ${T.periode}`); P(`${T.catatan} Sumber: ${R.sumber.titik_panas}.${T.tahun_tidak_tersedia && T.tahun_tidak_tersedia.length ? ' Arsip tahun ' + T.tahun_tidak_tersedia.join(', ') + ' belum tersedia saat analisis dibuat (tidak ditampilkan, bukan nol).' : ''}`, 8.3, [90, 100, 95]); const ty = Object.keys(T.per_tahun), S = Object.keys(T.per_tahun[ty[0]]);
     TAB([['Tahun', ...S, 'Jumlah'], ...ty.map(v => [v, ...S.map(s => fmtI(T.per_tahun[v][s])), fmtI(S.reduce((p, s) => p + T.per_tahun[v][s], 0))])], 7.8);
     if (T.terbaru.length) TAB([['Tanggal (UTC)', 'Jam', 'Satelit', 'Lat', 'Lon', 'Keyakinan', 'FRP (MW)'], ...T.terbaru.slice(0, 25).map(r => [r[0], String(r[1]).padStart(4, '0'), r[2], r[3], r[4], r[5], fmt1(r[6])])], 7.4); }
   if (R.wilayah && R.wilayah.length) { H1('Wilayah administrasi tercakup'); TAB([['Desa/Kelurahan', 'Kecamatan', 'Kab/Kota', 'Provinsi', '% desa'], ...R.wilayah.slice(0, 40).map(w => [w.desa, w.kec, w.kab, w.prov, fmt1(w.persen_desa_tercakup)])], 7.6); }

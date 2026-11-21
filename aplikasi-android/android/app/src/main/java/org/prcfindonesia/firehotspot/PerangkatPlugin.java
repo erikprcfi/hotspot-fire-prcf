@@ -28,7 +28,7 @@ public class PerangkatPlugin extends Plugin {
         PowerManager pm = (PowerManager) c.getSystemService(Context.POWER_SERVICE);
         r.put("bebasBaterai", pm == null || pm.isIgnoringBatteryOptimizations(c.getPackageName()));
         r.put("notifikasi", Build.VERSION.SDK_INT < 33 || ContextCompat.checkSelfPermission(c, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED);
-        try { PackageInfo p = c.getPackageManager().getPackageInfo(c.getPackageName(), 0); r.put("versi", p.versionName); } catch (Exception e) { r.put("versi", ""); }
+        try { PackageInfo p = c.getPackageManager().getPackageInfo(c.getPackageName(), 0); r.put("versi", p.versionName); r.put("kode", Build.VERSION.SDK_INT >= 28 ? p.getLongVersionCode() : p.versionCode); } catch (Exception e) { r.put("versi", ""); }
         r.put("android", Build.VERSION.RELEASE); r.put("merek", Build.MANUFACTURER); r.put("model", Build.MODEL);
         call.resolve(r);
     }
