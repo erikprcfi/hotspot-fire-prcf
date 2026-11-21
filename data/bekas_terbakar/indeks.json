@@ -1078,15 +1078,48 @@
    "dicoba_utc": "2026-10-25T17:37:16Z"
   },
   "batangtau_2026-07-18": {
-   "status": "tertutup awan",
-   "cerah_persen": 30,
+   "status": "selesai",
+   "id": "batangtau_2026-07-18",
+   "cerah_persen": 100,
+   "luas_ha": 79.4,
+   "luas_rendah_sedang_ha": 3.92,
+   "luas_sedang_tinggi_ha": 12.96,
+   "luas_tinggi_ha": 62.52,
+   "bbox_wgs84": [
+    112.37491,
+    0.28953,
+    112.5024,
+    0.45299
+   ],
+   "citra_sebelum": [
+    "S2B_49NFA_20260606_0_L2A",
+    "S2A_49NFA_20260713_0_L2A",
+    "S2C_49NFA_20260711_0_L2A",
+    "S2A_49NFA_20260603_0_L2A"
+   ],
+   "citra_sesudah": [
+    "S2C_49NFA_20260830_0_L2A",
+    "S2C_49NFA_20260830_1_L2A",
+    "S2C_49NFA_20261009_0_L2A"
+   ],
+   "tanggal_sebelum": [
+    "2026-06-03",
+    "2026-06-06",
+    "2026-07-11",
+    "2026-07-13"
+   ],
+   "tanggal_sesudah": [
+    "2026-08-30",
+    "2026-08-30",
+    "2026-10-09"
+   ],
    "lokasi": "batangtau",
    "hd_nama": "Hutan Desa Batang Tau",
    "desa": "Sri Wangi",
    "awal": "2026-07-18",
-   "akhir": "2026-08-29",
-   "n_kejadian": 37,
-   "n_deteksi": 88,
+   "akhir": "2026-08-25",
+   "n_kejadian": 32,
+   "n_deteksi": 72,
    "kejadian": [
     "KJ-20260718-1FA3A",
     "KJ-20260724-0CA1F",
@@ -1099,34 +1132,29 @@
     "KJ-20260803-F075F",
     "KJ-20260803-A21B9",
     "KJ-20260804-CF4DD",
-    "KJ-20260804-AB0E0",
+    "KJ-20260804-DE170",
     "KJ-20260805-7CA65",
     "KJ-20260805-B11FB",
     "KJ-20260805-40137",
-    "KJ-20260805-5701E",
-    "KJ-20260805-D53B7",
-    "KJ-20260806-01085",
-    "KJ-20260806-89261",
-    "KJ-20260806-77094",
+    "KJ-20260806-6827B",
+    "KJ-20260806-BE423",
+    "KJ-20260806-33453",
     "KJ-20260807-87540",
     "KJ-20260807-6B8E5",
-    "KJ-20260807-B35B3",
     "KJ-20260808-78F9E",
     "KJ-20260808-2A534",
     "KJ-20260809-7C08A",
-    "KJ-20260809-FBD1F",
-    "KJ-20260811-FD90F",
-    "KJ-20260811-A2DAE",
-    "KJ-20260813-5F752",
+    "KJ-20260809-0302F",
+    "KJ-20260811-ABF20",
+    "KJ-20260811-32CEF",
     "KJ-20260813-DB6E8",
-    "KJ-20260814-5423E",
-    "KJ-20260816-7342D",
-    "KJ-20260820-7CF9C",
+    "KJ-20260814-7B529",
+    "KJ-20260816-E9D56",
+    "KJ-20260820-84BD3",
     "KJ-20260822-1184D",
-    "KJ-20260823-859CE",
-    "KJ-20260829-CA66B"
+    "KJ-20260823-859CE"
    ],
-   "dicoba_utc": "2026-10-28T03:26:09Z"
+   "dicoba_utc": "2026-11-21T17:50:56Z"
   },
   "nyuai_2026-01-21": {
    "status": "tertutup awan",
@@ -1409,6 +1437,6 @@
    "dicoba_utc": "2026-11-01T06:22:00Z"
   }
  },
- "diperbarui_utc": "2026-11-21T13:48:35Z",
+ "diperbarui_utc": "2026-11-21T17:50:56Z",
  "metode": "Luas bekas terbakar otomatis dari citra Sentinel-2 – Pantau Rimbak PRCF\n======================================================================\n\nUntuk setiap \"musim api\" (kejadian api berdekatan waktu, jeda > 75 hari = musim baru) yang\nberjarak <= 5 km dari salah satu lokasi Hutan Desa:\n\n  1. Citra Sentinel-2 L2A (ESA Copernicus; arsip COG publik AWS / Element 84 Earth Search):\n     komposit SEBELUM (75 hari sebelum api pertama) dan SESUDAH (3–45 hari setelah api terakhir, agar tanda hangus belum tertutup tumbuhan baru),\n     median per piksel dari maksimal 4 citra paling sedikit awan; awan, bayangan, & air dibuang\n     dengan lapisan klasifikasi SCL.\n  2. NBR = (B8A − B12) / (B8A + B12) pada 20 m; dNBR = NBR sebelum − NBR sesudah.\n  3. Piksel terbakar: dNBR ≥ 0,27 (kelas keparahan Key & Benson 2006, FIREMON/USGS:\n     0,27–0,44 rendah–sedang, 0,44–0,66 sedang–tinggi, ≥ 0,66 tinggi).\n  3b. Syarat tambahan per citra sesudah: SWIR2 naik >= 0,02 (membedakan dari bayangan/air), NBR sesudah <= 0,20\n      (permukaan hangus), konsisten di >= 2 citra sesudah bila tersedia, sebelum api NBR >= 0,3 (bervegetasi).\n  4. Hanya petak yang berada <= 1 km dari deteksi titik api NASA FIRMS pada musim tsb. dan\n     luasnya >= 0,5 ha yang dihitung (mengurangi salah deteksi panen/perubahan vegetasi lain).\n  5. Bila piksel cerah < 60% wilayah analisa → status \"tertutup awan\", dicoba ulang pada run berikutnya.\n\nKeluaran: data/bekas_terbakar/indeks.json, bekas_terbakar.geojson (WGS84),\ndata/export/bekas_terbakar_<lokasi>_shp.zip (UTM 49N), pratinjau sebelum/sesudah (PNG).\nHasil adalah INDIKASI dari citra satelit; perlu verifikasi lapangan."
 }
