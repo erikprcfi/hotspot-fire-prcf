@@ -123,7 +123,9 @@ async function periksaPembaruan() {
     if (b && b.id) await UP.next({ id: b.id });
   } catch (e) { console.warn('Pembaruan aplikasi ditunda:', e && e.message); }
 }
-addEventListener('load', () => { setTimeout(siap, 1500); setTimeout(periksaPembaruan, 12000); });
+// "aplikasi siap" dikirim begitu inti aplikasi (FHApp) berjalan – tidak menunggu semua gambar/peta, agar HP lambat tidak memicu pembatalan pembaruan
+(function tungguSiap(n) { if (window.FHApp) { siap(); return; } if (n < 140) setTimeout(() => tungguSiap(n + 1), 100); })(0);   /* tanpa FHApp dalam 14 dtk = versi rusak → biarkan dibatalkan otomatis */
+addEventListener('load', () => setTimeout(periksaPembaruan, 12000));
 addEventListener('online', () => setTimeout(periksaPembaruan, 5000));
 if (App && App.addListener) App.addListener('resume', () => setTimeout(periksaPembaruan, 4000));
 })();
