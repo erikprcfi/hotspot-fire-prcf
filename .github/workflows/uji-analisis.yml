@@ -36,6 +36,8 @@ jobs:
         env:
           FIRMS_CACHE: /tmp/firms_cache
           FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+          ANALISIS_KEY: ${{ secrets.ANALISIS_KEY }}   # hanya untuk membaca kunci FIRMS dari Apps Script (sama dengan pekerja); tidak menulis apa pun
+          AKUN_URL: https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec
         run: python scripts/uji_analisis.py uji/shp uji/hasil
       - name: Simpan hasil
         if: always()
