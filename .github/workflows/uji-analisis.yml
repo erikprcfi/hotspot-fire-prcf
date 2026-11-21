@@ -1,0 +1,47 @@
+name: Uji mesin analisis SHP
+# Hanya di cabang uji-analisis: menjalankan analisis_antrean.hitung() (sama dengan pekerja produksi) untuk SHP contoh
+# di uji/shp/*.geojson, lalu menyimpan hasil & ringkasan ke uji/hasil/ di cabang yang sama. Tidak menyentuh antrean produksi.
+on:
+  push:
+    branches: [uji-analisis]
+    paths: ['uji/shp/**', 'scripts/**', '.github/workflows/uji-analisis.yml']
+permissions:
+  contents: write
+concurrency:
+  group: uji-analisis
+  cancel-in-progress: true
+jobs:
+  uji:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Tanggal
+        id: tgl
+        run: echo "d=$(date -u +%Y%m%d)" >> $GITHUB_OUTPUT
+      - name: Cache arsip FIRMS
+        uses: actions/cache@v4
+        with:
+          path: /tmp/firms_cache
+          key: firms-indonesia-v2-${{ steps.tgl.outputs.d }}
+          restore-keys: |
+            firms-indonesia-v2-
+            firms-indonesia-2016-2025-v1
+      - name: Pasang pustaka
+        run: pip install shapely==2.0.6 pyproj==3.7.0 rasterio==1.4.3 numpy
+      - name: Jalankan uji
+        env:
+          FIRMS_CACHE: /tmp/firms_cache
+          FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+        run: python scripts/uji_analisis.py uji/shp uji/hasil
+      - name: Simpan hasil
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A uji/hasil || true
+          git diff --cached --quiet || git commit -m "Hasil uji analisis $(date -u +%FT%TZ)"
+          git push || true
