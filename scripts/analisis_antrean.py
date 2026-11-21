@@ -11,6 +11,7 @@ import terbuka_nasional as TN
 from analisis_inti import hitung_raster, hitung_titik_panas, wilayah, muat_klhk, SUMBER, KELAS, TAHUN_LC
 from shapely.geometry import shape, mapping
 from shapely.validation import make_valid
+from shapely.ops import unary_union
 from pyproj import Geod
 
 KEY, URL = os.environ.get("ANALISIS_KEY", ""), os.environ.get("AKUN_URL", "")
@@ -27,9 +28,24 @@ def terbuka(g, lk_resmi):   # data terbuka nasional: tutupan 2021 (ESA WorldCove
         except Exception as e: print("  indikasi lahan kritis gagal:", e)
     return out
 
+def gabung_poligon(geojson):
+    """GeoJSON (Multi)Polygon → satu geometri sah. Poligon yang berbagi tepi/bertumpuk (grid, kelas tutupan lahan) digabung
+    per bagian lalu di-union, sehingga tidak ada bagian yang terbuang oleh perbaikan geometri (make_valid pada MultiPolygon
+    berisi poligon bersentuhan menghasilkan GeometryCollection, dan buffer(0) atas koleksi itu kehilangan sebagian luas)."""
+    g0 = shape(geojson)
+    bagian = list(g0.geoms) if hasattr(g0, "geoms") else [g0]
+    poli = []
+    for b in bagian:
+        v = make_valid(b)
+        if v.geom_type in ("Polygon", "MultiPolygon"): poli.append(v)
+        elif hasattr(v, "geoms"): poli += [x for x in v.geoms if x.geom_type in ("Polygon", "MultiPolygon")]
+    if not poli: raise ValueError("geometri bukan poligon yang sah")
+    g = unary_union(poli)
+    return g if g.geom_type in ("Polygon", "MultiPolygon") else make_valid(g).buffer(0)
+
 def hitung(geojson, nama=None):
     """Hitung semua analisis untuk satu poligon (dipakai pekerja antrean & uji)."""
-    g = make_valid(shape(geojson)); g = g if g.geom_type in ("Polygon", "MultiPolygon") else g.buffer(0)
+    g = gabung_poligon(geojson)
     if g.is_empty or g.geom_type not in ("Polygon", "MultiPolygon"): raise ValueError("geometri bukan poligon yang sah")
     luas_geo = abs(Geod(ellps="WGS84").geometry_area_perimeter(g)[0]) / 1e4
     if luas_geo > 260000: raise ValueError(f"luas {luas_geo:.0f} ha melebihi batas 250.000 ha")
