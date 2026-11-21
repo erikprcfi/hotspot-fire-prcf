@@ -65,7 +65,7 @@ let kb = 0;
 for (const f of DATA) { const s = path.join(ROOT, 'data', f); if (fs.existsSync(s)) { cp(s, path.join(WWW, 'data', f)); kb += fs.statSync(s).size / 1024; } }
 
 // 5. versi
-let versi; try { versi = execSync('git log -1 --format=%cd --date=format:%Y%m%d%H%M -- app.html assets aplikasi-android/siapkan-www.mjs', { cwd: ROOT }).toString().trim(); } catch (e) { }
+let versi; try { versi = execSync('git log -1 --format=%cd --date=format-local:%Y%m%d%H%M -- app.html assets aplikasi-android/siapkan-www.mjs', { cwd: ROOT, env: Object.assign({}, process.env, { TZ: 'UTC' }) }).toString().trim(); /* selalu UTC: versi sama di mana pun dibangun */ } catch (e) { }
 if (!versi) { const d = new Date(); versi = d.toISOString().replace(/\D/g, '').slice(0, 12); }
 fs.writeFileSync(path.join(WWW, 'versi.json'), JSON.stringify({ versi, dibuat: new Date().toISOString() }));
 const ukuran = d => semua(d).reduce((a, f) => a + fs.statSync(f).size, 0);
