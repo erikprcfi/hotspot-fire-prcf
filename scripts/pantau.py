@@ -52,8 +52,13 @@ def server():
     return bool(d.get('ok')) and 'database pengguna' in d.get('layanan', ''), d.get('layanan', str(d))
 
 def apk():
-    s, b, ct = ambil(SITUS + 'unduh/FireHotspot-PRCF.apk', 2)
-    return s == 200 and len(b) > 1_000_000 and b[:2] == b'PK', f'HTTP {s}, {len(b)/1e6:.1f} MB'
+    s, b, ct = ambil(SITUS + 'unduh/PantauRimbak.apk', 2)
+    return s == 200 and len(b) > 1_000_000 and b[:2] == b'PK', f'HTTP {s}, {len(b)/1e6:.1f} MB (halaman unduhan: {SITUS}unduh/)'
+
+def paket():
+    s, b, _ = ambil(SITUS + 'aplikasi/paket/terbaru.json'); d = json.loads(b)
+    s2, z, _ = ambil(SITUS + d['url'], 2)
+    return s2 == 200 and z[:2] == b'PK' and len(z) == int(d.get('ukuran', len(z))), f"versi {d['versi']}, {len(z)/1e6:.1f} MB"
 
 def kb():
     s, b, _ = ambil(SITUS + 'data/bara/kb.json'); d = json.loads(b)
@@ -68,6 +73,7 @@ cek('Prakiraan bahaya kebakaran & cuaca', data_segar('data/prakiraan.json', 'dip
 cek('Riwayat cuaca ERA5', data_segar('data/cuaca.json', 'diunduh_utc', 50))
 cek('Server database pengguna (Apps Script)', server)
 cek('File APK Android', apk)
+cek('Paket pembaruan otomatis aplikasi', paket)
 cek('Basis peraturan Bara Api', kb)
 
 gagal = [h for h in HASIL if not h[0]]
