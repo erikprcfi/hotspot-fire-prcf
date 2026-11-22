@@ -43,10 +43,14 @@ async function ambilData(x) {
   if (BESAR.test(path)) { const r = await tunggu(dariServer(url, kunci), 30000); return r || (await simpanan(kunci)) || luring(); }
   const net = dariServer(url, kunci); net.catch(() => { });   // tandai tertangani sejak awal (pemeriksaan salinan HP berjalan lebih dulu)
   if (!segar && STATIS.test(path)) { const h = (await simpanan(kunci)) || (await bawaan(x)); if (h) { net.catch(() => { }); return h; } return net.catch(luring); }
-  if (!segar) { const h = await simpanan(kunci), t = h && +h.headers.get('x-pr-t'); if (h && t && Date.now() - t < 15 * 6e4) { net.catch(() => { }); return h; } }
-  const r = await tunggu(net, segar ? 20000 : 3000);
+  let h = null;
+  if (!segar) { h = await simpanan(kunci); const t = h && +h.headers.get('x-pr-t'); if (h && t && Date.now() - t < 15 * 6e4) { net.catch(() => { }); return h; } }
+  /* sudah ada salinan (di HP atau bawaan APK) → tunggu server paling lama 1,5 dtk; data yang datang belakangan tetap disimpan
+     dan dimuat ulang otomatis oleh pemeriksaan status, jadi pengguna tidak menatap layar kosong saat sinyal lemah */
+  const cad = segar ? null : (h || await bawaan(x));
+  const r = await tunggu(net, segar ? 20000 : (cad ? 1500 : 3000));
   if (r && r.ok) return r;
-  return (await simpanan(kunci)) || (await bawaan(x)) || net.catch(luring);
+  return (await simpanan(kunci)) || cad || (await bawaan(x)) || net.catch(luring);
 }
 window.fetch = function (input, init) {
   const u = typeof input === 'string' ? input : (input && input.url);
