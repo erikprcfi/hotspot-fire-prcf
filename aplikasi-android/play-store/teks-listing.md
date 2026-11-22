@@ -43,10 +43,10 @@ Hapus akun: https://erikprcfi.github.io/hotspot-fire-prcf/hapus-akun.html
 - tangkapan-1 … tangkapan-6 – tangkapan layar ponsel 1080 × 1920 px (9:16)
 
 ## Catatan unggah versi 2.0.0 (aplikasi asli, kode 3)
-- Berkas: AAB rilis (`PantauRimbak-…-rilis.aab`) ditandatangani dengan kunci unggah Anda; ID `org.prcfindonesia.pantaurimbak`, targetSdk 36.
+- Berkas: `PantauRimbak-2.0.0-playstore.aab` (sudah ditandatangani kunci distribusi PRCF = kunci unggah); ID `org.prcfindonesia.pantaurimbak`, targetSdk 36.
 - Aplikasi berjalan tanpa Chrome dan tanpa sinyal (seluruh kode di dalam APK). Data diambil dari server Pantau Rimbak saat ada sinyal; pembaruan tampilan/fitur (HTML/JS) diunduh dari server resmi dan dipakai saat aplikasi dibuka berikutnya (sesuai kebijakan Google Play untuk kode yang dijalankan di WebView).
 - Deklarasi izin di Play Console:
-  - **Lokasi latar belakang / layanan latar depan jenis lokasi**: dipakai HANYA saat anggota tim patroli menyalakan "Bagikan lokasi" (notifikasi tampil selama berjalan). Siapkan video singkat: buka Patroli → nyalakan berbagi lokasi → notifikasi muncul → matikan.
+  - **Layanan latar depan jenis lokasi** (aplikasi TIDAK meminta izin lokasi latar belakang): dipakai HANYA saat anggota tim patroli menyalakan "Bagikan lokasi" (notifikasi tampil selama berjalan). Siapkan video singkat: buka Patroli → nyalakan berbagi lokasi → notifikasi muncul → matikan.
   - **Kamera**: foto laporan warga & cek lapangan (opsional).
   - **Notifikasi**: peringatan titik panas di lokasi tersimpan & status berbagi lokasi.
 - Keamanan data (Data safety): lokasi (opsional, tim patroli & laporan warga), foto (laporan), email & nama (akun), log galat teknis; semua dienkripsi saat dikirim (HTTPS); pengguna dapat meminta penghapusan akun (hapus-akun.html).
