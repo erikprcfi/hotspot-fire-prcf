@@ -195,3 +195,11 @@ Live ke main bila semua uji lulus.
 - Server analisis (21 Nov, sore): `gabung_poligon()` – poligon bersentuhan/bertumpuk di-union per bagian (sebelumnya grid 1.437 ha terhitung 747 ha; kawasan/tutupan lahan kehilangan 12–17% luas). `titik_panas.tahun_tidak_tersedia` mencakup semua tahun tanpa data.
 - Uji: cabang `uji-analisis` (workflow uji-analisis.yml; hasil di uji/hasil & uji/hasil-awal) – 11 SHP lengkap semua bagian; 4 SHP multi-poligon diuji ulang setelah perbaikan (luas & titik panas 2016–2026 benar).
 - Emulator Android tanpa KVM tidak dapat dipakai menguji (boot gagal/terlalu lambat); uji APK = isi www di Chromium dengan Capacitor tiruan (uji_asli.js 15/15) + pemeriksaan isi APK (config tanpa server.url, plugin, versi).
+
+### 22 Nov – Perbaikan dari uji HP pengguna + halaman unduhan
+- GALAT KRITIS (aplikasi asli): Capacitor berjalan di https://localhost → akun.js menganggap "mode uji" (UJI) → login tak pernah dikirim ke server ("Tidak ada sinyal" padahal WiFi) & mode tamu/akun tanpa kode menampilkan data Hutan Desa PRCF. Diperbaiki: UJI/LOKAL hanya bila !FH_ASLI (akun.js, pelengkap.js). Paket pembaruan otomatis membawa perbaikan ke APK yang sudah terpasang.
+- Area aman: semua env(safe-area-inset-*) → var(--safe-area-inset-*, env(...)) (nilai disuntik SystemBars Capacitor) – teks tak lagi tertimpa bilah status.
+- unduh/ = halaman unduhan resmi (https://erikprcfi.github.io/hotspot-fire-prcf/unduh/), APK rilis 2.0.0 ditandatangani KUNCI DISTRIBUSI (pantau-rimbak-distribusi.jks, alias pantaurimbak – disimpan pengguna, TIDAK di repo). pasang.html → dialihkan ke unduh/. APK lama FireHotspot-PRCF.apk dihapus.
+- Uji lengkap (scratchpad/uji/uji_lengkap.js): website (HTTPS tiruan via route, host bukan localhost) & aplikasi asli (Capacitor tiruan) × tamu/akun tanpa kode/akun+SHP (11 SHP) × setiap alat hub; pemeriksaan: galat JS, teks NaN/undefined, tidak ada data HD PRCF di mode umum/SHP, nama wilayah SHP tampil.
+- Catatan uji: http non-localhost bukan "secure context" → crypto.subtle tidak ada → login gagal (artefak uji, bukan galat produksi). Gunakan HTTPS.
+- Uji analisis final (cabang uji-analisis, uji/hasil): 11/11 SHP lengkap, luas konsisten, titik panas 2016–2026 tanpa celah; tampilan hasil 11/11 konsistensi 8/8, PDF & CSV.
