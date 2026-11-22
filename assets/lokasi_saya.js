@@ -16,7 +16,7 @@ const LK = 'fh_lok_saya', SK = 'fh_lok_lihat', NK = 'fh_lok_notif', MAX = 3, RAD
 const daftar = () => baca(LK, []).filter(x => x && isFinite(x.lat) && isFinite(x.lon)).slice(0, MAX);
 const wib = ms => new Date(ms + 7 * 36e5).toISOString().slice(0, 16).replace('T', ' ') + ' WIB';
 const NAT = () => !!(window.FHNative && FHNative.aktif), LN = () => NAT() && FHNative.plugin('LocalNotifications');
-const toast = t => { const d = document.createElement('div'); d.textContent = t; d.style.cssText = 'position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#14211c;color:#fff;padding:10px 16px;border-radius:12px;font:600 13px var(--f,system-ui);z-index:9600;max-width:90%;text-align:center'; document.body.appendChild(d); setTimeout(() => d.remove(), 3200); };
+const toast = t => { const d = document.createElement('div'); d.textContent = t; d.style.cssText = 'position:fixed;left:50%;bottom:calc(86px + var(--safe-area-inset-bottom,env(safe-area-inset-bottom)));transform:translateX(-50%);background:#14211c;color:#fff;padding:10px 16px;border-radius:12px;font:600 13px var(--f,system-ui);z-index:9600;max-width:90%;text-align:center'; document.body.appendChild(d); setTimeout(() => d.remove(), 3200); };
 
 async function izin() {
   if (LN()) { const P = LN(); let s = await P.checkPermissions(); if (s.display !== 'granted') s = await P.requestPermissions(); return s.display === 'granted'; }
@@ -54,7 +54,7 @@ async function cek(diam) {
 }
 function tampilKartu() {   // tanpa izin notifikasi: tampilkan kartu di dalam aplikasi
   const k = kartu.shift(); if (!k) return; const d = document.createElement('div');
-  d.style.cssText = 'position:fixed;left:12px;right:12px;top:calc(64px + env(safe-area-inset-top));z-index:9400;max-width:460px;margin:0 auto;background:#fff;color:#14211c;border-left:5px solid #C2410C;border-radius:14px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-family:var(--f,system-ui)';
+  d.style.cssText = 'position:fixed;left:12px;right:12px;top:calc(64px + var(--safe-area-inset-top,env(safe-area-inset-top)));z-index:9400;max-width:460px;margin:0 auto;background:#fff;color:#14211c;border-left:5px solid #C2410C;border-radius:14px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-family:var(--f,system-ui)';
   d.innerHTML = `<b style="display:block;font-size:14px">${esc(k.j)}</b><span style="font-size:13px;color:#4f5d56">${esc(k.s)}</span><button style="float:right;margin-top:6px;border:0;background:#1E7A58;color:#fff;border-radius:10px;padding:7px 12px;font:700 12.5px var(--f,system-ui)">OK</button>`;
   d.querySelector('button').onclick = () => { d.remove(); tampilKartu(); }; document.body.appendChild(d);
 }

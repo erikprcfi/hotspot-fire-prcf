@@ -36,10 +36,10 @@ function css() {
   st.textContent = `.p3d{position:fixed;inset:0;z-index:4000;background:#05080a;color:#fff;font-family:var(--f,system-ui,sans-serif);animation:p3in .35s ease both}
   @keyframes p3in{from{opacity:0;transform:scale(1.03)}to{opacity:1;transform:none}}
   .p3d #p3map{position:absolute;inset:0}
-  .p3d .top{position:absolute;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 26px;display:flex;gap:10px;align-items:center;background:linear-gradient(#05080add,#05080a00);pointer-events:none}
+  .p3d .top{position:absolute;left:0;right:0;top:0;padding:calc(var(--safe-area-inset-top,env(safe-area-inset-top,0px)) + 10px) 12px 26px;display:flex;gap:10px;align-items:center;background:linear-gradient(#05080add,#05080a00);pointer-events:none}
   .p3d .top>*{pointer-events:auto}.p3d .x{width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:20px;backdrop-filter:blur(8px);flex:none}
   .p3d .tt{min-width:0;flex:1}.p3d .tt b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.p3d .tt span{font-size:11.5px;opacity:.75}
-  .p3d .side{position:absolute;right:10px;top:calc(env(safe-area-inset-top,0px) + 70px);display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+  .p3d .side{position:absolute;right:10px;top:calc(var(--safe-area-inset-top,env(safe-area-inset-top,0px)) + 70px);display:flex;flex-direction:column;gap:10px;align-items:flex-end}
   .p3d .grp{display:flex;flex-direction:column;background:rgba(255,255,255,.94);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.35);overflow:hidden}
   .p3d .grp button{width:44px;height:44px;border:0;background:transparent;color:#1B2A22;display:grid;place-items:center;position:relative;cursor:pointer}
   .p3d .grp button+button{border-top:1px solid #E1E6E2}
@@ -50,9 +50,9 @@ function css() {
   .p3d .grp button .lb{position:absolute;right:52px;top:50%;transform:translateY(-50%);background:rgba(10,16,14,.82);color:#fff;font:600 11px var(--f,sans-serif);padding:4px 8px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s}
   .p3d .grp button:hover .lb,.p3d .grp button:focus-visible .lb{opacity:1}
   .p3d #p3c svg{transition:transform .15s linear}
-  .p3d .scale{position:absolute;left:12px;top:calc(env(safe-area-inset-top,0px) + 70px);font:600 10.5px var(--f,sans-serif);color:#fff;text-shadow:0 1px 2px #000}
+  .p3d .scale{position:absolute;left:12px;top:calc(var(--safe-area-inset-top,env(safe-area-inset-top,0px)) + 70px);font:600 10.5px var(--f,sans-serif);color:#fff;text-shadow:0 1px 2px #000}
   .p3d .scale i{display:block;height:6px;border:2px solid #fff;border-top:0;margin-top:2px;box-shadow:0 1px 2px #0008}
-  .p3d .bot{position:absolute;left:0;right:0;bottom:0;padding:22px 12px calc(env(safe-area-inset-bottom,0px) + 12px);background:linear-gradient(#05080a00,#05080ae6);display:grid;gap:9px}
+  .p3d .bot{position:absolute;left:0;right:0;bottom:0;padding:22px 12px calc(var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px)) + 12px);background:linear-gradient(#05080a00,#05080ae6);display:grid;gap:9px}
   .p3d .chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.p3d .chips::-webkit-scrollbar{display:none}
   .p3d .chips button{flex:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:999px;padding:7px 12px;font:600 12px var(--f,sans-serif)}
   .p3d .chips button.on{background:#fff;color:#12201A;border-color:#fff}

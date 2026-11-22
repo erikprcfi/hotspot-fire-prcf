@@ -15,10 +15,10 @@ const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '
 /* ================= 1. LOG GALAT ================= */
 const GK = 'fh_galat_antre', GV = '2026.11b';
 const URL_ = 'https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec', KUNCI = 'fh-prcf-2026-akun';
-const LOKAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const LOKAL = !window.FH_ASLI && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);   /* aplikasi asli (https://localhost) tetap mengirim log galat */
 const ABAI = /ResizeObserver loop|Script error\.?$|Non-Error promise rejection|AbortError|The user aborted|Load failed|Failed to fetch|NetworkError|cancelled|chrome-extension:|moz-extension:/i;
 const perangkat = () => { const u = navigator.userAgent; const a = (u.match(/Android [\d.]+/) || u.match(/iPhone OS [\d_]+/) || u.match(/Windows NT [\d.]+|Mac OS X [\d_]+|Linux/) || ['?'])[0].replace(/_/g, '.');
-  const b = (u.match(/(Edg|OPR|SamsungBrowser|Chrome|Firefox|Safari)\/[\d]+/) || ['?'])[0]; return `${a} · ${b} · ${window.FHNative && FHNative.aktif ? 'APK' : (matchMedia && matchMedia('(display-mode: standalone)').matches ? 'PWA' : 'web')} · ${innerWidth}px`; };
+  const b = (u.match(/(Edg|OPR|SamsungBrowser|Chrome|Firefox|Safari)\/[\d]+/) || ['?'])[0]; return `${a} · ${b} · ${window.FH_ASLI ? 'APK-asli' : window.FHNative && FHNative.aktif ? 'APK' : (matchMedia && matchMedia('(display-mode: standalone)').matches ? 'PWA' : 'web')} · ${innerWidth}px`; };
 const halaman = () => { try { const p = document.querySelector('#page.on #pgTitle, .appbar .t b, #abTitle'); return (location.pathname.split('/').pop() || 'index') + (p ? ' · ' + p.textContent.trim().slice(0, 40) : ''); } catch (e) { return location.pathname; } };
 function catat(pesan, sumber) {
   pesan = String(pesan || '').slice(0, 300); if (!pesan || ABAI.test(pesan) || ABAI.test(sumber || '')) return;
@@ -87,7 +87,7 @@ function buka(paksa) {
   const L = SL(); let i = 0;
   const d = document.createElement('div'); d.id = 'fhPa'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true');
   d.innerHTML = `<style>#fhPa{position:fixed;inset:0;z-index:9500;background:rgba(6,20,15,.62);display:flex;align-items:flex-end;justify-content:center;font-family:var(--f,system-ui)}
-  #fhPa .bx{background:#fff;color:#14211c;width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:26px 22px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.25)}
+  #fhPa .bx{background:#fff;color:#14211c;width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:26px 22px calc(20px + var(--safe-area-inset-bottom,env(safe-area-inset-bottom)));box-shadow:0 -10px 40px rgba(0,0,0,.25)}
   @media(min-width:700px){#fhPa{align-items:center}#fhPa .bx{border-radius:24px}}
   #fhPa .em{font-size:44px;line-height:1}#fhPa h3{margin:14px 0 8px;font-size:20px;color:#14211c}#fhPa p{margin:0;font-size:14.5px;line-height:1.55;color:#4f5d56;min-height:5.2em}
   #fhPa .dt{display:flex;gap:6px;margin:18px 0}#fhPa .dt i{width:8px;height:8px;border-radius:9px;background:#cfd8d3}#fhPa .dt i.on{width:22px;background:#1E7A58}
