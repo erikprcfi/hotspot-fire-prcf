@@ -40,7 +40,8 @@ jobs:
           ANALISIS_KEY: ${{ secrets.ANALISIS_KEY }}
           FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
           AKUN_URL: https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec
-        run: python scripts/pipeline.py
+        # server NASA kadang tidak menjawab sesaat → coba lagi sekali setelah 2 menit sebelum dinyatakan gagal
+        run: python scripts/pipeline.py || (sleep 120 && python scripts/pipeline.py)
       - name: Peringatan dini otomatis (notifikasi HP & email)
         if: github.event_name != 'push'
         continue-on-error: true
@@ -84,9 +85,19 @@ jobs:
       - id: deploy0
         continue-on-error: true   # situs ±490 MB: GitHub Pages kadang perlu > 10 menit (batas maksimum deploy-pages) → coba sekali lagi
         uses: actions/deploy-pages@v4
-      - id: deploy
+      - name: Jeda sebelum mencoba ulang publikasi
         if: steps.deploy0.outcome == 'failure'
+        run: sleep 60   # API GitHub kadang belum "melihat" paket situs yang baru diunggah
+      - id: deploy1
+        if: steps.deploy0.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+      - name: Jeda kedua
+        if: steps.deploy0.outcome == 'failure' && steps.deploy1.outcome == 'failure'
+        run: sleep 180
+      - id: deploy
+        if: steps.deploy0.outcome == 'failure' && steps.deploy1.outcome == 'failure'
         uses: actions/deploy-pages@v4
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url || steps.deploy0.outputs.page_url }}
+      url: ${{ steps.deploy.outputs.page_url || steps.deploy1.outputs.page_url || steps.deploy0.outputs.page_url }}
