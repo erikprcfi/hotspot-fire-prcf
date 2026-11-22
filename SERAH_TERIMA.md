@@ -203,3 +203,10 @@ Live ke main bila semua uji lulus.
 - Uji lengkap (scratchpad/uji/uji_lengkap.js): website (HTTPS tiruan via route, host bukan localhost) & aplikasi asli (Capacitor tiruan) × tamu/akun tanpa kode/akun+SHP (11 SHP) × setiap alat hub; pemeriksaan: galat JS, teks NaN/undefined, tidak ada data HD PRCF di mode umum/SHP, nama wilayah SHP tampil.
 - Catatan uji: http non-localhost bukan "secure context" → crypto.subtle tidak ada → login gagal (artefak uji, bukan galat produksi). Gunakan HTTPS.
 - Uji analisis final (cabang uji-analisis, uji/hasil): 11/11 SHP lengkap, luas konsisten, titik panas 2016–2026 tanpa celah; tampilan hasil 11/11 konsistensi 8/8, PDF & CSV.
+
+## Pembaruan 22 November 2026 (sore) – siap unggah Play Store
+- AAB Play Store `PantauRimbak-2.0.0-playstore.aab` (kode 3, versi isi 202611221449) ditandatangani kunci distribusi (sidik jari SHA-256 81:F9:3F:…:7C:EF) – kunci ini menjadi kunci unggah Play Console.
+- `assets/asli.js` v3: bila sudah ada salinan data (HP/bawaan APK), aplikasi menunggu server paling lama 1,5 dtk → data tampil ≤ 2 dtk walau sinyal lemah/tidak ada.
+- `update.yml`: pipeline FIRMS dicoba ulang setelah 2 menit bila server NASA tidak menjawab; publikasi GitHub Pages dicoba ulang dengan jeda 60 dtk dan 180 dtk.
+- `pantau.py`: memeriksa `unduh/PantauRimbak.apk` dan paket pembaruan otomatis.
+- Uji: uji_lengkap run 3–5 (web + aplikasi asli, 11 SHP) total 1.332 pembukaan alat, 0 masalah; uji_asli 15/15; validasi 679 berkas data, 0 masalah.
