@@ -21,7 +21,7 @@ function css() {
   #fhb.out{opacity:0;transform:scale(1.03);pointer-events:none}
   .fhb-map{position:fixed;inset:0;z-index:0}.fhb-map canvas{outline:none}
   .fhb-fade{position:fixed;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(4,16,11,.72) 0%,rgba(4,16,11,.18) 30%,rgba(4,16,11,.05) 46%,rgba(4,16,11,.78) 70%,#06140F 100%)}
-  .fhb-in{position:relative;z-index:2;min-height:100%;display:flex;flex-direction:column;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(18px + env(safe-area-inset-bottom,0px))}
+  .fhb-in{position:relative;z-index:2;min-height:100%;display:flex;flex-direction:column;padding:calc(16px + var(--safe-area-inset-top,env(safe-area-inset-top,0px))) 16px calc(18px + var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px)))}
   .fhb-top{display:flex;align-items:center;gap:10px}.fhb-top img{height:38px;border-radius:6px}.fhb-top b{font-size:17px;white-space:nowrap;font-weight:800;letter-spacing:-.02em;flex:1}
   .fhb-clock{text-align:right;font:700 13px var(--f-data,ui-monospace,monospace);line-height:1.25;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:6px 9px;backdrop-filter:blur(8px)}
   .fhb-clock small{display:block;font:500 10px var(--f,system-ui);opacity:.8}

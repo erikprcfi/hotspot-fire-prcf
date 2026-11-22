@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Unduh Pantau Rimbak – Aplikasi Android</title>
+<meta name="description" content="Unduh aplikasi Android Pantau Rimbak dari Yayasan PRCF Indonesia: titik panas, peringatan dini kebakaran, cuaca dan kondisi hutan – tetap berjalan tanpa sinyal.">
+<meta name="theme-color" content="#0B3B2C">
+<meta property="og:title" content="Unduh Pantau Rimbak – Aplikasi Android">
+<meta property="og:description" content="Pantau titik panas, peringatan dini kebakaran, cuaca & kondisi hutan. Gratis, tetap berjalan tanpa sinyal.">
+<meta property="og:image" content="https://erikprcfi.github.io/hotspot-fire-prcf/aplikasi-android/play-store/grafis-fitur-1024x500.png">
+<meta property="og:url" content="https://erikprcfi.github.io/hotspot-fire-prcf/unduh/">
+<link rel="icon" href="../assets/favicon.svg">
+<style>
+:root{--hijau:#0B3B2C;--hijau2:#14563F;--aksen:#E4572E;--teks:#0E1A14;--redup:#46564E;--garis:#D7E2DA;--latar:#F3F6F2}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;background:var(--latar);color:var(--teks);line-height:1.55}
+.atas{background:radial-gradient(120% 120% at 0% 0%,#1E7A58 0%,#0B3B2C 55%,#062419 100%);color:#fff;padding:calc(env(safe-area-inset-top,0px) + 40px) 20px 90px;text-align:center}
+.atas img{width:96px;height:96px;border-radius:24px;background:#fff;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.atas h1{margin:16px 0 4px;font-size:30px;letter-spacing:.01em}
+.atas p{margin:0 auto;max-width:520px;color:#D6EADF;font-size:16px}
+.wadah{max-width:620px;margin:-60px auto 0;padding:0 16px 40px}
+.kartu{background:#fff;border:1px solid var(--garis);border-radius:20px;padding:22px;margin-bottom:16px;box-shadow:0 6px 24px -14px rgba(11,59,44,.35)}
+.unduh{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:58px;border-radius:16px;background:var(--hijau);color:#fff;font-size:19px;font-weight:700;text-decoration:none}
+.unduh:hover{background:var(--hijau2)}
+.meta{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:center;margin-top:12px;color:var(--redup);font-size:14px}
+h2{font-size:18px;margin:0 0 12px;color:var(--hijau)}
+ol{margin:0;padding-left:22px}ol li{margin:0 0 10px}
+.catatan{background:#FFF7ED;border:1px solid #FED7AA;color:#7C2D12;border-radius:14px;padding:12px 14px;font-size:14.5px}
+.fitur{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.fitur div{background:var(--latar);border-radius:12px;padding:10px 12px;font-size:14.5px}
+.fitur b{display:block;color:var(--hijau)}
+.qr{display:flex;gap:16px;align-items:center}
+.qr img{width:140px;height:140px;border-radius:12px;border:1px solid var(--garis);flex:none}
+.salin{margin-top:10px;display:flex;gap:8px}
+.salin input{flex:1;min-width:0;padding:10px 12px;border-radius:10px;border:1px solid var(--garis);font-size:14px;color:var(--teks);background:var(--latar)}
+.salin button{padding:10px 14px;border-radius:10px;border:0;background:var(--hijau);color:#fff;font-weight:700;cursor:pointer}
+.kecil{font-size:12.5px;color:var(--redup);word-break:break-all}
+footer{text-align:center;color:var(--redup);font-size:13.5px;padding:10px 16px 30px}
+footer a,.kartu a{color:var(--hijau2)}
+@media(max-width:460px){.fitur{grid-template-columns:1fr}.qr{flex-direction:column;text-align:center}}
+</style>
+</head>
+<body>
+<header class="atas">
+  <img src="../assets/logo_pr_256.png" alt="Ikon Pantau Rimbak" width="96" height="96">
+  <h1>Pantau Rimbak</h1>
+  <p>Aplikasi Android Yayasan PRCF Indonesia untuk memantau titik panas, peringatan dini kebakaran, cuaca dan kondisi hutan.</p>
+</header>
+<main class="wadah">
+  <section class="kartu">
+    <a class="unduh" id="tUnduh" href="PantauRimbak.apk" download="PantauRimbak-{{VERSI}}.apk">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14"/></svg>
+      Unduh APK ({{UKURAN}})
+    </a>
+    <div class="meta"><span>Versi {{VERSI}}</span><span>Android 7.0 ke atas</span><span>Diperbarui {{TANGGAL}}</span><span>Gratis</span></div>
+  </section>
+
+  <section class="kartu">
+    <h2>Cara memasang</h2>
+    <ol>
+      <li><b>Unduh</b> berkas APK dengan tombol di atas.</li>
+      <li><b>Buka berkas</b> yang selesai diunduh (dari notifikasi atau folder <i>Download</i>).</li>
+      <li>Bila muncul pemberitahuan keamanan, ketuk <b>Setelan</b> lalu izinkan <b>“Instal aplikasi tidak dikenal”</b> untuk peramban/pengelola berkas, kemudian kembali dan ketuk <b>Instal</b>.</li>
+      <li><b>Buka</b> Pantau Rimbak. Masuk sekali saat ada sinyal (atau lihat titik panas tanpa akun), lalu simpan <b>Peta luring</b> sebelum ke lapangan.</li>
+    </ol>
+    <p class="catatan" style="margin:14px 0 0">Bila sebelumnya ada ikon Pantau Rimbak/Fire Hotspot yang dipasang dari peramban atau versi uji lama, hapus dulu agar tidak dobel.</p>
+  </section>
+
+  <section class="kartu">
+    <h2>Yang Anda dapatkan</h2>
+    <div class="fitur">
+      <div><b>Tetap jalan tanpa sinyal</b>Titik panas terakhir, peta luring, patroli dan kompas.</div>
+      <div><b>Titik panas tiap ±3 jam</b>Satelit NASA FIRMS (VIIRS & MODIS).</div>
+      <div><b>Peringatan dini 7 hari</b>Bahaya kebakaran & cuaca (BMKG, ECMWF).</div>
+      <div><b>Pembaruan otomatis</b>Perbaikan & fitur baru terpasang sendiri.</div>
+    </div>
+  </section>
+
+  <section class="kartu">
+    <h2>Bagikan ke rekan</h2>
+    <div class="qr">
+      <img src="qr.svg" alt="Kode QR halaman unduhan Pantau Rimbak" width="140" height="140">
+      <div style="flex:1;min-width:0">
+        <p style="margin:0">Pindai kode QR ini atau bagikan tautan halaman unduhan:</p>
+        <div class="salin"><input id="tLink" value="https://erikprcfi.github.io/hotspot-fire-prcf/unduh/" readonly aria-label="Tautan halaman unduhan"><button type="button" id="tSalin">Salin</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="kartu">
+    <h2>Keamanan berkas</h2>
+    <p class="kecil" style="margin:0 0 6px">APK ditandatangani Yayasan PRCF Indonesia. Untuk memeriksa keaslian berkas:</p>
+    <p class="kecil" style="margin:0 0 4px"><b>SHA-256 berkas:</b> {{SHA_APK}}</p>
+    <p class="kecil" style="margin:0"><b>Sidik jari sertifikat (SHA-256):</b> {{SHA_SERT}}</p>
+  </section>
+</main>
+<footer>
+  © Yayasan PRCF Indonesia · <a href="../kebijakan-privasi.html">Kebijakan privasi</a> · <a href="../syarat.html">Syarat penggunaan</a> · <a href="../app.html">Versi web</a><br>
+  Pantau Rimbak bukan sistem resmi pemerintah. Titik panas adalah deteksi panas satelit dan belum tentu kebakaran.
+</footer>
+<script>
+document.getElementById('tSalin').onclick=async function(){const i=document.getElementById('tLink');try{await navigator.clipboard.writeText(i.value);}catch(e){i.select();document.execCommand('copy');}this.textContent='Tersalin ✓';setTimeout(()=>this.textContent='Salin',2000);};
+</script>
+</body>
+</html>
