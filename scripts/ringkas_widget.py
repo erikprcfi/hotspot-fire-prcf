@@ -21,23 +21,37 @@ def main():
     now = datetime.datetime.now(datetime.timezone.utc)
     hs = J("hotspots.json", {"lokasi": [], "titik": []}); geo = J("geo.json", {"sites": []}); fc = J("prakiraan.json", {"lokasi": {}})
     batas = now - datetime.timedelta(days=7, hours=1)
+    kini_wib = now + datetime.timedelta(hours=7)
+    hari7 = [(kini_wib - datetime.timedelta(days=i)).strftime("%Y-%m-%d") for i in range(6, -1, -1)]
     out = {"diperbarui_utc": now.strftime("%Y-%m-%dT%H:%MZ"), "data_titik_utc": hs.get("diperbarui_utc"), "lokasi": {}}
     for s in geo["sites"]:
         if s["id"] not in hs.get("lokasi", []): continue
-        k = hs["lokasi"].index(s["id"]); c = []
+        k = hs["lokasi"].index(s["id"]); c = []; per_hari = {}
         for p in hs["titik"]:
             ls = p.get("ls") or []
             if len(ls) <= k: continue
             t = datetime.datetime.strptime(p["d"] + str(p.get("t", "0000")).zfill(4), "%Y-%m-%d%H%M").replace(tzinfo=datetime.timezone.utc)
-            if t >= batas: c.append(ls[k])
+            if t >= batas:
+                c.append(ls[k])
+                if ls[k] <= 25: per_hari[(t + datetime.timedelta(hours=7)).strftime("%Y-%m-%d")] = per_hari.get((t + datetime.timedelta(hours=7)).strftime("%Y-%m-%d"), 0) + 1
         dalam = sum(1 for v in c if v <= 0); dekat = sum(1 for v in c if v <= 5); r25 = sum(1 for v in c if v <= 25)
         hari = ((fc.get("lokasi") or {}).get(s["id"]) or {}).get("hari") or []
         lv = hari[0].get("level") if hari else None
+        h0 = hari[0] if hari else {}
         out["lokasi"][s["id"]] = {"nama": s["hd_nama"], "status": "Siaga" if dalam else "Waspada" if dekat else "Aman",
                                   "dalam": dalam, "dekat": dekat, "r25": r25,
-                                  "bahaya": KELAS[lv] if isinstance(lv, int) and 0 <= lv < 4 else None, "bahaya_level": lv}
+                                  "bahaya": KELAS[lv] if isinstance(lv, int) and 0 <= lv < 4 else None, "bahaya_level": lv,
+                                  # cuaca hari ini & prakiraan 7 hari (BMKG/ECMWF + FWI, sama dengan menu Prakiraan)
+                                  "cuaca": {"teks": h0.get("cuaca"), "tmaks": h0.get("tmaks"), "tmin": h0.get("tmin"), "hujan": h0.get("hujan"),
+                                            "angin": h0.get("angin_maks"), "tanggal": h0.get("tanggal")} if h0 else None,
+                                  "hari": [{"t": h.get("tanggal"), "lv": h.get("level"), "tmaks": h.get("tmaks"), "hujan": h.get("hujan")} for h in hari[:7]],
+                                  # titik panas <= 25 km per hari (WIB), 7 hari terakhir – untuk grafik widget
+                                  "harian": [{"t": d, "n": per_hari.get(d, 0)} for d in hari7]}
     n = J("titik_id/ringkasan.json", {})
-    if n: out["nasional"] = {"total24": n.get("total24"), "total7": n.get("total7"), "diperbarui_utc": n.get("diperbarui_utc")}
+    if n: out["nasional"] = {"total24": n.get("total24"), "total7": n.get("total7"), "diperbarui_utc": n.get("diperbarui_utc"),
+                             "harian": [{"t": d, "n": (n.get("harian") or {}).get(d, 0)} for d in hari7],
+                             # 3 provinsi dengan titik panas terbanyak 24 jam terakhir
+                             "teratas": [{"nama": p["nama"], "n24": p.get("n24", 0)} for p in sorted(n.get("provinsi") or [], key=lambda p: -(p.get("n24") or 0))[:3] if p.get("n24")]}
     with open(os.path.join(DATA, "widget.json"), "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
     print(json.dumps(out, ensure_ascii=False)[:600])

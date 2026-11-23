@@ -50,9 +50,9 @@ public class PerangkatPlugin extends Plugin {
     /* widget layar utama: simpan Hutan Desa terpilih (kosong = mode umum) & bahasa, lalu perbarui widget */
     @PluginMethod
     public void widget(PluginCall call) {
-        getContext().getSharedPreferences(StatusWidget.PREF, Context.MODE_PRIVATE).edit()
+        getContext().getSharedPreferences(WidgetData.PREF, Context.MODE_PRIVATE).edit()
             .putString("situs", call.getString("situs", "")).putString("bahasa", call.getString("bahasa", "id")).apply();
-        try { StatusWidget.segarkan(getContext()); } catch (Exception ignored) { }
+        try { WidgetData.segarkan(getContext()); } catch (Exception ignored) { }
         call.resolve();
     }
     @PluginMethod

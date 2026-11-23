@@ -26,7 +26,7 @@
 
         <receiver
             android:name=".StatusWidget"
-            android:label="Pantau Rimbak"
+            android:label="@string/w_nama_status"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -34,6 +34,50 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_status_info" />
+        </receiver>
+        <receiver
+            android:name=".WidgetJam"
+            android:label="@string/w_nama_jam"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_jam_info" />
+        </receiver>
+        <receiver
+            android:name=".WidgetCuaca"
+            android:label="@string/w_nama_cuaca"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_cuaca_info" />
+        </receiver>
+        <receiver
+            android:name=".WidgetGrafik"
+            android:label="@string/w_nama_grafik"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_grafik_info" />
+        </receiver>
+        <receiver
+            android:name=".WidgetBahaya"
+            android:label="@string/w_nama_bahaya"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_bahaya_info" />
         </receiver>
 
         <provider

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/j_akar" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp" android:background="@drawable/w_pil">
+  <TextClock android:id="@+id/j_tgl" style="@style/WTeks" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp" android:textColor="#B9F5DC" android:format12Hour="EEE, d MMM" android:format24Hour="EEE, d MMM" />
+  <TextClock android:id="@+id/j_jam" style="@style/WTeks" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="64sp" android:fontFamily="sans-serif-light" android:format12Hour="h.mm" android:format24Hour="HH.mm" />
+  <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="2dp">
+    <ImageView android:id="@+id/j_titik" android:layout_width="9dp" android:layout_height="9dp" android:src="@drawable/widget_titik" android:contentDescription="@null" android:layout_marginEnd="6dp"/>
+    <TextView android:id="@+id/j_status" style="@style/WTeks.Tebal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="14sp" />
+  </LinearLayout>
+  <TextView android:id="@+id/j_info" style="@style/WTeks.Redup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:layout_marginTop="2dp"/>
+</LinearLayout>

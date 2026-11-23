@@ -7,5 +7,14 @@
     <string name="capacitor_background_geolocation_notification_channel_name">Berbagi lokasi tim lapangan</string>
     <string name="capacitor_background_geolocation_notification_icon">drawable/ic_tracking</string>
     <string name="capacitor_background_geolocation_notification_color">#1E7A58</string>
-    <string name="widget_deskripsi">Status Hutan Desa: titik panas 7 hari &amp; bahaya kebakaran hari ini</string>
+    <string name="w_nama_status">Pantau Rimbak · Ubin status</string>
+    <string name="w_desk_status">Status, titik panas, bahaya api, hujan &amp; suhu Hutan Desa</string>
+    <string name="w_nama_jam">Pantau Rimbak · Jam</string>
+    <string name="w_desk_jam">Jam digital dengan status Hutan Desa &amp; bahaya api hari ini</string>
+    <string name="w_nama_cuaca">Pantau Rimbak · Cuaca &amp; prakiraan</string>
+    <string name="w_desk_cuaca">Cuaca hari ini &amp; prakiraan 5 hari di Hutan Desa</string>
+    <string name="w_nama_grafik">Pantau Rimbak · Grafik titik panas</string>
+    <string name="w_desk_grafik">Jumlah titik panas 7 hari dengan grafik harian</string>
+    <string name="w_nama_bahaya">Pantau Rimbak · Bahaya api 7 hari</string>
+    <string name="w_desk_bahaya">Tingkat bahaya kebakaran 7 hari ke depan</string>
 </resources>

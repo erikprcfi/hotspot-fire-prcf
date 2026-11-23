@@ -219,3 +219,9 @@ Live ke main bila semua uji lulus.
 - **Ekspor KML** temuan & jalur patroli (patroli.js) dan SMART (smart.js).
 - **Widget layar utama Android** (`StatusWidget.java`, `res/layout/widget_status.xml`, `res/xml/widget_status_info.xml`; data `data/widget.json` dari `scripts/ringkas_widget.py`, aturan status sama dengan aplikasi). Plugin `Perangkat.widget({situs, bahasa})` dipanggil saat Hutan Desa/akses berubah; mode umum/SHP → ringkasan Indonesia.
 - APK/AAB 2.1.0 (kode 5).
+
+## Pembaruan 23 November 2026 (malam) – versi 2.2.0: 5 pilihan widget
+- Widget (latar transparan, teks berbayangan agar terbaca di wallpaper apa pun): `StatusWidget` (ubin status 6 kotak; nama kelas lama dipertahankan), `WidgetJam` (jam digital pil + status), `WidgetCuaca` (cuaca hari ini + prakiraan 5 hari), `WidgetGrafik` (angka besar + grafik batang 7 hari, digambar Bitmap), `WidgetBahaya` (7 pil bahaya api). Data & logika bersama: `WidgetData.java`, `WidgetDasar.java`; tata letak `res/layout/widget_*.xml`, gaya `values/widget_gaya.xml`.
+- `data/widget.json` kini juga berisi cuaca hari ini, prakiraan 7 hari, titik panas harian 7 hari per Hutan Desa, dan nasional (harian + 3 provinsi teratas).
+- Pratinjau tampilan dibuat dengan Paparazzi (layoutlib Android) di proyek terpisah – tidak disimpan di repositori.
+- APK/AAB 2.2.0 (kode 6).

@@ -21,7 +21,7 @@ FITUR UTAMA
 • Bara Api, asisten AI untuk pertanyaan perhutanan sosial, peraturan, dan status konservasi satwa. Jawaban soal peraturan dirujuk ke teks resmi peraturan perundang-undangan.
 • Untuk tim lapangan: pencatatan patroli yang tetap berjalan tanpa sinyal, ekspor jalur & temuan ke GPX/KML (Google Earth, Avenza, QGIS), dan berbagi lokasi yang sepenuhnya opsional.
 • Peringatan perubahan tutupan hutan sepekan sekali dari citra Sentinel-2, serta laporan bulanan PDF otomatis per Hutan Desa dampingan.
-• Widget layar utama: status Aman/Waspada/Siaga dan bahaya kebakaran hari ini tanpa membuka aplikasi.
+• 5 pilihan widget layar utama (jam, ubin status, cuaca & prakiraan, grafik titik panas, bahaya api 7 hari) dengan latar tembus ke wallpaper.
 • Tersedia dalam Bahasa Indonesia dan Inggris.
 
 SUMBER DATA
@@ -44,8 +44,8 @@ Hapus akun: https://erikprcfi.github.io/hotspot-fire-prcf/hapus-akun.html
 - grafis-fitur-1024x500.png – grafis fitur 1024 × 500 px
 - tangkapan-1 … tangkapan-6 – tangkapan layar ponsel 1080 × 1920 px (9:16)
 
-## Catatan unggah versi 2.1.0 (aplikasi asli, kode 5)
-- Berkas: `PantauRimbak-2.1.0-playstore.aab` (sudah ditandatangani kunci distribusi PRCF = kunci unggah); ID `org.prcfindonesia.pantaurimbak`, targetSdk 36.
+## Catatan unggah versi 2.2.0 (aplikasi asli, kode 6)
+- Berkas: `PantauRimbak-2.2.0-playstore.aab` (sudah ditandatangani kunci distribusi PRCF = kunci unggah); ID `org.prcfindonesia.pantaurimbak`, targetSdk 36.
 - Aplikasi berjalan tanpa Chrome dan tanpa sinyal (seluruh kode di dalam APK). Data diambil dari server Pantau Rimbak saat ada sinyal; pembaruan tampilan/fitur (HTML/JS) diunduh dari server resmi dan dipakai saat aplikasi dibuka berikutnya (sesuai kebijakan Google Play untuk kode yang dijalankan di WebView).
 - Deklarasi izin di Play Console:
   - **Layanan latar depan jenis lokasi** (aplikasi TIDAK meminta izin lokasi latar belakang): dipakai HANYA saat anggota tim patroli menyalakan "Bagikan lokasi" (notifikasi tampil selama berjalan). Siapkan video singkat: buka Patroli → nyalakan berbagi lokasi → notifikasi muncul → matikan.

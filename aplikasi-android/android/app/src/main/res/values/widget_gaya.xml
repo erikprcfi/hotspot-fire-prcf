@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- teks widget di atas wallpaper: putih dengan bayangan halus agar terbaca di wallpaper terang maupun gelap -->
+    <style name="WTeks">
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:shadowColor">#E6000000</item>
+        <item name="android:shadowDx">0</item>
+        <item name="android:shadowDy">1</item>
+        <item name="android:shadowRadius">6</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+    <style name="WTeks.Redup"><item name="android:textColor">#E6F1F5F3</item></style>
+    <style name="WTeks.Tebal"><item name="android:textStyle">bold</item></style>
+</resources>

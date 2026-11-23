@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/b_akar" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="10dp" android:background="@drawable/w_latar">
+  <TextView android:id="@+id/b_judul" style="@style/WTeks.Tebal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="14sp" android:layout_marginStart="2dp"/>
+  <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:layout_marginTop="6dp" android:layout_marginBottom="4dp" android:orientation="horizontal">
+    <LinearLayout android:id="@+id/b_p0" android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent" android:layout_margin="2dp" android:orientation="vertical" android:gravity="center" android:background="@drawable/w_lv_kosong">
+      <TextView android:id="@+id/b_t0" style="@style/WTeks.Tebal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="14sp" />
+      <TextView android:id="@+id/b_h0" style="@style/WTeks.Redup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="11sp" android:layout_marginTop="4dp"/>
+    </LinearLayout>
+    <LinearLayout android:id="@+id/b_p1" android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent" android:layout_margin="2dp" android:orientation="vertical" android:gravity="center" android:background="@drawable/w_lv_kosong">
+      <TextView android:id="@+id/b_t1" style="@style/WTeks.Tebal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="14sp" />
+      <TextView android:id="@+id/b_h1" style="@style/WTeks.Redup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="11sp" android:layout_marginTop="4dp"/>
+    </LinearLayout>
+    <LinearLayout android:id="@+id/b_p2" android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent" android:layout_margin="2dp" android:orientation="vertical" android:gravity="center" android:background="@drawable/w_lv_kosong">
+      <TextView android:id="@+id/b_t2" style="@style/WTeks.Tebal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="14sp" />
+      <TextView android:id="@+id/b_h2" style="@style/WTeks.Redup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="11sp" android:layout_marginTop="4dp"/>
+    </LinearLayout>
+    <LinearLayout android:id="@+id/b_p3" android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent" android:layout_margin="2dp" android:orientation="vertical" android:gravity="center" android:background="@drawable/w_lv_kosong">
+      <TextView android:id="@+id/b_t3" style="@style/WTeks.Tebal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="14sp" />
+      <TextView android:id="@+id/b_h3" style="@style/WTeks.Redup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="11sp" android:layout_marginTop="4dp"/>
+    </LinearLayout>
+    <LinearLayout android:id="@+id/b_p4" android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent" android:layout_margin="2dp" android:orientation="vertical" android:gravity="center" android:background="@drawable/w_lv_kosong">
+      <TextView android:id="@+id/b_t4" style="@style/WTeks.Tebal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="14sp" />
+      <TextView android:id="@+id/b_h4" style="@style/WTeks.Redup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="11sp" android:layout_marginTop="4dp"/>
+    </LinearLayout>
+    <LinearLayout android:id="@+id/b_p5" android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent" android:layout_margin="2dp" android:orientation="vertical" android:gravity="center" android:background="@drawable/w_lv_kosong">
+      <TextView android:id="@+id/b_t5" style="@style/WTeks.Tebal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="14sp" />
+      <TextView android:id="@+id/b_h5" style="@style/WTeks.Redup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="11sp" android:layout_marginTop="4dp"/>
+    </LinearLayout>
+    <LinearLayout android:id="@+id/b_p6" android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent" android:layout_margin="2dp" android:orientation="vertical" android:gravity="center" android:background="@drawable/w_lv_kosong">
+      <TextView android:id="@+id/b_t6" style="@style/WTeks.Tebal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="14sp" />
+      <TextView android:id="@+id/b_h6" style="@style/WTeks.Redup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="11sp" android:layout_marginTop="4dp"/>
+    </LinearLayout>
+  </LinearLayout>
+  <TextView android:id="@+id/b_ket" style="@style/WTeks.Redup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="11sp" android:layout_marginStart="2dp"/>
+</LinearLayout>
