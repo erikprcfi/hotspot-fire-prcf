@@ -1,5 +1,5 @@
 {
- "terakhir_cek_utc": "2026-11-23T08:32:32Z",
+ "terakhir_cek_utc": "2026-11-23T08:43:51Z",
  "titik_baru": 0,
  "arsip_tahunan_diperbarui": 0,
  "jumlah_catatan": 80570,
@@ -58,10 +58,10 @@
    "doi": "10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Mon, 23 Nov 2026 07:42:59 GMT",
-   "ukuran_byte": 945060,
-   "sha256": "7a4c658cd076ba1135fe09c29ed672d93da1c180c0c545b69917c22865e786c9",
-   "baris_total": 11258,
+   "last_modified": "Mon, 23 Nov 2026 08:42:30 GMT",
+   "ukuran_byte": 990010,
+   "sha256": "6d09bf819620b98823dcc1f7b574ba83e48748a09ced505d06ee0e71964a325f",
+   "baris_total": 11792,
    "baris_di_kotak": 0
   },
   {
@@ -127,12 +127,6 @@
  },
  "sistem": {
   "riwayat": [
-   {
-    "t": "2026-11-21T16:09:58Z",
-    "baru": 0,
-    "ok": 4,
-    "n": 4
-   },
    {
     "t": "2026-11-21T17:48:07Z",
     "baru": 0,
@@ -270,6 +264,12 @@
     "baru": 0,
     "ok": 4,
     "n": 4
+   },
+   {
+    "t": "2026-11-23T08:43:51Z",
+    "baru": 0,
+    "ok": 4,
+    "n": 4
    }
   ],
   "jadwal_cron_utc": "17 */3 * * * + 47 1-23/3 * * *",
@@ -277,7 +277,7 @@
   "latensi_n": 26,
   "arsip_terverifikasi": 48,
   "hari_cuaca": 9457,
-  "jumlah_pembaruan_tercatat": 222
+  "jumlah_pembaruan_tercatat": 223
  },
  "sumber_doi": {
   "VIIRS_SNPP": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002",
