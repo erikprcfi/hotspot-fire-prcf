@@ -15,7 +15,7 @@ const berkas=(p)=>{const f=path.join(REPO,decodeURIComponent(p));return fs.exist
 (async()=>{const b=await chromium.launch();
 for(const plat of PLAT){
  const sken=plat==='web'?[['tamu',null],['akun-tanpa-kode',''],['admin-ganti-hd','ADMIN'],...NSHP.map(s=>['shp:'+s,s])]:[['tamu',null],['admin-ganti-hd','ADMIN'],['shp:'+NSHP[1],NSHP[1]]];
- for(const [sk,shp] of sken){
+ for(const [sk,shp] of sken.filter(([n])=>!process.env.SKEN||process.env.SKEN.split(',').includes(n))){
   const c=await b.newContext({...devices['Pixel 5'],serviceWorkers:'block',ignoreHTTPSErrors:true});
   const ADM=shp==='ADMIN',GJ=shp&&!ADM?SHP[shp]:null,NM=GJ?'Wilayah Uji '+shp.split('_')[0]:null;
   await c.addInitScript(([asli,tamu])=>{if(location.protocol==='about:')return;window.FH_AKUN_URL='https://mock.server/exec';try{localStorage.setItem('fh_panduan_v1','1');if(tamu)localStorage.setItem('pr_tamu','1');}catch(e){}
@@ -36,9 +36,10 @@ for(const plat of PLAT){
    if(sk!=='tamu'){await p.waitForSelector('#ak_email',{timeout:40000});await p.fill('#ak_email',ADM?'erik.prcfi@gmail.com':'penguji@contoh.org');await p.fill('#ak_pw','Hutan2026x');if(GJ)await p.fill('#ak_kid','UJI1');await p.click('#akIn');await p.waitForTimeout(8000);await p.waitForLoadState('load');}
    await p.waitForFunction(()=>window.FHApp&&FHApp.map&&FHApp.map(),null,{timeout:60000});await p.waitForTimeout(3500);
    await p.evaluate(()=>{const f=document.getElementById('fhb');if(f)f.remove();const c=document.getElementById('chooser');if(c)c.classList.add('hide');});
-   const st=await p.evaluate(()=>({akses:FHAkun.akses(),teks:document.body.innerText}));
+   const st=await p.evaluate(()=>({akses:FHAkun.akses(),hd:!!(window.FHAksesHD&&FHAksesHD()),teks:document.body.innerText}));
    const harap=GJ?'shp':(ADM?'hd':'umum');
-   if(st.akses.mode!==harap)masalah.push(`${lbl}: mode akses ${st.akses.mode}, seharusnya ${harap}`);
+   if(ADM?!st.hd:st.akses.mode!==harap)masalah.push(`${lbl}: mode akses ${ADM?(st.hd?'hd':'umum'):st.akses.mode}, seharusnya ${harap}`);
+   if(!ADM&&st.hd)masalah.push(`${lbl}: akses Hutan Desa PRCF terbuka di mode ${harap}`);
    if(harap!=='hd'&&NAMA_HD.test(st.teks))masalah.push(`${lbl}: beranda menampilkan data Hutan Desa PRCF → "${st.teks.match(NAMA_HD)[0]}"`);
    if(GJ&&!st.teks.includes(NM))masalah.push(`${lbl}: nama wilayah SHP tidak tampil`);
    if(plat==='asli'&&!ADM){const w=await p.evaluate(()=>window.__wg);if(w&&w.situs)masalah.push(`${lbl}: widget menampilkan Hutan Desa PRCF (${w.situs}) di mode ${harap}`);}

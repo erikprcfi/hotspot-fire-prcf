@@ -872,7 +872,7 @@ function appUI(){const el=$('#pfApp');if(!el)return;const E=window.FHLang&&FHLan
   $('#pfLok').onclick=()=>hubGo('peringatan');$('#pfPanduan').onclick=()=>window.FHPanduanAwal&&FHPanduanAwal.buka();}
 function meUI(){if(!window.FHAkun)return;const u=FHAkun.user(),tm=FHAkun.tamu&&FHAkun.tamu();$('#abMe').innerHTML=tm?'<span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;margin-right:8px;border-radius:99px;background:rgba(255,255,255,.18);color:#fff;font:700 12.5px var(--f,system-ui)">'+(window.FHLang&&FHLang.get()==='en'?'Sign in':'Masuk')+'</span>':FHAkun.avatar(34);$('#abMe').style.display=(u||tm)?'':'none';$('#abMe').dataset.tamu=tm?'1':'';tamuUI(tm);
   $('#pfCard').style.display=u?'flex':'none';if(u)$('#pfCard').innerHTML=`${FHAkun.avatar(56)}<span style="flex:1;min-width:0"><b style="display:block;font-size:16px">${esc(u.nama)}</b><small class="muted" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(u.email)}</small><small style="color:var(--brand-3);font-weight:700">Lihat &amp; ubah profil</small></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="color:var(--faint)"><path d="M9 5l7 7-7 7"/></svg>`;}
-if(window.FHAkun){FHAkun.init({pushLayer,back,lokasi:()=>SITE?SITE.hd_nama:''});FHAkun.onChange(meUI);FHAkun.onChange(()=>{try{sapa();}catch(e){}});FHAkun.onChange(()=>{try{if(CUR==='dash')hubRender();}catch(e){}});FHAkun.onChange(()=>{try{sideRender();}catch(e){}});FHAkun.onChange(()=>{try{widgetSet();}catch(e){}});window.FHSiteNama=()=>{try{if(isUmum())return '';}catch(e){}return SITE?SITE.hd_nama:'';};window.FHSiteObj=()=>SITE;window.FHApp={map:()=>MAP,api:()=>NASA,go:(...x)=>go(...x),hubGo:k=>hubGo(k),lihat:(la,lo,z)=>MAP&&MAP.setView([la,lo],z||9,{animate:false}),nasa:id=>NASA&&NASA.set(id),closeAll:()=>closeAll(),detail:p=>detail(p)};window.FHSites=()=>SITES;window.FHSiteIdx=()=>SI;window.FHAll=()=>ALL;window.openPage=openPage;window.openSheet=(...x)=>openSheet(...x);window.toastMsg=(...a)=>toastMsg(...a);$('#abMe').onclick=()=>{if(FHAkun.tamu&&FHAkun.tamu())return FHAkun.layarMasuk();FHAkun.openProfile();};$('#pfCard').onclick=()=>FHAkun.openProfile();}
+if(window.FHAkun){FHAkun.init({pushLayer,back,lokasi:()=>SITE?SITE.hd_nama:''});FHAkun.onChange(meUI);FHAkun.onChange(()=>{try{sapa();}catch(e){}});FHAkun.onChange(()=>{try{if(CUR==='dash')hubRender();}catch(e){}});FHAkun.onChange(()=>{try{sideRender();}catch(e){}});FHAkun.onChange(()=>{try{widgetSet();}catch(e){}});window.FHSiteNama=()=>{try{if(isUmum())return '';}catch(e){}return SITE?SITE.hd_nama:'';};window.FHSiteObj=()=>SITE;window.FHAksesHD=()=>{try{return !isUmum()&&!!SITE;}catch(e){return false;}};window.FHApp={map:()=>MAP,api:()=>NASA,go:(...x)=>go(...x),hubGo:k=>hubGo(k),lihat:(la,lo,z)=>MAP&&MAP.setView([la,lo],z||9,{animate:false}),nasa:id=>NASA&&NASA.set(id),closeAll:()=>closeAll(),detail:p=>detail(p)};window.FHSites=()=>SITES;window.FHSiteIdx=()=>SI;window.FHAll=()=>ALL;window.openPage=openPage;window.openSheet=(...x)=>openSheet(...x);window.toastMsg=(...a)=>toastMsg(...a);$('#abMe').onclick=()=>{if(FHAkun.tamu&&FHAkun.tamu())return FHAkun.layarMasuk();FHAkun.openProfile();};$('#pfCard').onclick=()=>FHAkun.openProfile();}
 function closeAll(){const n=BACK.length;if(!n)return;while(BACK.length)BACK.pop()();SKIP+=1;history.go(-n);}   // history.go(-n) memicu SATU popstate
 
 /* sheet */
@@ -1179,8 +1179,8 @@ function applySite(id,fly){
   widgetSet();
 }
 /* widget layar utama Android: Hutan Desa terpilih (hanya akun Hutan Desa; mode umum/SHP → ringkasan Indonesia) */
-function widgetSet(){try{const P=window.FH_ASLI&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.Perangkat;if(!P||!P.widget)return;const m=window.FHAkun&&FHAkun.akses?FHAkun.akses().mode:'umum';
-  P.widget({situs:m==='hd'&&SITE?SITE.id:'',bahasa:window.FHLang&&FHLang.get()==='en'?'en':'id'}).catch(()=>{});}catch(e){}}
+function widgetSet(){try{const P=window.FH_ASLI&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.Perangkat;if(!P||!P.widget)return;let u=true;try{u=isUmum();}catch(e){}
+  P.widget({situs:!u&&SITE?SITE.id:'',bahasa:window.FHLang&&FHLang.get()==='en'?'en':'id'}).catch(()=>{});}catch(e){}}
 function getCuaca(){const id=SITE.id;if(CUACAS[id]){CUACA=CUACAS[id];return Promise.resolve(CUACA);}
   return J(id==='nangalauk'?'data/cuaca.json':`data/cuaca_${id}.json`).then(c=>{CUACAS[id]=c;if(SITE.id===id)CUACA=c;return c;}).catch(()=>null);}
 function siteSheet(){
@@ -1857,13 +1857,13 @@ if('serviceWorker' in navigator){const HAD=!!navigator.serviceWorker.controller;
 <script src="assets/tindak.js?v=63"></script>
 <script src="assets/lapor.js?v=1"></script>
 <script src="assets/fitur_umum.js?v=1"></script>
-<script src="assets/admin.js?v=62"></script>
+<script src="assets/admin.js?v=63"></script>
 <script src="assets/indikator.js?v=62"></script>
 <script src="assets/model_klhk.js?v=62"></script>
 <script src="assets/karbon.js?v=62"></script>
 <script src="assets/tutupan.js?v=62"></script>
 <script src="assets/lahankritis.js?v=62"></script>
-<script src="assets/bulanan.js?v=1"></script>
+<script src="assets/bulanan.js?v=2"></script>
 <script src="assets/unduhpeta.js?v=62"></script>
 <script src="assets/shp.js?v=62"></script>
 </body>

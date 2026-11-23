@@ -1,6 +1,6 @@
 /* Pantau Rimbak – LAPORAN BULANAN per Hutan Desa (PDF dibuat otomatis tiap awal bulan oleh scripts/laporan_bulanan.py)
  * Daftar dari data/laporan_bulanan/indeks.json · unduh/bagikan PDF (di aplikasi HP: menu Simpan/Bagikan Android).
- * Hanya untuk akun Hutan Desa dampingan (mode "hd"); mode umum/SHP mendapat penjelasan.
+ * Hanya untuk akun Hutan Desa dampingan & admin PRCF; mode umum/SHP mendapat penjelasan.
  */
 (function () {
 'use strict';
@@ -21,9 +21,8 @@ function css() { if (document.getElementById('bl-css')) return; const s = docume
 async function open() {
   if (!window.openPage) return; css();
   try { X() && X().pakai && X().pakai('bulanan'); } catch (e) { }
-  const ak = window.FHAkun && FHAkun.akses ? FHAkun.akses() : { mode: 'hd' };
   const s = window.FHSiteObj && FHSiteObj();
-  if (ak.mode !== 'hd' || !s) {
+  if (!(window.FHAksesHD && FHAksesHD()) || !s) {   // akun Hutan Desa & admin PRCF; tamu/umum/SHP mendapat penjelasan
     openPage(I('Laporan bulanan', 'Monthly report'), I('Khusus Hutan Desa dampingan', 'Partner village forests only'),
       `<div class="fa"><div class="fa-card"><p>${I('Laporan bulanan otomatis (titik panas, bahaya kebakaran, cuaca dan perubahan hutan) tersedia untuk Hutan Desa dampingan PRCF. Untuk wilayah Anda sendiri, gunakan menu <b>Analisis lahan & karbon</b> dengan mengunggah SHP – hasilnya juga dapat diunduh sebagai PDF.',
         'Automatic monthly reports (hotspots, fire danger, weather and forest change) are available for PRCF partner village forests. For your own area use <b>Land & carbon analysis</b> by uploading a shapefile – its results can also be downloaded as PDF.')}</p></div></div>`);

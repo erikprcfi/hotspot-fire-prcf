@@ -21,6 +21,7 @@ async function isi(w) {
   const A = X();
   let D; try { D = await A.api({ aksi: 'dasbor' }, 45000); } catch (e) { w.innerHTML = `<div class="fa-card"><p class="fa-err">${e.message === 'offline-uji' ? 'Mode uji lokal: basis data tidak dihubungi.' : 'Tidak ada koneksi. Dasbor admin memerlukan internet.'}</p></div>`; return; }
   if (!D.ok) { w.innerHTML = `<div class="fa-card"><p class="fa-err">${esc(D.galat || 'Gagal')}</p><p class="fa-note">Dasbor admin memerlukan Apps Script v9 dan akun admin PRCF.</p></div>`; return; }
+  if (!D.pengguna) { w.innerHTML = '<div class="fa-card"><p class="fa-err">Data dasbor dari server tidak lengkap. Coba lagi nanti.</p></div>'; return; }
   const P = D.pengguna, n1 = A.n1, r = D.respon_jam;
   w.innerHTML = `<div class="fa-kpi"><div><small>Akun aktif</small><b>${n1(P.aktif, 0)}</b></div><div><small>Aktif 24 jam</small><b>${n1(P.a1, 0)}</b></div><div><small>Aktif 7 hari</small><b>${n1(P.a7, 0)}</b></div><div><small>Aktif 30 hari</small><b>${n1(P.a30, 0)}</b></div></div>
    <div class="fa-kpi"><div><small>Online sekarang</small><b>${n1(P.online, 0)}</b></div><div><small>Total membuka aplikasi</small><b>${n1(P.buka, 0)}</b></div><div><small>Akun diblokir</small><b>${n1(P.diblokir, 0)}</b></div><div><small>Akun dihapus pengguna</small><b>${n1(P.dihapus, 0)}</b></div></div>
