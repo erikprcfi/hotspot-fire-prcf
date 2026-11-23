@@ -193,7 +193,7 @@ async function detail(id) {
   const p = (await Q().all()).find(x => x.id === id); if (!p || !BOX) return; const A = X(), n = {}; p.waypoints.forEach(w => n[KAT(w.kat).akar] = (n[KAT(w.kat).akar] || 0) + 1);
   BOX.innerHTML = `<div class="fa-card"><h4>${esc(p.info.id_kegiatan)}</h4><p class="fa-note">${esc(p.info.stasiun || p.info.lokasi)} · ${esc(p.info.mandat || '')} · ${esc(p.info.transportasi)} · ${esc(wib(p.mulai))} – ${p.selesai ? esc(wib(p.selesai)) : '…'}<br>${T_('Tim')}: ${esc(p.info.tim)} · ${T_('Anggota')}: ${esc(p.info.pelaksana.join(', '))}</p>
       <div class="sm-st"><div><small>Jarak</small><b>${nf(panjang(p.track) / 1000, 2)} km</b></div>${AKAR().map(c => `<div><small>${esc(c.nama.replace(/^Indikator /, ''))}</small><b>${n[c.key] || 0}</b></div>`).join('')}</div></div>
-    <div class="fa-card"><h4>Ekspor</h4><div class="fa-row"><button class="fa-btn pri" style="--c:#0F766E" data-x="smart">SMART (.xml)</button><button class="fa-btn pri" style="--c:#7C3AED" data-x="gpx">GPX</button><button class="fa-btn pri" style="--c:#15803D" data-x="xlsx">Excel tallysheet</button></div>
+    <div class="fa-card"><h4>Ekspor</h4><div class="fa-row"><button class="fa-btn pri" style="--c:#0F766E" data-x="smart">SMART (.xml)</button><button class="fa-btn pri" style="--c:#7C3AED" data-x="gpx">GPX</button><button class="fa-btn pri" style="--c:#2563EB" data-x="kml">KML</button><button class="fa-btn pri" style="--c:#15803D" data-x="xlsx">Excel tallysheet</button></div>
       <div class="fa-row" style="margin-top:8px"><button class="fa-btn" data-x="pdf">PDF</button><button class="fa-btn" data-x="shp">SHP</button><button class="fa-btn" data-x="csv">CSV</button><button class="fa-btn" data-x="json">JSON</button></div>
       <p class="fa-note">SMART (.xml): di SMART Desktop pilih Import Patrols → Add → pilih berkas → Assign New Patrol IDs → Import. Track, waypoint & observasi masuk sekaligus.</p></div>
     <div class="fa-map" id="smMap" style="height:300px"></div><div class="fa-card" id="smWl2"></div>
@@ -224,11 +224,20 @@ ${tk}
   </trkseg></trk>
 </gpx>`;
 }
+/* KML untuk Google Earth / Avenza / QGIS: jalur + waypoint dengan atribut */
+function kml(p) {
+  const wp = p.waypoints.map(w => `<Placemark><name>WPT${pad(w.no)} · ${xe(KAT(w.kat).nama)}</name><TimeStamp><when>${iso(w.t)}</when></TimeStamp><styleUrl>#w</styleUrl><description>${xe(atribut(w).map(([l, v]) => `${l}: ${v}`).join('; '))}</description><Point><coordinates>${w.lo},${w.la},${w.alt != null ? w.alt : 0}</coordinates></Point></Placemark>`).join('');
+  const tk = p.track.map(x => `${x[2]},${x[1]},${x[4] != null ? x[4] : 0}`).join(' ');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${xe(p.info.id_kegiatan)}</name><description>${xe(`${p.info.stasiun || ''} · ${p.info.tim} · ${p.info.pelaksana.join(', ')} · Pantau Rimbak – Yayasan PRCF Indonesia`)}</description>` +
+    '<Style id="w"><IconStyle><color>ff1d4ed8</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style><Style id="j"><LineStyle><color>ff2563eb</color><width>3</width></LineStyle></Style>' +
+    `<Folder><name>Waypoint (${p.waypoints.length})</name>${wp}</Folder>` + (p.track.length ? `<Placemark><name>Jalur ${xe(p.info.id_kegiatan)}</name><styleUrl>#j</styleUrl><LineString><tessellate>1</tessellate><coordinates>${tk}</coordinates></LineString></Placemark>` : '') + '</Document></kml>';
+}
 /* kolom tallysheet per kelompok (kategori akar Data Model): Kategori + atribut sesuai urutan Data Model, Keterangan terakhir */
 const kolomAkar = ak => { const K = []; DMD.kategori.filter(c => c.akar === ak && c.daun).forEach(c => c.atribut.forEach(k => { if (!K.includes(k)) K.push(k); })); return K.filter(k => k !== 'keterangan').concat(K.includes('keterangan') ? ['keterangan'] : []); };
 async function ekspor(p, f) {
   const A = X(), base = nm(p);
   if (f === 'gpx') return A.dl(new Blob([gpx(p)], { type: 'application/gpx+xml' }), base + '.gpx');
+  if (f === 'kml') return A.dl(new Blob([kml(p)], { type: 'application/vnd.google-earth.kml+xml' }), base + '.kml');
   if (f === 'json') return A.dl(new Blob([JSON.stringify(p)], { type: 'application/json' }), base + '.json');
   if (f === 'smart') { if (p.status !== 'selesai') throw new Error(T_('Selesaikan patroli dulu sebelum ekspor ke SMART.')); return A.dl(new Blob([smartXml(p)], { type: 'application/xml' }), String(p.info.id_kegiatan).replace(/[^\w ]+/g, '_') + '.xml'); }
   if (f === 'csv') { const AK = [...new Set(DMD.kategori.flatMap(c => c.atribut))], K = ['no_wpt', 'kategori', 'waktu_wib', 'x_bujur', 'y_lintang', 'akurasi_m', 'ketinggian_m', 'id_foto', ...AK.map(k => DMD.atribut[k].nama)];
@@ -337,5 +346,5 @@ ${hari.map(hariXml).join('\n')}
 </ns2:patrol>
 `;
 }
-window.FHSmart = { open, sync, gpx, ekspor, smartXml, wkbTrack, bisa, muatDM, _set: d => DMD = d };
+window.FHSmart = { open, sync, gpx, kml, ekspor, smartXml, wkbTrack, bisa, muatDM, _set: d => DMD = d };
 })();

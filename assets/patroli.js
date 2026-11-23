@@ -8,6 +8,18 @@
  */
 (function () {
 'use strict';
+/* KML (Google Earth, Avenza, QGIS): titik temuan + jalur patroli */
+const xk = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const KW = h => 'ff' + h.slice(5, 7) + h.slice(3, 5) + h.slice(1, 3);   // #RRGGBB → aabbggrr
+function kml(judul, temuan, jalur, warna) {
+  const jenis = [...new Set(temuan.map(t => t.jenis))];
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${xk(judul)}</name><description>Pantau Rimbak – Yayasan PRCF Indonesia</description>\n` +
+    jenis.map((j, i) => `<Style id="j${i}"><IconStyle><color>${KW((warna && warna[j]) || '#E11D48')}</color><scale>1.1</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style>`).join('') +
+    '<Style id="jalur"><LineStyle><color>ff2563eb</color><width>3</width></LineStyle></Style>\n' +
+    (temuan.length ? `<Folder><name>Temuan (${temuan.length})</name>` + temuan.map(t => `<Placemark><name>${xk(t.jenis)}</name><TimeStamp><when>${new Date(t.t).toISOString()}</when></TimeStamp><styleUrl>#j${jenis.indexOf(t.jenis)}</styleUrl><description>${xk([t.rincian, t.jumlah, t.spesies, t.tindakan, t.catatan, t.pelapor].filter(Boolean).join(' · '))}</description><Point><coordinates>${t.lo},${t.la},0</coordinates></Point></Placemark>`).join('') + '</Folder>\n' : '') +
+    (jalur && jalur.length ? `<Folder><name>Jalur patroli (${jalur.length})</name>` + jalur.map((t, i) => `<Placemark><name>Patroli ${i + 1}</name><styleUrl>#jalur</styleUrl><LineString><tessellate>1</tessellate><coordinates>${t.pts.map(p => `${p.lo},${p.la},0`).join(' ')}</coordinates></LineString></Placemark>`).join('') + '</Folder>\n' : '') +
+    '</Document></kml>';
+}
 const X = () => window.FHAlat, esc = s => X().esc(s);
 const JENIS = [['Api / bekas terbakar', '#DC2626', '🔥'], ['Penebangan liar', '#92400E', '🪓'], ['Perburuan / jerat', '#7C2D12', '🪤'], ['Perambahan / pembukaan lahan', '#B45309', '🚜'],
   ['Satwa terlihat', '#15803D', '🦧'], ['Tumbuhan penting', '#4D7C0F', '🌿'], ['Patok / batas rusak', '#475569', '📍'], ['Sampah / pencemaran', '#0E7490', '🗑️'], ['Lainnya', '#6B7280', '•']];
@@ -103,7 +115,7 @@ async function daftar(box) {
    <p class="fa-note">Hanya temuan di ${esc(HDN || 'Hutan Desa ini')}. Ganti Hutan Desa di Beranda untuk melihat lokasi lain.</p>
    <div class="fa-kpi"><div><small>Total temuan</small><b>${L_.length}</b></div><div><small>30 hari terakhir</small><b>${L_.filter(t => Date.now() - t.t <= 30 * 864e5).length}</b></div><div><small>Menunggu sinyal</small><b>${L_.filter(t => t.lokal).length}</b></div><div><small>Jenis temuan</small><b>${Object.keys(per).length}</b></div></div>
    <div class="fa-map" id="pMap"></div>
-   <div class="fa-row"><button class="fa-btn" id="pCsv">Unduh CSV</button><button class="fa-btn" id="pGeo">Unduh GeoJSON</button></div>
+   <div class="fa-row"><button class="fa-btn" id="pCsv">Unduh CSV</button><button class="fa-btn" id="pGeo">Unduh GeoJSON</button><button class="fa-btn" id="pKml">Unduh KML</button></div>
    <div class="fa-card"><div class="fa-list">${L_.length ? L_.slice(0, 300).map(t => `<div class="fa-it"><span class="d" style="background:${WARNA[t.jenis] || '#999'}"></span><span class="m"><b>${esc(t.jenis)}</b><small>${esc([t.rincian, t.jumlah, t.spesies].filter(Boolean).join(' · '))}</small><small>${esc(A.wib(t.t))} · ${t.la.toFixed(5)}, ${t.lo.toFixed(5)}${t.pelapor ? ' · ' + esc(t.pelapor) : ''} · ${t.nfoto || 0} foto</small></span><span class="fa-pill" style="background:${t.lokal ? '#FEF3C7' : '#DCFCE7'};color:${t.lokal ? '#92400E' : '#166534'}">${t.lokal ? 'Menunggu sinyal' : 'Terkirim ✓'}</span></div>`).join('') : '<p class="fa-note">Belum ada temuan. Catat temuan pertama di tab "Catat temuan".</p>'}</div></div></div>`;
   box.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { box.dataset.semua = b.dataset.s; daftar(box); });
   setTimeout(() => peta(box.querySelector('#pMap'), [], L_), 60);
@@ -112,6 +124,7 @@ async function daftar(box) {
   const tr = v => A.EN() && window.FHLang ? FHLang.t(String(v ?? '')) : v;
   box.querySelector('#pCsv').onclick = () => { A.dl(new Blob([A.csv([H.map(h => A.EN() && window.FHLang ? FHLang.kolom(h) : h), ...L_.map(t => row(t).map(tr))])], { type: 'text/csv' }), nama + '.csv'); A.pakai('patroli_unduh'); };
   box.querySelector('#pGeo').onclick = () => { A.dl(new Blob([JSON.stringify({ type: 'FeatureCollection', features: L_.map(t => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [t.lo, t.la] }, properties: Object.fromEntries(H.map((h, i) => [A.EN() && window.FHLang ? FHLang.kolom(h) : h, tr(row(t)[i])])) })) })], { type: 'application/geo+json' }), nama + '.geojson'); A.pakai('patroli_unduh'); };
+  box.querySelector('#pKml').onclick = () => { A.dl(new Blob([kml(A.EN() ? 'Patrol findings' : 'Temuan patroli – ' + (HDN || ''), L_, [], WARNA)], { type: 'application/vnd.google-earth.kml+xml' }), nama + '.kml'); A.pakai('patroli_unduh'); };
 }
 
 /* ---------- 3. rekap patroli dari jejak GPS ---------- */
@@ -160,13 +173,14 @@ function tampil(out, R) {
    <div class="fa-kpi"><div><small>Perjalanan</small><b>${R.trip.length}</b></div><div><small>Titik GPS</small><b>${n1(R.npts, 0)}</b></div><div><small>Temuan</small><b>${R.temuan.length}</b></div><div><small>Kecepatan rata-rata</small><b>${R.jam ? n1(R.km / R.jam, 1) : 0} km/jam</b></div></div>
    ${R.trip.length ? '' : '<p class="fa-err">Tidak ada jejak GPS pada periode ini. Pastikan "Bagikan lokasi ke tim" aktif saat patroli.</p>'}
    <div class="fa-map" id="rMap"></div>
-   <div class="fa-row"><button class="fa-btn pri" style="--c:#1D4ED8" id="rDoc">Word</button><button class="fa-btn pri" style="--c:#B3261E" id="rPdf">PDF</button><button class="fa-btn" id="rGpx">GPX</button></div>
+   <div class="fa-row"><button class="fa-btn pri" style="--c:#1D4ED8" id="rDoc">Word</button><button class="fa-btn pri" style="--c:#B3261E" id="rPdf">PDF</button><button class="fa-btn" id="rGpx">GPX</button><button class="fa-btn" id="rKml">KML</button></div>
    <div class="fa-2"><div class="fa-card"><h4>Perjalanan</h4><div class="fa-scroll"><table class="fa-tbl"><tr><th>Mulai</th><th>Durasi</th><th>Jarak</th></tr>${R.trip.map(t => `<tr><td>${esc(A.wib(t.mulai))}</td><td>${jam(t.jam)}</td><td class="n">${n1(t.km, 2)} km</td></tr>`).join('') || '<tr><td colspan="3">–</td></tr>'}</table></div></div>
    <div class="fa-card"><h4>Temuan</h4>${Object.entries(R.per).map(([k, v]) => `<div class="fa-bar"><span>${esc(k)}</span><i style="width:${v / Math.max(...Object.values(R.per)) * 50}%;background:${WARNA[k]}"></i><b>${v}</b></div>`).join('') || '<p class="fa-note">Tidak ada temuan tercatat.</p>'}</div></div>
    <p class="fa-note">Metode: jarak = jumlah jarak antartitik GPS berurutan (rumus haversine); titik dengan akurasi > 100 m dan loncatan > 150 km/jam diabaikan; jeda > 30 menit memisahkan perjalanan. Luas jelajah = jumlah sel ±100 m × 100 m yang dilalui. Sumber: jejak GPS aplikasi Pantau Rimbak.</p></div>`;
   setTimeout(() => peta(out.querySelector('#rMap'), R.trip.map(t => t.pts.map(p => [p.la, p.lo])), R.temuan), 60);
   out.querySelector('#rGpx').onclick = () => { const g = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Pantau Rimbak – Yayasan PRCF Indonesia" xmlns="http://www.topografix.com/GPX/1/1">\n${R.temuan.map(t => `<wpt lat="${t.la}" lon="${t.lo}"><time>${new Date(t.t).toISOString()}</time><name>${esc(t.jenis)}</name><desc>${esc([t.rincian, t.jumlah, t.spesies].filter(Boolean).join(' · '))}</desc></wpt>`).join('\n')}\n${R.trip.map((t, i) => `<trk><name>Patroli ${i + 1}</name><trkseg>${t.pts.map(p => `<trkpt lat="${p.la}" lon="${p.lo}"><time>${new Date(p.t).toISOString()}</time></trkpt>`).join('')}</trkseg></trk>`).join('\n')}\n</gpx>`;
     A.dl(new Blob([g], { type: 'application/gpx+xml' }), fn(R, 'gpx')); };
+  out.querySelector('#rKml').onclick = () => A.dl(new Blob([kml('Laporan patroli', R.temuan, R.trip, WARNA)], { type: 'application/vnd.google-earth.kml+xml' }), fn(R, 'kml'));
   out.querySelector('#rPdf').onclick = () => pdf(R).catch(e => A.toast(e.message));
   out.querySelector('#rDoc').onclick = () => word(R).catch(e => A.toast(e.message));
 }
@@ -220,5 +234,5 @@ function open(tab) {
     pilih(tab || 'catat'); sync();
   });
 }
-window.FHPatroli = { open, sync, JENIS };
+window.FHPatroli = { open, sync, JENIS, kml };
 })();

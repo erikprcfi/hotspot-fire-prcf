@@ -60,10 +60,18 @@ jobs:
         continue-on-error: true
         timeout-minutes: 30
         run: python scripts/peringatan_hutan.py
+      - name: Laporan bulanan PDF per Hutan Desa (sekali per bulan, untuk bulan yang sudah lewat)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        timeout-minutes: 10
+        run: pip install -q reportlab==4.2.5 matplotlib==3.9.2 && python scripts/laporan_bulanan.py
       - name: Ringkasan titik panas per provinsi & kabupaten (Indonesia hari ini)
         continue-on-error: true
         timeout-minutes: 5
         run: python scripts/ringkas_nasional.py
+      - name: Ringkasan widget layar utama (aplikasi Android)
+        continue-on-error: true
+        run: python scripts/ringkas_widget.py
       - name: Simpan perubahan data
         run: |
           git config user.name "pantau-api-bot"

@@ -3,6 +3,7 @@ Peringatan dini otomatis – Pantau Rimbak PRCF (dijalankan GitHub Actions setel
 Pemicu (per Hutan Desa yang dipilih pengguna):
   1. Titik panas BARU NASA FIRMS di dalam desa/Hutan Desa atau <= 5 km dari batas desa, terdeteksi <= 36 jam terakhir.
   2. Bahaya kebakaran (FDRS, prakiraan BMKG/ECMWF) TINGGI atau EKSTREM dalam 3 hari ke depan.
+  3. Indikasi pembukaan/kerusakan hutan BARU dari citra Sentinel-2 (scripts/peringatan_hutan.py, sepekan sekali) >= 1 ha.
 Dikirim ke pengguna terverifikasi yang berlangganan: notifikasi HP (Web Push) dan/atau email (lewat Apps Script PRCF).
 Setiap peringatan dicatat di data/peringatan/terkirim.json agar tidak terkirim dua kali. Nilai data tidak diubah.
 Butuh env: ANALISIS_KEY, AKUN_URL.
@@ -31,6 +32,7 @@ def kejadian(state):
     geo = json.load(open(os.path.join(DATA, "geo.json"))); sites = geo["sites"]
     hs = json.load(open(os.path.join(DATA, "hotspots.json")))["titik"]
     fc = json.load(open(os.path.join(DATA, "prakiraan.json"))) if os.path.exists(os.path.join(DATA, "prakiraan.json")) else {"lokasi": {}}
+    fh = os.path.join(DATA, "hutan", "peringatan.json"); hutan = (json.load(open(fh)).get("lokasi") or {}) if os.path.exists(fh) else {}
     out = []
     for k, s in enumerate(sites):
         baru = []
@@ -52,6 +54,12 @@ def kejadian(state):
             if kunci not in state:
                 out.append({"jenis": "bahaya", "situs": s["id"], "hd": s["hd_nama"], "kunci": [kunci], "level": top["level"], "tanggal": top["tanggal"],
                             "hari": [{"tanggal": h["tanggal"], "level": h["level"], "fwi": h.get("fwi")} for h in h3]})
+        h = hutan.get(s["id"]) or {}
+        if h.get("status") == "selesai" and (h.get("luas_baru_ha") or 0) >= 1:
+            kunci = f'hutan|{s["id"]}|{h["dicek_utc"][:10]}'
+            if kunci not in state and NOW - datetime.datetime.fromisoformat(h["dicek_utc"].replace("Z", "+00:00")) <= datetime.timedelta(days=8):
+                out.append({"jenis": "hutan", "situs": s["id"], "hd": s["hd_nama"], "kunci": [kunci], "luas": h["luas_baru_ha"], "luas_hd": h.get("luas_baru_di_hd_ha") or 0,
+                            "petak": h.get("petak_baru") or 0, "periode": h.get("periode_terkini") or [], "cerah": h.get("cerah_persen")})
     return out
 
 KONF = {"id": {"h": "tinggi", "n": "sedang (nominal)", "l": "rendah"}, "en": {"h": "high", "n": "nominal", "l": "low"}}
@@ -70,6 +78,14 @@ def teks(e, bhs):
         isi = (f'Nearest {angka(dek, b)} km from the village boundary (NASA FIRMS satellite detection). Check in the field and report via the app.' if en else
                f'Terdekat {angka(dek, b)} km dari batas desa (deteksi satelit NASA FIRMS). Mohon cek lapangan dan laporkan lewat aplikasi.')
         rinci = [(f'{x["waktu"]} WIB · {x["sat"]} · {angka(x["jarak"], b)} km · ' + ("confidence" if en else "keyakinan") + f' {konf(x["conf"], b)} · FRP {angka(float(x["frp"]), b)} MW · {x["lat"]:.5f}, {x["lon"]:.5f}') for x in e["titik"]]
+    elif e["jenis"] == "hutan":
+        b = "en" if en else "id"; di = e["luas_hd"] > 0
+        judul = (f'🌳 New forest clearing indication near {e["hd"]}' if en else f'🌳 Indikasi pembukaan hutan baru di sekitar {e["hd"]}')
+        isi = ((f'{angka(e["luas"], b)} ha in {e["petak"]} patch(es)' + (f', {angka(e["luas_hd"], b)} ha inside the village forest' if di else '') + ' (Sentinel-2 satellite imagery). Please verify in the field.') if en else
+               (f'{angka(e["luas"], b)} ha dalam {e["petak"]} petak' + (f', {angka(e["luas_hd"], b)} ha di dalam Hutan Desa' if di else '') + ' (citra satelit Sentinel-2). Mohon cek lapangan.'))
+        per = e.get("periode") or ["", ""]
+        rinci = [(f'Imagery {tgl(per[0])} – {tgl(per[1])} compared with the same period a year earlier · {e.get("cerah")}% of the area cloud-free' if en else
+                  f'Citra {tgl(per[0])} – {tgl(per[1])} dibanding periode yang sama tahun sebelumnya · {e.get("cerah")}% wilayah tampak cerah')] if per[0] else []
     else:
         kl = KELAS["en" if en else "id"][e["level"]]
         judul = (f'⚠️ Fire danger {kl.upper()} at {e["hd"]}' if en else f'⚠️ Bahaya kebakaran {kl.upper()} di {e["hd"]}')
