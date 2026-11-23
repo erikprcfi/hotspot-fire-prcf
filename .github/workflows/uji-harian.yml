@@ -1,0 +1,68 @@
+name: Uji harian aplikasi
+
+# Tiap hari ±02.20 WIB: menguji website & isi aplikasi Android (APK) seperti pengguna sungguhan –
+# mode tamu, akun tanpa kode, admin (ganti Hutan Desa), akun + wilayah SHP (wilayah uji sintetis), semua alat dibuka satu per satu,
+# aplikasi tanpa sinyal/sinyal lemah/pembaruan otomatis, serta validasi seluruh berkas data.
+# Bila ada yang gagal: membuka/memperbarui issue "Uji harian" (pemilik repositori menerima email dari GitHub); ditutup otomatis bila normal kembali.
+on:
+  schedule:
+    - cron: "19 19 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: uji-harian
+  cancel-in-progress: true
+
+jobs:
+  uji:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Siapkan isi aplikasi (www) & Playwright
+        run: |
+          cd aplikasi-android && npm ci --no-audit --no-fund && node siapkan-www.mjs && cd ..
+          cd tes && npm init -y > /dev/null && npm i --no-audit --no-fund playwright@1.63.0 > /dev/null && npx playwright install --with-deps chromium > /dev/null
+      - name: Validasi data
+        id: data
+        continue-on-error: true
+        run: python tes/validasi_data.py | tee tes/hasil_data.txt
+      - name: Uji website & aplikasi (semua alat)
+        id: alat
+        continue-on-error: true
+        run: |
+          (cd aplikasi-android/www && python -m http.server 8800 > /dev/null 2>&1 &)
+          sleep 2
+          node tes/uji_harian.js web,asli
+      - name: Uji aplikasi tanpa sinyal & pembaruan otomatis
+        id: asli
+        continue-on-error: true
+        run: node tes/uji_asli.js | tee tes/hasil_asli.txt
+      - name: Laporkan
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GAGAL: ${{ steps.data.outcome == 'failure' || steps.alat.outcome == 'failure' || steps.asli.outcome == 'failure' }}
+        run: |
+          { cat tes/hasil_uji.md 2>/dev/null || echo "Uji alat tidak menghasilkan laporan."; echo; echo '### Aplikasi asli (tanpa sinyal, pembaruan)'; echo '```'; tail -25 tes/hasil_asli.txt 2>/dev/null; echo '```'; echo '### Validasi data'; echo '```'; tail -15 tes/hasil_data.txt 2>/dev/null; echo '```'; } > laporan_uji.md
+          cat laporan_uji.md >> "$GITHUB_STEP_SUMMARY"
+          R="$GITHUB_REPOSITORY"; JUDUL="Uji harian: ada bagian aplikasi yang gagal diuji"
+          NO=$(gh api "repos/$R/issues?state=open&per_page=100" -q '[.[] | select(.title | startswith("Uji harian"))][0].number // empty')
+          if [ "$GAGAL" = "true" ]; then
+            if [ -n "$NO" ]; then gh api "repos/$R/issues/$NO/comments" -F body=@laporan_uji.md > /dev/null
+            else gh api "repos/$R/issues" -f title="$JUDUL" -F body=@laporan_uji.md > /dev/null; fi
+            exit 1
+          elif [ -n "$NO" ]; then
+            gh api "repos/$R/issues/$NO/comments" -F body=@laporan_uji.md > /dev/null
+            gh api "repos/$R/issues/$NO/comments" -f body="Semua uji kembali lulus ✅" > /dev/null
+            gh api -X PATCH "repos/$R/issues/$NO" -f state=closed > /dev/null
+          fi

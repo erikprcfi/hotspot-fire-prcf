@@ -1,7 +1,7 @@
 """
 Peringatan kehilangan tutupan hutan terbaru (Sentinel-2) – Pantau Rimbak PRCF
 ============================================================================
-Untuk setiap lokasi (Hutan Desa + desa + radius 1 km), sebulan sekali:
+Untuk setiap lokasi (Hutan Desa + desa + radius 1 km), SEPEKAN SEKALI (jendela bergulir 90 hari):
   * Hutan acuan = tutupan tajuk 2000 >= 30% dan BELUM hilang s.d. 2025 (Hansen/UMD GFC v1.13).
   * Citra Sentinel-2 L2A (ESA Copernicus, Earth Search AWS): TERKINI = 90 hari terakhir,
     ACUAN = 90 hari yang sama tahun lalu (musim sama, mengurangi efek musiman).
@@ -11,6 +11,8 @@ Untuk setiap lokasi (Hutan Desa + desa + radius 1 km), sebulan sekali:
   * Wilayah cerah < 50% → ditandai "tertutup awan".
 Hasil adalah INDIKASI perubahan tutupan dari citra 20 m (pembukaan lahan, tebangan, kebakaran,
 longsor, dll.) dan memerlukan verifikasi lapangan.
+Petak yang tidak bersinggungan dengan petak pemeriksaan sebelumnya ditandai "baru" (dengan tanggal pertama terdeteksi);
+hanya petak baru yang memicu notifikasi (scripts/peringatan.py), jadi satu bukaan tidak dilaporkan berulang selama 90 hari.
 Keluaran: data/hutan/peringatan.json, data/hutan/peringatan.geojson
 """
 import os, sys, json, math, time, datetime
@@ -82,6 +84,19 @@ def run_site(site, today):
     tot = sum(f["properties"]["luas_ha"] for f in feats); thd = sum(f["properties"]["luas_ha"] for f in feats if f["properties"]["di_hutan_desa"])
     return {**base, "status": "selesai", "luas_berubah_ha": round(tot, 2), "luas_berubah_di_hd_ha": round(thd, 2), "jumlah_petak": len(feats)}, feats
 
+def tandai_baru(feats, lama, r):
+    """Petak baru = tidak bersinggungan (buffer ~20 m) dengan petak pemeriksaan sebelumnya. Tanggal pertama terdeteksi dibawa dari petak lama."""
+    from shapely.geometry import shape as shp
+    hari = r["dicek_utc"][:10]
+    L = [(shp(f["geometry"]).buffer(0.0002), f["properties"].get("pertama_terdeteksi") or f["properties"].get("periode", "")[-10:] or hari) for f in lama]
+    for f in feats:
+        g = shp(f["geometry"]); cocok = [t for gg, t in L if gg.intersects(g)]
+        f["properties"]["baru"] = not cocok
+        f["properties"]["pertama_terdeteksi"] = min(cocok) if cocok else hari
+    nb = [f["properties"] for f in feats if f["properties"]["baru"]]
+    r.update({"petak_baru": len(nb), "luas_baru_ha": round(sum(p["luas_ha"] for p in nb), 2),
+              "luas_baru_di_hd_ha": round(sum(p["luas_ha"] for p in nb if p["di_hutan_desa"]), 2)})
+
 def main():
     geo = json.load(open(os.path.join(DATA, "geo.json")))
     f_idx = os.path.join(OUT, "peringatan.json"); f_gj = os.path.join(OUT, "peringatan.geojson")
@@ -92,7 +107,7 @@ def main():
         old = idx["lokasi"].get(s["id"])
         if old and not force:
             age = (today - datetime.date.fromisoformat(old["dicek_utc"][:10])).days
-            if (old.get("status") == "selesai" and age < 28) or age < 1:
+            if (old.get("status") == "selesai" and age < 7) or age < 1:
                 continue
         print(s["id"])
         try:
@@ -102,6 +117,7 @@ def main():
         if r.get("status") == "selesai" or not old or old.get("status") != "selesai":
             idx["lokasi"][s["id"]] = r
             if r.get("status") == "selesai":
+                tandai_baru(feats, [f for f in gj["features"] if f["properties"]["lokasi"] == s["id"]], r)
                 gj["features"] = [f for f in gj["features"] if f["properties"]["lokasi"] != s["id"]] + feats
         print("  ", r.get("status"), r.get("luas_berubah_ha"), "ha;", r.get("luas_berubah_di_hd_ha"), "ha di HD;", r.get("cerah_persen"), "% cerah")
         json.dump(idx, open(f_idx, "w"), indent=1, ensure_ascii=False); json.dump(gj, open(f_gj, "w"), separators=(",", ":"), ensure_ascii=False)

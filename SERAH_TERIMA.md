@@ -210,3 +210,12 @@ Live ke main bila semua uji lulus.
 - `update.yml`: pipeline FIRMS dicoba ulang setelah 2 menit bila server NASA tidak menjawab; publikasi GitHub Pages dicoba ulang dengan jeda 60 dtk dan 180 dtk.
 - `pantau.py`: memeriksa `unduh/PantauRimbak.apk` dan paket pembaruan otomatis.
 - Uji: uji_lengkap run 3–5 (web + aplikasi asli, 11 SHP) total 1.332 pembukaan alat, 0 masalah; uji_asli 15/15; validasi 679 berkas data, 0 masalah.
+
+## Pembaruan 23 November 2026 (malam) – versi 2.1.0
+- **Uji harian otomatis** (`.github/workflows/uji-harian.yml`, tiap hari ±02.20 WIB): `tes/uji_harian.js` (web + isi APK; tamu, akun tanpa kode, admin ganti Hutan Desa, 4 wilayah SHP sintetis; semua alat dibuka; KML; laporan bulanan; widget), `tes/uji_asli.js` (tanpa sinyal, sinyal lemah, pembaruan otomatis), `tes/validasi_data.py`. Gagal → issue "Uji harian" (email GitHub ke pemilik repo), tertutup otomatis bila lulus lagi.
+- **Laporan bulanan PDF** per Hutan Desa (`scripts/laporan_bulanan.py`, langkah di update.yml; hanya bulan yang sudah lewat, tidak menimpa): `data/laporan_bulanan/<id>/<YYYY-MM>.pdf` + `indeks.json`. Menu "Laporan bulanan" (assets/bulanan.js) khusus akun Hutan Desa.
+- **Peringatan perubahan hutan sepekan sekali** (sebelumnya sebulan): petak baru ditandai `baru` + `pertama_terdeteksi`; `scripts/peringatan.py` mengirim notifikasi jenis `hutan` bila bukaan baru ≥ 1 ha (push, email, umpan notifikasi lokal APK). Peta: petak baru merah.
+- **Paket luring** kini juga menyimpan cuaca & FDRS per Hutan Desa, peringatan hutan, laporan bulanan terbaru.
+- **Ekspor KML** temuan & jalur patroli (patroli.js) dan SMART (smart.js).
+- **Widget layar utama Android** (`StatusWidget.java`, `res/layout/widget_status.xml`, `res/xml/widget_status_info.xml`; data `data/widget.json` dari `scripts/ringkas_widget.py`, aturan status sama dengan aplikasi). Plugin `Perangkat.widget({situs, bahasa})` dipanggil saat Hutan Desa/akses berubah; mode umum/SHP → ringkasan Indonesia.
+- APK/AAB 2.1.0 (kode 5).

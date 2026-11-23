@@ -7,4 +7,5 @@
     <string name="capacitor_background_geolocation_notification_channel_name">Berbagi lokasi tim lapangan</string>
     <string name="capacitor_background_geolocation_notification_icon">drawable/ic_tracking</string>
     <string name="capacitor_background_geolocation_notification_color">#1E7A58</string>
+    <string name="widget_deskripsi">Status Hutan Desa: titik panas 7 hari &amp; bahaya kebakaran hari ini</string>
 </resources>

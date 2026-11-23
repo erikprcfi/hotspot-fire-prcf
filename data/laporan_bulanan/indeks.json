@@ -1,0 +1,216 @@
+{
+ "diperbarui_utc": "2026-11-23T12:28Z",
+ "laporan": {
+  "batangtau": {
+   "2026-08": {
+    "berkas": "laporan_bulanan/batangtau/2026-08.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 19,
+    "hujan_mm": 65.3,
+    "kb": 170,
+    "sha256": "cca1f137d053107fcfa3c0a87631e570facb553d58300fe3a8523afe10fd6fe6",
+    "titik_25km": 549,
+    "titik_5km": 46,
+    "titik_hd": 0
+   },
+   "2026-09": {
+    "berkas": "laporan_bulanan/batangtau/2026-09.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 3,
+    "hujan_mm": 272.1,
+    "kb": 115,
+    "sha256": "9393ab395731966c0c836ef97218355f30fe434e9644f901082da4e89e4dbcab",
+    "titik_25km": 70,
+    "titik_5km": 0,
+    "titik_hd": 0
+   },
+   "2026-10": {
+    "berkas": "laporan_bulanan/batangtau/2026-10.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 1,
+    "hujan_mm": 280.2,
+    "kb": 134,
+    "sha256": "5e7f07d67a8a5cd7acacb966fbb00febe5e59c8b969df2cf2f225fca3f88ee02",
+    "titik_25km": 3,
+    "titik_5km": 0,
+    "titik_hd": 0
+   }
+  },
+  "bukitbelang": {
+   "2026-08": {
+    "berkas": "laporan_bulanan/bukitbelang/2026-08.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 24,
+    "hujan_mm": 38.8,
+    "kb": 181,
+    "sha256": "04384ce32aa7063bcdfb21b92d33fed6dfdb4c2a5acb094c3d8e263bc7db2954",
+    "titik_25km": 608,
+    "titik_5km": 96,
+    "titik_hd": 3
+   },
+   "2026-09": {
+    "berkas": "laporan_bulanan/bukitbelang/2026-09.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 3,
+    "hujan_mm": 240.7,
+    "kb": 134,
+    "sha256": "1ba609897e3735e872c1c3a2fcc33437aa2893527648991136c77cff6d62389c",
+    "titik_25km": 46,
+    "titik_5km": 5,
+    "titik_hd": 0
+   },
+   "2026-10": {
+    "berkas": "laporan_bulanan/bukitbelang/2026-10.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 3,
+    "hujan_mm": 203.5,
+    "kb": 143,
+    "sha256": "54daacc9ffb98b373b6d20ed13b68378ddd911f706ba3857b1fb34b13d6e7104",
+    "titik_25km": 2,
+    "titik_5km": 0,
+    "titik_hd": 0
+   }
+  },
+  "bumilestari": {
+   "2026-08": {
+    "berkas": "laporan_bulanan/bumilestari/2026-08.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 19,
+    "hujan_mm": 60.7,
+    "kb": 156,
+    "sha256": "f9f06b05fd0b0defba8fb905fb81d09d6081d990ebd1b0d92aa94177a7d09293",
+    "titik_25km": 437,
+    "titik_5km": 13,
+    "titik_hd": 0
+   },
+   "2026-09": {
+    "berkas": "laporan_bulanan/bumilestari/2026-09.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 8,
+    "hujan_mm": 254.8,
+    "kb": 125,
+    "sha256": "30654b158012d7bf365b5139e065f6d7a337af02ac81396af82c7552c4b5efdd",
+    "titik_25km": 209,
+    "titik_5km": 2,
+    "titik_hd": 0
+   },
+   "2026-10": {
+    "berkas": "laporan_bulanan/bumilestari/2026-10.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 2,
+    "hujan_mm": 261.0,
+    "kb": 137,
+    "sha256": "319afb09ef2690681dc2b1f45591d285f15a2bc2d78ecff3ae7e6901909b25ae",
+    "titik_25km": 3,
+    "titik_5km": 0,
+    "titik_hd": 0
+   }
+  },
+  "nangalauk": {
+   "2026-08": {
+    "berkas": "laporan_bulanan/nangalauk/2026-08.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 19,
+    "hujan_mm": 79.4,
+    "kb": 167,
+    "sha256": "0c8e919ca1159f9fa4b55682efe37e74d5e404ed45c1ce22d74d9e7999a4b813",
+    "titik_25km": 460,
+    "titik_5km": 22,
+    "titik_hd": 0
+   },
+   "2026-09": {
+    "berkas": "laporan_bulanan/nangalauk/2026-09.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 10,
+    "hujan_mm": 239.7,
+    "kb": 133,
+    "sha256": "92e47271b21a3b34236cb4c30392c3b27a4c76266e7968062b6e8b4c3fa60441",
+    "titik_25km": 59,
+    "titik_5km": 11,
+    "titik_hd": 0
+   },
+   "2026-10": {
+    "berkas": "laporan_bulanan/nangalauk/2026-10.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 1,
+    "hujan_mm": 246.0,
+    "kb": 138,
+    "sha256": "75fda58c41aac22955795e4b80d51182abde4c4c868b4e402d04a1e3b4b1333b",
+    "titik_25km": 1,
+    "titik_5km": 0,
+    "titik_hd": 0
+   }
+  },
+  "nyuai": {
+   "2026-08": {
+    "berkas": "laporan_bulanan/nyuai/2026-08.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 23,
+    "hujan_mm": 54.7,
+    "kb": 188,
+    "sha256": "b292a643dcc3a14646e6dce68d1b377cc973da6fc8b030bb53bb8f740165af71",
+    "titik_25km": 800,
+    "titik_5km": 39,
+    "titik_hd": 3
+   },
+   "2026-09": {
+    "berkas": "laporan_bulanan/nyuai/2026-09.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 7,
+    "hujan_mm": 213.5,
+    "kb": 125,
+    "sha256": "7f8035f098d8820e1e7e183d1e4f5b5fa74f52752e56ccbb7662fd914ac84027",
+    "titik_25km": 58,
+    "titik_5km": 0,
+    "titik_hd": 0
+   },
+   "2026-10": {
+    "berkas": "laporan_bulanan/nyuai/2026-10.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 3,
+    "hujan_mm": 225.2,
+    "kb": 139,
+    "sha256": "b4b439cb9521ff79a395c53a23dda3fc97f6339248161447b9631794f1dab65e",
+    "titik_25km": 2,
+    "titik_5km": 0,
+    "titik_hd": 0
+   }
+  },
+  "pundjung": {
+   "2026-08": {
+    "berkas": "laporan_bulanan/pundjung/2026-08.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 19,
+    "hujan_mm": 55.1,
+    "kb": 169,
+    "sha256": "62a4115bb7d640ccd45ab405a7cd9c60d2095866b546375243a6af6e6f36d9b7",
+    "titik_25km": 526,
+    "titik_5km": 42,
+    "titik_hd": 0
+   },
+   "2026-09": {
+    "berkas": "laporan_bulanan/pundjung/2026-09.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 4,
+    "hujan_mm": 234.6,
+    "kb": 119,
+    "sha256": "3b120b6bd7b2b821c320466c491ea4100529584b3e9320b2e1e409c7781a76bd",
+    "titik_25km": 53,
+    "titik_5km": 1,
+    "titik_hd": 0
+   },
+   "2026-10": {
+    "berkas": "laporan_bulanan/pundjung/2026-10.pdf",
+    "dibuat_utc": "2026-11-23T12:28Z",
+    "hari_tinggi_ekstrem": 1,
+    "hujan_mm": 249.7,
+    "kb": 137,
+    "sha256": "b21fc96aa56811b0e141f1b9eefe2916827a93c8909dee5595aad2d9f7c23087",
+    "titik_25km": 3,
+    "titik_5km": 0,
+    "titik_hd": 0
+   }
+  }
+ },
+ "metode": "Titik panas NASA FIRMS, FWI ERA5, cuaca ERA5/ERA5-Land, perubahan hutan Sentinel-2. Dibuat otomatis tiap awal bulan."
+}
