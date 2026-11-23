@@ -115,7 +115,7 @@ const D = {
 'Tampilan': 'Appearance', 'Otomatis': 'Automatic', 'Terang': 'Light', 'Gelap': 'Dark', 'Tentang': 'About',
 'Cara kerja & validitas data': 'How it works & data validity', 'NASA FIRMS, pembaruan # jam, jejak audit': 'NASA FIRMS, #-hour updates, audit trail', 'Zona & tingkat status': 'Zones & status levels', 'Aman, Waspada, Siaga': 'Safe, Alert, Warning',
 'Buka versi website': 'Open the website version', 'Tampilan lengkap untuk laptop': 'Full layout for laptops', 'Kode & jejak audit (GitHub)': 'Code & audit trail (GitHub)', 'Semua data dan riwayat terbuka': 'All data and history are open',
-'Pengembang:': 'Developer:', 'Pantau Rimbak · Pemantauan Hutan Desa': 'Pantau Rimbak · Village Forest Monitoring', 'Kabupaten Kapuas Hulu, Kalimantan Barat': 'Kapuas Hulu Regency, West Kalimantan',
+'Pengembang:': 'Developer:', 'Pantau Rimbak · Pemantauan Hutan Desa': 'Pantau Rimbak · Village Forest Monitoring', 'Pantau Rimbak · Pemantauan, Pelaporan & Verifikasi Hutan': 'Pantau Rimbak · Forest Monitoring, Reporting & Verification', 'Data satelit terbuka untuk seluruh Indonesia': 'Open satellite data for all of Indonesia', 'Kabupaten Kapuas Hulu, Kalimantan Barat': 'Kapuas Hulu Regency, West Kalimantan',
 'Beranda': 'Home', 'Prakiraan': 'Forecast', 'Data': 'Data', 'Laporan': 'Reports', 'Lainnya': 'More', 'Pratinjau laporan': 'Report preview',
 'Buat akun Anda': 'Create your account', 'Daftar sekali saja dengan data asli. Email Anda akan diverifikasi.': 'Register once with your real data. Your email will be verified.',
 'Biodata': 'Personal details', 'Isi sesuai identitas asli (KTP). Data palsu akan diblokir admin.': 'Fill in as on your official ID (KTP). Fake data will be blocked by the admin.',
