@@ -95,7 +95,7 @@ try {
 
 /* ---------- 4. Tampilan aplikasi: sembunyikan tautan khusus situs ---------- */
 const st = document.createElement('style');
-st.textContent = 'html.fh-asli a[href^="index.html?web"],html.fh-asli a[href^="pasang.html"],html.fh-asli .hanya-web{display:none!important}';
+st.textContent = 'html.fh-asli a[href^="index.html?web"],html.fh-asli a[href^="pasang.html"],html.fh-asli .hanya-web{display:none!important}html.fh-asli #rowVersi{display:flex!important}';
 (document.head || document.documentElement).appendChild(st);
 
 /* ---------- 5. Tombol Kembali Android ---------- */
@@ -111,25 +111,55 @@ if (App && App.addListener) App.addListener('backButton', ev => {
 const UP = P('CapacitorUpdater');
 let VERSI = null;
 const versiKini = () => VERSI ? Promise.resolve(VERSI) : f0('versi.json', { cache: 'no-store' }).then(r => r.json()).then(j => (VERSI = j)).catch(() => ({ versi: '0' }));
-window.FHAsli = { versi: versiKini, periksa: () => periksaPembaruan() };
+let ST = { tahap: 'belum diperiksa' }, SIAP_ID = null, JALAN = null;
+const fmtV = v => { v = String(v || ''); return v.length === 12 ? `${v.slice(6, 8)}/${v.slice(4, 6)}/${v.slice(0, 4)} ${v.slice(8, 10)}.${v.slice(10, 12)} UTC` : v; };
+function catat(o) { ST = Object.assign({}, ST, o, { waktu: Date.now() }); try { localStorage.setItem('pr_pembaruan', JSON.stringify(ST)); } catch (e) { } tulisVersi(); }
+function tulisVersi() {
+  const el = document.getElementById('verTxt'); if (!el) return;
+  versiKini().then(k => { el.textContent = `2.0 · isi ${fmtV(k.versi)} · ${ST.tahap}`; });
+}
+const toast = m => { try { window.toastMsg ? window.toastMsg(m) : 0; } catch (e) { } };
+window.FHAsli = { versi: versiKini, periksa: () => periksaPembaruan(true), status: () => ST, pasang: () => pasangSekarang() };
 function siap() { try { UP && UP.notifyAppReady && UP.notifyAppReady(); } catch (e) { } }
-async function periksaPembaruan() {
-  if (!UP || navigator.onLine === false) return;
+async function pasangSekarang() {   // pakai versi baru sekarang juga (aplikasi dimuat ulang ±1 dtk)
+  if (!UP || !SIAP_ID) return false;
+  try { await UP.set({ id: SIAP_ID }); return true; } catch (e) { catat({ tahap: 'gagal memasang: ' + (e && e.message || e) }); return false; }
+}
+function periksaPembaruan(manual) { if (!JALAN) JALAN = periksa_(manual).finally(() => { JALAN = null; }); return JALAN; }
+async function periksa_(manual) {
+  if (!UP) { catat({ tahap: 'pembaruan otomatis tidak tersedia' }); return; }
+  if (navigator.onLine === false) { catat({ tahap: 'menunggu sinyal' }); return; }
   try {
     const kini = await versiKini();
+    catat({ tahap: 'memeriksa…' });
     const r = await tunggu(f0(BASIS + 'aplikasi/paket/terbaru.json?t=' + Date.now(), { cache: 'no-store' }), 15000);
-    if (!r || !r.ok) return;
-    const j = await r.json(); if (!j || !j.versi || !j.url || !(+j.versi > +kini.versi)) return;
+    if (!r || !r.ok) { catat({ tahap: 'server pembaruan tidak terjangkau' }); return; }
+    const j = await r.json();
+    if (!j || !j.versi || !j.url || !(+j.versi > +kini.versi)) { catat({ tahap: 'sudah versi terbaru' }); if (manual) toast('Aplikasi sudah versi terbaru'); return; }
     const pi = P('Perangkat') && P('Perangkat').status ? await P('Perangkat').status().catch(() => ({})) : {};
-    if (j.min_kode && pi.kode && +pi.kode < +j.min_kode) return;   // perlu versi APK lebih baru dari Play Store
-    try { const lst = await UP.list(); if ((lst.bundles || []).some(b => b.version === j.versi && b.status !== 'error')) { const b = lst.bundles.find(b => b.version === j.versi); await UP.next({ id: b.id }); return; } } catch (e) { }
-    const b = await UP.download({ url: /^https?:/.test(j.url) ? j.url : BASIS + j.url, version: String(j.versi), checksum: j.checksum || undefined });
-    if (b && b.id) await UP.next({ id: b.id });
-  } catch (e) { console.warn('Pembaruan aplikasi ditunda:', e && e.message); }
+    if (j.min_kode && pi.kode && +pi.kode < +j.min_kode) { catat({ tahap: 'perlu memasang APK terbaru' }); return; }   // perlu versi APK lebih baru
+    let id = null;
+    try { const lst = await UP.list(); const b = (lst.bundles || []).find(b => b.version === String(j.versi) && b.status !== 'error'); if (b) id = b.id; } catch (e) { }
+    if (!id) {
+      catat({ tahap: 'mengunduh pembaruan ' + fmtV(j.versi) + '…' });
+      const b = await UP.download({ url: /^https?:/.test(j.url) ? j.url : BASIS + j.url, version: String(j.versi) });
+      id = b && b.id;
+    }
+    if (!id) { catat({ tahap: 'unduhan pembaruan gagal' }); return; }
+    await UP.next({ id }); SIAP_ID = id;
+    catat({ tahap: 'pembaruan siap – terpasang saat aplikasi dibuka lagi', siap: j.versi });
+    toast('Pembaruan aplikasi siap · ketuk Profil → Versi aplikasi untuk memasang sekarang');
+  } catch (e) { catat({ tahap: 'pembaruan ditunda: ' + String(e && e.message || e).slice(0, 80) }); console.warn('Pembaruan aplikasi ditunda:', e && e.message); }
 }
+document.addEventListener('click', ev => {
+  const b = ev.target && ev.target.closest && ev.target.closest('#rowVersi'); if (!b) return;
+  if (SIAP_ID) { toast('Memasang pembaruan…'); setTimeout(pasangSekarang, 300); return; }
+  toast('Memeriksa pembaruan…'); periksaPembaruan(true);
+});
+document.addEventListener('DOMContentLoaded', tulisVersi);
 // "aplikasi siap" dikirim begitu inti aplikasi (FHApp) berjalan – tidak menunggu semua gambar/peta, agar HP lambat tidak memicu pembatalan pembaruan
 (function tungguSiap(n) { if (window.FHApp) { siap(); return; } if (n < 140) setTimeout(() => tungguSiap(n + 1), 100); })(0);   /* tanpa FHApp dalam 14 dtk = versi rusak → biarkan dibatalkan otomatis */
-addEventListener('load', () => setTimeout(periksaPembaruan, 12000));
+addEventListener('load', () => setTimeout(periksaPembaruan, 4000));
 addEventListener('online', () => setTimeout(periksaPembaruan, 5000));
 if (App && App.addListener) App.addListener('resume', () => setTimeout(periksaPembaruan, 4000));
 })();

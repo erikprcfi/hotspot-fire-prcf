@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>window.FH_WEB=/[?&]web=1/.test(location.search);if(window.FH_WEB)document.documentElement.classList.add("web");</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<script src="assets/asli.js?v=3"></script>
+<script src="assets/asli.js?v=4"></script>
 <title>Pantau Rimbak</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0B3B2C">
@@ -736,6 +736,7 @@ html.web .ab-t small{letter-spacing:.02em}
       <a class="row tap" href="syarat.html"><span class="ico-sq" style="background:#7C3AED"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></span><span class="m"><b>Syarat Penggunaan &amp; Penafian</b><small>Bukan sistem resmi pemerintah</small></span><span class="chev">›</span></a>
       <a class="row tap" href="index.html?web=1" data-noweb><span class="ico-sq" style="background:#3B5BB5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg></span><span class="m"><b>Buka versi website</b><small>Tampilan lengkap untuk laptop</small></span><span class="chev">›</span></a>
       <a class="row tap" href="https://github.com/erikprcfi/hotspot-fire-prcf" target="_blank" rel="noopener"><span class="ico-sq" style="background:#2A2F2C"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 9l-4 3 4 3M16 9l4 3-4 3M14 5l-4 14"/></svg></span><span class="m"><b>Kode &amp; jejak audit (GitHub)</b><small>Semua data dan riwayat terbuka</small></span><span class="chev">›</span></a>
+      <button class="row tap" id="rowVersi" style="display:none"><span class="ico-sq" style="background:#B45309"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></span><span class="m"><b>Versi aplikasi</b><small id="verTxt">Memeriksa…</small></span><span class="chev">›</span></button>
     </div>
     <img src="assets/logo_prcf.jpg" alt="Yayasan PRCF Indonesia" style="height:54px;border-radius:6px;display:block;margin:22px auto 0">
     <p class="small muted" style="text-align:center;margin-top:10px"><b>Yayasan PRCF Indonesia</b><br>Pantau Rimbak · Pemantauan, Pelaporan &amp; Verifikasi Hutan<br>Data satelit terbuka untuk seluruh Indonesia</p>
@@ -767,7 +768,7 @@ html.web .ab-t small{letter-spacing:.02em}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="assets/bahasa.js?v=64"></script>
+<script src="assets/bahasa.js?v=65"></script>
 <script src="assets/kamus_en.js?v=63"></script>
 <script src="assets/nasa_layers.js?v=63"></script>
 <script src="assets/citra.js?v=62"></script>
@@ -1168,9 +1169,11 @@ function applySite(id,fly){
   $('#v-lap').dataset.sub=SITE.hd_nama+' · PDF, Word, CSV';if(CUR==='lap')$('#abSub').textContent=$('#v-lap').dataset.sub;
   $('#v-data').dataset.sub=SITE.hd_nama;if(CUR==='data')$('#abSub').textContent=SITE.hd_nama;
   $('#v-fc').dataset.sub=SITE.hd_nama+' · BMKG & ECMWF';if(CUR==='fc')$('#abSub').textContent=$('#v-fc').dataset.sub;
-  siteLayers();if(MAP){if(fly)MAP.flyToBounds(B.r25,{...PADV,duration:.9});else MAP.fitBounds(B.r25,PADV);}FI=0;
+  siteLayers();if(MAP){const vis=MAP.getContainer().offsetWidth>0&&MAP.getContainer().offsetHeight>0;   /* peta tersembunyi (Dasbor/Beranda): diposisikan saat peta dibuka */
+   if(!vis){MAPSEEN=false;if(!MAP._loaded)MAP.setView([SITE.pusat[0],SITE.pusat[1]],10,{animate:false});}else if(fly)MAP.flyToBounds(B.r25,{...PADV,duration:.9});else MAP.fitBounds(B.r25,PADV);}FI=0;
   CUACA=CUACAS[SITE.id]||null;getCuaca().then(()=>dataMocks());
   if(STATUS){renderMap();statusCard();downloads();dataMocks();renderFC();}
+  try{if(CUR==='dash')hubRender();}catch(e){}   /* Dasbor ikut berganti ke Hutan Desa yang dipilih */
 }
 function getCuaca(){const id=SITE.id;if(CUACAS[id]){CUACA=CUACAS[id];return Promise.resolve(CUACA);}
   return J(id==='nangalauk'?'data/cuaca.json':`data/cuaca_${id}.json`).then(c=>{CUACAS[id]=c;if(SITE.id===id)CUACA=c;return c;}).catch(()=>null);}
