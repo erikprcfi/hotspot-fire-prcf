@@ -42,7 +42,7 @@ public class StatusWidget extends AppWidgetProvider {
 
     static void ambil(Context c) throws Exception {
         HttpURLConnection h = (HttpURLConnection) new URL(URL_DATA + "?t=" + System.currentTimeMillis()).openConnection();
-        h.setConnectTimeout(15000); h.setReadTimeout(15000); h.setUseCaches(false);
+        h.setConnectTimeout(9000); h.setReadTimeout(9000); h.setUseCaches(false);
         try (InputStream in = h.getInputStream(); ByteArrayOutputStream o = new ByteArrayOutputStream()) {
             byte[] b = new byte[4096]; int n; while ((n = in.read(b)) > 0) { o.write(b, 0, n); if (o.size() > 200000) break; }
             String s = o.toString("UTF-8"); new JSONObject(s);   // pastikan JSON sah sebelum disimpan
