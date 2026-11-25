@@ -205,7 +205,7 @@ def vegetasi(sites, bbox):
     def olah(it):
         A = it["assets"]; ref = {}
         rel, K = baca(A["250m_16_days_pixel_reliability"]["href"], kisi, "v", sites, ("hd",))
-        if rel is None: return it["id"], None
+        if rel is None: return it["id"], {"kosong": True}   # ubin tidak menutupi Hutan Desa – dicatat agar tidak dibaca ulang
         ndvi, _ = baca(A["250m_16_days_NDVI"]["href"], kisi, "v", sites, ("hd",))
         nir, _ = baca(A["250m_16_days_NIR_reflectance"]["href"], kisi, "v", sites, ("hd",))
         mir, _ = baca(A["250m_16_days_MIR_reflectance"]["href"], kisi, "v", sites, ("hd",))
@@ -225,6 +225,7 @@ def vegetasi(sites, bbox):
     for s in sites:
         sid = s["id"]; seri = []
         for r in C["butir"].values():
+            if r.get("kosong"): continue
             v = r["lokasi"].get(sid)
             if v and v[3] and v[0] is not None and v[2] / v[3] >= 0.4:   # ≥40 % areal Hutan Desa bebas awan
                 seri.append({"t": r["tgl"], "ndvi": v[0], "nbr": v[1], "cerah": round(100 * v[2] / v[3])})
