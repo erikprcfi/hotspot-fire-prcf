@@ -44,6 +44,10 @@ Hapus akun: https://erikprcfi.github.io/hotspot-fire-prcf/hapus-akun.html
 - grafis-fitur-1024x500.png – grafis fitur 1024 × 500 px
 - tangkapan-1 … tangkapan-6 – tangkapan layar ponsel 1080 × 1920 px (9:16)
 
+## Catatan unggah versi 2.3.0 (kode 7) – pakai berkas ini, bukan 2.2.0
+- Berkas: `PantauRimbak-2.3.0-playstore.aab` (ditandatangani kunci distribusi PRCF). Perbaikan pembaruan otomatis (paket kini dikirim dengan checksum SHA-256 yang diwajibkan komponen pembaruan) + 10 fitur baru versi isi 2.3.
+- Catatan rilis (ID): "Kalender musim api, titik rawan berulang, rencana patroli GPX/KML, pengingat patroli, kartu status WhatsApp, laporan tahunan PDF, peringatan hujan lebat, serta perbaikan pembaruan otomatis."
+
 ## Catatan unggah versi 2.2.0 (aplikasi asli, kode 6)
 - Berkas: `PantauRimbak-2.2.0-playstore.aab` (sudah ditandatangani kunci distribusi PRCF = kunci unggah); ID `org.prcfindonesia.pantaurimbak`, targetSdk 36.
 - Aplikasi berjalan tanpa Chrome dan tanpa sinyal (seluruh kode di dalam APK). Data diambil dari server Pantau Rimbak saat ada sinyal; pembaruan tampilan/fitur (HTML/JS) diunduh dari server resmi dan dipakai saat aplikasi dibuka berikutnya (sesuai kebijakan Google Play untuk kode yang dijalankan di WebView).

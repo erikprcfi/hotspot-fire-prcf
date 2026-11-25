@@ -58,7 +58,9 @@ def apk():
 def paket():
     s, b, _ = ambil(SITUS + 'aplikasi/paket/terbaru.json'); d = json.loads(b)
     s2, z, _ = ambil(SITUS + d['url'], 2)
-    return s2 == 200 and z[:2] == b'PK' and len(z) == int(d.get('ukuran', len(z))), f"versi {d['versi']}, {len(z)/1e6:.1f} MB"
+    import hashlib
+    cocok = hashlib.sha256(z).hexdigest() == str(d.get('sha256', '')).lower()   # komponen pembaruan di HP menolak paket bila checksum tidak cocok
+    return s2 == 200 and z[:2] == b'PK' and len(z) == int(d.get('ukuran', len(z))) and cocok, f"versi {d['versi']}, {len(z)/1e6:.1f} MB, checksum {'cocok' if cocok else 'TIDAK cocok'}"
 
 def kb():
     s, b, _ = ambil(SITUS + 'data/bara/kb.json'); d = json.loads(b)

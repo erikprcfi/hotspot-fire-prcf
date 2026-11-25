@@ -142,14 +142,19 @@ async function periksa_(manual) {
     try { const lst = await UP.list(); const b = (lst.bundles || []).find(b => b.version === String(j.versi) && b.status !== 'error'); if (b) id = b.id; } catch (e) { }
     if (!id) {
       catat({ tahap: 'mengunduh pembaruan ' + fmtV(j.versi) + '…' });
-      const b = await UP.download({ url: /^https?:/.test(j.url) ? j.url : BASIS + j.url, version: String(j.versi) });
+      const u = /^https?:/.test(j.url) ? j.url : BASIS + j.url, opsi = { url: u, version: String(j.versi), checksum: String(j.sha256 || '').toLowerCase() };   // checksum (sha256) wajib bagi komponen pembaruan
+      let b = null, galat = null;
+      for (let k = 0; k < 3 && !b; k++) {   // sinyal putus-putus: coba lagi hingga 3 kali
+        try { b = await UP.download(opsi); } catch (e) { galat = e; if (k < 2) await new Promise(r => setTimeout(r, 8000 * (k + 1))); }
+      }
+      if (!b && galat) throw galat;
       id = b && b.id;
     }
     if (!id) { catat({ tahap: 'unduhan pembaruan gagal' }); return; }
     await UP.next({ id }); SIAP_ID = id;
     catat({ tahap: 'pembaruan siap – terpasang saat aplikasi dibuka lagi', siap: j.versi });
     toast('Pembaruan aplikasi siap · ketuk Profil → Versi aplikasi untuk memasang sekarang');
-  } catch (e) { catat({ tahap: 'pembaruan ditunda: ' + String(e && e.message || e).slice(0, 80) }); console.warn('Pembaruan aplikasi ditunda:', e && e.message); }
+  } catch (e) { catat({ tahap: 'pembaruan ditunda: ' + [e && e.message || e, e && e.data && e.data.message, e && e.code].filter(Boolean).join(' · ').replace(/https?:\/\/\S+/g, '(paket)').slice(0, 160) }); console.warn('Pembaruan aplikasi ditunda:', e && e.message); }
 }
 document.addEventListener('click', ev => {
   const b = ev.target && ev.target.closest && ev.target.closest('#rowVersi'); if (!b) return;

@@ -239,3 +239,9 @@ Live ke main bila semua uji lulus.
 10. **Perbandingan Hutan Desa** (FHBanding; menu admin `banding`): 7 hari, 2 bulan laporan terakhir dengan tren, perubahan hutan, laporan warga (`FHUmumPost` statistik_verifikasi).
 - Perbaikan: riwayat lapisan (`pushLayer`/`closeAll` di app.html) tidak lagi meleset bila halaman baru dibuka sesaat setelah `closeAll()` (sebelumnya bisa keluar dari aplikasi/muat ulang).
 - Uji harian kini juga memeriksa fitur-fitur di atas.
+
+## Pembaruan 25 November 2026 – APK/AAB 2.3.0 (kode 7): perbaikan pembaruan otomatis
+- Penyebab: komponen pembaruan (@capgo/capacitor-updater 8.54) MEWAJIBKAN `checksum` (SHA-256 heksadesimal paket) pada `download()`; kode lama tidak mengirimnya sehingga semua unduhan paket ditolak di HP ("Failed to download from …" / "Checksum required"). Uji lama tidak menangkap karena tiruan Capacitor tidak meniru syarat ini.
+- Perbaikan: `assets/asli.js` mengirim `checksum: terbaru.json.sha256`, mencoba ulang 3× bila sinyal putus, dan menampilkan alasan galat lengkap di Profil → Versi aplikasi.
+- Uji: tiruan di `tes/uji_asli.js` kini menolak unduhan tanpa checksum SHA-256 / tanpa https (kode lama terbukti GAGAL, kode baru LULUS); `scripts/pantau.py` memeriksa SHA-256 paket di situs = `terbaru.json`.
+- HP dengan APK 2.2.0 harus memasang APK 2.3.0 sekali (kode pembaruan lama ada di dalam APK); setelah itu pembaruan otomatis berjalan.

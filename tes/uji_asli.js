@@ -3,13 +3,13 @@
 // Uji isi APK (www) di Chromium dengan Capacitor tiruan: data dari server, tanpa sinyal, sinyal lemah, pembaruan otomatis, tanpa CDN
 const {chromium,devices}=require('playwright');const fs=require('fs'),path=require('path');
 const REPO=process.env.REPO||require('path').resolve(__dirname,'..'),BASIS='https://erikprcfi.github.io/hotspot-fire-prcf/';
-let SIN='bagus',TERBARU={versi:'209901010000',url:'aplikasi/paket/pantau-rimbak-209901010000.zip'};const ok=[],bad=[];const T=(c,m)=>(c?ok:bad).push(m);
+let SIN='bagus',TERBARU={versi:'209901010000',url:'aplikasi/paket/pantau-rimbak-209901010000.zip',sha256:'ab'.repeat(32)};const ok=[],bad=[];const T=(c,m)=>(c?ok:bad).push(m);
 const ext=[];
 (async()=>{const b=await chromium.launch();
 async function konteks(){const c=await b.newContext({...devices['Pixel 5']});
  await c.addInitScript(()=>{try{localStorage.setItem('fh_panduan_v1','1');localStorage.setItem('pr_tamu','1')}catch(e){}
   window.Capacitor={isNativePlatform:()=>true,getPlatform:()=>'android',Plugins:{App:{addListener(n,f){(window.__ls=window.__ls||{})[n]=f;return {remove(){}}},minimizeApp(){window.__min=1}},
-   CapacitorUpdater:{notifyAppReady(){window.__ready=(window.__ready||0)+1;return Promise.resolve()},list:async()=>({bundles:[]}),download:async o=>{window.__dl=o;return {id:'b1',version:o.version}},next:async o=>{window.__next=o}},
+   CapacitorUpdater:{notifyAppReady(){window.__ready=(window.__ready||0)+1;return Promise.resolve()},list:async()=>({bundles:[]}),download:async o=>{window.__dl=o;if(!o.checksum||!/^[0-9a-f]{64}$/.test(o.checksum))throw new Error('Checksum required');if(!/^https:\/\//.test(o.url))throw new Error('https required');return {id:'b1',version:o.version}},next:async o=>{window.__next=o}},
    Perangkat:{status:async()=>({kode:3,versi:'2.0.0'})}}};});
  await c.route('**/*',async r=>{const u=r.request().url();
   if(u.startsWith('http://localhost:8800/'))return r.continue();
@@ -37,7 +37,7 @@ T(await p.evaluate(()=>!!(L.TileLayer.__asli)),'peta: ubin luring dibaca dari HP
 T(!ext.some(u=>/cdnjs|jsdelivr|unpkg|fonts\.googleapis|fonts\.gstatic/.test(u)),'tanpa CDN/Google Fonts: '+ext.filter(u=>/cdnjs|jsdelivr|unpkg|fonts\./.test(u)).slice(0,3).join(' '));
 await p.waitForTimeout(25000);
 T(await p.evaluate(()=>window.__ready>=1),'notifyAppReady terpanggil');
-T(await p.evaluate(()=>window.__dl&&window.__dl.version==='209901010000'&&window.__next&&window.__next.id==='b1'),'pembaruan baru diunduh & dijadwalkan untuk pembukaan berikutnya');
+T(await p.evaluate(()=>window.__dl&&window.__dl.version==='209901010000'&&window.__dl.checksum==='ab'.repeat(32)&&window.__next&&window.__next.id==='b1'),'pembaruan baru diunduh (dengan checksum sha256) & dijadwalkan untuk pembukaan berikutnya: '+await p.evaluate(()=>{try{return JSON.parse(localStorage.getItem('pr_pembaruan')).tahap}catch(e){return ''}}));
 T(await p.evaluate(async()=>(await caches.open('pa-data-asli').then(c=>c.keys())).length>3),'data tersimpan di HP');
 T(await p.evaluate(()=>getComputedStyle(document.body).fontFamily.includes('Plus Jakarta')&&document.fonts.check('600 14px "Plus Jakarta Sans"')),'huruf bawaan APK terpasang');
 // tombol kembali
