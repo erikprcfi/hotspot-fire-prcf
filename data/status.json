@@ -1,5 +1,5 @@
 {
- "terakhir_cek_utc": "2026-11-25T13:35:33Z",
+ "terakhir_cek_utc": "2026-11-25T15:03:52Z",
  "titik_baru": 0,
  "arsip_tahunan_diperbarui": 0,
  "jumlah_catatan": 80572,
@@ -58,7 +58,7 @@
    "doi": "10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Wed, 25 Nov 2026 12:42:23 GMT",
+   "last_modified": "Wed, 25 Nov 2026 14:42:30 GMT",
    "ukuran_byte": 1001699,
    "sha256": "82089877f15c4d16b57a8c6578d54507cbe97f504d9e76269409779bea386898",
    "baris_total": 11926,
@@ -71,7 +71,7 @@
    "doi": "10.5067/VIIRS/VJ214IMG_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Wed, 25 Nov 2026 12:45:07 GMT",
+   "last_modified": "Wed, 25 Nov 2026 14:47:00 GMT",
    "ukuran_byte": 1055725,
    "sha256": "ee7923fb0cc49ed8bd827a93481c1a995f4d0adab83f1d5338786a4a818b8bed",
    "baris_total": 12577,
@@ -84,10 +84,10 @@
    "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Wed, 25 Nov 2026 12:47:20 GMT",
-   "ukuran_byte": 179879,
-   "sha256": "e05abfdbca21bd175ec2a4598ca0ca71f88ed5536500a20dae7fa6f26a0a8726",
-   "baris_total": 2326,
+   "last_modified": "Wed, 25 Nov 2026 14:49:07 GMT",
+   "ukuran_byte": 180888,
+   "sha256": "b9c274cf9e6e0c6135e8ebebe9c1fc10b120533fee6fcfb69b79f4f29d54154c",
+   "baris_total": 2339,
    "baris_di_kotak": 0
   }
  ],
@@ -127,12 +127,6 @@
  },
  "sistem": {
   "riwayat": [
-   {
-    "t": "2026-11-23T14:22:03Z",
-    "baru": 0,
-    "ok": 4,
-    "n": 4
-   },
    {
     "t": "2026-11-23T14:50:49Z",
     "baru": 0,
@@ -270,6 +264,12 @@
     "baru": 0,
     "ok": 4,
     "n": 4
+   },
+   {
+    "t": "2026-11-25T15:03:52Z",
+    "baru": 0,
+    "ok": 4,
+    "n": 4
    }
   ],
   "jadwal_cron_utc": "17 */3 * * * + 47 1-23/3 * * *",
@@ -277,7 +277,7 @@
   "latensi_n": 28,
   "arsip_terverifikasi": 48,
   "hari_cuaca": 9459,
-  "jumlah_pembaruan_tercatat": 251
+  "jumlah_pembaruan_tercatat": 252
  },
  "sumber_doi": {
   "VIIRS_SNPP": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002",
