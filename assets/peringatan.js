@@ -11,7 +11,7 @@ const en = () => window.FHLang && FHLang.get() === 'en';
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const T = () => en() ? {
   judul: 'Automatic early warning', sub: 'Get notified without opening the app',
-  info: 'Checked every 3 hours: new hotspots within 5 km of the village and High/Extreme fire danger in the next 3 days; weekly: new forest clearing indications (Sentinel-2, ≥1 ha).',
+  info: 'Checked every 3 hours: new hotspots within 5 km of the village and High/Extreme fire danger in the next 3 days; weekly: new forest clearing indications (Sentinel-2, ≥1 ha); heavy rain ≥50 mm/day in the next 1–3 days (flood watch); weekly summary email every Monday morning.',
   pilih: 'Village Forests to watch', hp: 'Notifications on this phone', mail: 'Email to', simpan: 'Save', coba: 'Test notification',
   masuk: 'Sign in with a verified account to subscribe.', ok: 'Saved ✓ Early warnings are active.', off: 'Saved ✓ Early warnings are off.', gagal: 'Failed to save. Check your internet and try again.',
   izin: 'Notification permission was denied. Allow notifications for this app in your phone settings, then try again.', tidak: 'This browser does not support push notifications. Email alerts still work.',
@@ -20,7 +20,7 @@ const T = () => en() ? {
   ujiJ: '🔥 Test – Pantau Rimbak', ujiI: 'Notifications work on this phone. Real alerts come from the PRCF server.', memuat: 'Loading subscription…', status: n => `${n} device(s) receiving notifications`
 } : {
   judul: 'Peringatan dini otomatis', sub: 'Diberi tahu tanpa perlu membuka aplikasi',
-  info: 'Diperiksa setiap 3 jam: titik panas baru ≤5 km dari desa dan bahaya kebakaran Tinggi/Ekstrem dalam 3 hari ke depan; sepekan sekali: indikasi pembukaan hutan baru (Sentinel-2, ≥1 ha).',
+  info: 'Diperiksa setiap 3 jam: titik panas baru ≤5 km dari desa dan bahaya kebakaran Tinggi/Ekstrem dalam 3 hari ke depan; sepekan sekali: indikasi pembukaan hutan baru (Sentinel-2, ≥1 ha); hujan lebat ≥50 mm/hari 1–3 hari ke depan (waspada banjir); email ringkasan mingguan tiap Senin pagi.',
   pilih: 'Hutan Desa yang dipantau', hp: 'Notifikasi di HP ini', mail: 'Email ke', simpan: 'Simpan', coba: 'Coba notifikasi',
   masuk: 'Masuk dengan akun terverifikasi untuk berlangganan.', ok: 'Tersimpan ✓ Peringatan dini aktif.', off: 'Tersimpan ✓ Peringatan dini dimatikan.', gagal: 'Gagal menyimpan. Periksa internet lalu coba lagi.',
   izin: 'Izin notifikasi ditolak. Izinkan notifikasi untuk aplikasi ini di pengaturan HP, lalu coba lagi.', tidak: 'Peramban ini tidak mendukung notifikasi push. Peringatan lewat email tetap berjalan.',

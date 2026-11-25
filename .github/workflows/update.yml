@@ -50,6 +50,17 @@ jobs:
           ANALISIS_KEY: ${{ secrets.ANALISIS_KEY }}
           AKUN_URL: https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec
         run: pip install -q cryptography && python scripts/peringatan.py
+      - name: Ringkasan mingguan lewat email (Senin pagi WIB, sekali per pekan)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          ANALISIS_KEY: ${{ secrets.ANALISIS_KEY }}
+          AKUN_URL: https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec
+        run: python scripts/ringkasan_mingguan.py
+      - name: Kalender musim api & titik rawan berulang (arsip 2016–2025)
+        continue-on-error: true
+        run: python scripts/musim_rawan.py
       - name: Bekas terbakar dari Sentinel-2 (bertahap, maks. 20 menit per run)
         if: github.event_name != 'push'
         continue-on-error: true
@@ -60,11 +71,11 @@ jobs:
         continue-on-error: true
         timeout-minutes: 30
         run: python scripts/peringatan_hutan.py
-      - name: Laporan bulanan PDF per Hutan Desa (sekali per bulan, untuk bulan yang sudah lewat)
+      - name: Laporan bulanan & tahunan PDF per Hutan Desa (untuk bulan/tahun yang sudah lewat)
         if: github.event_name != 'push'
         continue-on-error: true
         timeout-minutes: 10
-        run: pip install -q reportlab==4.2.5 matplotlib==3.9.2 && python scripts/laporan_bulanan.py
+        run: pip install -q reportlab==4.2.5 matplotlib==3.9.2 && python scripts/laporan_bulanan.py && python scripts/laporan_tahunan.py
       - name: Ringkasan titik panas per provinsi & kabupaten (Indonesia hari ini)
         continue-on-error: true
         timeout-minutes: 5

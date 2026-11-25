@@ -1,0 +1,149 @@
+{
+ "diperbarui_utc": "2026-11-25T06:33Z",
+ "laporan": {
+  "batangtau": {
+   "2024": {
+    "berkas": "laporan_tahunan/batangtau/2024.pdf",
+    "dibuat_utc": "2026-11-25T06:33Z",
+    "hujan_mm": 4869,
+    "kb": 222,
+    "kehilangan_ha": 0.0,
+    "sha256": "6c4bede84212d024681d5fe5d694ba7d1f2ad047d5bc93a2cc7640f11c06a3a5",
+    "titik_25km": 372,
+    "titik_5km": 32,
+    "titik_hd": 0
+   },
+   "2025": {
+    "berkas": "laporan_tahunan/batangtau/2025.pdf",
+    "dibuat_utc": "2026-11-25T06:32Z",
+    "hujan_mm": 4177,
+    "kb": 229,
+    "kehilangan_ha": 0.0,
+    "sha256": "5d6a5f82a924cb1593d91ac1da557143eb1d3c679f2c2904fde3e551c726b568",
+    "titik_25km": 432,
+    "titik_5km": 61,
+    "titik_hd": 0
+   }
+  },
+  "bukitbelang": {
+   "2024": {
+    "berkas": "laporan_tahunan/bukitbelang/2024.pdf",
+    "dibuat_utc": "2026-11-25T06:33Z",
+    "hujan_mm": 5144,
+    "kb": 235,
+    "kehilangan_ha": 3.86,
+    "sha256": "25dff16309991a02710a2ddd1ea551fa284d35f824015575df91b9e9f1b4c563",
+    "titik_25km": 431,
+    "titik_5km": 63,
+    "titik_hd": 3
+   },
+   "2025": {
+    "berkas": "laporan_tahunan/bukitbelang/2025.pdf",
+    "dibuat_utc": "2026-11-25T06:32Z",
+    "hujan_mm": 3863,
+    "kb": 229,
+    "kehilangan_ha": 6.34,
+    "sha256": "6271e8bb22bed80d6523f4080aba87b2c304c9120632763d09c2d67d2d678c8c",
+    "titik_25km": 424,
+    "titik_5km": 52,
+    "titik_hd": 2
+   }
+  },
+  "bumilestari": {
+   "2024": {
+    "berkas": "laporan_tahunan/bumilestari/2024.pdf",
+    "dibuat_utc": "2026-11-25T06:33Z",
+    "hujan_mm": 5179,
+    "kb": 205,
+    "kehilangan_ha": 0.0,
+    "sha256": "070a4772e3b4fc5e1738ae27594ae877fbcba277159688fc9aba27d95cab9b31",
+    "titik_25km": 238,
+    "titik_5km": 2,
+    "titik_hd": 0
+   },
+   "2025": {
+    "berkas": "laporan_tahunan/bumilestari/2025.pdf",
+    "dibuat_utc": "2026-11-25T06:32Z",
+    "hujan_mm": 4405,
+    "kb": 213,
+    "kehilangan_ha": 0.0,
+    "sha256": "f7bbb7c4f8b3fe28e84aa438090cd8e9f01e3f1eb9d106a94671d4d4287daf38",
+    "titik_25km": 300,
+    "titik_5km": 1,
+    "titik_hd": 0
+   }
+  },
+  "nangalauk": {
+   "2024": {
+    "berkas": "laporan_tahunan/nangalauk/2024.pdf",
+    "dibuat_utc": "2026-11-25T06:32Z",
+    "hujan_mm": 5487,
+    "kb": 213,
+    "kehilangan_ha": 0.0,
+    "sha256": "b4191269799e3353580caaeaa33c1785c78efb75a229feeef44ad42fc99959a7",
+    "titik_25km": 207,
+    "titik_5km": 5,
+    "titik_hd": 0
+   },
+   "2025": {
+    "berkas": "laporan_tahunan/nangalauk/2025.pdf",
+    "dibuat_utc": "2026-11-25T06:32Z",
+    "hujan_mm": 4832,
+    "kb": 215,
+    "kehilangan_ha": 1.39,
+    "sha256": "52c0141994f59ecdd7cc4c66f9e1c86121525f6e738fad9857d5231fb35f2ebe",
+    "titik_25km": 278,
+    "titik_5km": 59,
+    "titik_hd": 1
+   }
+  },
+  "nyuai": {
+   "2024": {
+    "berkas": "laporan_tahunan/nyuai/2024.pdf",
+    "dibuat_utc": "2026-11-25T06:33Z",
+    "hujan_mm": 4506,
+    "kb": 234,
+    "kehilangan_ha": 0.31,
+    "sha256": "9acf826696e093d3887acf7e26b2a3f7b5e1def86531492c552f0b014c08c3ea",
+    "titik_25km": 532,
+    "titik_5km": 27,
+    "titik_hd": 0
+   },
+   "2025": {
+    "berkas": "laporan_tahunan/nyuai/2025.pdf",
+    "dibuat_utc": "2026-11-25T06:32Z",
+    "hujan_mm": 3921,
+    "kb": 241,
+    "kehilangan_ha": 1.78,
+    "sha256": "e9f0ada429a09f6c76c4201e71cb62e716d9d4d1a833684efeb9d65fc4b6e669",
+    "titik_25km": 574,
+    "titik_5km": 55,
+    "titik_hd": 0
+   }
+  },
+  "pundjung": {
+   "2024": {
+    "berkas": "laporan_tahunan/pundjung/2024.pdf",
+    "dibuat_utc": "2026-11-25T06:33Z",
+    "hujan_mm": 4988,
+    "kb": 221,
+    "kehilangan_ha": 0.0,
+    "sha256": "b2d1f41558c0b4d40fa3a70f1c3a6a8bc7afad37208d1df82c401474e0ace546",
+    "titik_25km": 375,
+    "titik_5km": 45,
+    "titik_hd": 0
+   },
+   "2025": {
+    "berkas": "laporan_tahunan/pundjung/2025.pdf",
+    "dibuat_utc": "2026-11-25T06:32Z",
+    "hujan_mm": 4306,
+    "kb": 226,
+    "kehilangan_ha": 0.0,
+    "sha256": "8e217b622ad0c5104cc4ef3797779f9a45f750eb754b16620d4f9cf6b33ea5fe",
+    "titik_25km": 434,
+    "titik_5km": 57,
+    "titik_hd": 0
+   }
+  }
+ }
+}

@@ -4,6 +4,8 @@ Pemicu (per Hutan Desa yang dipilih pengguna):
   1. Titik panas BARU NASA FIRMS di dalam desa/Hutan Desa atau <= 5 km dari batas desa, terdeteksi <= 36 jam terakhir.
   2. Bahaya kebakaran (FDRS, prakiraan BMKG/ECMWF) TINGGI atau EKSTREM dalam 3 hari ke depan.
   3. Indikasi pembukaan/kerusakan hutan BARU dari citra Sentinel-2 (scripts/peringatan_hutan.py, sepekan sekali) >= 1 ha.
+  4. Hujan LEBAT (>= 50 mm/hari, kategori BMKG: lebat 50–100, sangat lebat 100–150, ekstrem > 150) diprakirakan 1–3 hari ke depan –
+     waspada banjir & longsor (prakiraan BMKG/ECMWF yang sama dengan menu Prakiraan; satu peringatan per lokasi per tanggal).
 Dikirim ke pengguna terverifikasi yang berlangganan: notifikasi HP (Web Push) dan/atau email (lewat Apps Script PRCF).
 Setiap peringatan dicatat di data/peringatan/terkirim.json agar tidak terkirim dua kali. Nilai data tidak diubah.
 Butuh env: ANALISIS_KEY, AKUN_URL.
@@ -54,6 +56,13 @@ def kejadian(state):
             if kunci not in state:
                 out.append({"jenis": "bahaya", "situs": s["id"], "hd": s["hd_nama"], "kunci": [kunci], "level": top["level"], "tanggal": top["tanggal"],
                             "hari": [{"tanggal": h["tanggal"], "level": h["level"], "fwi": h.get("fwi")} for h in h3]})
+        hh = [x for x in (((fc.get("lokasi") or {}).get(s["id"]) or {}).get("hari") or [])[1:4] if isinstance(x.get("hujan"), (int, float))]
+        lebat = [x for x in hh if x["hujan"] >= 50]
+        if lebat:
+            top = max(lebat, key=lambda x: x["hujan"]); kunci = f'hujan|{s["id"]}|{top["tanggal"]}'
+            if kunci not in state:
+                out.append({"jenis": "hujan", "situs": s["id"], "hd": s["hd_nama"], "kunci": [kunci], "mm": top["hujan"], "tanggal": top["tanggal"],
+                            "hari": [{"tanggal": x["tanggal"], "mm": x["hujan"]} for x in hh]})
         h = hutan.get(s["id"]) or {}
         if h.get("status") == "selesai" and (h.get("luas_baru_ha") or 0) >= 1:
             kunci = f'hutan|{s["id"]}|{h["dicek_utc"][:10]}'
@@ -78,6 +87,13 @@ def teks(e, bhs):
         isi = (f'Nearest {angka(dek, b)} km from the village boundary (NASA FIRMS satellite detection). Check in the field and report via the app.' if en else
                f'Terdekat {angka(dek, b)} km dari batas desa (deteksi satelit NASA FIRMS). Mohon cek lapangan dan laporkan lewat aplikasi.')
         rinci = [(f'{x["waktu"]} WIB · {x["sat"]} · {angka(x["jarak"], b)} km · ' + ("confidence" if en else "keyakinan") + f' {konf(x["conf"], b)} · FRP {angka(float(x["frp"]), b)} MW · {x["lat"]:.5f}, {x["lon"]:.5f}') for x in e["titik"]]
+    elif e["jenis"] == "hujan":
+        b = "en" if en else "id"; mm = e["mm"]
+        kat = (("extreme" if mm > 150 else "very heavy" if mm >= 100 else "heavy") if en else ("ekstrem" if mm > 150 else "sangat lebat" if mm >= 100 else "lebat"))
+        judul = (f'🌧️ {kat.capitalize()} rain forecast at {e["hd"]}' if en else f'🌧️ Hujan {kat} diprakirakan di {e["hd"]}')
+        isi = (f'About {angka(mm, b)} mm of rain forecast on {tgl(e["tanggal"])} (BMKG/ECMWF). Watch for floods and landslides; secure equipment and avoid river crossings.' if en else
+               f'Prakiraan hujan ± {angka(mm, b)} mm pada {tgl(e["tanggal"])} (BMKG/ECMWF). Waspadai banjir dan longsor; amankan peralatan dan hindari menyeberang sungai saat arus deras.')
+        rinci = [f'{tgl(x["tanggal"])}: {angka(x["mm"], b)} mm' for x in e["hari"]]
     elif e["jenis"] == "hutan":
         b = "en" if en else "id"; di = e["luas_hd"] > 0
         judul = (f'🌳 New forest clearing indication near {e["hd"]}' if en else f'🌳 Indikasi pembukaan hutan baru di sekitar {e["hd"]}')

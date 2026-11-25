@@ -76,6 +76,19 @@ cek('File APK Android', apk)
 cek('Paket pembaruan otomatis aplikasi', paket)
 cek('Basis peraturan Bara Api', kb)
 
+def kecepatan():
+    # waktu respons server (median 3 kali) untuk berkas yang dibuka setiap pengguna; batas longgar karena jaringan runner berubah-ubah
+    hasil, buruk = [], []
+    for nama, path, batas in [('app.html', 'app.html', 4.0), ('hotspots.json', 'data/hotspots.json', 6.0), ('widget.json', 'data/widget.json', 3.0), ('status.json', 'data/status.json', 3.0)]:
+        t = []
+        for _ in range(3):
+            t0 = time.time(); s_, b, _ = ambil(SITUS + path, 2); t.append(time.time() - t0)
+            if s_ != 200: buruk.append(f'{nama} HTTP {s_}')
+        m = sorted(t)[1]; hasil.append(f'{nama} {m:.1f} dtk')
+        if m > batas: buruk.append(f'{nama} lambat {m:.1f} dtk (batas {batas})')
+    return not buruk, ' · '.join(hasil) + (' – ' + '; '.join(buruk) if buruk else '')
+cek('Kecepatan respons situs & data', kecepatan)
+
 gagal = [h for h in HASIL if not h[0]]
 waktu = SEKARANG.astimezone(dt.timezone(dt.timedelta(hours=7))).strftime('%d %b %Y %H:%M WIB')
 with open('laporan_pantau.md', 'w', encoding='utf-8') as f:

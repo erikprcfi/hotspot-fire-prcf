@@ -1,5 +1,5 @@
-node_modules/
-package.json
-package-lock.json
 hasil_*.md
 hasil_*.txt
+node_modules/
+package-lock.json
+package.json

@@ -1,0 +1,48 @@
+{
+ "metode": "Sel grid 0.01° (± 1,1 km) dalam radius 25 km yang memiliki deteksi titik panas NASA FIRMS pada >= 3 tahun berbeda (2016–2025).",
+ "diperbarui_utc": "2026-11-25T06:40Z",
+ "lokasi": {
+  "nangalauk": {
+   "nama": "Hutan Desa Nanga Lauk",
+   "sel": 282,
+   "ditampilkan": 282,
+   "dalam_5km": 29,
+   "maks_tahun": 9
+  },
+  "batangtau": {
+   "nama": "Hutan Desa Batang Tau",
+   "sel": 294,
+   "ditampilkan": 294,
+   "dalam_5km": 47,
+   "maks_tahun": 9
+  },
+  "nyuai": {
+   "nama": "Hutan Desa Nyuai Peningun",
+   "sel": 421,
+   "ditampilkan": 421,
+   "dalam_5km": 47,
+   "maks_tahun": 9
+  },
+  "pundjung": {
+   "nama": "Hutan Desa Pundjung Batara",
+   "sel": 290,
+   "ditampilkan": 290,
+   "dalam_5km": 44,
+   "maks_tahun": 9
+  },
+  "bumilestari": {
+   "nama": "Hutan Desa Bumi Lestari",
+   "sel": 171,
+   "ditampilkan": 171,
+   "dalam_5km": 0,
+   "maks_tahun": 9
+  },
+  "bukitbelang": {
+   "nama": "Hutan Desa Bukit Belang",
+   "sel": 409,
+   "ditampilkan": 409,
+   "dalam_5km": 77,
+   "maks_tahun": 9
+  }
+ }
+}
