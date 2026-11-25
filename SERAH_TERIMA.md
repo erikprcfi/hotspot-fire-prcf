@@ -225,3 +225,17 @@ Live ke main bila semua uji lulus.
 - `data/widget.json` kini juga berisi cuaca hari ini, prakiraan 7 hari, titik panas harian 7 hari per Hutan Desa, dan nasional (harian + 3 provinsi teratas).
 - Pratinjau tampilan dibuat dengan Paparazzi (layoutlib Android) di proyek terpisah – tidak disimpan di repositori.
 - APK/AAB 2.2.0 (kode 6).
+
+## Pembaruan 25 November 2026 – versi isi 2.3 (10 fitur, tanpa APK baru)
+1. **Kalender musim api** (`scripts/musim_rawan.py` → `data/musim/indeks.json`; menu `musimapi`): rata-rata/median/maks deteksi ≤25 km per bulan 2016–2025, peluang ≤25/≤5 km, normal hujan, kategori (puncak ≥15% porsi tahunan, tinggi ≥8%, sedang ≥3%), bulan musim, mulai bersiap.
+2. **Peringatan hujan lebat** (`scripts/peringatan.py` jenis `hujan`): prakiraan ≥50 mm/hari (BMKG: lebat 50–100, sangat lebat 100–150, ekstrem >150) 1–3 hari ke depan; sekali per lokasi per tanggal.
+3. **Kartu status WhatsApp** (`assets/kartu_pengingat.js` FHKartu; menu `kartu`): PNG 1080×1350 dari `data/widget.json`; tamu/umum → ringkasan Indonesia.
+4. **Laporan tahunan PDF** (`scripts/laporan_tahunan.py` → `data/laporan_tahunan/`; tampil di menu Laporan bulanan & tahunan). Laporan bulanan/tahunan kini dibuat tanggal 2 (data hari terakhir lengkap).
+5. **Ringkasan mingguan email** (`scripts/ringkasan_mingguan.py`, Senin 06–12 WIB, sekali per pekan via Apps Script `pekerja_peringatan`; state `data/peringatan/mingguan.json`; `--coba` untuk pratinjau).
+6. **Pemantau kecepatan**: `tes/kecepatan.js` di uji harian (situs langsung, sinyal baik ≤10 dtk, 3G lambat ≤45 dtk / kunjungan ulang ≤15 dtk) + cek waktu respons di `scripts/pantau.py`.
+7. **Titik rawan berulang** (`data/rawan/<id>.geojson`, sel 0,01°, ≥3 tahun berbeda 2016–2025; menu `rawan`, lapisan peta).
+8. **Rencana patroli otomatis** (FHMusimRawan.rencana; menu `rencana`): titik panas 7 hari ≤5 km + petak perubahan hutan + titik rawan ≤5 km, urutan tetangga terdekat dari GPS/pusat desa, GPX/KML, kompas ke tujuan.
+9. **Pengingat patroli** (FHPengingat; menu `pengingat`, khusus APK): LocalNotifications 8 pekan ke depan, dijadwal ulang tiap aplikasi dibuka, saran patroli ekstra bila prakiraan bahaya Tinggi/Ekstrem. ID notifikasi 880000–880999.
+10. **Perbandingan Hutan Desa** (FHBanding; menu admin `banding`): 7 hari, 2 bulan laporan terakhir dengan tren, perubahan hutan, laporan warga (`FHUmumPost` statistik_verifikasi).
+- Perbaikan: riwayat lapisan (`pushLayer`/`closeAll` di app.html) tidak lagi meleset bila halaman baru dibuka sesaat setelah `closeAll()` (sebelumnya bisa keluar dari aplikasi/muat ulang).
+- Uji harian kini juga memeriksa fitur-fitur di atas.

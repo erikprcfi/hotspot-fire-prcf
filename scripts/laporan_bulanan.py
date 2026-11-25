@@ -11,7 +11,7 @@ Untuk setiap Hutan Desa dampingan dan setiap bulan yang SUDAH LEWAT, membuat sat
 Semua angka dihitung dari berkas data yang sama dengan yang dipakai aplikasi (data/*). Tidak ada angka perkiraan manual.
 
 Keluaran: data/laporan_bulanan/<lokasi>/<YYYY-MM>.pdf dan data/laporan_bulanan/indeks.json
-Pemakaian: python scripts/laporan_bulanan.py            -> bulan lalu (WIB), lewati yang sudah ada
+Pemakaian: python scripts/laporan_bulanan.py            -> bulan lalu (WIB, mulai tanggal 2 agar data hari terakhir lengkap), lewati yang sudah ada
            python scripts/laporan_bulanan.py --bulan 2026-10 [--paksa]
            python scripts/laporan_bulanan.py --mundur 3  -> 3 bulan terakhir yang sudah lewat
 """
@@ -282,7 +282,9 @@ def main():
     a = ap.parse_args()
     kini = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None) + dt.timedelta(hours=7)
     if a.bulan: daftar = [tuple(map(int, a.bulan.split("-")))]
-    else: daftar = [ym_add(kini.year, kini.month, -k) for k in range(a.mundur, 0, -1)]
+    else:
+        if kini.day < 2 and a.mundur == 1: print("tanggal 1: tunggu data titik panas hari terakhir bulan lalu lengkap (dibuat tanggal 2)"); return
+        daftar = [ym_add(kini.year, kini.month, -k) for k in range(a.mundur, 0, -1)]
     for y, m in daftar:
         if (y, m) >= (kini.year, kini.month): sys.exit(f"{y}-{m:02d} belum selesai – laporan hanya untuk bulan yang sudah lewat")
     sites = J("geo.json")["sites"]; os.makedirs(OUT, exist_ok=True)

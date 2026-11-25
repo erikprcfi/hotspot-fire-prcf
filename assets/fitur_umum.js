@@ -133,6 +133,7 @@ function lapor() { page(I('Lapor kejadian', 'Report an incident'), I('Asap · ap
 
 window.FHEkspor = { open: ekspor, _test: { baris, keCSV, keGeoJSON, keKML } };
 window.FHVerifStat = { open: statistik };
+window.FHUmumPost = b => post(b);   // dipakai alat lain untuk agregat publik (mis. perbandingan Hutan Desa)
 window.FHLuringUmum = { open: luring };
 window.FHLaporPage = { open: lapor };
 })();

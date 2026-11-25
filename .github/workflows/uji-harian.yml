@@ -2,12 +2,15 @@ name: Uji harian aplikasi
 
 # Tiap hari ±02.20 WIB: menguji website & isi aplikasi Android (APK) seperti pengguna sungguhan –
 # mode tamu, akun tanpa kode, admin (ganti Hutan Desa), akun + wilayah SHP (wilayah uji sintetis), semua alat dibuka satu per satu,
+# kecepatan situs langsung (sinyal baik & 3G lambat),
 # aplikasi tanpa sinyal/sinyal lemah/pembaruan otomatis, serta validasi seluruh berkas data.
 # Bila ada yang gagal: membuka/memperbarui issue "Uji harian" (pemilik repositori menerima email dari GitHub); ditutup otomatis bila normal kembali.
 on:
   schedule:
     - cron: "19 19 * * *"
   workflow_dispatch:
+  push:
+    branches: [fitur-2.3]   # sementara: uji di cabang sebelum digabung
 
 permissions:
   contents: read
@@ -48,12 +51,16 @@ jobs:
         id: asli
         continue-on-error: true
         run: node tes/uji_asli.js | tee tes/hasil_asli.txt
+      - name: Kecepatan situs langsung (sinyal baik & 3G lambat)
+        id: cepat
+        continue-on-error: true
+        run: node tes/kecepatan.js
       - name: Laporkan
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GAGAL: ${{ steps.data.outcome == 'failure' || steps.alat.outcome == 'failure' || steps.asli.outcome == 'failure' }}
+          GAGAL: ${{ steps.data.outcome == 'failure' || steps.alat.outcome == 'failure' || steps.asli.outcome == 'failure' || steps.cepat.outcome == 'failure' }}
         run: |
-          { cat tes/hasil_uji.md 2>/dev/null || echo "Uji alat tidak menghasilkan laporan."; echo; echo '### Aplikasi asli (tanpa sinyal, pembaruan)'; echo '```'; tail -25 tes/hasil_asli.txt 2>/dev/null; echo '```'; echo '### Validasi data'; echo '```'; tail -15 tes/hasil_data.txt 2>/dev/null; echo '```'; } > laporan_uji.md
+          { cat tes/hasil_uji.md 2>/dev/null || echo "Uji alat tidak menghasilkan laporan."; echo; echo '### Aplikasi asli (tanpa sinyal, pembaruan)'; echo '```'; tail -25 tes/hasil_asli.txt 2>/dev/null; echo '```'; echo '### Validasi data'; echo '```'; tail -15 tes/hasil_data.txt 2>/dev/null; echo '```'; cat tes/hasil_kecepatan.md 2>/dev/null; } > laporan_uji.md
           cat laporan_uji.md >> "$GITHUB_STEP_SUMMARY"
           R="$GITHUB_REPOSITORY"; JUDUL="Uji harian: ada bagian aplikasi yang gagal diuji"
           NO=$(gh api "repos/$R/issues?state=open&per_page=100" -q '[.[] | select(.title | startswith("Uji harian"))][0].number // empty')
