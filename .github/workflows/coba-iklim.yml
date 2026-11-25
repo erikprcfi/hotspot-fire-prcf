@@ -1,0 +1,23 @@
+name: Coba iklim (sementara)
+on:
+  push:
+    branches: [fitur-2.4]
+jobs:
+  coba:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install shapely==2.0.6 pyproj==3.7.0 rasterio==1.4.3
+      - run: TANAH_KUOTA=40 python scripts/iklim.py
+      - run: python scripts/banjir.py --paksa && python scripts/asap.py && python scripts/modis_arsip.py --paksa
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hasil
+          path: |
+            data/iklim
+            data/banjir
+            data/vegetasi
+            data/bekas_modis

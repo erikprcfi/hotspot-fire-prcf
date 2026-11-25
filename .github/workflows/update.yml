@@ -42,6 +42,22 @@ jobs:
           AKUN_URL: https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec
         # server NASA kadang tidak menjawab sesaat → coba lagi sekali setelah 2 menit sebelum dinyatakan gagal
         run: python scripts/pipeline.py || (sleep 120 && python scripts/pipeline.py)
+      - name: Arsip MODIS – area terbakar 2001–sekarang & kesehatan vegetasi (sekali sehari)
+        continue-on-error: true
+        timeout-minutes: 20
+        run: python scripts/modis_arsip.py
+      - name: Iklim – ENSO, hari tanpa hujan, kelembapan tanah, prakiraan musim api & Indeks Siaga Desa
+        continue-on-error: true
+        timeout-minutes: 10
+        run: python scripts/iklim.py
+      - name: Prakiraan debit sungai & banjir 30 hari (GloFAS, sekali sehari)
+        continue-on-error: true
+        timeout-minutes: 10
+        run: python scripts/banjir.py
+      - name: Perkiraan arah asap dari titik panas baru
+        continue-on-error: true
+        timeout-minutes: 5
+        run: python scripts/asap.py
       - name: Peringatan dini otomatis (notifikasi HP & email)
         if: github.event_name != 'push'
         continue-on-error: true
@@ -76,6 +92,10 @@ jobs:
         continue-on-error: true
         timeout-minutes: 10
         run: pip install -q reportlab==4.2.5 matplotlib==3.9.2 && python scripts/laporan_bulanan.py && python scripts/laporan_tahunan.py
+      - name: Rekap musim api PDF (otomatis 7 hari setelah musim berakhir)
+        continue-on-error: true
+        timeout-minutes: 10
+        run: pip install -q reportlab==4.2.5 matplotlib==3.9.2 && python scripts/rekap_musim.py
       - name: Ringkasan titik panas per provinsi & kabupaten (Indonesia hari ini)
         continue-on-error: true
         timeout-minutes: 5

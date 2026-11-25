@@ -35,6 +35,10 @@ def kejadian(state):
     hs = json.load(open(os.path.join(DATA, "hotspots.json")))["titik"]
     fc = json.load(open(os.path.join(DATA, "prakiraan.json"))) if os.path.exists(os.path.join(DATA, "prakiraan.json")) else {"lokasi": {}}
     fh = os.path.join(DATA, "hutan", "peringatan.json"); hutan = (json.load(open(fh)).get("lokasi") or {}) if os.path.exists(fh) else {}
+    def jl(p):
+        try: return json.load(open(os.path.join(DATA, p))).get("lokasi") or {}
+        except Exception: return {}
+    iklim, banjir, asap = jl("iklim/indeks.json"), jl("banjir/indeks.json"), jl("asap/indeks.json")
     out = []
     for k, s in enumerate(sites):
         baru = []
@@ -63,6 +67,29 @@ def kejadian(state):
             if kunci not in state:
                 out.append({"jenis": "hujan", "situs": s["id"], "hd": s["hd_nama"], "kunci": [kunci], "mm": top["hujan"], "tanggal": top["tanggal"],
                             "hari": [{"tanggal": x["tanggal"], "mm": x["hujan"]} for x in hh]})
+        # Indeks Siaga Desa naik ke Siaga/Awas (data/iklim/indeks.json)
+        I = (iklim.get(s["id"]) or {})
+        S = I.get("siaga") or {}; riw = I.get("riwayat") or []
+        if (S.get("level") or 0) >= 2 and S.get("tanggal"):
+            lalu = [r for r in riw if r[0] < S["tanggal"]]
+            if not lalu or lalu[-1][2] < S["level"]:
+                kunci = f'siaga|{s["id"]}|{S["tanggal"]}|{S["level"]}'
+                if kunci not in state:
+                    out.append({"jenis": "siaga", "situs": s["id"], "hd": s["hd_nama"], "kunci": [kunci], "level": S["level"], "label": S["label"], "skor": S["skor"],
+                                "komponen": [c for c in S.get("komponen", []) if c["poin"] > 0]})
+        # debit sungai melewati ambang banjir (data/banjir/indeks.json)
+        B = banjir.get(s["id"]) or {}
+        if (B.get("level") or 0) >= 1 and B.get("pertama_lewat"):
+            kunci = f'banjir|{s["id"]}|{B["pertama_lewat"]}|{B["level"]}'
+            if kunci not in state:
+                out.append({"jenis": "banjir", "situs": s["id"], "hd": s["hd_nama"], "kunci": [kunci], "level": B["level"], "label": B["label"],
+                            "tanggal": B["pertama_lewat"], "puncak": B.get("puncak"), "rp2": B["sungai"]["rp2"], "rp5": B["sungai"]["rp5"]})
+        # asap dari titik panas diperkirakan menuju desa (data/asap/indeks.json)
+        A = [x for x in ((asap.get(s["id"]) or {}).get("sumber") or []) if x.get("menuju_desa") and not x.get("di_dalam")]
+        A = [(f'asap|{s["id"]}|{x["lat"]:.2f}|{x["lon"]:.2f}|{x["deteksi_wib"][:5]}', x) for x in A]
+        A = [(k_, x) for k_, x in A if k_ not in state]
+        if A:
+            out.append({"jenis": "asap", "situs": s["id"], "hd": s["hd_nama"], "kunci": [k_ for k_, _ in A], "sumber": [x for _, x in A][:5]})
         h = hutan.get(s["id"]) or {}
         if h.get("status") == "selesai" and (h.get("luas_baru_ha") or 0) >= 1:
             kunci = f'hutan|{s["id"]}|{h["dicek_utc"][:10]}'
@@ -94,6 +121,33 @@ def teks(e, bhs):
         isi = (f'About {angka(mm, b)} mm of rain forecast on {tgl(e["tanggal"])} (BMKG/ECMWF). Watch for floods and landslides; secure equipment and avoid river crossings.' if en else
                f'Prakiraan hujan ± {angka(mm, b)} mm pada {tgl(e["tanggal"])} (BMKG/ECMWF). Waspadai banjir dan longsor; amankan peralatan dan hindari menyeberang sungai saat arus deras.')
         rinci = [f'{tgl(x["tanggal"])}: {angka(x["mm"], b)} mm' for x in e["hari"]]
+    elif e["jenis"] == "siaga":
+        b = "en" if en else "id"; LBL = {"id": ["Aman", "Waspada", "Siaga", "Awas"], "en": ["Safe", "Watch", "Alert", "Danger"]}
+        lb = LBL[b][e["level"]]
+        judul = (f'🚨 Village Alert Index {lb.upper()} at {e["hd"]}' if en else f'🚨 Indeks Siaga Desa {lb.upper()} di {e["hd"]}')
+        isi = (f'Score {e["skor"]}: dry weather, fire danger and/or hotspots point to elevated fire risk. Strengthen patrols, avoid burning and prepare fire-fighting equipment.' if en else
+               f'Skor {e["skor"]}: cuaca kering, bahaya kebakaran dan/atau titik panas menunjukkan risiko api meningkat. Perkuat patroli, hindari membakar, siapkan alat pemadam.')
+        NM = {"Bahaya kebakaran (FWI) hari ini–3 hari": "Fire danger (FWI) today–3 days", "Hari tanpa hujan berturut-turut": "Consecutive dry days",
+              "Kelembapan tanah 7–28 cm": "Soil moisture 7–28 cm", "Titik panas 72 jam terakhir": "Hotspots in last 72 h",
+              "Kekeringan vegetasi (MODIS)": "Vegetation dryness (MODIS)", "Prakiraan musim api bulan ini": "Fire-season outlook this month"}
+        rinci = [f'{NM.get(c["nama"], c["nama"]) if en else c["nama"]}: {c["nilai"]} (+{c["poin"]})' for c in e["komponen"]]
+    elif e["jenis"] == "banjir":
+        b = "en" if en else "id"; p = e.get("puncak") or {}
+        lb = {"id": ["Normal", "Waspada", "Siaga", "Awas"], "en": ["Normal", "Watch", "Alert", "Danger"]}[b][e["level"]]
+        ul = {1: 2, 2: 5, 3: 20}[e["level"]]
+        judul = (f'🌊 River flood {lb.upper()} near {e["hd"]}' if en else f'🌊 Banjir sungai {lb.upper()} di sekitar {e["hd"]}')
+        isi = (f'River discharge is forecast to exceed the {ul}-year flood level from {tgl(e["tanggal"])} (GloFAS, Copernicus). Secure boats and equipment; avoid crossing during strong currents.' if en else
+               f'Debit sungai diprakirakan melewati ambang banjir {ul} tahunan mulai {tgl(e["tanggal"])} (GloFAS, Copernicus). Amankan perahu & peralatan; hindari menyeberang saat arus deras.')
+        rinci = [(f'Peak {angka(float(p.get("med") or 0), b)} m³/s on {tgl(p["t"])} · 2-year level {angka(e["rp2"], b)} m³/s' if en else
+                  f'Puncak {angka(float(p.get("med") or 0), b)} m³/s pada {tgl(p["t"])} · ambang 2 tahunan {angka(e["rp2"], b)} m³/s')] if p.get("t") else []
+    elif e["jenis"] == "asap":
+        b = "en" if en else "id"; x0 = e["sumber"][0]
+        judul = (f'💨 Smoke may reach {e["hd"]}' if en else f'💨 Asap diperkirakan menuju {e["hd"]}')
+        isi = ((f'Wind may carry smoke from {len(e["sumber"])} hotspot source(s) toward the village; the earliest in about {angka(x0["jam_tiba"], b)} hours. Reduce outdoor activity when smoky and use masks.') if en else
+               (f'Angin diperkirakan membawa asap dari {len(e["sumber"])} sumber titik panas ke arah desa; tercepat ± {angka(x0["jam_tiba"], b)} jam lagi. Kurangi kegiatan di luar saat berasap dan gunakan masker.'))
+        AR = {"utara": "north", "timur laut": "north-east", "timur": "east", "tenggara": "south-east", "selatan": "south", "barat daya": "south-west", "barat": "west", "barat laut": "north-west"}
+        rinci = [(f'{x["jarak_km"]} km to the {AR.get(x["arah_dari_desa"], x["arah_dari_desa"])} · {x["n"]} hotspot(s) · arrival ~{x["tiba_wib"]} WIB' if en else
+                  f'{angka(x["jarak_km"], b)} km arah {x["arah_dari_desa"]} · {x["n"]} titik · tiba ± {x["tiba_wib"]} WIB') for x in e["sumber"]]
     elif e["jenis"] == "hutan":
         b = "en" if en else "id"; di = e["luas_hd"] > 0
         judul = (f'🌳 New forest clearing indication near {e["hd"]}' if en else f'🌳 Indikasi pembukaan hutan baru di sekitar {e["hd"]}')
