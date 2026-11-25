@@ -245,3 +245,13 @@ Live ke main bila semua uji lulus.
 - Perbaikan: `assets/asli.js` mengirim `checksum: terbaru.json.sha256`, mencoba ulang 3× bila sinyal putus, dan menampilkan alasan galat lengkap di Profil → Versi aplikasi.
 - Uji: tiruan di `tes/uji_asli.js` kini menolak unduhan tanpa checksum SHA-256 / tanpa https (kode lama terbukti GAGAL, kode baru LULUS); `scripts/pantau.py` memeriksa SHA-256 paket di situs = `terbaru.json`.
 - HP dengan APK 2.2.0 harus memasang APK 2.3.0 sekali (kode pembaruan lama ada di dalam APK); setelah itu pembaruan otomatis berjalan.
+
+## Pembaruan 25 November 2026 (malam) – versi isi 2.4: 8 fitur iklim & kesiagaan (tanpa APK baru)
+- **Indeks Siaga Desa** (Pemantauan; juga tampil di Beranda): poin dari FWI, hari tanpa hujan, kelembapan tanah ERA5-Land, titik panas 72 jam, vegetasi MODIS, prakiraan musim api → Aman/Waspada/Siaga/Awas; notifikasi saat naik ke Siaga/Awas. `scripts/iklim.py` → `data/iklim/indeks.json`.
+- **Prakiraan musim api 6 bulan** (Cuaca & iklim): pola 2016–2025 + ECMWF SEAS5 + ENSO NOAA (ONI & Niño 3.4 mingguan) + pengaruh El Niño lokal (MODIS 2001–2025).
+- **Kekeringan**: hari tanpa hujan (kelas BMKG, ERA5 + prakiraan) & kelembapan tanah 7–28 cm ERA5-Land vs 2011–2025 (`data/iklim/tanah_<lokasi>.json`, inkremental).
+- **Debit sungai & banjir 30 hari** (GloFAS, Copernicus): ambang periode ulang 2/5/20 tahun (Gumbel); notifikasi. `scripts/banjir.py`.
+- **Arah asap**: lintasan 24 jam dari titik panas ≤ 100 km (angin ECMWF), perkiraan tiba di desa; notifikasi. `scripts/asap.py`.
+- **Arsip area terbakar MODIS MCD64A1 2001–sekarang** & **Kesehatan vegetasi MOD13Q1/MYD13Q1 (NDVI, NBR)** via Microsoft Planetary Computer. `scripts/modis_arsip.py` (sekali sehari, inkremental). Catatan: beberapa bulan MCD64A1 tidak tersedia di salinan arsip (ditandai `bulan_hilang`).
+- **Rekap musim api** + PDF 3 musim terakhir. `scripts/rekap_musim.py` → `data/rekap_musim/`.
+- Uji: `tes/uji_harian.js` memeriksa 8 halaman baru (admin) & penguncian mode umum/SHP; `tes/validasi_data.py` memeriksa konsistensi data baru.
