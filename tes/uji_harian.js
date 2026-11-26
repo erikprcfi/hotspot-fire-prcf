@@ -30,7 +30,7 @@ for(const plat of PLAT){
     if(d.aksi==='ruang_anggota')o={ok:true,peran:'ketua',anggota:[{email:'penguji@contoh.org',nama:'Penguji Harian',peran:'ketua',pemilik:true,terdaftar:true},{email:'anggota@contoh.org',nama:'',peran:'anggota',pemilik:false,terdaftar:false}]};
     if(d.aksi==='statistik_verifikasi')o={ok:true,total:0,status:{},hasil:{},bulan:{},hd:{},respon_median_jam:null,diperbarui:'2026-11-22 10:00'};
     r.fulfill({contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify(o)});};
-  await c.route('https://pantau.test/**',r=>{const f=berkas(new URL(r.request().url()).pathname);return f?r.fulfill({body:fs.readFileSync(f),contentType:T[path.extname(f)]||'application/octet-stream'}):r.fulfill({status:404,body:''});});
+  await c.route('https://pantau.test/**',r=>{const f=berkas(new URL(r.request().url()).pathname);return f?r.fulfill({body:fs.readFileSync(f),contentType:T[path.extname(f)]||'application/octet-stream',headers:{'access-control-allow-origin':'*'}}):r.fulfill({status:404,body:''});});
   await c.route('https://mock.server/**',api);await c.route('https://script.google.com/**',api);
   await c.route(BASIS+'**',r=>{const f=berkas(r.request().url().slice(BASIS.length).split('?')[0]);return f?r.fulfill({body:fs.readFileSync(f),contentType:T[path.extname(f)]||'application/octet-stream'}):r.fulfill({status:404,body:''});});
   await c.grantPermissions(['geolocation']).catch(()=>{});await c.setGeolocation({latitude:0.9,longitude:112.6}).catch(()=>{});

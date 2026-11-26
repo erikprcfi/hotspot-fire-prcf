@@ -26,14 +26,14 @@ function cincinTerbesar(g) {
   const fs = g.type === 'FeatureCollection' ? g.features.map(f => f.geometry) : g.type === 'Feature' ? [g.geometry] : [g]; let best = null, ba = -1;
   const luas = r => { let a = 0; for (let i = 0; i < r.length - 1; i++) a += r[i][0] * r[i + 1][1] - r[i + 1][0] * r[i][1]; return a / 2; };
   fs.filter(Boolean).forEach(x => { const P = x.type === 'Polygon' ? [x.coordinates] : x.type === 'MultiPolygon' ? x.coordinates : []; P.forEach(p => { const a = Math.abs(luas(p[0])); if (a > ba) { ba = a; best = p[0]; } }); });
-  if (!best) return null; let r = best.slice(); if (luas(r) < 0) r.reverse();
+  if (!best) return null; let r = best.slice(); if (luas(r) < 0) r.reverse(); cincinTerbesar.pusat = [r.reduce((a, c) => a + c[1], 0) / r.length, r.reduce((a, c) => a + c[0], 0) / r.length];
   const n = r.length; if (n > 80) { const k = Math.ceil(n / 80); r = r.filter((_, i) => i % k === 0); r.push(r[0]); }
   if (r[0][0] !== r[r.length - 1][0] || r[0][1] !== r[r.length - 1][1]) r.push(r[0]);
   return 'POLYGON((' + r.map(c => (+c[0]).toFixed(4) + ' ' + (+c[1]).toFixed(4)).join(',') + '))';
 }
 function wilayah() {
-  try { if (window.FHWilSaya && FHWilSaya.aktif()) { const s = FHWilSaya.site(); const w = cincinTerbesar(s.hd); if (w) return { nama: s.hd_nama, wkt: w, jenis: 'shp', id: s.id }; } } catch (e) { }
-  try { if (window.FHAksesHD && FHAksesHD() && window.FHSiteObj && FHSiteObj()) { const s = FHSiteObj(); const w = cincinTerbesar(s.hd || s.desa); if (w) return { nama: s.hd_nama, wkt: w, jenis: 'hd', id: s.id }; } } catch (e) { }
+  try { if (window.FHWilSaya && FHWilSaya.aktif()) { const s = FHWilSaya.site(); const w = cincinTerbesar(s.hd); if (w) return { nama: s.hd_nama, wkt: w, jenis: 'shp', id: s.id, pusat: cincinTerbesar.pusat }; } } catch (e) { }
+  try { if (window.FHAksesHD && FHAksesHD() && window.FHSiteObj && FHSiteObj()) { const s = FHSiteObj(); const w = cincinTerbesar(s.hd || s.desa); if (w) return { nama: s.hd_nama, wkt: w, jenis: 'hd', id: s.id, pusat: cincinTerbesar.pusat }; } } catch (e) { }
   return null;
 }
 const geoParam = A => A.wkt ? 'geometry=' + encodeURIComponent(A.wkt) : `geoDistance=${A.lat.toFixed(4)},${A.lon.toFixed(4)},${A.r}km`;
@@ -93,7 +93,7 @@ function baris(s) {
 function render(B, A, H) {
   const sens = H.daftar.filter(s => s.sens), kel = {}; H.daftar.forEach(s => { const k = s.kelas || s.kerajaan || '–'; kel[k] = (kel[k] || 0) + 1; });
   const kk = Object.entries(kel).sort((a, b) => b[1] - a[1]).slice(0, 8);
-  B.innerHTML = `<div class="fa-card"><h4 style="margin:0 0 6px">${esc(A.nama)}</h4>
+  B.innerHTML = `<div class="fa-card"><h4 style="margin:0 0 6px">${esc(A.nama)}</h4>${A.catatan ? `<p class="fa-note">${esc(A.catatan)}</p>` : ''}
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px">
         <div><small class="muted">${I('Catatan perjumpaan', 'Occurrence records')}</small><br><b style="font-size:20px">${nf(H.total)}</b></div>
         <div><small class="muted">${I('Spesies tercatat', 'Species recorded')}</small><br><b style="font-size:20px">${nf(H.spesies)}</b></div>
@@ -110,7 +110,12 @@ function render(B, A, H) {
 async function muatDi(B, A) {
   B.innerHTML = `<div class="fa-card"><p class="fa-note" id="hyP">${I('Menghubungi GBIF…', 'Contacting GBIF…')}</p></div>`;
   if (navigator.onLine === false) { B.innerHTML = `<div class="fa-card"><p>${I('Perlu internet untuk mengambil data GBIF.', 'Internet is needed to fetch GBIF data.')}</p></div>`; return; }
-  try { const H = await rangkum(A, t => { const e = document.getElementById('hyP'); if (e) e.textContent = t; }); if (document.body.contains(B)) render(B, A, H); }
+  try { const pr = t => { const e = document.getElementById('hyP'); if (e) e.textContent = t; };
+    let H = await rangkum(A, pr);
+    if (A.wkt && H.total < 30 && A.pusat) {   // catatan di dalam wilayah sangat sedikit → tampilkan juga sekitar wilayah (radius 10 km)
+      const A2 = { nama: I(`${A.nama} – radius 10 km dari pusat wilayah`, `${A.nama} – 10 km around the area centre`), lat: A.pusat[0], lon: A.pusat[1], r: 10, jenis: A.jenis, catatan: I(`Hanya ${H.total} catatan di dalam batas wilayah; ditampilkan catatan dalam radius 10 km dari pusat wilayah.`, `Only ${H.total} records inside the boundary; showing records within 10 km of the area centre.`) };
+      const H2 = await rangkum(A2, pr); if (H2.total > H.total) { A = A2; H = H2; } }
+    if (document.body.contains(B)) render(B, A, H); }
   catch (e) { B.innerHTML = `<div class="fa-card"><p class="fa-err">${I('Gagal mengambil data GBIF', 'Failed to fetch GBIF data')} (${esc(e && e.message || e)}). ${I('Coba lagi nanti.', 'Please try again later.')}</p></div>`; }
 }
 function buka() {

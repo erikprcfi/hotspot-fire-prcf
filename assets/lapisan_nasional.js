@@ -12,6 +12,7 @@ const DEF = {
     nama: () => I('Lahan gambut (PEATMAP)', 'Peatland (PEATMAP)'), ket: () => I('Sebaran gambut indikatif skala nasional · Xu dkk. 2018, CC BY 4.0', 'Indicative national peat extent · Xu et al. 2018, CC BY 4.0') },
 };
 const IDX = {}, UBIN = new Map();
+const U = u => (window.FH_DATA_URL ? FH_DATA_URL(u) : u);   // aplikasi Android: ubin diambil dari server (tidak dibundel)
 const J = u => fetch(u, { cache: 'force-cache' }).then(r => r.ok ? r.json() : null).catch(() => null);
 const indeks = id => IDX[id] || (IDX[id] = J(DEF[id].dir + '/indeks.json').then(j => { if (!j) delete IDX[id]; return j; }));
 function gambar(src) { return new Promise((ok, no) => { const im = new Image(); im.crossOrigin = 'anonymous'; im.onload = () => ok(im); im.onerror = no; im.src = src; }); }
@@ -20,7 +21,7 @@ async function ubin(id, la, lo) {
   const p = (async () => {
     const X = await indeks(id); if (!X) return undefined;               // indeks tak terbaca → tidak diketahui
     if (!X.ubin || !(`${la}_${lo}` in X.ubin)) return null;            // ubin kosong → nilai 0
-    const im = await gambar(`${DEF[id].dir}/t_${la}_${lo}.png`), n = X.piksel_ubin || im.width;
+    const im = await gambar(U(`${DEF[id].dir}/t_${la}_${lo}.png`)), n = X.piksel_ubin || im.width;
     const c = document.createElement('canvas'); c.width = n; c.height = n; const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0);
     return { n, d: g.getImageData(0, 0, n, n).data };
   })().catch(() => undefined);
@@ -46,13 +47,13 @@ function lapisan(id, map) {
   const css = () => { if (document.getElementById('lapnas-css')) return; const s = document.createElement('style'); s.id = 'lapnas-css'; s.textContent = '.lapnas{image-rendering:pixelated;image-rendering:crisp-edges}'; document.head.appendChild(s); };
   async function draw() {
     if (!map.hasLayer(G)) return; const X = await indeks(id); if (!X) return; const [W, S, E, N] = X.batas, z = map.getZoom(), op = DEF[id].op;
-    if (z < 8) { ON.forEach(l => G.removeLayer(l)); ON.clear(); if (!ikh) { ikh = L.imageOverlay(`${DEF[id].dir}/ikhtisar.png`, [[S, W], [N, E]], { opacity: op, className: 'lapnas', interactive: false, attribution: DEF[id].ket() }); G.addLayer(ikh); } return; }
+    if (z < 8) { ON.forEach(l => G.removeLayer(l)); ON.clear(); if (!ikh) { ikh = L.imageOverlay(U(`${DEF[id].dir}/ikhtisar.png`), [[S, W], [N, E]], { opacity: op, className: 'lapnas', interactive: false, attribution: DEF[id].ket() }); G.addLayer(ikh); } return; }
     if (ikh) { G.removeLayer(ikh); ikh = null; }
     const b = map.getBounds().pad(.2), want = new Set();
     for (let la = Math.max(S, Math.floor(b.getSouth())); la <= Math.min(N - 1, Math.floor(b.getNorth())); la++)
       for (let lo = Math.max(W, Math.floor(b.getWest())); lo <= Math.min(E - 1, Math.floor(b.getEast())); lo++) { const k = `${la}_${lo}`; if (k in X.ubin) want.add(k); }
     ON.forEach((l, k) => { if (!want.has(k)) { G.removeLayer(l); ON.delete(k); } });
-    want.forEach(k => { if (ON.has(k)) return; const [la, lo] = k.split('_').map(Number); const l = L.imageOverlay(`${DEF[id].dir}/t_${k}.png`, [[la, lo], [la + 1, lo + 1]], { opacity: op, className: 'lapnas', interactive: false, attribution: DEF[id].ket() }); ON.set(k, l); G.addLayer(l); });
+    want.forEach(k => { if (ON.has(k)) return; const [la, lo] = k.split('_').map(Number); const l = L.imageOverlay(U(`${DEF[id].dir}/t_${k}.png`), [[la, lo], [la + 1, lo + 1]], { opacity: op, className: 'lapnas', interactive: false, attribution: DEF[id].ket() }); ON.set(k, l); G.addLayer(l); });
   }
   G.on('add', () => { css(); map.on('moveend zoomend', draw); draw(); });
   G.on('remove', () => { map.off('moveend zoomend', draw); });
