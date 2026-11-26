@@ -14,7 +14,7 @@ import os, sys, json, math, base64, datetime as dt
 import numpy as np
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA = os.environ.get("PR_DATA") or os.path.join(ROOT, "data")   # PR_DATA: folder sementara untuk wilayah SHP pengguna (scripts/wilayah_umum.py); OUT = os.path.join(DATA, "asap")
+DATA = os.environ.get("PR_DATA") or os.path.join(ROOT, "data"); OUT = os.path.join(DATA, "asap")   # PR_DATA: folder sementara wilayah SHP (scripts/wilayah_umum.py)
 NOW = dt.datetime.now(dt.timezone.utc)
 RADIUS_KM, JAM, LANGKAH_MNT, PERLUAS_KM = 100, 24, 15, 2.0
 ARAH = ["utara", "timur laut", "timur", "tenggara", "selatan", "barat daya", "barat", "barat laut"]

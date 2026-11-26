@@ -212,7 +212,7 @@ def main():
         for Y, R in semua.items():
             d = {k: v for k, v in R.items() if not k.startswith("_")}
             d["peringkat"] = urut.index(Y) + 1; d["dari"] = len(semua)
-            if Y in sorted(semua)[-PDF_TERAKHIR:]:
+            if Y in (sorted(semua)[-PDF_TERAKHIR:] if PDF_TERAKHIR else []):
                 rel_p = f"rekap_musim/{sid}/{Y}.pdf"; p = os.path.join(DATA, rel_p)
                 lm = ((lama.get("lokasi") or {}).get(sid) or {}).get("musim", {}).get(str(Y)) or {}
                 sama = {k: v for k, v in lm.items() if k not in ("berkas", "kb", "sha256", "dibuat_utc")} == json.loads(json.dumps(d))
@@ -226,7 +226,7 @@ def main():
         dsid = os.path.join(OUT, sid)
         if os.path.isdir(dsid):
             for f in os.listdir(dsid):
-                if f.endswith(".pdf") and int(f[:4]) not in sorted(semua)[-PDF_TERAKHIR:]: os.remove(os.path.join(dsid, f))
+                if f.endswith(".pdf") and int(f[:4]) not in (sorted(semua)[-PDF_TERAKHIR:] if PDF_TERAKHIR else []): os.remove(os.path.join(dsid, f))
         out["lokasi"][sid] = L
     out["metode"] = "Periode musim = bulan mulai bersiap s.d. 1 bulan setelah bulan musim terakhir menurut kalender musim api (pola 2016–2025). Rekap dibuat 7 hari setelah periode berakhir. Peringkat menurut deteksi titik panas ≤ 25 km."
     os.makedirs(OUT, exist_ok=True)

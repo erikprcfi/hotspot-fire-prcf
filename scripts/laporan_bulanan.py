@@ -19,7 +19,7 @@ import os, sys, json, glob, argparse, datetime as dt, calendar, io, hashlib
 from collections import Counter, defaultdict
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA = os.environ.get("PR_DATA") or os.path.join(ROOT, "data")   # PR_DATA: folder sementara untuk wilayah SHP pengguna (scripts/wilayah_umum.py); OUT = os.path.join(DATA, "laporan_bulanan")
+DATA = os.environ.get("PR_DATA") or os.path.join(ROOT, "data"); OUT = os.path.join(DATA, "laporan_bulanan")   # PR_DATA: folder sementara wilayah SHP (scripts/wilayah_umum.py)
 BLN = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
 LEVEL = ["Rendah", "Sedang", "Tinggi", "Ekstrem"]
 HIJAU, HIJAU2, ABU, MERAH = "#0B3B2C", "#1E7A58", "#46564E", "#C2410C"
