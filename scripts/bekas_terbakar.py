@@ -33,7 +33,12 @@ UA = {"User-Agent": "hotspot-fire-prcf (github actions; PRCF Indonesia)", "Conte
 MULAI = "2023-01-01"           # analisa ulang mundur sampai tanggal ini
 DNBR_MIN, DIST_M, MIN_HA, CLEAR_MIN, POST_NBR_MAX, POST_DAYS = 0.27, 1000.0, 0.5, 0.60, 0.20, 45
 os.environ.setdefault("GDAL_DISABLE_READDIR_ON_OPEN", "EMPTY_DIR"); os.environ.setdefault("AWS_NO_SIGN_REQUEST", "YES")
-os.environ.setdefault("GDAL_HTTP_MAX_RETRY", "4"); os.environ.setdefault("GDAL_HTTP_RETRY_DELAY", "3"); os.environ.setdefault("CPL_VSIL_CURL_ALLOWED_EXTENSIONS", ".tif")
+os.environ.setdefault("GDAL_HTTP_MAX_RETRY", "4"); os.environ.setdefault("GDAL_HTTP_RETRY_DELAY", "3"); os.environ.setdefault("CPL_VSIL_CURL_ALLOWED_EXTENSIONS", ".tif,.tiff")
+
+EPSG = 32649   # UTM 49N (Kapuas Hulu); wilayah lain memakai zona UTM-nya sendiri (utm_epsg)
+def utm_epsg(lon, lat):
+    """Kode EPSG zona UTM WGS84 untuk suatu titik (utara 326xx, selatan 327xx)."""
+    return (32600 if lat >= 0 else 32700) + int((lon + 180) // 6) + 1
 
 def stac(bbox, a, b, maxcc=70):
     body = json.dumps({"collections": ["sentinel-2-l2a"], "bbox": bbox, "datetime": f"{a}T00:00:00Z/{b}T23:59:59Z",
@@ -55,13 +60,13 @@ def windows(events, gap=75):  # jeda > 75 hari = musim baru (sama dengan jendela
             W.append({"awal": e["mulai_wib"][:10], "akhir": e["selesai_wib"][:10], "ev": [e]})
     return W
 
-def scenes(items, shape, transform, rgb=False):
+def scenes(items, shape, transform, rgb=False, epsg=None):
     """Baca tiap citra: NBR, SWIR2 (B12) dan (opsional) RGB, dengan masker awan/bayangan SCL diperlebar 60 m."""
     import rasterio
     from rasterio.warp import reproject, Resampling
     from rasterio.crs import CRS
     from scipy import ndimage
-    dst_crs = CRS.from_epsg(32649); out = []
+    dst_crs = CRS.from_epsg(epsg or EPSG); out = []
     for it in items:
         A = it["assets"]
         def read(key, res=Resampling.bilinear, dtype="float32"):
@@ -105,8 +110,9 @@ def analyse(site, win, idx_old):
     from rasterio import features
     from shapely.geometry import shape as shp, Point, mapping
     from shapely.ops import unary_union, transform as stf
-    to_utm = Transformer.from_crs(4326, 32649, always_xy=True).transform
-    to_wgs = Transformer.from_crs(32649, 4326, always_xy=True).transform
+    ep = utm_epsg(sum(e["lon"] for e in win["ev"]) / len(win["ev"]), sum(e["lat"] for e in win["ev"]) / len(win["ev"]))
+    to_utm = Transformer.from_crs(4326, ep, always_xy=True).transform
+    to_wgs = Transformer.from_crs(ep, 4326, always_xy=True).transform
     pts = [to_utm(e["lon"], e["lat"]) for e in win["ev"]]
     xs, ys = [p[0] for p in pts], [p[1] for p in pts]
     x0, y0, x1, y1 = min(xs) - 1500, min(ys) - 1500, max(xs) + 1500, max(ys) + 1500
@@ -121,7 +127,7 @@ def analyse(site, win, idx_old):
     post = sorted(stac(bbox, (b + datetime.timedelta(days=3)).isoformat(), min(today, b + datetime.timedelta(days=POST_DAYS)).isoformat()), key=lambda f: f["properties"]["eo:cloud_cover"])[:4]
     if not pre or not post:
         return {"status": "belum ada citra" + (" sebelum" if not pre else "") + (" sesudah" if not post else "")}
-    P0 = scenes(pre, (Hd, Wd), tr, rgb=True); P1 = scenes(post, (Hd, Wd), tr, rgb=True)
+    P0 = scenes(pre, (Hd, Wd), tr, rgb=True, epsg=ep); P1 = scenes(post, (Hd, Wd), tr, rgb=True, epsg=ep)
     if not P0 or not P1:
         return {"status": "tertutup awan"}
     Npre = med([x["nbr"] for x in P0]); S2pre = med([x["s2"] for x in P0])

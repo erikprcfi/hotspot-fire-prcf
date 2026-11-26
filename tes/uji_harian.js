@@ -30,7 +30,7 @@ for(const plat of PLAT){
     if(d.aksi==='ruang_anggota')o={ok:true,peran:'ketua',anggota:[{email:'penguji@contoh.org',nama:'Penguji Harian',peran:'ketua',pemilik:true,terdaftar:true},{email:'anggota@contoh.org',nama:'',peran:'anggota',pemilik:false,terdaftar:false}]};
     if(d.aksi==='statistik_verifikasi')o={ok:true,total:0,status:{},hasil:{},bulan:{},hd:{},respon_median_jam:null,diperbarui:'2026-11-22 10:00'};
     r.fulfill({contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify(o)});};
-  await c.route('https://pantau.test/**',r=>{const f=berkas(new URL(r.request().url()).pathname);return f?r.fulfill({body:fs.readFileSync(f),contentType:T[path.extname(f)]||'application/octet-stream'}):r.fulfill({status:404,body:''});});
+  await c.route('https://pantau.test/**',r=>{const f=berkas(new URL(r.request().url()).pathname);return f?r.fulfill({body:fs.readFileSync(f),contentType:T[path.extname(f)]||'application/octet-stream',headers:{'access-control-allow-origin':'*'}}):r.fulfill({status:404,body:''});});
   await c.route('https://mock.server/**',api);await c.route('https://script.google.com/**',api);
   await c.route(BASIS+'**',r=>{const f=berkas(r.request().url().slice(BASIS.length).split('?')[0]);return f?r.fulfill({body:fs.readFileSync(f),contentType:T[path.extname(f)]||'application/octet-stream'}):r.fulfill({status:404,body:''});});
   await c.grantPermissions(['geolocation']).catch(()=>{});await c.setGeolocation({latitude:0.9,longitude:112.6}).catch(()=>{});
@@ -163,13 +163,18 @@ for(const plat of PLAT){
       pg=await buka(()=>FHWilAlat.ekspor());o.ekspor=pg.querySelectorAll('[data-e]').length;
       pg=await buka(()=>FHWilAlat.luring());o.luring=!!pg.querySelector('#waLS');
       pg=await buka(()=>FHWilAlat.banding());o.banding=pg.innerText.length>20;
+      pg=await buka(()=>FHWilAlat.hutan());o.hutan=/Indikasi bukaan|clearing indications|Sedang disiapkan/.test(pg.textContent)&&/Hansen/.test(pg.textContent)&&/Sentinel-1/.test(pg.textContent);o.hutanTeks=[/Hansen/.test(pg.textContent),/Sentinel-1/.test(pg.textContent),pg.textContent.length].join(",");pg=await buka(()=>FHWilAlat.bekas());o.bekasS2=/dNBR/.test(pg.textContent);
+      pg=await buka(()=>FHWilAlat.profil());o.gambut=/Lahan gambut|Peatland/.test(pg.textContent)&&/PEATMAP/.test(pg.textContent);o.profilLain=['Global Surface Water','Harmonized Global Biomass','Canopy Height','Global Forest Change'].filter(k=>!pg.textContent.includes(k));
       pg=await buka(()=>FHWilAlat.laporan());o.laporan=!!pg.querySelector('#waPdf');return o;});
      if(!g.tombol)masalah.push(`${lbl}: tombol Laporan & data tidak ada di Beranda wilayah SHP`);
-     if(g.menu!==5)masalah.push(`${lbl}: menu Laporan & data ${g.menu} item`);
+     if(g.menu!==8)masalah.push(`${lbl}: menu Laporan & data ${g.menu} item`);
      if(g.riwayat!==2||!(g.riwayatBaris>=10))masalah.push(`${lbl}: riwayat titik panas tidak lengkap (${g.riwayat} grafik, ${g.riwayatBaris} tahun)`);
      if(!(g.ekspor>=12))masalah.push(`${lbl}: ekspor data hanya ${g.ekspor} tombol`);
      if(!g.luring)masalah.push(`${lbl}: halaman peta luring wilayah tidak lengkap`);
      if(!g.banding)masalah.push(`${lbl}: halaman bandingkan wilayah kosong`);
+     if(!g.hutan)masalah.push(`${lbl}: halaman perubahan hutan Sentinel-2 tidak lengkap (${g.hutanTeks})`);if(!g.bekasS2)masalah.push(`${lbl}: halaman bekas terbakar Sentinel-2 tidak lengkap`);
+     if(g.profilLain&&g.profilLain.length)masalah.push(`${lbl}: profil lahan kurang bagian: ${g.profilLain.join(', ')}`);
+     if(!g.gambut)masalah.push(`${lbl}: profil lahan (gambut) wilayah SHP tidak tampil`);
      if(!g.laporan)masalah.push(`${lbl}: halaman laporan PDF wilayah tidak lengkap`);
      else{ // unduh PDF & ekspor KML sungguhan (web: unduhan peramban; aplikasi: Filesystem + Share bawaan HP)
       const unduh=async(sel,ms)=>{if(plat!=='asli'){const [dlx]=await Promise.all([p.waitForEvent('download',{timeout:ms}),p.click(sel)]);const fp=await dlx.path();return fp?fs.readFileSync(fp):Buffer.alloc(0);}
@@ -182,6 +187,16 @@ for(const plat of PLAT){
    if(!ADM&&sk!=='tamu'&&!(GJ&&PAKET)){const u=await p.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));try{FHApp.closeAll()}catch(e){};await w(400);FHMusimRawan.rencana();await w(1200);const t=((document.querySelector('#abSub')||{}).textContent||'')+' '+((document.querySelector('#page.on #pageBody')||{}).innerText||'');
       try{FHApp.closeAll()}catch(e){};await w(400);FHKartu.open();await w(3500);const k=!!document.querySelector('.kp-img');try{FHApp.closeAll()}catch(e){};await w(400);FHBanding.open();await w(1200);const b=((document.querySelector('#abSub')||{}).textContent||'')+' '+((document.querySelector('#page.on #pageBody')||{}).innerText||'');try{FHApp.closeAll()}catch(e){};await w(400);FHIklim.siaga();await w(1200);const sg=((document.querySelector('#abSub')||{}).textContent||'')+' '+((document.querySelector('#page.on #pageBody')||{}).innerText||'');try{FHApp.closeAll()}catch(e){};return {rencana:/Khusus|only/.test(t),kartu:k,banding:/Khusus admin|Admins only/.test(b),siaga:/Khusus|only/.test(sg)};});
      if(!u.rencana)masalah.push(`${lbl}: rencana patroli terbuka di mode ${harap}`);if(!u.kartu)masalah.push(`${lbl}: kartu status (Indonesia) gagal`);if(!u.banding)masalah.push(`${lbl}: perbandingan Hutan Desa terbuka untuk non-admin`);if(!u.siaga)masalah.push(`${lbl}: Indeks Siaga Desa terbuka di mode ${harap}`);}
+   { // keanekaragaman hayati (GBIF): wilayah aktif atau pusat peta
+    const hy=await p.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));if(!window.FHHayati)return 'FHHayati tidak termuat';try{FHApp.closeAll()}catch(e){};await w(300);
+     FHApp.hubGo('hayati');await w(800);const m=document.getElementById('hyM');if(m){FHApp.map()&&FHApp.map().setView([0.83,112.3],10,{animate:false});m.click();}
+     for(let i=0;i<120;i++){await w(1000);const t=(document.getElementById('hyB')||{}).innerText||'';if(/Gagal mengambil|Failed to fetch/.test(t))return 'GBIF gagal: '+t.slice(0,120);if(/Spesies tercatat|Species recorded/.test(t)){const n=+(t.match(/Spesies tercatat\s*([\d.]+)/)||[0,'0'])[1].replace(/\./g,'');try{FHApp.closeAll()}catch(e){};return n>0?'':'0 spesies';}}
+     return 'tidak selesai dalam 120 dtk';});
+    if(hy)masalah.push(`${lbl}: keanekaragaman hayati – ${hy}`);}
+   { // lapisan nasional: gambut (nilai titik & lapisan peta)
+    const gb=await p.evaluate(async()=>{if(!window.FHLapNas)return 'FHLapNas tidak termuat';const a=await FHLapNas.nilai('gambut',-2.4,113.9),b=await FHLapNas.nilai('gambut',-6.2,106.8);if(a!==1||b!==0)return `nilai gambut salah (${a}, ${b})`;
+     const m=FHApp.map();if(!m)return '';const on=FHLapNas.toggle('gambut',m);m.setView([-2.4,113.9],9,{animate:false});await new Promise(r=>setTimeout(r,1500));const n=document.querySelectorAll('img.lapnas').length;FHLapNas.toggle('gambut',m);return on&&n?'':'lapisan gambut tidak tampil di peta';});
+    if(gb)masalah.push(`${lbl}: gambut – ${gb}`);}
    { // Cuaca di lokasi saya (GPS): modul FHLokasi harus termuat & menampilkan cuaca
     const lx=await p.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));if(!window.FHLokasi)return 'FHLokasi tidak termuat';try{FHApp.closeAll()}catch(e){};await w(300);FHApp.hubGo('lokasi');for(let i=0;i<30;i++){await w(500);const t=(document.getElementById('lxBody')||{}).innerText||'';if(/°/.test(t))return '';}return 'tidak tampil';});
     if(lx&&!(lx==='tidak tampil'&&om429.n))masalah.push(`${lbl}: Cuaca di lokasi saya – ${lx}`);else if(lx)console.log(`(catatan) ${lbl}: cuaca lokasi tidak tampil karena server Open-Meteo membatasi permintaan (HTTP 429) dari mesin uji – bukan galat aplikasi`);}

@@ -56,9 +56,10 @@ async function muat(paksa) {
     AID = pilihAid(DAFTAR, A);
     if (!AID) { PAKET = null; tandai(); return null; }
     const lama = await bacaCache(u, AID); if (lama) { PAKET = lama; tandai(); }
-    if (navigator.onLine !== false) {
+    const segar = lama && lama._diambil && Date.now() - lama._diambil < 2.5 * 3600e3 && paksa !== 'pengguna';   // paket diperbarui server ± 3 jam sekali: hemat kuota
+    if (navigator.onLine !== false && !segar) {
       try { const j = await FHAkun.api({ aksi: 'wilayah_dinamis', id: u.id, token: u.token, aid: AID }, 60000);
-        if (j && j.ok && j.data) { PAKET = rapikan(j.data); await simpanCache(u, AID, PAKET); }
+        if (j && j.ok && j.data) { PAKET = rapikan(j.data); PAKET._diambil = Date.now(); await simpanCache(u, AID, PAKET); }
         else if (j && j.ok && !j.data && !lama) PAKET = { menunggu: true, aid: AID };
       } catch (e) { }
     }
@@ -72,7 +73,7 @@ async function paketAid(aid) {   // paket wilayah lain di daftar (untuk perbandi
   if (navigator.onLine !== false) { try { const j = await FHAkun.api({ aksi: 'wilayah_dinamis', id: u.id, token: u.token, aid }, 60000); if (j && j.ok && j.data) { const p = rapikan(j.data); await simpanCache(u, aid, p); return p; } } catch (e) { } }
   return lama;
 }
-async function pilih(aid) { const u = akun(); if (!u) return; LS.set(kunciU(u), aid || null); PAKET = null; await muat(true); }
+async function pilih(aid) { const u = akun(); if (!u) return; LS.set(kunciU(u), aid || null); PAKET = null; await muat('pengguna'); }
 
 /* ---------- tampilan: lapisan batas wilayah di peta + render ulang beranda ---------- */
 function tandai() {
@@ -120,7 +121,7 @@ async function lembar() {
   const u = akun(); if (!u) return window.FHAkun && FHAkun.layarMasuk && FHAkun.layarMasuk();
   openSheet(`<h3>${I('Wilayah & tim', 'Areas & team')}</h3><p class="sub">${I('Wilayah hasil unggah SHP Anda dan ruang kerja tim yang Anda ikuti. Semua fitur dihitung otomatis untuk wilayah yang dipilih.', 'Areas from your shapefile uploads and team workspaces you belong to. All features are computed automatically for the selected area.')}</p><div id="wlB"><p class="muted">${I('Memuat…', 'Loading…')}</p></div>`);
   const B = document.getElementById('wlB');
-  if (navigator.onLine !== false) { try { await muat(true); } catch (e) { } }
+  if (navigator.onLine !== false) { try { await muat('pengguna'); } catch (e) { } }
   const L = DAFTAR || [];
   if (!L.length) { B.innerHTML = `<p>${I('Belum ada wilayah. Unggah batas wilayah (SHP) di <b>Analisis lahan & karbon</b>; setelah analisis selesai, semua fitur dihitung otomatis.', 'No areas yet. Upload an area boundary (shapefile) in <b>Land & carbon analysis</b>; once analysed, all features are computed automatically.')}</p><button class="btn pri full tap" data-an>${I('Unggah SHP', 'Upload shapefile')}</button>`;
     B.querySelector('[data-an]').onclick = () => { try { history.back(); } catch (e) { } setTimeout(() => window.FHApp && FHApp.hubGo('analisis'), 350); }; return; }
