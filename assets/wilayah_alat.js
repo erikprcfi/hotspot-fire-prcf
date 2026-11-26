@@ -70,7 +70,7 @@ function riwayat() {
   halaman(I('Riwayat titik panas', 'Hotspot history'), p.site.hd_nama,
     kartu(I('Per tahun', 'Per year'), `<p class="fa-note">${I(`Rata-rata ${nf(rata)} deteksi/tahun dalam 25 km` + (puncak ? `; tertinggi ${puncak} (${nf(R[puncak].r25)}).` : '.'), `Average ${nf(rata)} detections/year within 25 km` + (puncak ? `; highest ${puncak} (${nf(R[puncak].r25)}).` : '.'))}</p>${grafikTahun(R)}
       <p class="fa-note"><span style="color:#B91C1C">■</span> ${I('di dalam wilayah', 'inside the area')} · <span style="color:#F97316">■</span> ≤ 5 km · <span style="color:#FDBA74">■</span> ≤ 25 km ${I('dari batas', 'of the boundary')}</p>`) +
-    kartu(I('Pola bulanan', 'Monthly pattern'), `<select class="wa-sel" id="waY">${th.slice().reverse().map(y => `<option>${y}</option>`).join('')}</select><div id="waB"></div>`) +
+    kartu(I('Pola bulanan', 'Monthly pattern'), `<select class="wa-sel" id="waY">${th.slice().reverse().map(y => `<option${y === (th.slice().reverse().find(k => R[k].r25 > 0) || ty) ? ' selected' : ''}>${y}</option>`).join('')}</select><div id="waB"></div>`) +
     kartu(I('Tabel', 'Table'), tabel) +
     `<p class="fa-note">${I('Sumber: NASA FIRMS (VIIRS S-NPP/NOAA-20/NOAA-21 & MODIS), arsip 2016– dan data hampir waktu nyata tahun berjalan. Satu kebakaran dapat terdeteksi beberapa kali; angka adalah jumlah deteksi, bukan luas terbakar.', 'Source: NASA FIRMS (VIIRS S-NPP/NOAA-20/NOAA-21 & MODIS), 2016– archive and near-real-time data for the current year. One fire can be detected several times; figures are detections, not burned area.')}</p>`,
     () => { const sel = document.getElementById('waY'), B = document.getElementById('waB');
