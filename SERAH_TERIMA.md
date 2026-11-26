@@ -261,3 +261,10 @@ Live ke main bila semua uji lulus.
 - Peringatan dini wilayah SHP (aturan sama dengan Hutan Desa) dikirim ke pelanggan `shp-<aid>`; status terkirim disimpan di paket (privat).
 - `assets/wilayah_umum.js` (`FHWilSaya`): memilih wilayah / ruang kerja (`ruang_daftar`), mengambil paket (`wilayah_dinamis`), menyimpannya untuk luring, membuka 11 alat (Indeks Siaga, prakiraan musim api, kekeringan, banjir, asap, arsip area terbakar, vegetasi, rekap, kalender, titik rawan, rencana patroli), status 7 hari di Beranda, lembar "Wilayah & tim" (tambah/keluarkan anggota, undangan email).
 - Uji: `tes/paket_wilayah_uji.json.gz` = paket wilayah sintetis (Kalteng_berlubang); skenario SHP di uji harian memeriksa seluruh alat.
+
+## 2.6 – Alat tambahan wilayah SHP & Studio (26 Nov 2026 malam)
+- `assets/wilayah_alat.js` (`FHWilAlat`, tombol "Laporan & data" di Beranda wilayah SHP): laporan PDF dibuat di HP (jsPDF), riwayat titik panas per tahun + pola bulanan, ekspor KML/GeoJSON/GPX/CSV (batas, titik panas tahun ini, titik rawan, piksel MODIS), peta luring wilayah (FHLuring, EOX S2 cloudless), bandingkan wilayah ruang kerja.
+- Pekerja: `riwayat` per tahun di paket; ringkasan mingguan email wilayah SHP tiap Senin pagi WIB (pelanggan `shp-<aid>` dengan email aktif), status pekan di `_cache.mingguan`.
+- Studio: status galat (aktif / sudah diperbaiki / muncul lagi; daftar PERBAIKAN di `HAL.galat`), grafik galat per pekan, sebaran versi aplikasi pengguna (akun.js kini mengirim `2026.11b/<versi isi>` dari `versi.json`).
+- Cuaca di lokasi saya dipulihkan (`assets/cuaca_lokasi.js`, modul FHLokasi yang hilang sejak 15 Nov); pengaman peta NaN di `initMap`.
+- Uji harian: memeriksa cuaca lokasi (GPS), alat wilayah, unduhan PDF/KML/GPX/GeoJSON/CSV (web & aplikasi); HTTP 429 Open-Meteo dari mesin uji dicatat, bukan galat.
