@@ -25,7 +25,7 @@ import os, sys, json, time, datetime, urllib.request, concurrent.futures as cf
 import numpy as np
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA = os.path.join(ROOT, "data")
+DATA = os.environ.get("PR_DATA") or os.path.join(ROOT, "data")   # PR_DATA: folder sementara untuk wilayah SHP pengguna (scripts/wilayah_umum.py)
 STAC = "https://planetarycomputer.microsoft.com/api/stac/v1/search"
 TOKEN_URL = "https://planetarycomputer.microsoft.com/api/sas/v1/token/modiseuwest/modis-061-cogs"
 UA = {"User-Agent": "hotspot-fire-prcf (github actions; PRCF Indonesia)", "Content-Type": "application/json"}
