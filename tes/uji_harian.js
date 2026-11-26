@@ -163,13 +163,15 @@ for(const plat of PLAT){
       pg=await buka(()=>FHWilAlat.ekspor());o.ekspor=pg.querySelectorAll('[data-e]').length;
       pg=await buka(()=>FHWilAlat.luring());o.luring=!!pg.querySelector('#waLS');
       pg=await buka(()=>FHWilAlat.banding());o.banding=pg.innerText.length>20;
+      pg=await buka(()=>FHWilAlat.profil());o.gambut=/Lahan gambut|Peatland/.test(pg.innerText)&&/PEATMAP/.test(pg.innerText);
       pg=await buka(()=>FHWilAlat.laporan());o.laporan=!!pg.querySelector('#waPdf');return o;});
      if(!g.tombol)masalah.push(`${lbl}: tombol Laporan & data tidak ada di Beranda wilayah SHP`);
-     if(g.menu!==5)masalah.push(`${lbl}: menu Laporan & data ${g.menu} item`);
+     if(g.menu!==6)masalah.push(`${lbl}: menu Laporan & data ${g.menu} item`);
      if(g.riwayat!==2||!(g.riwayatBaris>=10))masalah.push(`${lbl}: riwayat titik panas tidak lengkap (${g.riwayat} grafik, ${g.riwayatBaris} tahun)`);
      if(!(g.ekspor>=12))masalah.push(`${lbl}: ekspor data hanya ${g.ekspor} tombol`);
      if(!g.luring)masalah.push(`${lbl}: halaman peta luring wilayah tidak lengkap`);
      if(!g.banding)masalah.push(`${lbl}: halaman bandingkan wilayah kosong`);
+     if(!g.gambut)masalah.push(`${lbl}: profil lahan (gambut) wilayah SHP tidak tampil`);
      if(!g.laporan)masalah.push(`${lbl}: halaman laporan PDF wilayah tidak lengkap`);
      else{ // unduh PDF & ekspor KML sungguhan (web: unduhan peramban; aplikasi: Filesystem + Share bawaan HP)
       const unduh=async(sel,ms)=>{if(plat!=='asli'){const [dlx]=await Promise.all([p.waitForEvent('download',{timeout:ms}),p.click(sel)]);const fp=await dlx.path();return fp?fs.readFileSync(fp):Buffer.alloc(0);}
@@ -182,6 +184,10 @@ for(const plat of PLAT){
    if(!ADM&&sk!=='tamu'&&!(GJ&&PAKET)){const u=await p.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));try{FHApp.closeAll()}catch(e){};await w(400);FHMusimRawan.rencana();await w(1200);const t=((document.querySelector('#abSub')||{}).textContent||'')+' '+((document.querySelector('#page.on #pageBody')||{}).innerText||'');
       try{FHApp.closeAll()}catch(e){};await w(400);FHKartu.open();await w(3500);const k=!!document.querySelector('.kp-img');try{FHApp.closeAll()}catch(e){};await w(400);FHBanding.open();await w(1200);const b=((document.querySelector('#abSub')||{}).textContent||'')+' '+((document.querySelector('#page.on #pageBody')||{}).innerText||'');try{FHApp.closeAll()}catch(e){};await w(400);FHIklim.siaga();await w(1200);const sg=((document.querySelector('#abSub')||{}).textContent||'')+' '+((document.querySelector('#page.on #pageBody')||{}).innerText||'');try{FHApp.closeAll()}catch(e){};return {rencana:/Khusus|only/.test(t),kartu:k,banding:/Khusus admin|Admins only/.test(b),siaga:/Khusus|only/.test(sg)};});
      if(!u.rencana)masalah.push(`${lbl}: rencana patroli terbuka di mode ${harap}`);if(!u.kartu)masalah.push(`${lbl}: kartu status (Indonesia) gagal`);if(!u.banding)masalah.push(`${lbl}: perbandingan Hutan Desa terbuka untuk non-admin`);if(!u.siaga)masalah.push(`${lbl}: Indeks Siaga Desa terbuka di mode ${harap}`);}
+   { // lapisan nasional: gambut (nilai titik & lapisan peta)
+    const gb=await p.evaluate(async()=>{if(!window.FHLapNas)return 'FHLapNas tidak termuat';const a=await FHLapNas.nilai('gambut',-2.4,113.9),b=await FHLapNas.nilai('gambut',-6.2,106.8);if(a!==1||b!==0)return `nilai gambut salah (${a}, ${b})`;
+     const m=FHApp.map();if(!m)return '';const on=FHLapNas.toggle('gambut',m);m.setView([-2.4,113.9],9,{animate:false});await new Promise(r=>setTimeout(r,1500));const n=document.querySelectorAll('img.lapnas').length;FHLapNas.toggle('gambut',m);return on&&n?'':'lapisan gambut tidak tampil di peta';});
+    if(gb)masalah.push(`${lbl}: gambut – ${gb}`);}
    { // Cuaca di lokasi saya (GPS): modul FHLokasi harus termuat & menampilkan cuaca
     const lx=await p.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));if(!window.FHLokasi)return 'FHLokasi tidak termuat';try{FHApp.closeAll()}catch(e){};await w(300);FHApp.hubGo('lokasi');for(let i=0;i<30;i++){await w(500);const t=(document.getElementById('lxBody')||{}).innerText||'';if(/°/.test(t))return '';}return 'tidak tampil';});
     if(lx&&!(lx==='tidak tampil'&&om429.n))masalah.push(`${lbl}: Cuaca di lokasi saya – ${lx}`);else if(lx)console.log(`(catatan) ${lbl}: cuaca lokasi tidak tampil karena server Open-Meteo membatasi permintaan (HTTP 429) dari mesin uji – bukan galat aplikasi`);}

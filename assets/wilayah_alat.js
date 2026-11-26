@@ -40,6 +40,7 @@ function menu() {
   const L = (W().daftar() || []);
   openSheet(`<h3>${I('Laporan & data wilayah', 'Area reports & data')}</h3><p class="sub">${esc(p.site.hd_nama)}</p>
     <div class="wa-grid" id="waM">
+      <button class="wa-it tap" data-k="profil"><b>🧭 ${I('Profil lahan wilayah', 'Area land profile')}</b><small>${I('Gambut & analisis lahan nasional', 'Peat & national land analyses')}</small></button>
       <button class="wa-it tap" data-k="laporan"><b>📄 ${I('Laporan PDF', 'PDF report')}</b><small>${I('Bulanan + rekap musim api, siap cetak', 'Monthly + fire-season recap, print-ready')}</small></button>
       <button class="wa-it tap" data-k="riwayat"><b>📊 ${I('Riwayat titik panas', 'Hotspot history')}</b><small>${I('Per tahun sejak 2016 & pola bulanan', 'Per year since 2016 & monthly pattern')}</small></button>
       <button class="wa-it tap" data-k="ekspor"><b>⬇️ ${I('Ekspor data', 'Export data')}</b><small>KML · GeoJSON · GPX · CSV</small></button>
@@ -200,6 +201,7 @@ async function buatPdf(p, bulan) {
     [en ? 'Village Alert Index' : 'Indeks Siaga', `${sg.label || '–'}`, sg.skor != null ? `${en ? 'score' : 'skor'} ${sg.skor}/${sg.maks} (${sg.tanggal || ''})` : ''],
     [en ? 'Main river (GloFAS)' : 'Sungai utama (GloFAS)', `${bj.label || '–'}`, bj.kini != null ? `${nf(bj.kini)} m³/s · ${nf(bj.persen_rp2)}% ${en ? 'of 2-year flood' : 'ambang 2 tahunan'}` : ''],
     [en ? 'Smoke heading to area' : 'Asap menuju wilayah', `${nf(as.menuju_desa ?? 0)} ${en ? 'sources' : 'sumber'}`, as.tercepat_wib ? `${en ? 'earliest' : 'tercepat'} ${as.tercepat_wib} WIB` : ''],
+    ...(((p.profil || {}).gambut) ? [[en ? 'Peatland (PEATMAP)' : 'Lahan gambut (PEATMAP)', `${nf(p.profil.gambut.ha)} ha (${nf(p.profil.gambut.persen, 1)}%)`, `${nf(p.profil.gambut.titik_tahun_ini)} ${en ? 'hotspots on peat this year' : 'titik panas di gambut tahun ini'}`]] : []),
     [en ? 'Vegetation (MODIS)' : 'Vegetasi (MODIS)', `${vg.status || '–'}`, vg.ndvi != null ? `NDVI ${nf(vg.ndvi, 2)} · NBR ${nf(vg.nbr, 2)} (${vg.tanggal || ''})` : '']]);
   // 2 bulan pilihan
   H(`2. ${en ? 'Hotspots' : 'Titik panas'} – ${BLNP()[bulan]} ${tahun}`);
@@ -235,6 +237,23 @@ async function buatPdf(p, bulan) {
   dl(doc.output('blob'), `Laporan_${slug(s.hd_nama)}_${tahun}-${mm}.pdf`);
 }
 
-const API = { menu, laporan, riwayat, ekspor, luring, banding };
+/* ---------- profil lahan wilayah (lapisan nasional) ---------- */
+const bagian = {};   // diisi per lapisan: bagian.gambut = (p) => html
+bagian.gambut = p => { const g = (p.profil || {}).gambut; if (!g) return '';
+  return kartu(I('Lahan gambut', 'Peatland'), `<div class="ik-kv" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">
+      <div class="fa-card" style="margin:0;padding:10px"><small class="muted">${I('Luas gambut', 'Peat area')}</small><br><b style="font-size:18px">${nf(g.ha)} ha</b></div>
+      <div class="fa-card" style="margin:0;padding:10px"><small class="muted">${I('Porsi wilayah', 'Share of area')}</small><br><b style="font-size:18px">${nf(g.persen, 1)}%</b></div>
+      <div class="fa-card" style="margin:0;padding:10px"><small class="muted">${I('Titik panas di gambut (tahun ini)', 'Hotspots on peat (this year)')}</small><br><b style="font-size:18px">${nf(g.titik_tahun_ini)}</b><small class="muted"> / ${nf(g.titik_dalam_tahun_ini)} ${I('di wilayah', 'in area')}</small></div>
+      <div class="fa-card" style="margin:0;padding:10px"><small class="muted">${I('Titik panas di gambut (7 hari)', 'Hotspots on peat (7 days)')}</small><br><b style="font-size:18px;color:${g.titik_7hari ? '#B91C1C' : 'inherit'}">${nf(g.titik_7hari)}</b></div></div>
+    ${g.persen >= 1 ? `<p style="margin:8px 0 0">${I('Api di gambut dapat menjalar di bawah permukaan dan menghasilkan asap pekat; prioritaskan pencegahan & sekat kanal pada bagian gambut wilayah ini.', 'Peat fires can smoulder below ground and produce dense smoke; prioritise prevention & canal blocking on the peat part of this area.')}</p>` : `<p style="margin:8px 0 0">${I('Menurut peta nasional, wilayah ini praktis tidak berada di lahan gambut.', 'According to the national map, this area is practically not on peat.')}</p>`}
+    <div class="wa-btns"><button class="btn tap" data-peta="gambut">${I('Tampilkan lapisan gambut di peta', 'Show peat layer on map')}</button></div>
+    <p class="fa-note">${I('Sumber', 'Source')}: ${esc(g.sumber || '')}. ${esc(g.catatan || '')}</p>`); };
+function profil() {
+  const p = perlu(); if (!p) return; pakai('wprofil');
+  const isi = Object.keys(bagian).map(k => { try { return bagian[k](p); } catch (e) { return ''; } }).join('');
+  halaman(I('Profil lahan wilayah', 'Area land profile'), p.site.hd_nama, isi || kartu(I('Sedang disiapkan', 'Being prepared'), `<p>${I('Profil lahan dihitung pada putaran analisis otomatis berikutnya (± 3 jam).', 'The land profile is computed in the next automatic analysis run (about 3 hours).')}</p>`),
+    () => document.querySelectorAll('[data-peta]').forEach(b => b.onclick = () => { const M = window.FHApp && FHApp.map && FHApp.map(); try { FHApp.closeAll(); } catch (e) { } setTimeout(() => { try { FHApp.hubGo('peta'); } catch (e) { } setTimeout(() => { const m = M || (FHApp.map && FHApp.map()); if (m && window.FHLapNas && !FHLapNas.aktif(b.dataset.peta, m)) FHLapNas.toggle(b.dataset.peta, m); try { const c = p.site.pusat_wilayah || p.site.pusat; FHApp.lihat(c[0], c[1], 10); } catch (e) { } }, 400); }, 350); }));
+}
+const API = { menu, laporan, riwayat, ekspor, luring, banding, profil };
 window.FHWilAlat = API;
 })();

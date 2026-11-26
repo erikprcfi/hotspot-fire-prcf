@@ -206,6 +206,39 @@ def peringatan_wilayah(D, sid, cache):
     cache["terkirim"] = {k: v for k, v in state.items() if v >= batas}
     return len(ev), n_push, len(surat)
 
+# ---------------------------------------------------------------- lapisan raster nasional (data/<lapisan>/t_<lat>_<lon>.png, scripts/gambut_build.py)
+def raster_wilayah(lapisan, geom, titik=None):
+    """Porsi wilayah pada lapisan raster nasional: {ha, persen, ha_kelas{k: ha}} + jumlah titik panas di atas lapisan (bila titik diberi)."""
+    from PIL import Image
+    from rasterio import features
+    from rasterio.transform import from_origin
+    D = os.path.join(DATA_PUBLIK, lapisan); X = json.load(open(os.path.join(D, "indeks.json"))); R = X["piksel_ubin"]
+    x0, y0, x1, y1 = geom.bounds; ha_px = lambda la: (111.32 * 1000 / R) ** 2 * math.cos(math.radians(la)) / 1e4
+    tot = 0.0; isi = {}; cache = {}
+    for la in range(math.floor(y0), math.floor(y1) + 1):
+        for lo in range(math.floor(x0), math.floor(x1) + 1):
+            M = features.rasterize([(geom, 1)], out_shape=(R, R), transform=from_origin(lo, la + 1, 1 / R, 1 / R), fill=0, dtype="uint8")
+            if not M.any(): continue
+            hp = np.array([ha_px(la + 1 - (r + .5) / R) for r in range(R)])
+            tot += float((M * hp[:, None]).sum())
+            k = f"{la}_{lo}"
+            if k not in X["ubin"]: continue
+            T = np.array(Image.open(os.path.join(D, f"t_{k}.png"))); cache[k] = T
+            for v in np.unique(T[M > 0]):
+                if v: isi[int(v)] = isi.get(int(v), 0.0) + float((((T == v) & (M > 0)) * hp[:, None]).sum())
+    def nilai(lat, lon):
+        k = f"{math.floor(lat)}_{math.floor(lon)}"
+        if k not in X["ubin"]: return 0
+        if k not in cache: cache[k] = np.array(Image.open(os.path.join(D, f"t_{k}.png")))
+        T = cache[k]; return int(T[min(R - 1, int((math.floor(lat) + 1 - lat) * R)), min(R - 1, int((lon - math.floor(lon)) * R))])
+    ha = sum(isi.values())
+    out = {"ha": round(ha, 1), "persen": round(100 * ha / tot, 1) if tot else 0, "luas_wilayah_ha": round(tot, 1), "ha_kelas": {str(k): round(v, 1) for k, v in isi.items()}, "sumber": X.get("sumber"), "catatan": X.get("catatan")}
+    if titik is not None:
+        b7 = (KINI - dt.timedelta(days=7)).isoformat(); dl = [t for t in titik if (t.get("ls") or [99])[0] <= 0]
+        out["titik_tahun_ini"] = sum(1 for t in dl if nilai(t["la"], t["lo"])); out["titik_7hari"] = sum(1 for t in dl if t["d"] >= b7 and nilai(t["la"], t["lo"]))
+        out["titik_dalam_tahun_ini"] = len(dl)
+    return out
+
 # ---------------------------------------------------------------- riwayat titik panas per tahun (arsip nasional 2016– + tahun berjalan)
 def riwayat_tahunan(arsip, kini):
     """{tahun: {hd: di dalam wilayah, r5: ≤ 5 km, r25: ≤ 25 km dari batas, bulan: [12 × ≤ 25 km]}} – jumlah deteksi NASA FIRMS (VIIRS & MODIS)."""
@@ -279,6 +312,9 @@ def satu(W, tmp_ubin, no):
         for y, v in arsip.items(): jl(f"titik/{y}.json", {"tahun": int(y), "lokasi": [sid], "titik": v})
         kini = titik_tahun_ini(site, gm, ke, cache); cache["titik_kini"] = kini
         riwayat = riwayat_tahunan(arsip, kini)
+        profil = {}
+        try: profil["gambut"] = raster_wilayah("gambut", geom, kini)
+        except Exception as e: LOG(no, "gambut gagal:", type(e).__name__)
         jl(f"titik/{KINI.year}.json", {"tahun": KINI.year, "lokasi": [sid], "titik": kini})
         batas14 = (KINI - dt.timedelta(days=14)).isoformat()
         jl("hotspots.json", {"lokasi": [sid], "titik": [t for t in kini if t["d"] >= batas14], "diperbarui_utc": NOW.strftime("%Y-%m-%dT%H:%M:%SZ")})
@@ -312,7 +348,7 @@ def satu(W, tmp_ubin, no):
         status = {"level": 2 if dlm else 1 if r5 else 0, "label": ["Aman", "Waspada", "Siaga"][2 if dlm else 1 if r5 else 0], "di_dalam": dlm, "r5": r5, "r25": r25, "hari": 7}
         L = lambda p: (jb(p, {}).get("lokasi") or {}).get(sid)
         paket = {"versi": 1, "dibuat_utc": NOW.strftime("%Y-%m-%dT%H:%M:%SZ"), "aid": W["aid"], "site": {k: v for k, v in site.items()},
-                 "status": status, "langkah": hasil_langkah, "riwayat": riwayat, "hotspots": jb("hotspots.json"), "titik_tahun_ini": len(kini),
+                 "status": status, "langkah": hasil_langkah, "riwayat": riwayat, "profil": profil, "hotspots": jb("hotspots.json"), "titik_tahun_ini": len(kini),
                  "prakiraan": P, "fdrs": jb(f"prakiraan/fdrs_{sid}.json"), "musim": L("musim/indeks.json"), "rawan": jb(f"rawan/{sid}.geojson"),
                  "bekas_modis": L("bekas_modis/indeks.json"), "bekas_modis_geo": jb(f"bekas_modis/{sid}.geojson"), "vegetasi": L("vegetasi/indeks.json"),
                  "iklim": L("iklim/indeks.json"), "banjir": L("banjir/indeks.json"), "asap": L("asap/indeks.json"), "rekap": L("rekap_musim/indeks.json"),
