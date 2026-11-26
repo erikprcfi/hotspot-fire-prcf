@@ -163,8 +163,8 @@ for(const plat of PLAT){
       pg=await buka(()=>FHWilAlat.ekspor());o.ekspor=pg.querySelectorAll('[data-e]').length;
       pg=await buka(()=>FHWilAlat.luring());o.luring=!!pg.querySelector('#waLS');
       pg=await buka(()=>FHWilAlat.banding());o.banding=pg.innerText.length>20;
-      pg=await buka(()=>FHWilAlat.hutan());o.hutan=/Perubahan hutan|Forest change/.test(pg.innerText)&&/Hansen/.test(pg.innerText)&&/Sentinel-1/.test(pg.innerText);pg=await buka(()=>FHWilAlat.bekas());o.bekasS2=/dNBR/.test(pg.innerText);
-      pg=await buka(()=>FHWilAlat.profil());o.gambut=/Lahan gambut|Peatland/.test(pg.innerText)&&/PEATMAP/.test(pg.innerText);o.profilLain=['Global Surface Water','Harmonized Global Biomass','Canopy Height','Global Forest Change'].filter(k=>!pg.innerText.includes(k));
+      pg=await buka(()=>FHWilAlat.hutan());o.hutan=/Indikasi bukaan|clearing indications|Sedang disiapkan/.test(pg.textContent)&&/Hansen/.test(pg.textContent)&&/Sentinel-1/.test(pg.textContent);o.hutanTeks=[/Hansen/.test(pg.textContent),/Sentinel-1/.test(pg.textContent),pg.textContent.length].join(",");pg=await buka(()=>FHWilAlat.bekas());o.bekasS2=/dNBR/.test(pg.textContent);
+      pg=await buka(()=>FHWilAlat.profil());o.gambut=/Lahan gambut|Peatland/.test(pg.textContent)&&/PEATMAP/.test(pg.textContent);o.profilLain=['Global Surface Water','Harmonized Global Biomass','Canopy Height','Global Forest Change'].filter(k=>!pg.textContent.includes(k));
       pg=await buka(()=>FHWilAlat.laporan());o.laporan=!!pg.querySelector('#waPdf');return o;});
      if(!g.tombol)masalah.push(`${lbl}: tombol Laporan & data tidak ada di Beranda wilayah SHP`);
      if(g.menu!==8)masalah.push(`${lbl}: menu Laporan & data ${g.menu} item`);
@@ -172,7 +172,7 @@ for(const plat of PLAT){
      if(!(g.ekspor>=12))masalah.push(`${lbl}: ekspor data hanya ${g.ekspor} tombol`);
      if(!g.luring)masalah.push(`${lbl}: halaman peta luring wilayah tidak lengkap`);
      if(!g.banding)masalah.push(`${lbl}: halaman bandingkan wilayah kosong`);
-     if(!g.hutan)masalah.push(`${lbl}: halaman perubahan hutan Sentinel-2 tidak lengkap`);if(!g.bekasS2)masalah.push(`${lbl}: halaman bekas terbakar Sentinel-2 tidak lengkap`);
+     if(!g.hutan)masalah.push(`${lbl}: halaman perubahan hutan Sentinel-2 tidak lengkap (${g.hutanTeks})`);if(!g.bekasS2)masalah.push(`${lbl}: halaman bekas terbakar Sentinel-2 tidak lengkap`);
      if(g.profilLain&&g.profilLain.length)masalah.push(`${lbl}: profil lahan kurang bagian: ${g.profilLain.join(', ')}`);
      if(!g.gambut)masalah.push(`${lbl}: profil lahan (gambut) wilayah SHP tidak tampil`);
      if(!g.laporan)masalah.push(`${lbl}: halaman laporan PDF wilayah tidak lengkap`);

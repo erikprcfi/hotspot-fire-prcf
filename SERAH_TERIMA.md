@@ -268,3 +268,12 @@ Live ke main bila semua uji lulus.
 - Studio: status galat (aktif / sudah diperbaiki / muncul lagi; daftar PERBAIKAN di `HAL.galat`), grafik galat per pekan, sebaran versi aplikasi pengguna (akun.js kini mengirim `2026.11b/<versi isi>` dari `versi.json`).
 - Cuaca di lokasi saya dipulihkan (`assets/cuaca_lokasi.js`, modul FHLokasi yang hilang sejak 15 Nov); pengaman peta NaN di `initMap`.
 - Uji harian: memeriksa cuaca lokasi (GPS), alat wilayah, unduhan PDF/KML/GPX/GeoJSON/CSV (web & aplikasi); HTTP 429 Open-Meteo dari mesin uji dicatat, bukan galat.
+
+## 2.7 – Analisis nasional baru (27 Nov 2026 dini hari)
+- **Gambut nasional**: `scripts/gambut_build.py` → `data/gambut/` (PEATMAP Xu dkk. 2018, CC BY 4.0; ubin PNG 1°, kisi 0,0025°). `assets/lapisan_nasional.js` (`FHLapNas`): lapisan peta, nilai titik (detail titik panas), dipakai pekerja untuk profil gambut wilayah SHP.
+- **Keanekaragaman hayati**: `assets/hayati.js` (`FHHayati`, ubin "Keanekaragaman hayati", semua pengguna): GBIF langsung dari HP; status IUCN (GBIF), CITES (`data/bara/cites`), dilindungi P.106/2018 (`data/hayati/dilindungi.json` dari `scripts/hayati_build.py`). Tanpa koordinat.
+- **Pekerja wilayah SHP** (`scripts/wilayah_umum.py`): perubahan hutan Sentinel-2 mingguan (`peringatan_hutan.run_site`, kini zona UTM & ubin Hansen otomatis seluruh Indonesia), radar Sentinel-1 RTC (MPC) mingguan, bekas terbakar Sentinel-2 per musim (`bekas_terbakar.analyse`), peta tahunan Hansen (GeoTIFF base64 + GeoJSON tahun terbaru ≤ 0,5 MB), genangan JRC GSW, karbon biomassa HGB 2010 (nilai × 0,1 = Mg C/ha), tinggi tajuk Meta/WRI (≤ 100.000 ha), analisis lahan & karbon dihitung ulang saat sidik data (`versi_data_analisis`) berubah, laporan bulanan email (tanggal 1–3). Anggaran waktu satelit `S2_MENIT` (18 mnt/putaran); wilayah > 300.000 ha tidak dianalisis 20 m.
+- Peringatan dini: kejadian hutan (Sentinel-2) & radar (`sensor: radar`) untuk wilayah SHP.
+- Klien `assets/wilayah_alat.js`: menu Laporan & data → Profil lahan, Perubahan hutan (+radar), Bekas terbakar 20 m, ekspor tambahan (GeoTIFF Hansen, petak hutan/radar, bekas S2). Paket hanya diunduh ulang bila > 2,5 jam (hemat kuota).
+- Studio → Sistem: tombol "Uji akses layanan peta KLHK" (geoportal tidak dapat dihubungi dari GitHub/kontainer; perlu uji dari jaringan Indonesia sebelum fitur status kawasan/PIPPIB).
+- Belum: emisi api CAMS GFAS (perlu kunci gratis Copernicus ADS), status kawasan/PIPPIB (menunggu hasil uji akses KLHK).

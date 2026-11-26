@@ -273,7 +273,7 @@ def hutan_wilayah(site, cache, lama):
 def bekas_s2_wilayah(site, titik, cache, lama, tmp):
     """scripts/bekas_terbakar.py untuk wilayah SHP: musim api (titik panas <= 5 km sejak 2023, jeda > 75 hari = musim baru)."""
     import bekas_terbakar as BT
-    BT.OUT = tmp
+    BT.OUT = tmp; os.makedirs(tmp, exist_ok=True)
     idx = dict(((lama.get("bekas_s2") or {}).get("musim")) or {}); geo = list(((lama.get("bekas_s2_geo") or {}).get("features")) or [])
     if (site.get("luas_ha") or 0) > S2_BATAS_HA: return {"musim": idx, "catatan": "wilayah terlalu luas untuk analisis 20 m"}, {"type": "FeatureCollection", "features": geo}
     ev = []; sel = {}
