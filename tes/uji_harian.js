@@ -33,6 +33,7 @@ for(const plat of PLAT){
   await c.route('https://pantau.test/**',r=>{const f=berkas(new URL(r.request().url()).pathname);return f?r.fulfill({body:fs.readFileSync(f),contentType:T[path.extname(f)]||'application/octet-stream'}):r.fulfill({status:404,body:''});});
   await c.route('https://mock.server/**',api);await c.route('https://script.google.com/**',api);
   await c.route(BASIS+'**',r=>{const f=berkas(r.request().url().slice(BASIS.length).split('?')[0]);return f?r.fulfill({body:fs.readFileSync(f),contentType:T[path.extname(f)]||'application/octet-stream'}):r.fulfill({status:404,body:''});});
+  await c.grantPermissions(['geolocation']).catch(()=>{});await c.setGeolocation({latitude:0.9,longitude:112.6}).catch(()=>{});
   const p=await c.newPage();const E=[];p.on('pageerror',e=>E.push(e.message.slice(0,160)+' '+(e.stack||'').split('\n').slice(1,2).join(' ').slice(0,140)));
   p.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::ERR|404|favicon|tile|ERR_NAME|CORS/i.test(m.text()))E.push('console: '+m.text().slice(0,160));});
   const lbl=`${plat} | ${sk}`;const t0=Date.now();
@@ -157,6 +158,9 @@ for(const plat of PLAT){
    if(!ADM&&sk!=='tamu'&&!(GJ&&PAKET)){const u=await p.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));try{FHApp.closeAll()}catch(e){};await w(400);FHMusimRawan.rencana();await w(1200);const t=((document.querySelector('#abSub')||{}).textContent||'')+' '+((document.querySelector('#page.on #pageBody')||{}).innerText||'');
       try{FHApp.closeAll()}catch(e){};await w(400);FHKartu.open();await w(3500);const k=!!document.querySelector('.kp-img');try{FHApp.closeAll()}catch(e){};await w(400);FHBanding.open();await w(1200);const b=((document.querySelector('#abSub')||{}).textContent||'')+' '+((document.querySelector('#page.on #pageBody')||{}).innerText||'');try{FHApp.closeAll()}catch(e){};await w(400);FHIklim.siaga();await w(1200);const sg=((document.querySelector('#abSub')||{}).textContent||'')+' '+((document.querySelector('#page.on #pageBody')||{}).innerText||'');try{FHApp.closeAll()}catch(e){};return {rencana:/Khusus|only/.test(t),kartu:k,banding:/Khusus admin|Admins only/.test(b),siaga:/Khusus|only/.test(sg)};});
      if(!u.rencana)masalah.push(`${lbl}: rencana patroli terbuka di mode ${harap}`);if(!u.kartu)masalah.push(`${lbl}: kartu status (Indonesia) gagal`);if(!u.banding)masalah.push(`${lbl}: perbandingan Hutan Desa terbuka untuk non-admin`);if(!u.siaga)masalah.push(`${lbl}: Indeks Siaga Desa terbuka di mode ${harap}`);}
+   { // Cuaca di lokasi saya (GPS): modul FHLokasi harus termuat & menampilkan cuaca
+    const lx=await p.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));if(!window.FHLokasi)return 'FHLokasi tidak termuat';try{FHApp.closeAll()}catch(e){};await w(300);FHApp.hubGo('lokasi');for(let i=0;i<30;i++){await w(500);const t=(document.getElementById('lxBody')||{}).innerText||'';if(/°/.test(t))return '';}return 'tidak tampil';});
+    if(lx)masalah.push(`${lbl}: Cuaca di lokasi saya – ${lx}`);}
    ringkas.push(`${lbl.padEnd(34)} alat ${String(keys.length).padStart(2)} · galat ${E.length} · ${((Date.now()-t0)/1000).toFixed(0)} dtk`);console.log(ringkas[ringkas.length-1]);
   }catch(e){masalah.push(`${lbl}: GAGAL dijalankan – ${e.message.slice(0,160)}`);console.log(lbl,'GAGAL',e.message.slice(0,160));}
   await c.close();}}
