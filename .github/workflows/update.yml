@@ -66,7 +66,7 @@ jobs:
           ANALISIS_KEY: ${{ secrets.ANALISIS_KEY }}
           FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
           AKUN_URL: https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec
-        run: pip install -q reportlab==4.2.5 matplotlib==3.9.2 && python scripts/wilayah_umum.py
+        run: pip install -q reportlab==4.2.5 matplotlib==3.9.2 cryptography && python scripts/wilayah_umum.py
       - name: Peringatan dini otomatis (notifikasi HP & email)
         if: github.event_name != 'push'
         continue-on-error: true
