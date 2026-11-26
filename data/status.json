@@ -1,5 +1,5 @@
 {
- "terakhir_cek_utc": "2026-11-26T06:18:01Z",
+ "terakhir_cek_utc": "2026-11-26T07:14:16Z",
  "titik_baru": 0,
  "arsip_tahunan_diperbarui": 0,
  "jumlah_catatan": 80572,
@@ -58,10 +58,10 @@
    "doi": "10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Thu, 26 Nov 2026 05:42:26 GMT",
-   "ukuran_byte": 1008323,
-   "sha256": "530e575178b11e6670528055c49491a92394c3435c74685c59f5211d440dc2d9",
-   "baris_total": 11999,
+   "last_modified": "Thu, 26 Nov 2026 06:42:34 GMT",
+   "ukuran_byte": 1010067,
+   "sha256": "a64afd3d795420e2e3cecdd8e94579b45b5f30857b01778b11319df52129300e",
+   "baris_total": 12020,
    "baris_di_kotak": 0
   },
   {
@@ -71,10 +71,10 @@
    "doi": "10.5067/VIIRS/VJ214IMG_NRT.002",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Thu, 26 Nov 2026 05:45:11 GMT",
-   "ukuran_byte": 983316,
-   "sha256": "6de3220ae3f16c614dc990148726a2bd0982956eb67d01b026fc4f0ceec8528a",
-   "baris_total": 11718,
+   "last_modified": "Thu, 26 Nov 2026 06:45:04 GMT",
+   "ukuran_byte": 1109969,
+   "sha256": "5ae1d90c5f2e963d9fdabde576b0041e5398b5596570436709f1ce2cb4d01ea0",
+   "baris_total": 13228,
    "baris_di_kotak": 2
   },
   {
@@ -84,10 +84,10 @@
    "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061",
    "ok": true,
    "http_status": 200,
-   "last_modified": "Thu, 26 Nov 2026 05:47:36 GMT",
-   "ukuran_byte": 168656,
-   "sha256": "e7dc9fe4af8873e976b6361e17b135d569ac05defaf7f1218f77cc99584c5ab8",
-   "baris_total": 2181,
+   "last_modified": "Thu, 26 Nov 2026 06:47:09 GMT",
+   "ukuran_byte": 168813,
+   "sha256": "31f652be3d922199d2bb39abdcc7271b0ba2d8068102e56fb8ee3b90dda3892d",
+   "baris_total": 2183,
    "baris_di_kotak": 0
   }
  ],
@@ -127,12 +127,6 @@
  },
  "sistem": {
   "riwayat": [
-   {
-    "t": "2026-11-24T04:54:20Z",
-    "baru": 0,
-    "ok": 4,
-    "n": 4
-   },
    {
     "t": "2026-11-24T06:32:40Z",
     "baru": 0,
@@ -260,13 +254,19 @@
     "n": 4
    },
    {
-    "t": "2026-11-26T06:10:41Z",
+    "t": "2026-11-26T06:04:20Z",
     "baru": 0,
     "ok": 4,
     "n": 4
    },
    {
     "t": "2026-11-26T06:18:01Z",
+    "baru": 0,
+    "ok": 4,
+    "n": 4
+   },
+   {
+    "t": "2026-11-26T07:14:16Z",
     "baru": 0,
     "ok": 4,
     "n": 4
@@ -277,7 +277,7 @@
   "latensi_n": 28,
   "arsip_terverifikasi": 48,
   "hari_cuaca": 9460,
-  "jumlah_pembaruan_tercatat": 258
+  "jumlah_pembaruan_tercatat": 259
  },
  "sumber_doi": {
   "VIIRS_SNPP": "10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002",
