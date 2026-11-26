@@ -206,6 +206,53 @@ def peringatan_wilayah(D, sid, cache):
     cache["terkirim"] = {k: v for k, v in state.items() if v >= batas}
     return len(ev), n_push, len(surat)
 
+# ---------------------------------------------------------------- riwayat titik panas per tahun (arsip nasional 2016– + tahun berjalan)
+def riwayat_tahunan(arsip, kini):
+    """{tahun: {hd: di dalam wilayah, r5: ≤ 5 km, r25: ≤ 25 km dari batas, bulan: [12 × ≤ 25 km]}} – jumlah deteksi NASA FIRMS (VIIRS & MODIS)."""
+    semua = {str(k): v for k, v in arsip.items()}; semua[str(KINI.year)] = kini; out = {}
+    for y, L in sorted(semua.items()):
+        r = {"hd": 0, "r5": 0, "r25": 0, "bulan": [0] * 12}
+        for t in L or []:
+            d = (t.get("ls") or [99])[0]
+            if d is None or d > 25: continue
+            r["r25"] += 1; r["bulan"][int(t["d"][5:7]) - 1] += 1
+            if d <= 5: r["r5"] += 1
+            if d <= 0: r["hd"] += 1
+        out[str(y)] = r
+    return out
+
+# ---------------------------------------------------------------- ringkasan mingguan email wilayah SHP (Senin pagi WIB, sekali per pekan)
+def mingguan_wilayah(D, site, paket, cache):
+    WIB = NOW + dt.timedelta(hours=7); pekan = WIB.strftime("%G-W%V")
+    if not UJI and (WIB.weekday() != 0 or not (6 <= WIB.hour < 12)): return None
+    if cache.get("mingguan") == pekan and not UJI: return None
+    PR = importlib.reload(importlib.import_module("peringatan")); PR.DATA = D
+    RM = importlib.reload(importlib.import_module("ringkasan_mingguan")); RM.DATA = D
+    sid = site["id"]; hs = RM.J("hotspots.json", {"lokasi": [], "titik": []}); fc = RM.J("prakiraan.json", {"lokasi": {}}); musim = RM.J("musim/indeks.json", {}) or {}
+    def susun(u):
+        bhs = u.get("bahasa", "id"); en = bhs == "en"
+        rinci = ["■ " + site["hd_nama"]] + ["   " + x for x in RM.baris(site, bhs, hs, fc, {}, musim)]
+        sg = ((paket.get("iklim") or {}).get("siaga") or {})
+        if sg.get("label"): rinci.append("   " + (f'Village Alert Index today: {sg["label"]} ({sg.get("skor")}/{sg.get("maks")}).' if en else f'Indeks Siaga hari ini: {sg["label"]} (skor {sg.get("skor")}/{sg.get("maks")}).'))
+        bj = paket.get("banjir") or {}
+        if bj.get("label"): rinci.append("   " + (f'Main river (GloFAS 30 days): {bj["label"]}.' if en else f'Sungai utama (GloFAS 30 hari): {bj["label"]}' + (f', mulai {PR.tgl(bj["pertama_lewat"])}' if bj.get("pertama_lewat") else '') + '.'))
+        judul = (f'📋 Weekly summary – {site["hd_nama"]} – {PR.tgl(WIB.strftime("%Y-%m-%d"))}' if en else f'📋 Ringkasan mingguan – {site["hd_nama"]} – {PR.tgl(WIB.strftime("%Y-%m-%d"))}')
+        isi = ('Your area: hotspots (NASA FIRMS), fire danger & rain forecast (ECMWF), Village Alert Index and river discharge (GloFAS).' if en else
+               'Wilayah Anda: titik panas (NASA FIRMS), prakiraan bahaya api & hujan (ECMWF), Indeks Siaga dan debit sungai (GloFAS).')
+        return {"id": u["id"], "email": u["email"], "nama": u.get("nama", ""), "bahasa": bhs, "judul": judul, "isi": isi, "rinci": rinci, "url": PR.APP + f"?lokasi={sid}"}
+    if UJI:
+        sr = susun({"id": "uji", "email": "uji@contoh.org", "bahasa": "id"}); print(sr["judul"]); print("\n".join(sr["rinci"])); return 0
+    if not (KUNCI and PR.URL): return None
+    if "lg" not in LANGGANAN:
+        try: LANGGANAN["lg"] = PR.get("langganan=1")
+        except Exception: LANGGANAN["lg"] = {}
+    surat = [susun(u) for u in (LANGGANAN["lg"] or {}).get("langganan", []) if u.get("email_on") and u.get("email") and sid in (u.get("situs") or [])]
+    if surat:
+        PR.post({"kunci": "fh-prcf-2026-akun", "aksi": "pekerja_peringatan", "pekerja": KUNCI, "surat": surat, "push_mati": [],
+                 "log": [{"jenis": "mingguan", "hd": sid, "kunci": [f"mingguan|{sid}|{pekan}"]}], "push_terkirim": 0})
+    cache["mingguan"] = pekan
+    return len(surat)
+
 # ---------------------------------------------------------------- satu wilayah
 def jalankan(mod, fn="main", *args):
     """Muat ulang modul skrip agar membaca PR_DATA terbaru, lalu jalankan fungsinya."""
@@ -228,8 +275,10 @@ def satu(W, tmp_ubin, no):
         jl("geo.json", {"sites": [site]})
         # titik panas: arsip nasional (2016–tahun lalu) + tahun berjalan
         cache.pop("arsip", None); cache.pop("arsip_v", None)   # arsip dihitung ulang tiap putaran dari ubin nasional (paket tetap kecil)
-        for y, v in titik_arsip(site, gm, ke, tmp_ubin).items(): jl(f"titik/{y}.json", {"tahun": int(y), "lokasi": [sid], "titik": v})
+        arsip = titik_arsip(site, gm, ke, tmp_ubin)
+        for y, v in arsip.items(): jl(f"titik/{y}.json", {"tahun": int(y), "lokasi": [sid], "titik": v})
         kini = titik_tahun_ini(site, gm, ke, cache); cache["titik_kini"] = kini
+        riwayat = riwayat_tahunan(arsip, kini)
         jl(f"titik/{KINI.year}.json", {"tahun": KINI.year, "lokasi": [sid], "titik": kini})
         batas14 = (KINI - dt.timedelta(days=14)).isoformat()
         jl("hotspots.json", {"lokasi": [sid], "titik": [t for t in kini if t["d"] >= batas14], "diperbarui_utc": NOW.strftime("%Y-%m-%dT%H:%M:%SZ")})
@@ -263,11 +312,14 @@ def satu(W, tmp_ubin, no):
         status = {"level": 2 if dlm else 1 if r5 else 0, "label": ["Aman", "Waspada", "Siaga"][2 if dlm else 1 if r5 else 0], "di_dalam": dlm, "r5": r5, "r25": r25, "hari": 7}
         L = lambda p: (jb(p, {}).get("lokasi") or {}).get(sid)
         paket = {"versi": 1, "dibuat_utc": NOW.strftime("%Y-%m-%dT%H:%M:%SZ"), "aid": W["aid"], "site": {k: v for k, v in site.items()},
-                 "status": status, "langkah": hasil_langkah, "hotspots": jb("hotspots.json"), "titik_tahun_ini": len(kini),
+                 "status": status, "langkah": hasil_langkah, "riwayat": riwayat, "hotspots": jb("hotspots.json"), "titik_tahun_ini": len(kini),
                  "prakiraan": P, "fdrs": jb(f"prakiraan/fdrs_{sid}.json"), "musim": L("musim/indeks.json"), "rawan": jb(f"rawan/{sid}.geojson"),
                  "bekas_modis": L("bekas_modis/indeks.json"), "bekas_modis_geo": jb(f"bekas_modis/{sid}.geojson"), "vegetasi": L("vegetasi/indeks.json"),
                  "iklim": L("iklim/indeks.json"), "banjir": L("banjir/indeks.json"), "asap": L("asap/indeks.json"), "rekap": L("rekap_musim/indeks.json"),
                  "metode": {k: (jb(p, {}) or {}).get("metode") for k, p in (("iklim", "iklim/indeks.json"), ("banjir", "banjir/indeks.json"), ("asap", "asap/indeks.json"), ("vegetasi", "vegetasi/indeks.json"), ("bekas_modis", "bekas_modis/indeks.json"))}}
+        for f in ((paket.get("rawan") or {}).get("features") or []):   # istilah wilayah SHP (bukan Hutan Desa / desa)
+            pr = f.get("properties") or {}
+            if pr.get("lokasi") in ("di dalam Hutan Desa", "di wilayah desa"): pr["lokasi"] = "di dalam wilayah"
         for k in ("bekas_modis", "bekas_modis_geo", "vegetasi", "musim", "rawan", "rekap", "banjir", "prakiraan", "fdrs"):   # langkah yang dilewati/gagal: pakai hasil sebelumnya
             if paket.get(k) is None and lama.get(k) is not None: paket[k] = lama[k]
         # cache untuk putaran berikutnya
@@ -282,6 +334,12 @@ def satu(W, tmp_ubin, no):
                 with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()): pw = peringatan_wilayah(D, sid, cache)
             LOG(no, "peringatan: kejadian %d · push %d · email %d" % pw)
         except Exception as e: LOG(no, "peringatan gagal:", type(e).__name__)
+        try:
+            if UJI: mg = mingguan_wilayah(D, site, paket, cache)
+            else:
+                with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()): mg = mingguan_wilayah(D, site, paket, cache)
+            if mg is not None: LOG(no, "ringkasan mingguan: email %d" % mg)
+        except Exception as e: LOG(no, "ringkasan mingguan gagal:", type(e).__name__)
         paket["_cache"] = cache
         s = json.dumps(paket, ensure_ascii=False, separators=(",", ":"))
         if len(s) > 4.4e6:   # batas server: buang piksel peta & titik arsip lama dari cache bila terlalu besar

@@ -14,6 +14,11 @@ const DBN = 'fh-akun', ST = 'kv', ITER = 210000;
 const UJI = !window.FH_ASLI && /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && !/[?&]ujiakun=1/.test(location.search);   /* aplikasi Android asli juga berjalan di https://localhost – BUKAN mode uji */   // pengujian lokal tidak menulis ke database asli
 const ENDPOINT = UJI ? '' : (window.FH_AKUN_URL || 'https://script.google.com/macros/s/AKfycbxlGnyedmPby29Fu_UFnJR_sW2GPQ-RuaV7LWcqfAU3X0VOrVvN4xahwLWH6nsTYiph/exec');
 const KUNCI = 'fh-prcf-2026-akun', VERSI = '2026.11b', SKEMA = 2;
+/* versi isi aplikasi (paket pembaruan otomatis) – dari versi.json di paket aplikasi; website = "web". Dipakai Studio untuk melihat siapa yang belum memperbarui. */
+let VERSI_ISI = '';
+try { if (/^(capacitor|https?):\/\/localhost/.test(location.origin) || window.Capacitor) fetch('versi.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => { if (j && j.versi) VERSI_ISI = String(j.versi); }).catch(() => { }); } catch (e) { }
+const versiKirim = () => VERSI + '/' + (VERSI_ISI || ((window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) ? 'asli' : 'web'));
+window.FHVersiIsi = () => VERSI_ISI || 'web';
 const SESI_HARI = 30;   // tetap masuk di HP ini; diperpanjang otomatis setiap tersambung ke server   // SKEMA 2: email wajib terverifikasi; akun lama direset
 async function api(body, ms = 30000) { const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), ms);
   try { const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ kunci: KUNCI, bahasa: (window.FHLang && FHLang.get()) === 'en' ? 'en' : 'id' }, body)), signal: ctl.signal }); return await r.json(); }
@@ -48,7 +53,7 @@ async function flush(ping) {
   if (!first && !doPing && !U.kirimProfil && !U.kirimFoto) return;
   syncing = true;
   try {
-    const p = { aksi: first ? 'daftar' : doPing ? 'aktif' : 'ubah', id: U.id, token: U.token, lokasi: OPT.lokasi ? OPT.lokasi() : '', perangkat: dev(), versi: VERSI };
+    const p = { aksi: first ? 'daftar' : doPing ? 'aktif' : 'ubah', id: U.id, token: U.token, lokasi: OPT.lokasi ? OPT.lokasi() : '', perangkat: dev(), versi: versiKirim() };
     if (first || U.kirimProfil) p.profil = { nama: U.nama, lahir: U.lahir, alamat: U.alamat, email: U.email, hp: U.hp ? '+62 ' + fmtHP(U.hp).slice(1) : '', dibuat: U.dibuat, diubah: U.diubah };
     if (first || U.kirimFoto) p.foto = U.foto ? U.foto.split(',')[1] : '';
     const j = await api(p);
@@ -306,7 +311,7 @@ function registerScreen(onDone, notice) {
     try {
       const h = await hashPw(d.querySelector('#ak_pw').value);
       U = { skema: SKEMA, nama: v('nama').replace(/\s+/g, ' '), lahir: v('lahir'), alamat: v('alamat'), email: v('email').toLowerCase(), hp: normHP(v('hp')), foto, dibuat: new Date().toISOString(), diubah: new Date().toISOString(), pw: h, id, token, verifikasi: new Date().toISOString(), setuju: true, setujuT: new Date().toISOString() }; if (d.querySelector('#akLok') && d.querySelector('#akLok').checked) setujuLok(); else { U.lokasiSetuju = false; U.lokasiOn = false; } U.lokasiDitanya = true;
-      if (ENDPOINT) { const p = { aksi: 'daftar', id, token, lokasi: OPT.lokasi ? OPT.lokasi() : '', perangkat: dev(), versi: VERSI, profil: { nama: U.nama, lahir: U.lahir, alamat: U.alamat, email: U.email, hp: '+62 ' + fmtHP(U.hp).slice(1), dibuat: U.dibuat, diubah: U.diubah }, foto: foto ? foto.split(',')[1] : '' };
+      if (ENDPOINT) { const p = { aksi: 'daftar', id, token, lokasi: OPT.lokasi ? OPT.lokasi() : '', perangkat: dev(), versi: versiKirim(), profil: { nama: U.nama, lahir: U.lahir, alamat: U.alamat, email: U.email, hp: '+62 ' + fmtHP(U.hp).slice(1), dibuat: U.dibuat, diubah: U.diubah }, foto: foto ? foto.split(',')[1] : '' };
         const j = await api(p, 45000); if (!j.ok) { b.disabled = false; b.textContent = 'Daftar & masuk'; toast(j.diblokir ? 'Email ini diblokir admin PRCF' : 'Ditolak server: ' + (j.galat || 'periksa biodata')); if (!j.diblokir) step(1); return; }
         U.terkirim = true; U.pingT = Date.now(); U.sinkronT = new Date().toISOString(); }
       if (ENDPOINT) { try { await api({ aksi: 'sandi_set', id, token, pw: d.querySelector('#ak_pw').value }, 30000); } catch (e) { } }

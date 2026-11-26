@@ -21,7 +21,7 @@ for(const plat of PLAT){
   const c=await b.newContext({...devices['Pixel 5'],serviceWorkers:'block',ignoreHTTPSErrors:true});
   const ADM=shp==='ADMIN',GJ=shp&&!ADM?SHP[shp]:null,NM=GJ?'Wilayah Uji '+shp.split('_')[0]:null;
   await c.addInitScript(([asli,tamu])=>{if(location.protocol==='about:')return;window.FH_AKUN_URL='https://mock.server/exec';try{localStorage.setItem('fh_panduan_v1','1');if(tamu)localStorage.setItem('pr_tamu','1');}catch(e){}
-    if(asli)window.Capacitor={isNativePlatform:()=>true,Plugins:{App:{addListener(){return{remove(){}}},minimizeApp(){}},CapacitorUpdater:{notifyAppReady(){},list:async()=>({bundles:[]}),download:async()=>({id:'x'}),next:async()=>{}},Perangkat:{status:async()=>({kode:5}),widget:async o=>{window.__wg=o;}},LocalNotifications:{checkPermissions:async()=>({display:'granted'}),requestPermissions:async()=>({display:'granted'}),getPending:async()=>({notifications:(window.__ln||[]).map(n=>({id:n.id}))}),cancel:async o=>{const h=new Set(o.notifications.map(n=>n.id));window.__ln=(window.__ln||[]).filter(n=>!h.has(n.id));},schedule:async o=>{window.__ln=(window.__ln||[]).concat(o.notifications);return {notifications:o.notifications.map(n=>({id:n.id}))};},addListener(){return{remove(){}}}}}};},[plat==='asli',sk==='tamu']);
+    if(asli)window.Capacitor={isNativePlatform:()=>true,Plugins:{App:{addListener(){return{remove(){}}},minimizeApp(){}},CapacitorUpdater:{notifyAppReady(){},list:async()=>({bundles:[]}),download:async()=>({id:'x'}),next:async()=>{}},Filesystem:{writeFile:async o=>{(window.__fs=window.__fs||[]).push({path:o.path,data:o.data});return {uri:'file:///'+o.path};}},Share:{share:async()=>({})},Perangkat:{status:async()=>({kode:5}),widget:async o=>{window.__wg=o;}},LocalNotifications:{checkPermissions:async()=>({display:'granted'}),requestPermissions:async()=>({display:'granted'}),getPending:async()=>({notifications:(window.__ln||[]).map(n=>({id:n.id}))}),cancel:async o=>{const h=new Set(o.notifications.map(n=>n.id));window.__ln=(window.__ln||[]).filter(n=>!h.has(n.id));},schedule:async o=>{window.__ln=(window.__ln||[]).concat(o.notifications);return {notifications:o.notifications.map(n=>({id:n.id}))};},addListener(){return{remove(){}}}}}};},[plat==='asli',sk==='tamu']);
   const api=r=>{let d={};try{d=JSON.parse(r.request().postData()||'{}')}catch(e){};let o={ok:true,daftar:[],laporan:[],status:{},tim:[]};
     if(d.aksi==='masuk')o={ok:true,id:'11111111-1111-4111-8111-111111111111',token:'tok',admin:ADM,profil:{nama:'Penguji Harian',email:d.email,lahir:'1990-01-01',alamat:'Desa Contoh',hp:'+62 812 3456 7890'}};
     if(d.aksi==='wilayah_ambil')o=GJ?{ok:true,nama:NM,geojson:GJ}:{ok:false,galat:'Kode ID tidak dikenal.'};
@@ -34,7 +34,7 @@ for(const plat of PLAT){
   await c.route('https://mock.server/**',api);await c.route('https://script.google.com/**',api);
   await c.route(BASIS+'**',r=>{const f=berkas(r.request().url().slice(BASIS.length).split('?')[0]);return f?r.fulfill({body:fs.readFileSync(f),contentType:T[path.extname(f)]||'application/octet-stream'}):r.fulfill({status:404,body:''});});
   await c.grantPermissions(['geolocation']).catch(()=>{});await c.setGeolocation({latitude:0.9,longitude:112.6}).catch(()=>{});
-  const p=await c.newPage();const E=[];p.on('pageerror',e=>E.push(e.message.slice(0,160)+' '+(e.stack||'').split('\n').slice(1,2).join(' ').slice(0,140)));
+  const p=await c.newPage();const E=[];const om429={n:0};p.on('response',r=>{try{if(r.status()===429&&/open-meteo\.com/.test(r.url()))om429.n++;}catch(e){}});p.on('pageerror',e=>E.push(e.message.slice(0,160)+' '+(e.stack||'').split('\n').slice(1,2).join(' ').slice(0,140)));
   p.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::ERR|404|favicon|tile|ERR_NAME|CORS/i.test(m.text()))E.push('console: '+m.text().slice(0,160));});
   const lbl=`${plat} | ${sk}`;const t0=Date.now();
   try{
@@ -154,13 +154,37 @@ for(const plat of PLAT){
      if(!f.chip)masalah.push(`${lbl}: Indeks Siaga tidak tampil di Beranda wilayah SHP`);
      if(!f.ubin)masalah.push(`${lbl}: ubin Indeks Siaga masih terkunci di Beranda wilayah SHP`);
      if(!(f.lembar>=1))masalah.push(`${lbl}: lembar Wilayah & tim kosong`);
-     if(f.anggota!==1)masalah.push(`${lbl}: daftar anggota tim tidak tampil (${f.anggota})`);}}
+     if(f.anggota!==1)masalah.push(`${lbl}: daftar anggota tim tidak tampil (${f.anggota})`);
+     // alat tambahan wilayah: laporan PDF, riwayat, ekspor, peta luring, banding
+     const g=await p.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms)),o={};const buka=async(f,ms)=>{try{FHApp.closeAll()}catch(e){};await w(400);f();await w(ms||1500);return document.querySelector('#page.on #pageBody')||document.body;};
+      o.tombol=!!document.querySelector('[data-wa]');if(!window.FHWilAlat)return o;
+      FHWilAlat.menu();await w(800);o.menu=document.querySelectorAll('#waM [data-k]').length;
+      let pg=await buka(()=>FHWilAlat.riwayat());o.riwayat=pg.querySelectorAll('.wa-svg').length;o.riwayatBaris=pg.querySelectorAll('.wa-tb tr').length-1;
+      pg=await buka(()=>FHWilAlat.ekspor());o.ekspor=pg.querySelectorAll('[data-e]').length;
+      pg=await buka(()=>FHWilAlat.luring());o.luring=!!pg.querySelector('#waLS');
+      pg=await buka(()=>FHWilAlat.banding());o.banding=pg.innerText.length>20;
+      pg=await buka(()=>FHWilAlat.laporan());o.laporan=!!pg.querySelector('#waPdf');return o;});
+     if(!g.tombol)masalah.push(`${lbl}: tombol Laporan & data tidak ada di Beranda wilayah SHP`);
+     if(g.menu!==5)masalah.push(`${lbl}: menu Laporan & data ${g.menu} item`);
+     if(g.riwayat!==2||!(g.riwayatBaris>=10))masalah.push(`${lbl}: riwayat titik panas tidak lengkap (${g.riwayat} grafik, ${g.riwayatBaris} tahun)`);
+     if(!(g.ekspor>=12))masalah.push(`${lbl}: ekspor data hanya ${g.ekspor} tombol`);
+     if(!g.luring)masalah.push(`${lbl}: halaman peta luring wilayah tidak lengkap`);
+     if(!g.banding)masalah.push(`${lbl}: halaman bandingkan wilayah kosong`);
+     if(!g.laporan)masalah.push(`${lbl}: halaman laporan PDF wilayah tidak lengkap`);
+     else{ // unduh PDF & ekspor KML sungguhan (web: unduhan peramban; aplikasi: Filesystem + Share bawaan HP)
+      const unduh=async(sel,ms)=>{if(plat!=='asli'){const [dlx]=await Promise.all([p.waitForEvent('download',{timeout:ms}),p.click(sel)]);const fp=await dlx.path();return fp?fs.readFileSync(fp):Buffer.alloc(0);}
+       const n0=await p.evaluate(()=>(window.__fs||[]).length);await p.click(sel);await p.waitForFunction(n=>(window.__fs||[]).length>n,n0,{timeout:ms});return Buffer.from(await p.evaluate(()=>window.__fs[window.__fs.length-1].data),'base64');};
+      for(const [sel,min,nm] of [['#waPdf',15000,'laporan PDF']]){try{const buf=await unduh(sel,60000);const sz=buf.length;const kepala=buf.slice(0,5).toString();if(sz<min||kepala!=='%PDF-')masalah.push(`${lbl}: ${nm} tidak valid (${sz} B)`);}catch(e){masalah.push(`${lbl}: ${nm} gagal diunduh – ${String(e.message).slice(0,80)}`);}}
+      await p.evaluate(async()=>{try{FHApp.closeAll()}catch(e){};await new Promise(r=>setTimeout(r,400));FHWilAlat.ekspor();await new Promise(r=>setTimeout(r,1200));});
+      for(const e of ['batas|KML','titik|GPX','rawan|GeoJSON','titik|CSV']){try{const t=(await unduh(`[data-e="${e}"]`,20000)).toString('utf8');const ok=e.endsWith('KML')?/<kml[\s\S]*<Placemark>/.test(t):e.endsWith('GPX')?/<gpx[\s\S]*<wpt /.test(t):e.endsWith('GeoJSON')?(()=>{try{return JSON.parse(t).features.length>0}catch(x){return false}})():t.split('\n').length>2;if(!ok)masalah.push(`${lbl}: ekspor ${e} isinya tidak valid`);}catch(x){masalah.push(`${lbl}: ekspor ${e} gagal – ${String(x.message).slice(0,80)}`);}}
+      await p.evaluate(()=>{try{FHApp.closeAll()}catch(e){}});}
+   }}
    if(!ADM&&sk!=='tamu'&&!(GJ&&PAKET)){const u=await p.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));try{FHApp.closeAll()}catch(e){};await w(400);FHMusimRawan.rencana();await w(1200);const t=((document.querySelector('#abSub')||{}).textContent||'')+' '+((document.querySelector('#page.on #pageBody')||{}).innerText||'');
       try{FHApp.closeAll()}catch(e){};await w(400);FHKartu.open();await w(3500);const k=!!document.querySelector('.kp-img');try{FHApp.closeAll()}catch(e){};await w(400);FHBanding.open();await w(1200);const b=((document.querySelector('#abSub')||{}).textContent||'')+' '+((document.querySelector('#page.on #pageBody')||{}).innerText||'');try{FHApp.closeAll()}catch(e){};await w(400);FHIklim.siaga();await w(1200);const sg=((document.querySelector('#abSub')||{}).textContent||'')+' '+((document.querySelector('#page.on #pageBody')||{}).innerText||'');try{FHApp.closeAll()}catch(e){};return {rencana:/Khusus|only/.test(t),kartu:k,banding:/Khusus admin|Admins only/.test(b),siaga:/Khusus|only/.test(sg)};});
      if(!u.rencana)masalah.push(`${lbl}: rencana patroli terbuka di mode ${harap}`);if(!u.kartu)masalah.push(`${lbl}: kartu status (Indonesia) gagal`);if(!u.banding)masalah.push(`${lbl}: perbandingan Hutan Desa terbuka untuk non-admin`);if(!u.siaga)masalah.push(`${lbl}: Indeks Siaga Desa terbuka di mode ${harap}`);}
    { // Cuaca di lokasi saya (GPS): modul FHLokasi harus termuat & menampilkan cuaca
     const lx=await p.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));if(!window.FHLokasi)return 'FHLokasi tidak termuat';try{FHApp.closeAll()}catch(e){};await w(300);FHApp.hubGo('lokasi');for(let i=0;i<30;i++){await w(500);const t=(document.getElementById('lxBody')||{}).innerText||'';if(/°/.test(t))return '';}return 'tidak tampil';});
-    if(lx)masalah.push(`${lbl}: Cuaca di lokasi saya – ${lx}`);}
+    if(lx&&!(lx==='tidak tampil'&&om429.n))masalah.push(`${lbl}: Cuaca di lokasi saya – ${lx}`);else if(lx)console.log(`(catatan) ${lbl}: cuaca lokasi tidak tampil karena server Open-Meteo membatasi permintaan (HTTP 429) dari mesin uji – bukan galat aplikasi`);}
    ringkas.push(`${lbl.padEnd(34)} alat ${String(keys.length).padStart(2)} · galat ${E.length} · ${((Date.now()-t0)/1000).toFixed(0)} dtk`);console.log(ringkas[ringkas.length-1]);
   }catch(e){masalah.push(`${lbl}: GAGAL dijalankan – ${e.message.slice(0,160)}`);console.log(lbl,'GAGAL',e.message.slice(0,160));}
   await c.close();}}
