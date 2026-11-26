@@ -162,8 +162,11 @@ def teks(e, bhs):
         isi = (f'Forecast fire danger (FDRS, BMKG/ECMWF) reaches {kl} on {tgl(e["tanggal"])}. Avoid burning, prepare patrols and fire-fighting equipment.' if en else
                f'Prakiraan bahaya kebakaran (FDRS, BMKG/ECMWF) mencapai {kl} pada {tgl(e["tanggal"])}. Hindari membakar, siapkan patroli dan alat pemadam.')
         rinci = [f'{tgl(h["tanggal"])}: {KELAS["en" if en else "id"][h["level"]]} (FWI {angka(float(h["fwi"] or 0), "en" if en else "id")})' for h in e["hari"]]
+    if e.get("sensor") == "radar":   # indikasi dari radar Sentinel-1 (tembus awan), bukan citra optik Sentinel-2
+        judul = judul.replace("🌳", "📡"); isi = isi.replace("(citra satelit Sentinel-2)", "(radar Sentinel-1, tembus awan)").replace("(Sentinel-2 satellite imagery)", "(Sentinel-1 radar, sees through clouds)")
+        rinci = [x.split(" · ")[0] for x in (rinci if isinstance(rinci, list) else [rinci])]
     if str(e.get("situs", "")).startswith("shp-"):   # wilayah SHP pengguna: bukan desa/Hutan Desa
-        g = lambda x: x.replace("batas desa", "batas wilayah").replace("wilayah desa", "wilayah").replace("menuju desa", "menuju wilayah").replace("village boundary", "area boundary").replace("the village", "the area")
+        g = lambda x: x.replace("di dalam Hutan Desa", "di dalam wilayah").replace("inside the village forest", "inside the area").replace("batas desa", "batas wilayah").replace("wilayah desa", "wilayah").replace("menuju desa", "menuju wilayah").replace("village boundary", "area boundary").replace("the village", "the area")
         judul, isi = g(judul), g(isi); rinci = [g(x) for x in rinci] if isinstance(rinci, list) else g(rinci)
     return judul, isi, rinci, url
 

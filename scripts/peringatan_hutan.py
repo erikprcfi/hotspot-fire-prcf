@@ -24,6 +24,14 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data"); OUT = os.path.join(DATA, "hutan"); os.makedirs(OUT, exist_ok=True)
 VER = "GFC-2025-v1.13"; GFC = f"/vsicurl/https://storage.googleapis.com/earthenginepartners-hansen/{VER}/Hansen_{VER}_"
 
+def ubin_hansen(lo0, la0, lo1, la1):
+    """Nama ubin Hansen GFC (10°, diberi nama menurut sudut barat laut): mis. 10N_110E, 00N_100E, 10S_120E."""
+    out = []
+    for top in range(int(math.ceil(la1 / 10) * 10), int(math.floor(la0 / 10) * 10), -10):
+        for left in range(int(math.floor(lo0 / 10) * 10), int(math.ceil(lo1 / 10) * 10), 10):
+            out.append(f"{abs(top):02d}{'N' if top >= 0 else 'S'}_{abs(left):03d}{'E' if left >= 0 else 'W'}")
+    return out
+
 def run_site(site, today):
     import rasterio
     from rasterio.warp import reproject, Resampling
@@ -34,19 +42,20 @@ def run_site(site, today):
     from shapely.ops import unary_union, transform as stf
     from pyproj import Transformer
     from scipy import ndimage
-    to_utm = Transformer.from_crs(4326, 32649, always_xy=True).transform; to_wgs = Transformer.from_crs(32649, 4326, always_xy=True).transform
     area = unary_union([shape(f["geometry"]) for f in site["hd"]["features"]] + [shape(f["geometry"]) for f in site["desa"]["features"]])
+    ep = BT.utm_epsg(area.centroid.x, area.centroid.y)   # zona UTM wilayah (Kapuas Hulu = 32649)
+    to_utm = Transformer.from_crs(4326, ep, always_xy=True).transform; to_wgs = Transformer.from_crs(ep, 4326, always_xy=True).transform
     au = stf(to_utm, area).buffer(1000); hdu = stf(to_utm, unary_union([shape(f["geometry"]) for f in site["hd"]["features"]]))
     x0, y0, x1, y1 = au.bounds; res = 20.0; W, H = int(math.ceil((x1 - x0) / res)), int(math.ceil((y1 - y0) / res)); tr = from_origin(x0, y1, res, res)
     zone = features.rasterize([(mapping(au), 1)], out_shape=(H, W), transform=tr).astype(bool)
     inhd = features.rasterize([(mapping(hdu), 1)], out_shape=(H, W), transform=tr).astype(bool)
     # hutan acuan (Hansen)
     lo0, la0 = to_wgs(x0, y0); lo1, la1 = to_wgs(x1, y1)
-    tile = f"{int(math.ceil(la1 / 10) * 10):02d}N_{int(math.floor(lo0 / 10) * 10):03d}E"
     tc = np.zeros((H, W), "uint8"); ly = np.zeros((H, W), "uint8")
-    for nm, arr in (("treecover2000", tc), ("lossyear", ly)):
-        with rasterio.open(GFC + f"{nm}_{tile}.tif") as src:
-            reproject(rasterio.band(src, 1), arr, dst_transform=tr, dst_crs=CRS.from_epsg(32649), resampling=Resampling.nearest)
+    for tile in ubin_hansen(min(lo0, lo1), min(la0, la1), max(lo0, lo1), max(la0, la1)):   # ubin 10° Hansen yang mencakup wilayah
+        for nm, arr in (("treecover2000", tc), ("lossyear", ly)):
+            with rasterio.open(GFC + f"{nm}_{tile}.tif") as src:
+                reproject(rasterio.band(src, 1), arr, dst_transform=tr, dst_crs=CRS.from_epsg(ep), resampling=Resampling.nearest, init_dest_nodata=False, src_nodata=None, dst_nodata=None)
     forest = zone & (tc >= 30) & (ly == 0)
     bbox = [lo0, la0, lo1, la1]
     a1, b1 = today - datetime.timedelta(days=90), today
@@ -57,7 +66,7 @@ def run_site(site, today):
             "hutan_acuan_ha": round(float(forest.sum()) * res * res / 1e4, 1), "dicek_utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
     if not cur or not ref:
         return {**base, "status": "belum ada citra"}, []
-    P0 = BT.scenes(ref, (H, W), tr); P1 = BT.scenes(cur, (H, W), tr)
+    P0 = BT.scenes(ref, (H, W), tr, epsg=ep); P1 = BT.scenes(cur, (H, W), tr, epsg=ep)
     if not P0 or not P1:
         return {**base, "status": "tertutup awan"}, []
     N0 = BT.med([x["nbr"] for x in P0]); S0 = BT.med([x["s2"] for x in P0])
