@@ -1,0 +1,25 @@
+name: Arsip titik panas nasional (bahan analisis SHP)
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 20 5 * *"   # bulanan: memperbarui tahun yang baru diterbitkan NASA
+permissions:
+  contents: write
+jobs:
+  arsip:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q numpy==2.1.3
+      - name: Unduh & susun ubin 1° (2016–tahun lalu)
+        run: python scripts/arsip_nasional.py arsip_nasional
+      - name: Terbitkan ke GitHub Release "arsip-titik-nasional"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view arsip-titik-nasional >/dev/null 2>&1 || gh release create arsip-titik-nasional --title "Arsip titik panas nasional (NASA FIRMS)" --notes "Ubin 1° titik panas NASA FIRMS seluruh Indonesia untuk analisis wilayah SHP pengguna Pantau Rimbak. Data publik NASA; bukan data pengguna." --latest=false
+          cd arsip_nasional && gh release upload arsip-titik-nasional *.npz indeks.json --clobber
