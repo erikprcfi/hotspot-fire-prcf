@@ -401,10 +401,28 @@ HAL.sistem = async B => {
       <div class="st-card st-kpi" style="--k:#F59E0B"><small>Paket pembaruan aplikasi</small><b style="font-size:20px">${esc(ot ? ot.versi : '–')}</b><span>${ot ? nf(ot.ukuran / 1e6, 1) + ' MB · checksum SHA-256' : ''}</span></div>
       <div class="st-card st-kpi" style="--k:#38BDF8"><small>Versi isi terpasang di perangkat ini</small><b style="font-size:20px">${esc((window.FHVersiIsi && FHVersiIsi()) || 'web')}</b></div></div>
     <div class="st-card" style="margin-top:14px" id="stVer"><b>Versi aplikasi pengguna (aktif 30 hari)</b><p class="st-note">Memuat…</p></div>
+    <div class="st-card" style="margin-top:14px" id="stKLHK"><b>Uji akses layanan peta KLHK (dari perangkat ini)</b><p class="st-note">Server GitHub tidak dapat menghubungi geoportal KLHK, jadi fitur status kawasan & moratorium (PIPPIB) memerlukan uji dari jaringan Indonesia. Tekan tombol, lalu kirim tangkapan layar hasilnya ke pengembang.</p><button class="st-chip" id="stKLHKb" style="padding:8px 14px">Uji sekarang</button><div id="stKLHKo" style="margin-top:8px"></div></div>
     <div class="st-wrap" style="margin-top:14px"><table class="st-tb"><thead><tr><th>Data otomatis</th><th>Diperbarui</th><th>Status</th></tr></thead><tbody>
       ${baris('Titik panas NASA FIRMS', hs && hs.diperbarui_utc, 9, 'tiap ± 3 jam')}${baris('Prakiraan cuaca & bahaya kebakaran', pk && pk.diperbarui_utc, 30, 'ECMWF · BMKG')}
       ${baris('Iklim & Indeks Siaga Desa', ik && ik.diperbarui_utc, 30, 'ENSO NOAA · ERA5-Land')}${baris('Debit sungai & banjir', bj && bj.diperbarui_utc, 50, 'GloFAS harian')}${baris('Vegetasi MODIS', vg && vg.diperbarui_utc, 24 * 20, 'citra 8–16 harian')}</tbody></table></div>
     <p class="st-note">Pemantauan otomatis juga berjalan tiap 6 jam dan uji menyeluruh tiap malam; masalah dilaporkan ke email Pengembang.</p>`;
+  const kb = B.querySelector('#stKLHKb'); if (kb) kb.onclick = async () => {   // daftar layanan geoportal KLHK yang terkait kawasan/gambut/PIPPIB + uji kueri titik
+    const O = B.querySelector('#stKLHKo'); kb.disabled = true; O.innerHTML = '<p class="st-note">Menghubungi geoportal.menlhk.go.id…</p>';
+    const G = 'https://geoportal.menlhk.go.id/server/rest/services', hasil = [], t0 = Date.now();
+    const JJ = async u => { const c = new AbortController(), t = setTimeout(() => c.abort(), 20000); try { const r = await fetch(u, { signal: c.signal }); return { ok: r.ok, st: r.status, j: r.ok ? await r.json() : null }; } catch (e) { return { ok: false, st: String(e && e.name || e) }; } finally { clearTimeout(t); } };
+    const root = await JJ(G + '?f=json');
+    if (!root.ok) { O.innerHTML = `<p class="st-note" style="color:#FB7185">Tidak dapat terhubung (${esc(root.st)}). Kemungkinan diblokir jaringan/CORS.</p>`; kb.disabled = false; return; }
+    const folders = (root.j.folders || []), cocok = /pippib|kawasan|gambut|khg|peat|hutan/i;
+    const svc = (root.j.services || []).map(x => x.name + ' (' + x.type + ')');
+    for (const f of folders.slice(0, 40)) { const r = await JJ(`${G}/${encodeURIComponent(f)}?f=json`); if (r.ok) (r.j.services || []).forEach(x => { if (cocok.test(x.name)) svc.push(x.name + ' (' + x.type + ')'); }); }
+    const pil = svc.filter(x => cocok.test(x)).slice(0, 40);
+    let uji = ''; const pp = pil.find(x => /pippib/i.test(x));
+    if (pp) { const nm = pp.replace(/ \(.*/, ''), ty = /FeatureServer/.test(pp) ? 'FeatureServer' : 'MapServer';
+      const q = await JJ(`${G}/${nm}/${ty}/0/query?geometry=112.3%2C0.8&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=false&f=json`);
+      uji = `<p class="st-note">Kueri titik uji (${esc(nm)}): ${q.ok ? 'BERHASIL · ' + esc(JSON.stringify((q.j.features || []).map(f => f.attributes)).slice(0, 300)) : 'gagal ' + esc(q.st)}</p>`; }
+    O.innerHTML = `<p class="st-note" style="color:#34D399">Terhubung (${((Date.now() - t0) / 1000).toFixed(1)} dtk). ${folders.length} folder.</p><div style="font:12px ui-monospace,monospace;white-space:pre-wrap;word-break:break-all">${esc(pil.join('\n') || 'Tidak ada layanan yang cocok.')}</div>${uji}`;
+    kb.disabled = false;
+  };
   try {   // sebaran versi aplikasi pengguna: siapa yang belum mendapat pembaruan otomatis
     const D = DATA.pengguna ? { ok: true, pengguna: DATA.pengguna } : await v16('studio_pengguna'), V = B.querySelector('#stVer'); if (!V) return;
     if (!D || !D.ok) { V.querySelector('.st-note').textContent = 'Daftar pengguna belum dapat dimuat.'; return; }
