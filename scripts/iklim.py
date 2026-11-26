@@ -26,7 +26,7 @@ Iklim & kesiagaan per Hutan Desa – Pantau Rimbak PRCF   ->  data/iklim/indeks.
 import os, sys, json, math, time, datetime as dt, urllib.request, bisect
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA = os.environ.get("PR_DATA") or os.path.join(ROOT, "data")   # PR_DATA: folder sementara untuk wilayah SHP pengguna (scripts/wilayah_umum.py); OUT = os.path.join(DATA, "iklim")
+DATA = os.environ.get("PR_DATA") or os.path.join(ROOT, "data"); OUT = os.path.join(DATA, "iklim")   # PR_DATA: folder sementara wilayah SHP (scripts/wilayah_umum.py)
 UA = {"User-Agent": "hotspot-fire-prcf (github actions; PRCF Indonesia)"}
 ONI_URL = "https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt"
 WK_URL = "https://www.cpc.ncep.noaa.gov/data/indices/wksst9120.for"
