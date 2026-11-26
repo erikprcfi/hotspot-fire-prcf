@@ -769,7 +769,7 @@ html.web .ab-t small{letter-spacing:.02em}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="assets/bahasa.js?v=68"></script>
-<script src="assets/kamus_en.js?v=63"></script>
+<script src="assets/kamus_en.js?v=64"></script>
 <script src="assets/nasa_layers.js?v=63"></script>
 <script src="assets/citra.js?v=62"></script>
 <script src="assets/akun.js?v=64"></script>
@@ -896,7 +896,7 @@ const spMsg=t=>{$('#spMsg').textContent=t;};
 /* ---------- map ---------- */
 let MAPSEEN=false, MAP=null, ptsL=null, meL=null, ACT=null, B={}, base={};
 const PADV={paddingTopLeft:[10,150],paddingBottomRight:[60,150]};
-function siteLayers(){if(!MAP||!SITE)return;ACT.clearLayers();
+function siteLayers(){if(!MAP||!SITE||!ACT)return;ACT.clearLayers();
   L.geoJSON(SITE.buf25,{style:{color:'#C9B21E',weight:1.2,dashArray:'6 5',fill:false},interactive:false}).addTo(ACT);
   L.geoJSON(SITE.buf5,{style:{color:'#E8A317',weight:1.4,dashArray:'6 4',fill:false},interactive:false}).addTo(ACT);
   L.geoJSON(SITE.desa,{style:{color:'#FFE14D',weight:2.6,fill:false},interactive:false}).addTo(ACT);
@@ -937,7 +937,10 @@ function umumInfo(){const A=window.FHAkun&&FHAkun.akses?FHAkun.akses():{mode:'um
   $$('[data-u]').forEach(b=>b.onclick=()=>{const k=b.dataset.u;history.back();setTimeout(()=>hubGo(k),120);});}
 window.FHAkses=()=>({mode:PR_MODE,allow:ALLOW?[...ALLOW]:null,site:SITE&&SITE.id,sub:$('#abSub').textContent,will:!!WILL,umum:isUmum()});
 function masukKode(){if(window.FHAkun&&FHAkun.keluarUntukKode)FHAkun.keluarUntukKode();}
-function initMap(){
+function initMap(){try{if(window.L&&!L.Map.prototype._prAman){const ok=c=>{try{const l=L.latLng(c);return l&&isFinite(l.lat)&&isFinite(l.lng);}catch(e){return false;}};   /* peta tersembunyi (ukuran 0) dapat menghasilkan pusat NaN: abaikan, jangan galat */
+  L.Map.prototype._prAman=1;['setView','flyTo','panTo'].forEach(k=>{const f=L.Map.prototype[k];L.Map.prototype[k]=function(c,...a){if(!ok(c))return this;return f.call(this,c,...a);};});
+  const fb=L.Map.prototype.fitBounds;L.Map.prototype.fitBounds=function(b,o){try{const s=this.getSize();if(!s.x||!s.y)return this;}catch(e){}try{return fb.call(this,b,o);}catch(e){return this;}};
+  const fl=L.Map.prototype.flyToBounds;L.Map.prototype.flyToBounds=function(b,o){try{const s=this.getSize();if(!s.x||!s.y)return this;}catch(e){}try{return fl.call(this,b,o);}catch(e){return this;}};}}catch(e){}
   MAP=L.map('map',{zoomControl:false,preferCanvas:true,attributionControl:true,zoomSnap:.25});window.FHMAPA=MAP;try{window.FHHemat&&FHHemat.peta(MAP);}catch(e){}setTimeout(()=>{try{window.FHLapor&&FHLapor.peta(MAP);}catch(e){}},3500);
   {const C=FHCitra.leaflet(L);base.terbaik=C.terbaik;base.s2026=C.s2026;base.eox=C.eox;base.esri=C.esri;base.s2026.on('tileerror',()=>{if(MAP.hasLayer(base.s2026)&&!base._fb){base._fb=1;}});}
   base.osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,maxNativeZoom:18,attribution:'© OpenStreetMap',updateWhenZooming:false,keepBuffer:3});
@@ -1310,7 +1313,7 @@ function renderFC(){
 let FCMODE='desa',LXINIT=false;
 const LXOPT=()=>({hotspots:ALL,onMap:lxMap,searchEl:$('#fcSearch')});
 function fcPick(loc){fcMode('saya',true);LXINIT=true;$('#segSaya').textContent='Lokasi dicari';setBar('Cuaca · '+(loc.label||'').split(',')[0],'ECMWF · CAMS · FDRS',false);FHLokasi.at($('#lxBody'),LXOPT(),loc);}
-function fcGps(){fcMode('saya',true);LXINIT=true;$('#segSaya').textContent='Lokasi saya';FHLokasi.refresh($('#lxBody'),LXOPT());}
+function fcGps(){fcMode('saya',true);LXINIT=true;$('#segSaya').textContent='Lokasi saya';if(window.FHLokasi)FHLokasi.refresh($('#lxBody'),LXOPT());}
 document.addEventListener('DOMContentLoaded',()=>{if(window.FHCari)FHCari.box($('#fcSearch'),{placeholder:'Cari cuaca desa, kecamatan, kota…',onPick:fcPick,onGps:fcGps});});
 function fcMode(m,skip){FCMODE=m;$$('.seg2 button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.m===m)));$('.seg2').classList.toggle('r',m==='saya');
   $('#fcBody').hidden=m!=='desa';$('#lxBody').hidden=m!=='saya';$('#v-fc').scrollTop=0;
@@ -1843,6 +1846,7 @@ if('serviceWorker' in navigator){const HAD=!!navigator.serviceWorker.controller;
 <script src="assets/titik_id.js?v=62"></script>
 <script src="assets/web_peta.js?v=1"></script>
 <script src="assets/nasional.js?v=2"></script>
+<script src="assets/cuaca_lokasi.js?v=1"></script>
 <script src="assets/lokasi_saya.js?v=1"></script>
 <script src="assets/beranda.js?v=62"></script>
 <script>window.FH_VERIF_URL=window.FH_VERIF_URL||'https://script.google.com/macros/s/AKfycbwQz_--p7liI6ig1X6jsDCbdpElAJahItVrnVQqxkqBzLJLzvSJojk8eUSEHWzJgY-PoQ/exec';/* URL Apps Script penerima laporan verifikasi lapangan */</script>
