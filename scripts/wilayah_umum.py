@@ -287,7 +287,7 @@ def satu(W, tmp_ubin, no):
         if len(s) > 4.4e6:   # batas server: buang piksel peta & titik arsip lama dari cache bila terlalu besar
             paket["bekas_modis_geo"] = None; cache.pop("modis_veg", None); s = json.dumps(paket, ensure_ascii=False, separators=(",", ":"))
         if UJI: open(UJI_OUT, "w").write(s); r = {"disimpan": 1}
-        else: r = json.loads(http(akun_url(), {"aksi": "pekerja_dinamis", "kunci_pekerja": KUNCI, "data": [{"aid": W["aid"], "data": paket}]}, timeout=180))
+        else: r = json.loads(http(akun_url(), {"kunci": "fh-prcf-2026-akun", "aksi": "pekerja_dinamis", "kunci_pekerja": KUNCI, "data": [{"aid": W["aid"], "data": paket}]}, timeout=180))
         LOG(no, "selesai", {k: ("ok" if v else "gagal") for k, v in hasil_langkah.items()}, f"{len(s) / 1e6:.2f} MB", "tersimpan" if r.get("disimpan") else "TIDAK tersimpan")
         return bool(r.get("disimpan"))
     finally:
