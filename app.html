@@ -1131,7 +1131,7 @@ $('#fabLayer').onclick=()=>{const cur=store.get('base','terbaik');
 
 /* ---------- lokasi Hutan Desa ---------- */
 const AN_CACHE={};
-function prMount(){if(window.FHLokasiSaya&&$('#lsBox'))FHLokasiSaya.mount($('#lsBox'));{let u=false;try{u=isUmum();}catch(e){}if($('#prBox'))$('#prBox').style.display=u?'none':'';if(u)return;}if(!window.FHPeringatan||!$('#prBox'))return;FHPeringatan.mount($('#prBox'),{akun:()=>{const u=window.FHAkun&&FHAkun.user();return u&&u.token?{id:u.id,token:u.token,email:u.email}:null;},situs:SITES.map(x=>({id:x.id,nama:x.hd_nama})),aktif:SITE?SITE.id:null});}
+function prMount(){if(window.FHLokasiSaya&&$('#lsBox'))FHLokasiSaya.mount($('#lsBox'));const WS=(()=>{try{return isUmum()&&window.FHWilSaya&&FHWilSaya.aktif()?FHWilSaya.site():null;}catch(e){return null;}})();{let u=false;try{u=isUmum()&&!WS;}catch(e){}if($('#prBox'))$('#prBox').style.display=u?'none':'';if(u)return;}if(!window.FHPeringatan||!$('#prBox'))return;FHPeringatan.mount($('#prBox'),{akun:()=>{const u=window.FHAkun&&FHAkun.user();return u&&u.token?{id:u.id,token:u.token,email:u.email}:null;},situs:WS?[{id:WS.id,nama:WS.hd_nama}]:SITES.map(x=>({id:x.id,nama:x.hd_nama})),aktif:WS?WS.id:SITE?SITE.id:null});}
 async function baraData(){   // seluruh data aplikasi yang relevan → konteks Bara Api (+ ringkasan untuk sapaan)
   const L=[],now=Date.now(),wib=t=>new Date(t).toLocaleString('id-ID',{timeZone:'Asia/Jakarta',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})+' WIB',f1=x=>x==null||isNaN(x)?'-':(+x).toLocaleString('id-ID',{maximumFractionDigits:1});
   const KL=(FC&&FC.kelas)||['Rendah','Sedang','Tinggi','Ekstrem'];
@@ -1406,7 +1406,7 @@ const SECT={pengaturan:['Profil','Akun & pengaturan'],peringatan:['Peringatan di
 let INFOSEC=null;
 function bukaSec(sec){INFOSEC=sec;go('info');pushLayer(()=>go('dash',false));setBar(SECT[sec][0],SECT[sec][1],true);}
 const HD_ALAT=['siaga','prakmusim','kering','banjir','asap','bekasarsip','vegetasi','rekapmusim','musimapi','rawan','patroli','tindak','indikator','karbon','tutupan','lahankritis','unduhpeta','analisis','hutan','bekas','grafik'];
-function hubGo(k){if(k==='kode')return masukKode();if(k==='lapor'&&window.FHLaporPage){try{FHAlat.pakai(k);}catch(e){}return FHLaporPage.open();}if(k==='statistik'&&window.FHVerifStat){try{FHAlat.pakai(k);}catch(e){}return FHVerifStat.open();}if(k==='luring'&&isUmum()&&window.FHLuringUmum){try{FHAlat.pakai(k);}catch(e){}return FHLuringUmum.open();}if(isUmum()&&window.FHNasional&&FHNasional.punya(k)){try{FHAlat.pakai(k);}catch(e){}return FHNasional.buka(k);}if(isUmum()&&!UMUM_OK.includes(k))return umumInfo();try{FHAlat.pakai(k);}catch(e){}window.FH_ALAT_HD=HD_ALAT.includes(k)?k:null;const P=x=>{if(!SITE)return chooser(true);const run=()=>PAGES[x]&&PAGES[x]();if(['grafik','kejadian','cuaca'].includes(x)&&!(STATS&&EVENTS&&CUACA)){toastMsg('Memuat data…');Promise.resolve(loadHist()).then(run).catch(()=>toastMsg('Data belum dapat dimuat. Periksa internet.'));}else run();};
+function hubGo(k){if(k==='kode')return masukKode();if(isUmum()&&window.FHWilSaya&&FHWilSaya.bisa(k)){try{FHAlat.pakai(k);}catch(e){}return FHWilSaya.buka(k);}if(k==='lapor'&&window.FHLaporPage){try{FHAlat.pakai(k);}catch(e){}return FHLaporPage.open();}if(k==='statistik'&&window.FHVerifStat){try{FHAlat.pakai(k);}catch(e){}return FHVerifStat.open();}if(k==='luring'&&isUmum()&&window.FHLuringUmum){try{FHAlat.pakai(k);}catch(e){}return FHLuringUmum.open();}if(isUmum()&&window.FHNasional&&FHNasional.punya(k)){try{FHAlat.pakai(k);}catch(e){}return FHNasional.buka(k);}if(isUmum()&&!UMUM_OK.includes(k))return umumInfo();try{FHAlat.pakai(k);}catch(e){}window.FH_ALAT_HD=HD_ALAT.includes(k)?k:null;const P=x=>{if(!SITE)return chooser(true);const run=()=>PAGES[x]&&PAGES[x]();if(['grafik','kejadian','cuaca'].includes(x)&&!(STATS&&EVENTS&&CUACA)){toastMsg('Memuat data…');Promise.resolve(loadHist()).then(run).catch(()=>toastMsg('Data belum dapat dimuat. Periksa internet.'));}else run();};
   ({ringkas:()=>window.FHNasional&&FHNasional.buka('ringkas'),panduan:()=>window.FHNasional&&FHNasional.buka('panduan'),peta:()=>go('home'),p3d:()=>{go('home');setTimeout(()=>$('#fab3d').click(),250);},sebaran:()=>P('sebaran'),kejadian:()=>P('kejadian'),
     angin:()=>{go('home');setTimeout(()=>{if($('#fabWind').getAttribute('aria-pressed')!=='true')$('#fabWind').click();},250);},kompas:()=>openKompas(),ai:()=>go('ai'),
     satelit:()=>{const p=ALL.slice().sort((a,b)=>b.when-a.when)[0];if(p)detail(p);else go('home');},
@@ -1452,6 +1452,7 @@ function hubUmum(el){   // mode umum / wilayah sendiri: tanpa data Hutan Desa da
   const SUBU={ringkas:'Per provinsi & kabupaten',panduan:'Membaca data & cegah api',peta:'Titik api NASA · seluruh Indonesia',sebaran:'7 hari · di sekitar lokasi Anda',kejadian:'Arsip FIRMS sejak 2016 · per SHP',angin:'ECMWF · seluruh Indonesia',kompas:'Arah & matahari',cuaca:'Cuaca di lokasi Anda',hujan:'ERA5 sejak 2001 · lokasi Anda',udara:'PM2.5 CAMS · lokasi Anda',hutan:'Hansen/UMD · per SHP',bekas:'Hansen & NASA OPERA',analisis:'Unggah SHP · seluruh Indonesia',tutupan:'GLAD UMD & ESA WorldCover',lahankritis:'Indikasi dari data terbuka',karbon:'GFW & FREL · per SHP',grafik:'Arsip FIRMS · per SHP',laporan:'PDF dari Analisis area',unduh:'PDF & CSV analisis'};
   el.querySelectorAll('[data-sub]').forEach(e=>{const k=e.dataset.sub;e.classList.remove('v');e.textContent=SUBU[k]!=null?SUBU[k]:(UMUM_OK.includes(k)||NAS_OK.includes(k)?e.textContent:'Khusus Hutan Desa dampingan');});
   el.querySelectorAll('.hx-t[data-hub]').forEach(t=>{if(!UMUM_OK.includes(t.dataset.hub)&&!NAS_OK.includes(t.dataset.hub)){t.classList.add('hx-lock');t.title='Khusus program Hutan Desa dampingan PRCF (perlu kode ID)';}});
+  try{window.FHWilSaya&&FHWilSaya.hub(el);}catch(e){}
   el.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>hubGo(b.dataset.u));
 }
 function hubRender(){const el=$('#hub');if(!el)return;
@@ -1870,9 +1871,10 @@ if('serviceWorker' in navigator){const HAD=!!navigator.serviceWorker.controller;
 <script src="assets/tutupan.js?v=62"></script>
 <script src="assets/lahankritis.js?v=62"></script>
 <script src="assets/bulanan.js?v=3"></script>
-<script src="assets/musim_rawan.js?v=1"></script>
+<script src="assets/musim_rawan.js?v=2"></script>
 <script src="assets/kartu_pengingat.js?v=1"></script>
-<script src="assets/iklim_lanjut.js?v=1"></script>
+<script src="assets/iklim_lanjut.js?v=2"></script>
+<script src="assets/wilayah_umum.js?v=1"></script>
 <script src="assets/unduhpeta.js?v=62"></script>
 <script src="assets/shp.js?v=62"></script>
 </body>

@@ -21,15 +21,17 @@ function css() {
     '.mr-chk{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}.mr-chk label{display:flex;gap:6px;align-items:center;padding:8px 10px;border:1px solid var(--line,#ddd);border-radius:12px;font-size:13px;font-weight:600}';
   document.head.appendChild(s);
 }
+/* situs aktif: Hutan Desa (kode HD/admin) atau wilayah SHP pengguna yang sudah dianalisis otomatis (assets/wilayah_umum.js) */
+const situs = () => (window.FHAksesHD && FHAksesHD() && window.FHSiteObj && FHSiteObj()) || (window.FHWilSaya && FHWilSaya.aktif() ? FHWilSaya.site() : null);
 function hanyaHD(judul) {
-  if (window.FHAksesHD && FHAksesHD() && window.FHSiteObj && FHSiteObj()) return false;
+  if (situs()) return false;
   openPage(judul, I('Khusus Hutan Desa dampingan', 'Partner village forests only'), `<div class="fa"><div class="fa-card"><p>${I('Alat ini memakai arsip titik panas 2016–2025 di sekitar Hutan Desa dampingan PRCF. Untuk wilayah Anda sendiri gunakan menu <b>Analisis lahan & karbon</b> (unggah SHP).', 'This tool uses the 2016–2025 hotspot archive around PRCF partner village forests. For your own area use <b>Land & carbon analysis</b> (upload a shapefile).')}</p></div></div>`);
   return true;
 }
 
 /* ================= 1. KALENDER MUSIM API ================= */
 async function kalender() {
-  css(); const J0 = I('Kalender musim api', 'Fire-season calendar'); if (hanyaHD(J0)) return; const s = FHSiteObj();
+  css(); const J0 = I('Kalender musim api', 'Fire-season calendar'); if (hanyaHD(J0)) return; const s = situs();
   try { X() && X().pakai && X().pakai('musimapi'); } catch (e) { }
   openPage(J0, s.hd_nama, `<div class="fa" id="mrW"><div class="fa-card"><p class="fa-note">${I('Memuat…', 'Loading…')}</p></div></div>`, async () => {
     const w = document.getElementById('mrW'); let D;
@@ -68,7 +70,7 @@ function lapisPeta(gj, tampil) {
     onEachFeature: (f, l) => { const p = f.properties; l.bindPopup(`<b>${I('Rawan', 'Recurring')} #${p.peringkat}</b><br>${I('Terbakar', 'Burned')} ${p.n_tahun} ${I('tahun', 'years')}: ${p.tahun.join(', ')}<br>${esc(p.lokasi)} · ${I('terakhir', 'last')} ${esc(p.terakhir)}`); } }).addTo(MAP);
 }
 async function rawan() {
-  css(); const J0 = I('Titik rawan berulang', 'Recurring hotspot sites'); if (hanyaHD(J0)) return; const s = FHSiteObj();
+  css(); const J0 = I('Titik rawan berulang', 'Recurring hotspot sites'); if (hanyaHD(J0)) return; const s = situs();
   try { X() && X().pakai && X().pakai('rawan'); } catch (e) { }
   openPage(J0, s.hd_nama, `<div class="fa" id="mrW"><div class="fa-card"><p class="fa-note">${I('Memuat…', 'Loading…')}</p></div></div>`, async () => {
     const w = document.getElementById('mrW'); let G;
@@ -95,9 +97,10 @@ const JENIS = { titik: ['#DC2626', 'Titik panas baru', 'New hotspot'], hutan: ['
 const xe = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c]));
 function centroid(g) { const r = (g.type === 'Polygon' ? g.coordinates[0] : g.type === 'MultiPolygon' ? g.coordinates[0][0] : [g.coordinates]); let a = 0, b = 0; r.forEach(p => { a += p[1]; b += p[0]; }); return [a / r.length, b / r.length]; }
 async function kumpulTarget(s, pakai) {
-  const T = [], si = window.FHSiteIdx ? FHSiteIdx() : 0, now = Date.now();
+  const W = !(window.FHAksesHD && FHAksesHD()) && window.FHWilSaya && FHWilSaya.aktif();   // wilayah SHP: titik panas dari paket analisis wilayah itu sendiri
+  const T = [], si = W ? 0 : window.FHSiteIdx ? FHSiteIdx() : 0, now = Date.now();
   if (pakai.titik) {   // titik panas 7 hari terakhir di dalam wilayah / <= 5 km, digabung bila berjarak < 400 m
-    const P = (window.FHAll ? FHAll() : []).filter(p => p.ls && p.ls[si] != null && p.ls[si] <= 5 && now - p.when < 7 * 864e5).sort((a, b) => b.when - a.when);
+    const P = (W ? FHWilSaya.titik() : window.FHAll ? FHAll() : []).filter(p => p.ls && p.ls[si] != null && p.ls[si] <= 5 && now - p.when < 7 * 864e5).sort((a, b) => b.when - a.when);
     for (const p of P) { if (T.some(t => t.jenis === 'titik' && jarak(t.pos, [p.la, p.lo]) < 0.4)) continue;
       T.push({ jenis: 'titik', pos: [p.la, p.lo], ket: `${p.d} ${String(p.t).slice(0, 2)}.${String(p.t).slice(2)} UTC · ${p.ins || ''} ${p.sat || ''} · ${p.ls[si] <= 0 ? I('di dalam wilayah', 'inside the area') : nf(p.ls[si], 1) + ' km ' + I('dari batas', 'from boundary')}` }); }
   }
@@ -134,7 +137,7 @@ function kml(nama, awal, U) {
 const posisiSaya = () => new Promise(res => { if (!navigator.geolocation) return res(null); const t = setTimeout(() => res(null), 7000);
   navigator.geolocation.getCurrentPosition(p => { clearTimeout(t); res([p.coords.latitude, p.coords.longitude]); }, () => { clearTimeout(t); res(null); }, { enableHighAccuracy: true, timeout: 6500, maximumAge: 120000 }); });
 async function rencana() {
-  css(); const J0 = I('Rencana patroli', 'Patrol plan'); if (hanyaHD(J0)) return; const s = FHSiteObj();
+  css(); const J0 = I('Rencana patroli', 'Patrol plan'); if (hanyaHD(J0)) return; const s = situs();
   try { X() && X().pakai && X().pakai('rencana'); } catch (e) { }
   openPage(J0, s.hd_nama + I(' · disusun otomatis', ' · generated automatically'), `<div class="fa" id="mrW">
     <div class="fa-card"><h4 style="margin:0 0 4px">${I('Sasaran yang dimasukkan', 'Targets to include')}</h4>

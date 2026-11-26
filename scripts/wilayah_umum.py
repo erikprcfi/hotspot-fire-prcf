@@ -15,7 +15,7 @@ Tiap putaran (GitHub Actions, tiap ± 3 jam):
  4. Paket hasil + cache (agar putaran berikutnya hemat) dikirim ke server: berkas <ID analisis>_dinamis.json, hanya dapat dibaca
     pemilik wilayah & anggota ruang kerjanya.
 """
-import os, sys, io, csv, json, math, time, shutil, hashlib, tempfile, datetime as dt, urllib.request, subprocess, importlib
+import contextlib, io, os, sys, io, csv, json, math, time, shutil, hashlib, tempfile, datetime as dt, urllib.request, subprocess, importlib
 import numpy as np
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -51,6 +51,7 @@ def lokasi_dari(W):
     from shapely.ops import transform, unary_union
     from pyproj import Transformer
     g = W["geojson"]
+    if isinstance(g, str): g = json.loads(g)
     if g.get("type") == "FeatureCollection": geom = unary_union([shape(f["geometry"]) for f in g["features"] if f.get("geometry")])
     elif g.get("type") == "Feature": geom = shape(g["geometry"])
     else: geom = shape(g)
@@ -168,6 +169,43 @@ def cuaca(site, cache):
     for j, (k, _) in enumerate(keys): out[k] = [ser[t][j] for t in ts]
     return out
 
+# ---------------------------------------------------------------- peringatan dini wilayah SHP (aturan sama dengan Hutan Desa)
+LANGGANAN = {}
+def peringatan_wilayah(D, sid, cache):
+    """Kejadian baru (titik panas ≤ 5 km, bahaya kebakaran, hujan lebat, Indeks Siaga naik, banjir, asap menuju wilayah) dihitung dengan
+    scripts/peringatan.py pada folder sementara wilayah ini, lalu dikirim ke pelanggan "shp-<aid>" (pemilik & anggota ruang kerja).
+    Status terkirim disimpan di paket (privat), bukan di repo. Tidak ditulis ke umpan publik."""
+    m = importlib.reload(importlib.import_module("peringatan")); m.DATA = D
+    state = cache.get("terkirim") or {}
+    ev = [e for e in m.kejadian(state) if e["jenis"] != "hutan"]
+    n_push, surat, mati = 0, [], []
+    if ev and not UJI and KUNCI and m.URL:
+        if "lg" not in LANGGANAN:
+            try: LANGGANAN["lg"] = m.get("langganan=1")
+            except Exception: LANGGANAN["lg"] = {}
+        lg = LANGGANAN["lg"] or {}; vp, vk = lg.get("vapid_private"), lg.get("vapid_public")
+        for e in ev:
+            for u in lg.get("langganan", []):
+                if sid not in (u.get("situs") or []): continue
+                judul, isi, rinci, url = m.teks(e, u.get("bahasa", "id"))
+                for ps in (u.get("push") or []):
+                    if not (vp and vk and ps.get("endpoint")): continue
+                    try: st = m.webpush.kirim(ps, {"title": judul, "body": isi, "url": url, "tag": e["kunci"][0]}, vp, vk)
+                    except Exception: st = 0
+                    if st in (404, 410): mati.append({"id": u["id"], "endpoint": ps["endpoint"]})
+                    elif 200 <= st < 300: n_push += 1
+                if u.get("email_on") and u.get("email"):
+                    surat.append({"id": u["id"], "email": u["email"], "nama": u.get("nama", ""), "bahasa": u.get("bahasa", "id"), "judul": judul, "isi": isi, "rinci": rinci, "url": url})
+        if surat or mati or n_push:
+            try: m.post({"kunci": "fh-prcf-2026-akun", "aksi": "pekerja_peringatan", "pekerja": KUNCI, "surat": surat, "push_mati": mati,
+                         "log": [{"jenis": e["jenis"], "hd": sid, "kunci": e["kunci"]} for e in ev], "push_terkirim": n_push})
+            except Exception: pass
+    for e in ev:
+        for k in e["kunci"]: state[k] = NOW.strftime("%Y-%m-%dT%H:%MZ")
+    batas = (NOW - dt.timedelta(days=30)).strftime("%Y-%m-%d")
+    cache["terkirim"] = {k: v for k, v in state.items() if v >= batas}
+    return len(ev), n_push, len(surat)
+
 # ---------------------------------------------------------------- satu wilayah
 def jalankan(mod, fn="main", *args):
     """Muat ulang modul skrip agar membaca PR_DATA terbaru, lalu jalankan fungsinya."""
@@ -189,9 +227,8 @@ def satu(W, tmp_ubin, no):
         jb = lambda p, d=None: json.load(open(os.path.join(D, p))) if os.path.exists(os.path.join(D, p)) else d
         jl("geo.json", {"sites": [site]})
         # titik panas: arsip nasional (2016–tahun lalu) + tahun berjalan
-        if cache.get("arsip_v") != 1:
-            arsip = titik_arsip(site, gm, ke, tmp_ubin); cache["arsip"] = {str(y): v for y, v in arsip.items()}; cache["arsip_v"] = 1
-        for y, v in (cache.get("arsip") or {}).items(): jl(f"titik/{y}.json", {"tahun": int(y), "lokasi": [sid], "titik": v})
+        cache.pop("arsip", None); cache.pop("arsip_v", None)   # arsip dihitung ulang tiap putaran dari ubin nasional (paket tetap kecil)
+        for y, v in titik_arsip(site, gm, ke, tmp_ubin).items(): jl(f"titik/{y}.json", {"tahun": int(y), "lokasi": [sid], "titik": v})
         kini = titik_tahun_ini(site, gm, ke, cache); cache["titik_kini"] = kini
         jl(f"titik/{KINI.year}.json", {"tahun": KINI.year, "lokasi": [sid], "titik": kini})
         batas14 = (KINI - dt.timedelta(days=14)).isoformat()
@@ -212,9 +249,12 @@ def satu(W, tmp_ubin, no):
         for L in langkah:
             try:
                 saved = sys.argv; sys.argv = [L[0] + ".py"] + (["--paksa"] if L[0] == "banjir" else [])
-                jalankan(L[0], L[1], *L[2:]); hasil_langkah[L[0]] = True
+                if UJI: jalankan(L[0], L[1], *L[2:])
+                else:   # log Actions publik: keluaran skrip (nama/koordinat wilayah pengguna) tidak dicetak – UU PDP
+                    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()): jalankan(L[0], L[1], *L[2:])
+                hasil_langkah[L[0]] = True
             except Exception as e:
-                hasil_langkah[L[0]] = False; LOG(no, L[0], "gagal:", type(e).__name__, str(e)[:120].replace(W.get("nama", "") or "§", "…"))
+                hasil_langkah[L[0]] = False; LOG(no, L[0], "gagal:", type(e).__name__, *( [str(e)[:120]] if UJI else []))
             finally: sys.argv = saved
         P = jb("prakiraan.json", {}).get("lokasi", {}).get(sid)
         # status titik panas 7 hari (aturan yang sama dengan Hutan Desa)
@@ -228,16 +268,24 @@ def satu(W, tmp_ubin, no):
                  "bekas_modis": L("bekas_modis/indeks.json"), "bekas_modis_geo": jb(f"bekas_modis/{sid}.geojson"), "vegetasi": L("vegetasi/indeks.json"),
                  "iklim": L("iklim/indeks.json"), "banjir": L("banjir/indeks.json"), "asap": L("asap/indeks.json"), "rekap": L("rekap_musim/indeks.json"),
                  "metode": {k: (jb(p, {}) or {}).get("metode") for k, p in (("iklim", "iklim/indeks.json"), ("banjir", "banjir/indeks.json"), ("asap", "asap/indeks.json"), ("vegetasi", "vegetasi/indeks.json"), ("bekas_modis", "bekas_modis/indeks.json"))}}
+        for k in ("bekas_modis", "bekas_modis_geo", "vegetasi", "musim", "rawan", "rekap", "banjir", "prakiraan", "fdrs"):   # langkah yang dilewati/gagal: pakai hasil sebelumnya
+            if paket.get(k) is None and lama.get(k) is not None: paket[k] = lama[k]
         # cache untuk putaran berikutnya
         for p, k in (("iklim/tanah_" + sid + ".json", "tanah"), ("bekas_modis/_olah.json", "modis_bekas"), ("vegetasi/_olah.json", "modis_veg"), ("vegetasi/_jalan.json", "modis_jalan"),
                      ("banjir/sungai.json", "sungai"), ("iklim/siaga_riwayat.json", "siaga_riwayat"), ("prakiraan/fdrs_" + sid + ".json", "fdrs")):
             v = jb(p)
             if v is not None: cache[k] = v
         if P: cache["prakiraan"] = P
+        try:
+            if UJI: pw = peringatan_wilayah(D, sid, cache)
+            else:
+                with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()): pw = peringatan_wilayah(D, sid, cache)
+            LOG(no, "peringatan: kejadian %d · push %d · email %d" % pw)
+        except Exception as e: LOG(no, "peringatan gagal:", type(e).__name__)
         paket["_cache"] = cache
         s = json.dumps(paket, ensure_ascii=False, separators=(",", ":"))
         if len(s) > 4.4e6:   # batas server: buang piksel peta & titik arsip lama dari cache bila terlalu besar
-            paket["bekas_modis_geo"] = None; cache.pop("arsip", None); cache["arsip_v"] = 0; s = json.dumps(paket, ensure_ascii=False, separators=(",", ":"))
+            paket["bekas_modis_geo"] = None; cache.pop("modis_veg", None); s = json.dumps(paket, ensure_ascii=False, separators=(",", ":"))
         if UJI: open(UJI_OUT, "w").write(s); r = {"disimpan": 1}
         else: r = json.loads(http(akun_url(), {"aksi": "pekerja_dinamis", "kunci_pekerja": KUNCI, "data": [{"aid": W["aid"], "data": paket}]}, timeout=180))
         LOG(no, "selesai", {k: ("ok" if v else "gagal") for k, v in hasil_langkah.items()}, f"{len(s) / 1e6:.2f} MB", "tersimpan" if r.get("disimpan") else "TIDAK tersimpan")

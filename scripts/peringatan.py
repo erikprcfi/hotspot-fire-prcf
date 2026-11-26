@@ -162,6 +162,9 @@ def teks(e, bhs):
         isi = (f'Forecast fire danger (FDRS, BMKG/ECMWF) reaches {kl} on {tgl(e["tanggal"])}. Avoid burning, prepare patrols and fire-fighting equipment.' if en else
                f'Prakiraan bahaya kebakaran (FDRS, BMKG/ECMWF) mencapai {kl} pada {tgl(e["tanggal"])}. Hindari membakar, siapkan patroli dan alat pemadam.')
         rinci = [f'{tgl(h["tanggal"])}: {KELAS["en" if en else "id"][h["level"]]} (FWI {angka(float(h["fwi"] or 0), "en" if en else "id")})' for h in e["hari"]]
+    if str(e.get("situs", "")).startswith("shp-"):   # wilayah SHP pengguna: bukan desa/Hutan Desa
+        g = lambda x: x.replace("batas desa", "batas wilayah").replace("wilayah desa", "wilayah").replace("menuju desa", "menuju wilayah").replace("village boundary", "area boundary").replace("the village", "the area")
+        judul, isi = g(judul), g(isi); rinci = [g(x) for x in rinci] if isinstance(rinci, list) else g(rinci)
     return judul, isi, rinci, url
 
 def umpan(ev):   # umpan publik untuk notifikasi lokal aplikasi Android (tanpa data pribadi): 14 hari terakhir, maks. 100

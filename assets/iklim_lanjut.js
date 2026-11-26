@@ -34,8 +34,10 @@ function css() {
     '.hx-sg{display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.22);background:rgba(0,0,0,.22);color:#fff;font:inherit;font-size:13px;cursor:pointer;width:100%;text-align:left}.hx-sg i{width:10px;height:10px;border-radius:50%;flex:none}.hx-sg b{font-weight:800}.hx-sg span{opacity:.85;margin-left:auto;font-size:12px}';
   document.head.appendChild(s);
 }
+/* situs aktif: Hutan Desa (kode HD/admin) atau wilayah SHP pengguna yang sudah dianalisis otomatis (assets/wilayah_umum.js) */
+const situs = () => (window.FHAksesHD && FHAksesHD() && window.FHSiteObj && FHSiteObj()) || (window.FHWilSaya && FHWilSaya.aktif() ? FHWilSaya.site() : null);
 function hanyaHD(judul, ket) {
-  if (window.FHAksesHD && FHAksesHD() && window.FHSiteObj && FHSiteObj()) return false;
+  if (situs()) return false;
   openPage(judul, I('Khusus Hutan Desa dampingan', 'Partner village forests only'), `<div class="fa"><div class="fa-card"><p>${ket || I('Alat ini dihitung otomatis untuk Hutan Desa dampingan PRCF. Untuk wilayah Anda sendiri gunakan menu <b>Analisis lahan & karbon</b> (unggah SHP).', 'This tool is computed automatically for PRCF partner village forests. For your own area use <b>Land & carbon analysis</b> (upload a shapefile).')}</p></div></div>`);
   return true;
 }
@@ -80,7 +82,7 @@ const hari = t => Date.parse(String(t).slice(0, 10) + 'T00:00:00Z') / 864e5;
 
 /* ================= 1. PRAKIRAAN MUSIM API 6 BULAN + ENSO ================= */
 async function prakiraan() {
-  css(); const J0 = I('Prakiraan musim api', 'Fire-season outlook'); if (hanyaHD(J0)) return; const s = FHSiteObj(); pakai('prakmusim');
+  css(); const J0 = I('Prakiraan musim api', 'Fire-season outlook'); if (hanyaHD(J0)) return; const s = situs(); pakai('prakmusim');
   muat(J0, s.hd_nama + I(' · 6 bulan', ' · 6 months'), async w => {
     const D = await getJ('data/iklim/indeks.json'), L = D.lokasi && D.lokasi[s.id], M = L && L.musim_api;
     if (!M) return kosong(w);
@@ -112,7 +114,7 @@ const HTHK = { 'tanpa': '#16A34A', 'sangat pendek': '#65A30D', 'pendek': '#CA8A0
 const HTHE = { 'tanpa': 'none', 'sangat pendek': 'very short', 'pendek': 'short', 'menengah': 'medium', 'panjang': 'long', 'sangat panjang': 'very long', 'kekeringan ekstrem': 'extreme drought' };
 const TNK = { 'sangat kering': ['#B91C1C', 'very dry'], 'kering': ['#EA580C', 'dry'], 'normal': ['#16A34A', 'normal'], 'basah': ['#2563EB', 'wet'] };
 async function kering() {
-  css(); const J0 = I('Kekeringan & hari tanpa hujan', 'Drought & dry days'); if (hanyaHD(J0)) return; const s = FHSiteObj(); pakai('kering');
+  css(); const J0 = I('Kekeringan & hari tanpa hujan', 'Drought & dry days'); if (hanyaHD(J0)) return; const s = situs(); pakai('kering');
   muat(J0, s.hd_nama, async w => {
     const D = await getJ('data/iklim/indeks.json'), L = D.lokasi && D.lokasi[s.id]; if (!L || !L.hth) return kosong(w);
     const H = L.hth, T = L.tanah, kh = HTHK[H.kelas] || '#16A34A', kp = HTHK[H.kelas_proyeksi] || kh, KL = k => EN() ? HTHE[k] || k : k;
@@ -135,7 +137,7 @@ async function kering() {
 
 /* ================= 3. INDEKS SIAGA DESA ================= */
 async function siaga() {
-  css(); const J0 = I('Indeks Siaga Desa', 'Village Alert Index'); if (hanyaHD(J0)) return; const s = FHSiteObj(); pakai('siaga');
+  css(); const J0 = I('Indeks Siaga Desa', 'Village Alert Index'); if (hanyaHD(J0)) return; const s = situs(); pakai('siaga');
   muat(J0, s.hd_nama + I(' · diperbarui tiap 3 jam', ' · updated every 3 hours'), async w => {
     const D = await getJ('data/iklim/indeks.json'), L = D.lokasi && D.lokasi[s.id], S = L && L.siaga; if (!S) return kosong(w);
     const c = SIAGA[S.level] || SIAGA[0];
@@ -161,7 +163,7 @@ async function siaga() {
 /* ================= 4. DEBIT SUNGAI & BANJIR ================= */
 let LAPIS_SG = null;
 async function banjir() {
-  css(); const J0 = I('Debit sungai & banjir', 'River flow & floods'); if (hanyaHD(J0)) return; const s = FHSiteObj(); pakai('banjir');
+  css(); const J0 = I('Debit sungai & banjir', 'River flow & floods'); if (hanyaHD(J0)) return; const s = situs(); pakai('banjir');
   muat(J0, s.hd_nama + I(' · 30 hari', ' · 30 days'), async w => {
     const D = await getJ('data/banjir/indeks.json'), B = D.lokasi && D.lokasi[s.id]; if (!B) return kosong(w);
     const S = B.sungai, c = BANJIR[B.level] || BANJIR[0], kini = hari(new Date(Date.now() + 7 * 36e5).toISOString());
@@ -189,7 +191,7 @@ async function banjir() {
 /* ================= 5. ARAH ASAP ================= */
 let LAPIS_ASAP = null;
 async function asap() {
-  css(); const J0 = I('Arah asap', 'Smoke direction'); if (hanyaHD(J0)) return; const s = FHSiteObj(); pakai('asap');
+  css(); const J0 = I('Arah asap', 'Smoke direction'); if (hanyaHD(J0)) return; const s = situs(); pakai('asap');
   muat(J0, s.hd_nama + I(' · 24 jam', ' · 24 hours'), async w => {
     const D = await getJ('data/asap/indeks.json'), A = D.lokasi && D.lokasi[s.id]; if (!A) return kosong(w);
     let U = null; try { const P = await getJ('data/prakiraan.json'); U = ((P.lokasi || {})[s.id] || {}).udara; } catch (e) { }
@@ -221,7 +223,7 @@ async function asap() {
 /* ================= 6. ARSIP AREA TERBAKAR MODIS 2001–SEKARANG ================= */
 let LAPIS_BA = null;
 async function bekasArsip() {
-  css(); const J0 = I('Arsip area terbakar', 'Burned-area archive'); if (hanyaHD(J0)) return; const s = FHSiteObj(); pakai('bekasarsip');
+  css(); const J0 = I('Arsip area terbakar', 'Burned-area archive'); if (hanyaHD(J0)) return; const s = situs(); pakai('bekasarsip');
   muat(J0, s.hd_nama + ' · 2001–' + new Date().getFullYear(), async w => {
     const D = await getJ('data/bekas_modis/indeks.json'), L = D.lokasi && D.lokasi[s.id]; if (!L) return kosong(w);
     let jas = null; try { jas = (await getJ('data/iklim/enso.json')).jas; } catch (e) { }
@@ -257,7 +259,7 @@ async function bekasArsip() {
 const VK = { kering: ['#B91C1C', 'Lebih kering dari normal', 'Drier than normal'], agak_kering: ['#EA580C', 'Agak di bawah normal', 'Slightly below normal'], normal: ['#16A34A', 'Normal', 'Normal'], belum_cukup: ['#64748B', 'Normal belum cukup', 'Not enough history'] };
 const KATV = { sangat_rendah: ['#B91C1C', 'sangat rendah', 'very low'], rendah: ['#EA580C', 'rendah', 'low'], normal: ['#16A34A', 'normal', 'normal'], tinggi: ['#2563EB', 'tinggi', 'high'], tanpa_normal: ['#64748B', '–', '–'] };
 async function vegetasi() {
-  css(); const J0 = I('Kesehatan vegetasi', 'Vegetation health'); if (hanyaHD(J0)) return; const s = FHSiteObj(); pakai('vegetasi');
+  css(); const J0 = I('Kesehatan vegetasi', 'Vegetation health'); if (hanyaHD(J0)) return; const s = situs(); pakai('vegetasi');
   muat(J0, s.hd_nama + ' · MODIS 250 m', async w => {
     const D = await getJ('data/vegetasi/indeks.json'), L = D.lokasi && D.lokasi[s.id], T = L && L.terkini; if (!T) return kosong(w);
     const v = VK[T.status] || VK.normal, lama = T.umur_hari > 45, kv = k => KATV[k] || KATV.tanpa_normal, dr = L.deret || [];
@@ -277,7 +279,7 @@ async function vegetasi() {
 
 /* ================= 8. REKAP MUSIM API ================= */
 async function rekap() {
-  css(); const J0 = I('Rekap musim api', 'Fire-season recap'); if (hanyaHD(J0)) return; const s = FHSiteObj(); pakai('rekapmusim');
+  css(); const J0 = I('Rekap musim api', 'Fire-season recap'); if (hanyaHD(J0)) return; const s = situs(); pakai('rekapmusim');
   muat(J0, s.hd_nama, async w => {
     const D = await getJ('data/rekap_musim/indeks.json'), L = D.lokasi && D.lokasi[s.id]; if (!L || !L.musim || !Object.keys(L.musim).length) return kosong(w, I('Rekap dibuat otomatis 7 hari setelah musim api berakhir.', 'The recap is generated automatically 7 days after the fire season ends.'));
     const th = Object.keys(L.musim).sort().reverse(), R = L.musim[th[0]];
@@ -300,7 +302,7 @@ async function rekap() {
 /* ---------- status Siaga di Beranda & subjudul kartu ---------- */
 async function beranda(el, sub) {
   try {
-    if (!(window.FHAksesHD && FHAksesHD())) return; const s = FHSiteObj(); if (!s) return; css();
+    const s = situs(); if (!s) return; css();
     const [D, B] = await Promise.all([getJ('data/iklim/indeks.json').catch(() => null), getJ('data/banjir/indeks.json').catch(() => null)]);
     const L = D && D.lokasi && D.lokasi[s.id];
     if (L && L.siaga && el && !el.querySelector('.hx-sg')) {
