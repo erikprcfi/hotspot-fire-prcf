@@ -178,8 +178,10 @@ def jalankan(mod, fn="main", *args):
 def satu(W, tmp_ubin, no):
     site, geom, (ke, gm) = lokasi_dari(W); sid = site["id"]
     lama = {}
-    try: lama = json.loads(http(akun_url() + f"?pekerja={KUNCI}&dinamis={W['aid']}", timeout=120)).get("data") or {}
-    except Exception as e: LOG(no, "paket lama tidak terbaca")
+    if UJI: lama = json.load(open(UJI_OUT)) if os.path.exists(UJI_OUT) else {}
+    else:
+        try: lama = json.loads(http(akun_url() + f"?pekerja={KUNCI}&dinamis={W['aid']}", timeout=120)).get("data") or {}
+        except Exception as e: LOG(no, "paket lama tidak terbaca")
     cache = lama.get("_cache") or {}
     D = tempfile.mkdtemp(prefix="pr_"); os.environ["PR_DATA"] = D
     try:
@@ -236,13 +238,18 @@ def satu(W, tmp_ubin, no):
         s = json.dumps(paket, ensure_ascii=False, separators=(",", ":"))
         if len(s) > 4.4e6:   # batas server: buang piksel peta & titik arsip lama dari cache bila terlalu besar
             paket["bekas_modis_geo"] = None; cache.pop("arsip", None); cache["arsip_v"] = 0; s = json.dumps(paket, ensure_ascii=False, separators=(",", ":"))
-        r = json.loads(http(akun_url(), {"aksi": "pekerja_dinamis", "kunci_pekerja": KUNCI, "data": [{"aid": W["aid"], "data": paket}]}, timeout=180))
+        if UJI: open(UJI_OUT, "w").write(s); r = {"disimpan": 1}
+        else: r = json.loads(http(akun_url(), {"aksi": "pekerja_dinamis", "kunci_pekerja": KUNCI, "data": [{"aid": W["aid"], "data": paket}]}, timeout=180))
         LOG(no, "selesai", {k: ("ok" if v else "gagal") for k, v in hasil_langkah.items()}, f"{len(s) / 1e6:.2f} MB", "tersimpan" if r.get("disimpan") else "TIDAK tersimpan")
         return bool(r.get("disimpan"))
     finally:
         shutil.rmtree(D, ignore_errors=True); os.environ.pop("PR_DATA", None)
 
+UJI = "--uji" in sys.argv; UJI_OUT = os.environ.get("UJI_OUT", "/tmp/paket_uji.json")
 def main():
+    if UJI:   # uji lokal: python scripts/wilayah_umum.py --uji wilayah.geojson  (tanpa server; paket ditulis ke UJI_OUT)
+        g = json.load(open(sys.argv[sys.argv.index("--uji") + 1])); tmp = tempfile.mkdtemp(prefix="ubin_")
+        satu({"aid": "00000000-0000-4000-8000-000000000001", "nama": "Wilayah uji", "geojson": g}, tmp, 1); return
     if not KUNCI: LOG("ANALISIS_KEY tidak ada – dilewati"); return
     try: W = json.loads(http(akun_url() + f"?pekerja={KUNCI}&wilayah=1", timeout=180))
     except Exception as e: LOG("daftar wilayah gagal:", type(e).__name__); return
