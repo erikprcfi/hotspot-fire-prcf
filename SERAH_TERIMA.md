@@ -255,3 +255,9 @@ Live ke main bila semua uji lulus.
 - **Arsip area terbakar MODIS MCD64A1 2001–sekarang** & **Kesehatan vegetasi MOD13Q1/MYD13Q1 (NDVI, NBR)** via Microsoft Planetary Computer. `scripts/modis_arsip.py` (sekali sehari, inkremental). Catatan: beberapa bulan MCD64A1 tidak tersedia di salinan arsip (ditandai `bulan_hilang`).
 - **Rekap musim api** + PDF 3 musim terakhir. `scripts/rekap_musim.py` → `data/rekap_musim/`.
 - Uji: `tes/uji_harian.js` memeriksa 8 halaman baru (admin) & penguncian mode umum/SHP; `tes/validasi_data.py` memeriksa konsistensi data baru.
+
+## 2.5 – Wilayah SHP pengguna umum: semua fitur otomatis (26 Nov 2026)
+- `scripts/wilayah_umum.py` (langkah di `update.yml`, tiap ± 3 jam, bukan saat push): untuk setiap wilayah SHP yang analisisnya selesai, menjalankan skrip yang sama dengan Hutan Desa (prakiraan & FDRS, kalender musim api & titik rawan, arsip MODIS & vegetasi, iklim/Indeks Siaga, banjir GloFAS, arah asap, rekap musim) di folder sementara, lalu menyimpan paket ke server (`pekerja_dinamis`). Data pengguna tidak masuk repo; log Actions hanya angka.
+- Peringatan dini wilayah SHP (aturan sama dengan Hutan Desa) dikirim ke pelanggan `shp-<aid>`; status terkirim disimpan di paket (privat).
+- `assets/wilayah_umum.js` (`FHWilSaya`): memilih wilayah / ruang kerja (`ruang_daftar`), mengambil paket (`wilayah_dinamis`), menyimpannya untuk luring, membuka 11 alat (Indeks Siaga, prakiraan musim api, kekeringan, banjir, asap, arsip area terbakar, vegetasi, rekap, kalender, titik rawan, rencana patroli), status 7 hari di Beranda, lembar "Wilayah & tim" (tambah/keluarkan anggota, undangan email).
+- Uji: `tes/paket_wilayah_uji.json.gz` = paket wilayah sintetis (Kalteng_berlubang); skenario SHP di uji harian memeriksa seluruh alat.
