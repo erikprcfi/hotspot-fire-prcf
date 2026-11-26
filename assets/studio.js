@@ -344,9 +344,16 @@ HAL.galat = async B => {
     : g.st === 'ulang' ? `<span style="display:inline-block;margin-top:6px;padding:2px 8px;border-radius:99px;font-size:11.5px;font-weight:700;background:rgba(251,113,133,.16);color:#FB7185">Muncul lagi setelah perbaikan</span>`
     : `<span style="display:inline-block;margin-top:6px;padding:2px 8px;border-radius:99px;font-size:11.5px;font-weight:700;background:rgba(245,158,11,.16);color:#FBBF24">Perlu ditinjau</span>`;
   let semua = false;
+  const tren = () => {   // kejadian galat per pekan (8 pekan terakhir, WIB)
+    const now = Date.now() + 7 * 36e5, W8 = []; for (let k = 7; k >= 0; k--) W8.push({ a: now - (k + 1) * 7 * 864e5, b: now - k * 7 * 864e5, n: 0 });
+    D.galat.forEach(x => { const t = Date.parse(String(x.t).slice(0, 16).replace(' ', 'T') + ':00Z'); const w = W8.find(w => t > w.a && t <= w.b); if (w) w.n += x.n; });
+    const mx = Math.max(1, ...W8.map(w => w.n)), tg = ms => new Date(ms).toISOString().slice(5, 10).split('-').reverse().join('/');
+    return `<div class="st-card" style="margin-top:14px"><b style="display:block;margin-bottom:8px">Kejadian galat per pekan</b><svg viewBox="0 0 340 110" style="width:100%;max-width:560px;height:auto;display:block">${W8.map((w, i) => { const h = 70 * w.n / mx, x = 6 + i * 41.5; return `<rect x="${x}" y="${80 - h}" width="32" height="${Math.max(h, w.n ? 2 : 0)}" rx="3" fill="${i === 7 ? '#FB7185' : '#64748B'}"><title>${w.n}</title></rect><text x="${x + 16}" y="${76 - h}" text-anchor="middle" fill="currentColor" font-size="10">${w.n || ''}</text><text x="${x + 16}" y="96" text-anchor="middle" fill="currentColor" opacity=".7" font-size="9">${tg(w.b - 864e5)}</text>`; }).join('')}</svg><small class="st-note">Batang kanan = 7 hari terakhir. Tanggal = hari terakhir pekan itu.</small></div>`;
+  };
   const tampil = () => {
     const X = semua ? L : aktif;
     B.innerHTML = `<div class="st-grid st-g3"><div class="st-card st-kpi" style="--k:#FB7185"><small>Galat aktif</small><b>${nf(aktif.length)}</b><span>${aktif.length ? 'jenis galat perlu ditinjau' : 'tidak ada galat yang belum ditangani'}</span></div><div class="st-card st-kpi" style="--k:#10B981"><small>Sudah diperbaiki</small><b>${nf(beres)}</b><span>${nf(L.filter(g => g.st === 'beres').reduce((s, g) => s + g.n, 0))} kejadian lama</span></div><div class="st-card st-kpi" style="--k:#38BDF8"><small>Galat terakhir</small><b style="font-size:16px">${esc(D.galat.length ? D.galat.map(x => String(x.t).slice(0, 16)).sort().pop() : '–')}</b></div></div>
+    ${tren()}
     ${beres ? `<div style="margin-top:12px"><button class="st-chip" id="stGS" style="padding:8px 14px">${semua ? 'Sembunyikan yang sudah diperbaiki' : `Tampilkan ${beres} galat yang sudah diperbaiki`}</button></div>` : ''}
     <div class="st-wrap" style="margin-top:12px"><table class="st-tb"><thead><tr><th>Pesan galat</th><th style="text-align:right">Jumlah</th><th class="st-hp">Versi</th><th class="st-hp">Terakhir</th></tr></thead><tbody>
     ${X.length ? X.map(g => `<tr${g.st === 'beres' ? ' style="opacity:.72"' : ''}><td><b style="font-family:ui-monospace,monospace;font-size:12.5px;word-break:break-word">${esc(g.pesan)}</b><small class="st-note" style="display:block;word-break:break-all">${esc(g.sumber)} · ${esc([...g.mode].join(', '))} · terakhir ${esc(String(g.akhir).slice(0, 16))}</small>${chip(g)}</td><td style="text-align:right">${nf(g.n)}</td><td class="st-hp">${esc([...g.versi].slice(0, 3).join(', '))}</td><td class="st-hp">${esc(String(g.akhir).slice(0, 16))}</td></tr>`).join('') : `<tr><td colspan="4" class="st-empty">${L.length ? 'Semua galat yang tercatat sudah diperbaiki. 🎉' : 'Tidak ada galat tercatat. 🎉'}</td></tr>`}</tbody></table></div>
@@ -392,11 +399,22 @@ HAL.sistem = async B => {
   B.innerHTML = `<div class="st-grid st-g4"><div class="st-card st-kpi" style="--k:#10B981"><small>Server pengguna</small><b>${srv ? 'v' + srv : '–'}</b><span>${srv >= 16 ? 'Studio lengkap' : 'pasang v16 untuk Studio lengkap'}</span></div>
       <div class="st-card st-kpi" style="--k:#6366F1"><small>Versi website</small><b style="font-size:20px">${esc(sw)}</b></div>
       <div class="st-card st-kpi" style="--k:#F59E0B"><small>Paket pembaruan aplikasi</small><b style="font-size:20px">${esc(ot ? ot.versi : '–')}</b><span>${ot ? nf(ot.ukuran / 1e6, 1) + ' MB · checksum SHA-256' : ''}</span></div>
-      <div class="st-card st-kpi" style="--k:#38BDF8"><small>Versi isi terpasang di perangkat ini</small><b style="font-size:20px">${esc((window.FHNative && FHNative.versiIsi && FHNative.versiIsi()) || 'web')}</b></div></div>
+      <div class="st-card st-kpi" style="--k:#38BDF8"><small>Versi isi terpasang di perangkat ini</small><b style="font-size:20px">${esc((window.FHVersiIsi && FHVersiIsi()) || 'web')}</b></div></div>
+    <div class="st-card" style="margin-top:14px" id="stVer"><b>Versi aplikasi pengguna (aktif 30 hari)</b><p class="st-note">Memuat…</p></div>
     <div class="st-wrap" style="margin-top:14px"><table class="st-tb"><thead><tr><th>Data otomatis</th><th>Diperbarui</th><th>Status</th></tr></thead><tbody>
       ${baris('Titik panas NASA FIRMS', hs && hs.diperbarui_utc, 9, 'tiap ± 3 jam')}${baris('Prakiraan cuaca & bahaya kebakaran', pk && pk.diperbarui_utc, 30, 'ECMWF · BMKG')}
       ${baris('Iklim & Indeks Siaga Desa', ik && ik.diperbarui_utc, 30, 'ENSO NOAA · ERA5-Land')}${baris('Debit sungai & banjir', bj && bj.diperbarui_utc, 50, 'GloFAS harian')}${baris('Vegetasi MODIS', vg && vg.diperbarui_utc, 24 * 20, 'citra 8–16 harian')}</tbody></table></div>
     <p class="st-note">Pemantauan otomatis juga berjalan tiap 6 jam dan uji menyeluruh tiap malam; masalah dilaporkan ke email Pengembang.</p>`;
+  try {   // sebaran versi aplikasi pengguna: siapa yang belum mendapat pembaruan otomatis
+    const D = DATA.pengguna ? { ok: true, pengguna: DATA.pengguna } : await v16('studio_pengguna'), V = B.querySelector('#stVer'); if (!V) return;
+    if (!D || !D.ok) { V.querySelector('.st-note').textContent = 'Daftar pengguna belum dapat dimuat.'; return; }
+    DATA.pengguna = D.pengguna; const batas = Date.now() - 30 * 864e5, g = {};
+    D.pengguna.filter(u => (u.aktif_ms || 0) >= batas).forEach(u => { const v = String(u.versi || '–'); const k = /\/(\d{12})$/.test(v) ? 'Aplikasi ' + v.split('/')[1] : /\/web$/.test(v) ? 'Website' : /\/asli$/.test(v) ? 'Aplikasi (versi isi belum terbaca)' : 'Versi lama (sebelum 27 Nov)'; (g[k] = g[k] || { n: 0, hp: new Set() }).n++; g[k].hp.add(u.perangkat || ''); });
+    const tb = ot && ot.versi ? String(ot.versi) : '', L = Object.entries(g).sort((a, b) => b[1].n - a[1].n);
+    const lbl = k => k === 'Aplikasi ' + tb ? '<span class="st-tag" style="color:#34D399">Terbaru</span>' : /^Aplikasi \d/.test(k) ? '<span class="st-tag" style="color:#FBBF24">Belum diperbarui</span>' : k === 'Website' ? '<span class="st-tag" style="color:#34D399">Selalu terbaru</span>' : '<span class="st-tag" style="color:#94A3B8">Menunggu dibuka ulang</span>';
+    V.innerHTML = `<b>Versi aplikasi pengguna (aktif 30 hari)</b><div class="st-wrap" style="margin-top:8px"><table class="st-tb"><thead><tr><th>Versi</th><th style="text-align:right">Pengguna</th><th>Status</th></tr></thead><tbody>${L.length ? L.map(([k, v]) => `<tr><td>${esc(k)}<small class="st-note" style="display:block">${esc([...v.hp].filter(Boolean).join(', '))}</small></td><td style="text-align:right">${nf(v.n)}</td><td>${lbl(k)}</td></tr>`).join('') : '<tr><td colspan="3" class="st-empty">Belum ada pengguna aktif.</td></tr>'}</tbody></table></div>
+      <p class="st-note">Versi terbaru: ${esc(tb || '–')}. Versi tercatat setiap kali pengguna membuka aplikasi; "Versi lama" = belum membuka aplikasi sejak pencatatan versi isi dimulai.</p>`;
+  } catch (e) { }
 };
 
 /* ---------------- pengumuman untuk semua pengguna ---------------- */

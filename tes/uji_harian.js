@@ -154,7 +154,29 @@ for(const plat of PLAT){
      if(!f.chip)masalah.push(`${lbl}: Indeks Siaga tidak tampil di Beranda wilayah SHP`);
      if(!f.ubin)masalah.push(`${lbl}: ubin Indeks Siaga masih terkunci di Beranda wilayah SHP`);
      if(!(f.lembar>=1))masalah.push(`${lbl}: lembar Wilayah & tim kosong`);
-     if(f.anggota!==1)masalah.push(`${lbl}: daftar anggota tim tidak tampil (${f.anggota})`);}}
+     if(f.anggota!==1)masalah.push(`${lbl}: daftar anggota tim tidak tampil (${f.anggota})`);
+     // alat tambahan wilayah: laporan PDF, riwayat, ekspor, peta luring, banding
+     const g=await p.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms)),o={};const buka=async(f,ms)=>{try{FHApp.closeAll()}catch(e){};await w(400);f();await w(ms||1500);return document.querySelector('#page.on #pageBody')||document.body;};
+      o.tombol=!!document.querySelector('[data-wa]');if(!window.FHWilAlat)return o;
+      FHWilAlat.menu();await w(800);o.menu=document.querySelectorAll('#waM [data-k]').length;
+      let pg=await buka(()=>FHWilAlat.riwayat());o.riwayat=pg.querySelectorAll('.wa-svg').length;o.riwayatBaris=pg.querySelectorAll('.wa-tb tr').length-1;
+      pg=await buka(()=>FHWilAlat.ekspor());o.ekspor=pg.querySelectorAll('[data-e]').length;
+      pg=await buka(()=>FHWilAlat.luring());o.luring=!!pg.querySelector('#waLS');
+      pg=await buka(()=>FHWilAlat.banding());o.banding=pg.innerText.length>20;
+      pg=await buka(()=>FHWilAlat.laporan());o.laporan=!!pg.querySelector('#waPdf');return o;});
+     if(!g.tombol)masalah.push(`${lbl}: tombol Laporan & data tidak ada di Beranda wilayah SHP`);
+     if(g.menu!==5)masalah.push(`${lbl}: menu Laporan & data ${g.menu} item`);
+     if(g.riwayat!==2||!(g.riwayatBaris>=10))masalah.push(`${lbl}: riwayat titik panas tidak lengkap (${g.riwayat} grafik, ${g.riwayatBaris} tahun)`);
+     if(!(g.ekspor>=12))masalah.push(`${lbl}: ekspor data hanya ${g.ekspor} tombol`);
+     if(!g.luring)masalah.push(`${lbl}: halaman peta luring wilayah tidak lengkap`);
+     if(!g.banding)masalah.push(`${lbl}: halaman bandingkan wilayah kosong`);
+     if(!g.laporan)masalah.push(`${lbl}: halaman laporan PDF wilayah tidak lengkap`);
+     else{ // unduh PDF & ekspor KML sungguhan
+      for(const [sel,min,nm] of [['#waPdf',15000,'laporan PDF']]){try{const [dlx]=await Promise.all([p.waitForEvent('download',{timeout:60000}),p.click(sel)]);const fp=await dlx.path();const sz=fp?fs.statSync(fp).size:0;const kepala=fp?fs.readFileSync(fp).slice(0,5).toString():'';if(sz<min||kepala!=='%PDF-')masalah.push(`${lbl}: ${nm} tidak valid (${sz} B)`);}catch(e){masalah.push(`${lbl}: ${nm} gagal diunduh – ${String(e.message).slice(0,80)}`);}}
+      await p.evaluate(async()=>{try{FHApp.closeAll()}catch(e){};await new Promise(r=>setTimeout(r,400));FHWilAlat.ekspor();await new Promise(r=>setTimeout(r,1200));});
+      for(const e of ['batas|KML','titik|GPX','rawan|GeoJSON','titik|CSV']){try{const [dlx]=await Promise.all([p.waitForEvent('download',{timeout:20000}),p.click(`[data-e="${e}"]`)]);const fp=await dlx.path();const t=fp?fs.readFileSync(fp,'utf8'):'';const ok=e.endsWith('KML')?/<kml[\s\S]*<Placemark>/.test(t):e.endsWith('GPX')?/<gpx[\s\S]*<wpt /.test(t):e.endsWith('GeoJSON')?(()=>{try{return JSON.parse(t).features.length>0}catch(x){return false}})():t.split('\n').length>2;if(!ok)masalah.push(`${lbl}: ekspor ${e} isinya tidak valid`);}catch(x){masalah.push(`${lbl}: ekspor ${e} gagal – ${String(x.message).slice(0,80)}`);}}
+      await p.evaluate(()=>{try{FHApp.closeAll()}catch(e){}});}
+   }}
    if(!ADM&&sk!=='tamu'&&!(GJ&&PAKET)){const u=await p.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));try{FHApp.closeAll()}catch(e){};await w(400);FHMusimRawan.rencana();await w(1200);const t=((document.querySelector('#abSub')||{}).textContent||'')+' '+((document.querySelector('#page.on #pageBody')||{}).innerText||'');
       try{FHApp.closeAll()}catch(e){};await w(400);FHKartu.open();await w(3500);const k=!!document.querySelector('.kp-img');try{FHApp.closeAll()}catch(e){};await w(400);FHBanding.open();await w(1200);const b=((document.querySelector('#abSub')||{}).textContent||'')+' '+((document.querySelector('#page.on #pageBody')||{}).innerText||'');try{FHApp.closeAll()}catch(e){};await w(400);FHIklim.siaga();await w(1200);const sg=((document.querySelector('#abSub')||{}).textContent||'')+' '+((document.querySelector('#page.on #pageBody')||{}).innerText||'');try{FHApp.closeAll()}catch(e){};return {rencana:/Khusus|only/.test(t),kartu:k,banding:/Khusus admin|Admins only/.test(b),siaga:/Khusus|only/.test(sg)};});
      if(!u.rencana)masalah.push(`${lbl}: rencana patroli terbuka di mode ${harap}`);if(!u.kartu)masalah.push(`${lbl}: kartu status (Indonesia) gagal`);if(!u.banding)masalah.push(`${lbl}: perbandingan Hutan Desa terbuka untuk non-admin`);if(!u.siaga)masalah.push(`${lbl}: Indeks Siaga Desa terbuka di mode ${harap}`);}

@@ -31,7 +31,7 @@ const ubah = () => { subs.forEach(f => { try { f(); } catch (e) { } }); try { if
 async function simpanCache(u, aid, p) { try { if (!window.caches) return; const c = await caches.open(CACHE); await c.put(urlCache(u, aid), new Response(JSON.stringify(p), { headers: { 'Content-Type': 'application/json' } })); } catch (e) { } }
 async function bacaCache(u, aid) { try { if (!window.caches) return null; const c = await caches.open(CACHE), r = await c.match(urlCache(u, aid)); return r ? await r.json() : null; } catch (e) { return null; } }
 function rapikan(p) {   // cache pekerja tidak diperlukan di HP, kecuali deret cuaca (grafik hujan)
-  if (!p || typeof p !== 'object') return null; const c = p._cache || {}; const o = Object.assign({}, p); delete o._cache; o.cuaca = c.cuaca || null; return o;
+  if (!p || typeof p !== 'object') return null; const c = p._cache || {}; const o = Object.assign({}, p); delete o._cache; o.cuaca = c.cuaca || null; o.titik_kini = c.titik_kini || null; return o;
 }
 function pilihAid(L, A) {
   if (!L || !L.length) return null;
@@ -66,6 +66,12 @@ async function muat(paksa) {
   })();
   try { return await MEMUAT; } finally { MEMUAT = null; }
 }
+async function paketAid(aid) {   // paket wilayah lain di daftar (untuk perbandingan) – tanpa mengganti wilayah aktif
+  const u = akun(); if (!u) return null; if (aid === AID && PAKET && PAKET.site) return PAKET;
+  const lama = await bacaCache(u, aid);
+  if (navigator.onLine !== false) { try { const j = await FHAkun.api({ aksi: 'wilayah_dinamis', id: u.id, token: u.token, aid }, 60000); if (j && j.ok && j.data) { const p = rapikan(j.data); await simpanCache(u, aid, p); return p; } } catch (e) { } }
+  return lama;
+}
 async function pilih(aid) { const u = akun(); if (!u) return; LS.set(kunciU(u), aid || null); PAKET = null; await muat(true); }
 
 /* ---------- tampilan: lapisan batas wilayah di peta + render ulang beranda ---------- */
@@ -87,6 +93,7 @@ function hub(el) {   // dipanggil dari hubUmum (mode umum / kode wilayah)
   if (!el) return; const h = el.querySelector('.hx-hero'); if (!h) return;
   const cta = h.querySelector('.hx-cta');
   if (cta && akun() && !cta.querySelector('[data-wl]')) { const b = document.createElement('button'); b.className = 'hx-btn'; b.dataset.wl = '1'; b.textContent = I('Wilayah & tim', 'Areas & team'); b.onclick = () => lembar(); cta.insertBefore(b, cta.children[1] || null); }
+  if (cta && aktif() && window.FHWilAlat && !cta.querySelector('[data-wa]')) { const b = document.createElement('button'); b.className = 'hx-btn'; b.dataset.wa = '1'; b.textContent = I('Laporan & data', 'Reports & data'); b.onclick = () => FHWilAlat.menu(); cta.appendChild(b); }
   if (PAKET && PAKET.menunggu) {
     const st = h.querySelector('.hx-status small'); if (st) st.textContent = I('Analisis otomatis semua fitur untuk wilayah ini sedang disiapkan (± 3 jam setelah analisis lahan selesai).', 'Automatic analysis of all features for this area is being prepared (about 3 hours after the land analysis finishes).');
     return;
@@ -122,6 +129,7 @@ async function lembar() {
       ${x.aid === AID ? `<span style="font-size:12px;font-weight:800;color:#0284C7">${I('Aktif', 'Active')}</span>` : `<button class="btn tap" style="padding:8px 14px" data-pilih="${esc(x.aid)}">${I('Buka', 'Open')}</button>`}</div>
       ${x.peran === 'ketua' ? `<button class="btn full tap" style="margin-top:8px;padding:10px 14px" data-tim="${esc(x.aid)}">${I('Anggota tim', 'Team members')}</button>` : ''}</div>`).join('') +
     (AID && !(FHAkun.akses && FHAkun.akses().mode === 'shp') ? `<button class="btn full tap" style="padding:10px 14px" data-tutup>${I('Tutup wilayah (kembali ke mode umum)', 'Close area (back to general mode)')}</button>` : '');
+  if (aktif() && window.FHWilAlat) { const d = document.createElement('div'); d.innerHTML = `<button class="btn pri full tap" style="padding:11px 14px;margin:0 0 12px" data-wa2>${I('Laporan & data wilayah aktif', 'Reports & data for the active area')}</button>`; B.prepend(d.firstChild); B.querySelector('[data-wa2]').onclick = () => { try { history.back(); } catch (e) { } setTimeout(() => FHWilAlat.menu(), 320); }; }
   B.querySelectorAll('[data-pilih]').forEach(b => b.onclick = async () => { b.disabled = true; b.textContent = I('Membuka…', 'Opening…'); await pilih(b.dataset.pilih); lembar(); toastMsg(PAKET && PAKET.site ? I('Wilayah dibuka', 'Area opened') : I('Data otomatis wilayah ini sedang disiapkan', 'Automatic data for this area is being prepared')); });
   B.querySelectorAll('[data-tim]').forEach(b => b.onclick = () => tim(b.dataset.tim));
   const t = B.querySelector('[data-tutup]'); if (t) t.onclick = async () => { const u2 = akun(); LS.set(kunciU(u2), '__umum'); AID = null; PAKET = null; tandai(); lembar(); };
@@ -197,5 +205,5 @@ function mulai() {
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mulai); else mulai();
 
-window.FHWilSaya = { aktif, site, paket: () => PAKET, titik, muat, pilih, lembar, hub, bisa: k => aktif() && OK.includes(k), buka: k => BUKA[k] && BUKA[k](), daftar: () => DAFTAR, onChange: f => subs.push(f) };
+window.FHWilSaya = { aktif, site, paket: () => PAKET, titik, muat, pilih, lembar, hub, bisa: k => aktif() && OK.includes(k), buka: k => BUKA[k] && BUKA[k](), daftar: () => DAFTAR, aidAktif: () => AID, paketAid, onChange: f => subs.push(f) };
 })();
