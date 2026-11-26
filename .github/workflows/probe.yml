@@ -1,0 +1,25 @@
+name: Probe sumber data (sementara)
+on: { push: { branches: [probe-data] } }
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - run: |
+          set +e
+          c(){ echo "== $1"; curl -s -m 40 -o /tmp/o -w "HTTP %{http_code} %{size_download}B %{content_type}\n" "$1"; head -c ${2:-600} /tmp/o | tr '\n' ' '; echo; }
+          c "https://geoportal.menlhk.go.id/server/rest/services?f=json" 3000
+          c "https://geoportal.menlhk.go.id/server/rest/services/SIGAP_Interaktif?f=json" 4000
+          c "https://geoportal.menlhk.go.id/server/rest/services/SIGAP_Interaktif/PIPPIB_2023_Periode_2/MapServer?f=json" 800
+          c "https://geoportal.menlhk.go.id/server/rest/services/SIGAP_Interaktif/PIPPIB_2023_Periode_2/MapServer/0/query?where=1%3D1&returnCountOnly=true&f=json" 300
+          c "https://geoportal.menlhk.go.id/server/rest/services/dbjvcbsyfs?f=json" 4000
+          c "https://sigap.menlhk.go.id/server/rest/services?f=json" 2000
+          c "https://api.gbif.org/v1/occurrence/search?limit=0" 200
+          c "https://planetarycomputer.microsoft.com/api/stac/v1/collections/jrc-gsw" 300
+          c "https://planetarycomputer.microsoft.com/api/stac/v1/collections/hgb" 300
+          c "https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-1-rtc" 300
+          c "https://planetarycomputer.microsoft.com/api/stac/v1/collections/chloris-biomass" 300
+          c "https://dataforgood-fb-data.s3.amazonaws.com/forests/v1/alsgedi_global_v6_float/tiles.geojson" 300
+          c "https://archive.researchdata.leeds.ac.uk/251/" 500
+          c "https://ads.atmosphere.copernicus.eu/api/catalogue/v1/collections" 200
+          c "https://apiv3.iucnredlist.org/" 200
