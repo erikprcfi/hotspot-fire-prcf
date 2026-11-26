@@ -334,11 +334,26 @@ HAL.laporan = async B => {
 HAL.galat = async B => {
   const D = await v16('studio_galat'); if (!D) return perluV16(B); if (!D.ok) { B.innerHTML = `<div class="st-card"><p>${esc(D.galat)}</p></div>`; return; }
   const grup = {}; D.galat.forEach(x => { const k = x.pesan + '|' + x.sumber.replace(/:\d+(:\d+)?$/, ''); const g = grup[k] = grup[k] || { pesan: x.pesan, sumber: x.sumber, n: 0, akhir: x.t, versi: new Set(), mode: new Set() }; g.n += x.n; g.versi.add(x.versi); g.mode.add(x.mode); });
-  const L = Object.values(grup).sort((a, b) => b.n - a.n);
-  B.innerHTML = `<div class="st-grid st-g3"><div class="st-card st-kpi" style="--k:#FB7185"><small>Kejadian galat</small><b>${nf(D.galat.reduce((s, x) => s + x.n, 0))}</b><span>500 catatan terakhir</span></div><div class="st-card st-kpi" style="--k:#F59E0B"><small>Jenis galat unik</small><b>${nf(L.length)}</b></div><div class="st-card st-kpi" style="--k:#38BDF8"><small>Terakhir</small><b style="font-size:16px">${esc(D.galat[0] ? String(D.galat[0].t).slice(0, 16) : '–')}</b></div></div>
-    <div class="st-wrap" style="margin-top:14px"><table class="st-tb"><thead><tr><th>Pesan galat</th><th style="text-align:right">Jumlah</th><th class="st-hp">Versi</th><th class="st-hp">Terakhir</th></tr></thead><tbody>
-    ${L.length ? L.map(g => `<tr><td><b style="font-family:ui-monospace,monospace;font-size:12.5px;word-break:break-word">${esc(g.pesan)}</b><small class="st-note" style="display:block;word-break:break-all">${esc(g.sumber)} · ${esc([...g.mode].join(', '))}</small></td><td style="text-align:right">${nf(g.n)}</td><td class="st-hp">${esc([...g.versi].slice(0, 3).join(', '))}</td><td class="st-hp">${esc(String(g.akhir).slice(0, 16))}</td></tr>`).join('') : '<tr><td colspan="4" class="st-empty">Tidak ada galat tercatat. 🎉</td></tr>'}</tbody></table></div>
-    <p class="st-note">Galat dikirim otomatis tanpa nama/email/lokasi. Galat yang sama digabung.</p>`;
+  // galat yang sudah diperbaiki di rilis tertentu (WIB): bila kejadian terakhir sebelum rilis perbaikan → "Sudah diperbaiki"
+  const PERBAIKAN = [[/Invalid LatLng/i, '2026-11-26 16:43', 'Pengaman posisi peta saat peta tersembunyi'], [/FHLokasi/, '2026-11-26 16:43', 'Menu Cuaca di lokasi saya dipulihkan'],
+    [/ACT\.clearLayers/, '2026-11-26 16:43', 'Menunggu peta siap sebelum ganti Hutan Desa'], [/FHLang/, '2026-11-26 16:43', 'Kamus bahasa aman bila berkas bahasa gagal dimuat']];
+  const L = Object.values(grup).map(g => { const f = PERBAIKAN.find(x => x[0].test(g.pesan)); g.st = !f ? 'tinjau' : String(g.akhir).slice(0, 16) < f[1] ? 'beres' : 'ulang'; g.ket = f ? f[2] + ' · ' + f[1].slice(8, 10) + '/' + f[1].slice(5, 7) + ' ' + f[1].slice(11) + ' WIB' : ''; return g; })
+    .sort((a, b) => (a.st === 'beres') - (b.st === 'beres') || b.n - a.n);
+  const aktif = L.filter(g => g.st !== 'beres'), beres = L.length - aktif.length;
+  const chip = g => g.st === 'beres' ? `<span style="display:inline-block;margin-top:6px;padding:2px 8px;border-radius:99px;font-size:11.5px;font-weight:700;background:rgba(16,185,129,.16);color:#34D399">✓ Sudah diperbaiki</span><small class="st-note" style="display:block">${esc(g.ket)}</small>`
+    : g.st === 'ulang' ? `<span style="display:inline-block;margin-top:6px;padding:2px 8px;border-radius:99px;font-size:11.5px;font-weight:700;background:rgba(251,113,133,.16);color:#FB7185">Muncul lagi setelah perbaikan</span>`
+    : `<span style="display:inline-block;margin-top:6px;padding:2px 8px;border-radius:99px;font-size:11.5px;font-weight:700;background:rgba(245,158,11,.16);color:#FBBF24">Perlu ditinjau</span>`;
+  let semua = false;
+  const tampil = () => {
+    const X = semua ? L : aktif;
+    B.innerHTML = `<div class="st-grid st-g3"><div class="st-card st-kpi" style="--k:#FB7185"><small>Galat aktif</small><b>${nf(aktif.length)}</b><span>${aktif.length ? 'jenis galat perlu ditinjau' : 'tidak ada galat yang belum ditangani'}</span></div><div class="st-card st-kpi" style="--k:#10B981"><small>Sudah diperbaiki</small><b>${nf(beres)}</b><span>${nf(L.filter(g => g.st === 'beres').reduce((s, g) => s + g.n, 0))} kejadian lama</span></div><div class="st-card st-kpi" style="--k:#38BDF8"><small>Galat terakhir</small><b style="font-size:16px">${esc(D.galat.length ? D.galat.map(x => String(x.t).slice(0, 16)).sort().pop() : '–')}</b></div></div>
+    ${beres ? `<div style="margin-top:12px"><button class="st-chip" id="stGS" style="padding:8px 14px">${semua ? 'Sembunyikan yang sudah diperbaiki' : `Tampilkan ${beres} galat yang sudah diperbaiki`}</button></div>` : ''}
+    <div class="st-wrap" style="margin-top:12px"><table class="st-tb"><thead><tr><th>Pesan galat</th><th style="text-align:right">Jumlah</th><th class="st-hp">Versi</th><th class="st-hp">Terakhir</th></tr></thead><tbody>
+    ${X.length ? X.map(g => `<tr${g.st === 'beres' ? ' style="opacity:.72"' : ''}><td><b style="font-family:ui-monospace,monospace;font-size:12.5px;word-break:break-word">${esc(g.pesan)}</b><small class="st-note" style="display:block;word-break:break-all">${esc(g.sumber)} · ${esc([...g.mode].join(', '))} · terakhir ${esc(String(g.akhir).slice(0, 16))}</small>${chip(g)}</td><td style="text-align:right">${nf(g.n)}</td><td class="st-hp">${esc([...g.versi].slice(0, 3).join(', '))}</td><td class="st-hp">${esc(String(g.akhir).slice(0, 16))}</td></tr>`).join('') : `<tr><td colspan="4" class="st-empty">${L.length ? 'Semua galat yang tercatat sudah diperbaiki. 🎉' : 'Tidak ada galat tercatat. 🎉'}</td></tr>`}</tbody></table></div>
+    <p class="st-note">Galat dikirim otomatis tanpa nama/email/lokasi. Galat yang sama digabung. Catatan lama tetap disimpan sebagai riwayat; galat yang muncul lagi sesudah perbaikan otomatis ditandai merah.</p>`;
+    const t = B.querySelector('#stGS'); if (t) t.onclick = () => { semua = !semua; tampil(); };
+  };
+  tampil();
 };
 
 HAL.umum = async B => {
