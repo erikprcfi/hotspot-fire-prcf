@@ -18,7 +18,7 @@ Model 5 km menggambarkan sungai utama; banjir lokal anak sungai kecil dapat berb
 import os, sys, json, math, time, datetime as dt, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA = os.path.join(ROOT, "data"); OUT = os.path.join(DATA, "banjir")
+DATA = os.environ.get("PR_DATA") or os.path.join(ROOT, "data")   # PR_DATA: folder sementara untuk wilayah SHP pengguna (scripts/wilayah_umum.py); OUT = os.path.join(DATA, "banjir")
 UA = {"User-Agent": "hotspot-fire-prcf (github actions; PRCF Indonesia)"}
 API = "https://flood-api.open-meteo.com/v1/flood"
 NOW = dt.datetime.now(dt.timezone.utc); HARI = (NOW + dt.timedelta(hours=7)).date()

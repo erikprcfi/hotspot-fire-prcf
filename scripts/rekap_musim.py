@@ -23,7 +23,7 @@ DATA = LB.DATA; OUT = os.path.join(DATA, "rekap_musim")
 J, fmt, BLN = LB.J, LB.fmt, LB.BLN
 HIJAU, HIJAU2, ABU, MERAH = LB.HIJAU, LB.HIJAU2, LB.ABU, LB.MERAH
 KINI = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=7)).date()
-PDF_TERAKHIR = 3
+PDF_TERAKHIR = int(os.environ.get("PR_PDF", "3"))   # wilayah SHP: 0 (tanpa PDF)
 
 def Jx(p, d=None):
     try: return J(p)
