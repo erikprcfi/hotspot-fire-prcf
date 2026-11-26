@@ -18,7 +18,7 @@ import os, json, math, statistics, datetime as dt
 from collections import defaultdict
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA = os.path.join(ROOT, "data")
+DATA = os.environ.get("PR_DATA") or os.path.join(ROOT, "data")   # PR_DATA: folder sementara untuk wilayah SHP pengguna (scripts/wilayah_umum.py)
 TAHUN = list(range(2016, 2026))
 SEL = 0.01          # derajat (± 1,1 km)
 MIN_TAHUN = 3

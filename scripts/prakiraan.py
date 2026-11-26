@@ -24,7 +24,7 @@ Tingkat bahaya harian = kelas tertinggi antara FFMC dan DC.
 import os, json, math, time, hashlib, datetime, urllib.request, urllib.parse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA = os.path.join(ROOT, "data")
+DATA = os.environ.get("PR_DATA") or os.path.join(ROOT, "data")   # PR_DATA: folder sementara untuk wilayah SHP pengguna (scripts/wilayah_umum.py)
 PDIR = os.path.join(DATA, "prakiraan")
 UA = {"User-Agent": "hotspot-fire-prcf (github actions; PRCF Indonesia)"}
 TZ = "Asia%2FJakarta"

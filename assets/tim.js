@@ -6,12 +6,12 @@
  */
 (function () {
 'use strict';
-const ADMIN = ['erik.prcfi@gmail.com'];
+const ADMIN = ['erik.prcfi@gmail.com', 'erik@prcfindonesia.org'];   // Pengembang; peran Studio lain dari server (FHStudio)
 const ON_MS = 5 * 6e4, REF_MS = 20000;
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const ini = n => (n || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 const A = () => window.FHAkun;
-const admin = () => { const a = A(), u = a && a.user(); return !!(u && a.masuk() && ADMIN.includes(String(u.email || '').toLowerCase())); };
+const admin = () => { const a = A(), u = a && a.user(); return !!(u && a.masuk() && (ADMIN.includes(String(u.email || '').toLowerCase()) || (window.FHStudio && FHStudio.tingkat() >= 1))); };
 const rad = x => x * Math.PI / 180;
 const jarak = (a, b, c, d) => 2 * 6371 * Math.asin(Math.sqrt(Math.sin(rad(c - a) / 2) ** 2 + Math.cos(rad(a)) * Math.cos(rad(c)) * Math.sin(rad(d - b) / 2) ** 2));
 const COL = { on: '#22C55E', gps: '#F59E0B', off: '#94A3B8' };
