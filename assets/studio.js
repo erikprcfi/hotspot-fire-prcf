@@ -409,9 +409,13 @@ HAL.sistem = async B => {
   const kb = B.querySelector('#stKLHKb'); if (kb) kb.onclick = async () => {   // daftar layanan geoportal KLHK yang terkait kawasan/gambut/PIPPIB + uji kueri titik
     const O = B.querySelector('#stKLHKo'); kb.disabled = true; O.innerHTML = '<p class="st-note">Menghubungi geoportal.menlhk.go.id…</p>';
     const G = 'https://geoportal.menlhk.go.id/server/rest/services', hasil = [], t0 = Date.now();
-    const JJ = async u => { const c = new AbortController(), t = setTimeout(() => c.abort(), 20000); try { const r = await fetch(u, { signal: c.signal }); return { ok: r.ok, st: r.status, j: r.ok ? await r.json() : null }; } catch (e) { return { ok: false, st: String(e && e.name || e) }; } finally { clearTimeout(t); } };
+    const H = window.FHNative && FHNative.aktif && FHNative.plugin && FHNative.plugin('CapacitorHttp');   // aplikasi Android: koneksi bawaan HP (tanpa batasan CORS peramban)
+    const JJ = async u => {
+      if (H) { try { const r = await H.get({ url: u, connectTimeout: 20000, readTimeout: 25000 }); let d = r.data; if (typeof d === 'string') { try { d = JSON.parse(d); } catch (e) { d = null; } } return { ok: r.status >= 200 && r.status < 300 && !!d, st: 'HTTP ' + r.status + ' (koneksi HP)', j: d }; } catch (e) { return { ok: false, st: 'koneksi HP: ' + String(e && (e.message || e.name) || e).slice(0, 120) }; } }
+      const c = new AbortController(), t = setTimeout(() => c.abort(), 20000); try { const r = await fetch(u, { signal: c.signal }); return { ok: r.ok, st: r.status, j: r.ok ? await r.json() : null }; } catch (e) { return { ok: false, st: String(e && e.name || e) }; } finally { clearTimeout(t); } };
+    const jangkau = async u => { const c = new AbortController(), t = setTimeout(() => c.abort(), 20000); try { await fetch(u, { mode: 'no-cors', signal: c.signal }); return 'server terjangkau (diblokir CORS peramban)'; } catch (e) { return 'server tidak terjangkau dari jaringan ini (' + (e && e.name || e) + ')'; } finally { clearTimeout(t); } };
     const root = await JJ(G + '?f=json');
-    if (!root.ok) { O.innerHTML = `<p class="st-note" style="color:#FB7185">Tidak dapat terhubung (${esc(root.st)}). Kemungkinan diblokir jaringan/CORS.</p>`; kb.disabled = false; return; }
+    if (!root.ok) { const jk = H ? '' : await jangkau(G + '?f=json'); O.innerHTML = `<p class="st-note" style="color:#FB7185">Tidak dapat terhubung (${esc(root.st)}). ${esc(jk)}${H ? '' : ' · Coba juga dari aplikasi Android (memakai koneksi bawaan HP).'}</p>`; kb.disabled = false; return; }
     const folders = (root.j.folders || []), cocok = /pippib|kawasan|gambut|khg|peat|hutan/i;
     const svc = (root.j.services || []).map(x => x.name + ' (' + x.type + ')');
     for (const f of folders.slice(0, 40)) { const r = await JJ(`${G}/${encodeURIComponent(f)}?f=json`); if (r.ok) (r.j.services || []).forEach(x => { if (cocok.test(x.name)) svc.push(x.name + ' (' + x.type + ')'); }); }
@@ -420,7 +424,7 @@ HAL.sistem = async B => {
     if (pp) { const nm = pp.replace(/ \(.*/, ''), ty = /FeatureServer/.test(pp) ? 'FeatureServer' : 'MapServer';
       const q = await JJ(`${G}/${nm}/${ty}/0/query?geometry=112.3%2C0.8&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=false&f=json`);
       uji = `<p class="st-note">Kueri titik uji (${esc(nm)}): ${q.ok ? 'BERHASIL · ' + esc(JSON.stringify((q.j.features || []).map(f => f.attributes)).slice(0, 300)) : 'gagal ' + esc(q.st)}</p>`; }
-    O.innerHTML = `<p class="st-note" style="color:#34D399">Terhubung (${((Date.now() - t0) / 1000).toFixed(1)} dtk). ${folders.length} folder.</p><div style="font:12px ui-monospace,monospace;white-space:pre-wrap;word-break:break-all">${esc(pil.join('\n') || 'Tidak ada layanan yang cocok.')}</div>${uji}`;
+    O.innerHTML = `<p class="st-note" style="color:#34D399">Terhubung ${H ? 'lewat koneksi HP' : 'lewat peramban'} (${((Date.now() - t0) / 1000).toFixed(1)} dtk). ${folders.length} folder.</p><div style="font:12px ui-monospace,monospace;white-space:pre-wrap;word-break:break-all">${esc(pil.join('\n') || 'Tidak ada layanan yang cocok.')}</div>${uji}`;
     kb.disabled = false;
   };
   try {   // sebaran versi aplikasi pengguna: siapa yang belum mendapat pembaruan otomatis
