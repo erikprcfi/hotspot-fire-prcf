@@ -391,7 +391,7 @@ HAL.log = async B => {
 
 HAL.sistem = async B => {
   const J = u => fetch(u + (u.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
-  const [hs, pk, ik, bj, vg, ot] = await Promise.all([J('data/hotspots.json'), J('data/prakiraan.json'), J('data/iklim/indeks.json'), J('data/banjir/indeks.json'), J('data/vegetasi/indeks.json'), J('aplikasi/paket/terbaru.json')]);
+  const [hs, pk, ik, bj, vg, ot] = await Promise.all([J('data/hotspots.json'), J('data/prakiraan.json'), J('data/iklim/indeks.json'), J('data/banjir/indeks.json'), J('data/vegetasi/indeks.json'), J((window.FHNative && FHNative.aktif ? 'https://erikprcfi.github.io/hotspot-fire-prcf/' : '') + 'aplikasi/paket/terbaru.json')]);
   let srv = VERSI_SERVER; if (!srv) { await segarkanPeran(); srv = VERSI_SERVER; }
   const umur = t => { const ms = Date.parse(t); return isFinite(ms) ? (Date.now() - ms) / 36e5 : null; };
   const baris = (nm, t, batas, ket) => { const u = umur(t), ok = u != null && u <= batas; return `<tr><td><b>${nm}</b><small class="st-note" style="display:block">${ket}</small></td><td>${u == null ? '–' : u < 1 ? Math.round(u * 60) + ' mnt lalu' : nf(u, 1) + ' jam lalu'}</td><td><span class="st-tag" style="color:${ok ? '#34D399' : '#FB7185'}">${ok ? 'Segar' : 'Perlu dicek'}</span></td></tr>`; };
@@ -401,30 +401,18 @@ HAL.sistem = async B => {
       <div class="st-card st-kpi" style="--k:#F59E0B"><small>Paket pembaruan aplikasi</small><b style="font-size:20px">${esc(ot ? ot.versi : '–')}</b><span>${ot ? nf(ot.ukuran / 1e6, 1) + ' MB · checksum SHA-256' : ''}</span></div>
       <div class="st-card st-kpi" style="--k:#38BDF8"><small>Versi isi terpasang di perangkat ini</small><b style="font-size:20px">${esc((window.FHVersiIsi && FHVersiIsi()) || 'web')}</b></div></div>
     <div class="st-card" style="margin-top:14px" id="stVer"><b>Versi aplikasi pengguna (aktif 30 hari)</b><p class="st-note">Memuat…</p></div>
-    <div class="st-card" style="margin-top:14px" id="stKLHK"><b>Uji akses layanan peta KLHK (dari perangkat ini)</b><p class="st-note">Server GitHub tidak dapat menghubungi geoportal KLHK, jadi fitur status kawasan & moratorium (PIPPIB) memerlukan uji dari jaringan Indonesia. Tekan tombol, lalu kirim tangkapan layar hasilnya ke pengembang.</p><button class="st-chip" id="stKLHKb" style="padding:8px 14px">Uji sekarang</button><div id="stKLHKo" style="margin-top:8px"></div></div>
+    <div class="st-card" style="margin-top:14px" id="stKLHK"><b>Uji layanan status kawasan (Satu Peta BIG)</b><p class="st-note">Status kawasan hutan, PIPPIB, gambut/KHG, perhutanan sosial & izin diambil langsung dari Kebijakan Satu Peta – BIG (geoportal KLHK lama sudah tidak aktif). Tekan tombol untuk memeriksa setiap lapisan dari perangkat ini.</p><button class="st-chip" id="stKLHKb" style="padding:8px 14px">Uji sekarang</button><div id="stKLHKo" style="margin-top:8px"></div></div>
     <div class="st-wrap" style="margin-top:14px"><table class="st-tb"><thead><tr><th>Data otomatis</th><th>Diperbarui</th><th>Status</th></tr></thead><tbody>
       ${baris('Titik panas NASA FIRMS', hs && hs.diperbarui_utc, 9, 'tiap ± 3 jam')}${baris('Prakiraan cuaca & bahaya kebakaran', pk && pk.diperbarui_utc, 30, 'ECMWF · BMKG')}
       ${baris('Iklim & Indeks Siaga Desa', ik && ik.diperbarui_utc, 30, 'ENSO NOAA · ERA5-Land')}${baris('Debit sungai & banjir', bj && bj.diperbarui_utc, 50, 'GloFAS harian')}${baris('Vegetasi MODIS', vg && vg.diperbarui_utc, 24 * 20, 'citra 8–16 harian')}</tbody></table></div>
     <p class="st-note">Pemantauan otomatis juga berjalan tiap 6 jam dan uji menyeluruh tiap malam; masalah dilaporkan ke email Pengembang.</p>`;
-  const kb = B.querySelector('#stKLHKb'); if (kb) kb.onclick = async () => {   // daftar layanan geoportal KLHK yang terkait kawasan/gambut/PIPPIB + uji kueri titik
-    const O = B.querySelector('#stKLHKo'); kb.disabled = true; O.innerHTML = '<p class="st-note">Menghubungi geoportal.menlhk.go.id…</p>';
-    const G = 'https://geoportal.menlhk.go.id/server/rest/services', hasil = [], t0 = Date.now();
-    const H = window.FHNative && FHNative.aktif && FHNative.plugin && FHNative.plugin('CapacitorHttp');   // aplikasi Android: koneksi bawaan HP (tanpa batasan CORS peramban)
-    const JJ = async u => {
-      if (H) { try { const r = await H.get({ url: u, connectTimeout: 20000, readTimeout: 25000 }); let d = r.data; if (typeof d === 'string') { try { d = JSON.parse(d); } catch (e) { d = null; } } return { ok: r.status >= 200 && r.status < 300 && !!d, st: 'HTTP ' + r.status + ' (koneksi HP)', j: d }; } catch (e) { return { ok: false, st: 'koneksi HP: ' + String(e && (e.message || e.name) || e).slice(0, 120) }; } }
-      const c = new AbortController(), t = setTimeout(() => c.abort(), 20000); try { const r = await fetch(u, { signal: c.signal }); return { ok: r.ok, st: r.status, j: r.ok ? await r.json() : null }; } catch (e) { return { ok: false, st: String(e && e.name || e) }; } finally { clearTimeout(t); } };
-    const jangkau = async u => { const c = new AbortController(), t = setTimeout(() => c.abort(), 20000); try { await fetch(u, { mode: 'no-cors', signal: c.signal }); return 'server terjangkau (diblokir CORS peramban)'; } catch (e) { return 'server tidak terjangkau dari jaringan ini (' + (e && e.name || e) + ')'; } finally { clearTimeout(t); } };
-    const root = await JJ(G + '?f=json');
-    if (!root.ok) { const jk = H ? '' : await jangkau(G + '?f=json'); O.innerHTML = `<p class="st-note" style="color:#FB7185">Tidak dapat terhubung (${esc(root.st)}). ${esc(jk)}${H ? '' : ' · Coba juga dari aplikasi Android (memakai koneksi bawaan HP).'}</p>`; kb.disabled = false; return; }
-    const folders = (root.j.folders || []), cocok = /pippib|kawasan|gambut|khg|peat|hutan/i;
-    const svc = (root.j.services || []).map(x => x.name + ' (' + x.type + ')');
-    for (const f of folders.slice(0, 40)) { const r = await JJ(`${G}/${encodeURIComponent(f)}?f=json`); if (r.ok) (r.j.services || []).forEach(x => { if (cocok.test(x.name)) svc.push(x.name + ' (' + x.type + ')'); }); }
-    const pil = svc.filter(x => cocok.test(x)).slice(0, 40);
-    let uji = ''; const pp = pil.find(x => /pippib/i.test(x));
-    if (pp) { const nm = pp.replace(/ \(.*/, ''), ty = /FeatureServer/.test(pp) ? 'FeatureServer' : 'MapServer';
-      const q = await JJ(`${G}/${nm}/${ty}/0/query?geometry=112.3%2C0.8&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=false&f=json`);
-      uji = `<p class="st-note">Kueri titik uji (${esc(nm)}): ${q.ok ? 'BERHASIL · ' + esc(JSON.stringify((q.j.features || []).map(f => f.attributes)).slice(0, 300)) : 'gagal ' + esc(q.st)}</p>`; }
-    O.innerHTML = `<p class="st-note" style="color:#34D399">Terhubung ${H ? 'lewat koneksi HP' : 'lewat peramban'} (${((Date.now() - t0) / 1000).toFixed(1)} dtk). ${folders.length} folder.</p><div style="font:12px ui-monospace,monospace;white-space:pre-wrap;word-break:break-all">${esc(pil.join('\n') || 'Tidak ada layanan yang cocok.')}</div>${uji}`;
+  const kb = B.querySelector('#stKLHKb'); if (kb) kb.onclick = async () => {   // uji tiap lapisan Satu Peta BIG dengan kueri titik (Kapuas Hulu)
+    const O = B.querySelector('#stKLHKo'); kb.disabled = true; O.innerHTML = '<p class="st-note">Menghubungi kspservices.big.go.id…</p>';
+    const K = window.FHKawasan; if (!K || !K.cek) { O.innerHTML = '<p class="st-note" style="color:#FB7185">Modul status kawasan belum termuat – muat ulang aplikasi.</p>'; kb.disabled = false; return; }
+    const t0 = Date.now(), H = await K.cek({ titik: [0.8, 112.3] }), Ls = K.L || [];
+    const st = l => Array.isArray(H[l[0]]) ? ['<span style="color:#34D399">berfungsi</span>', H[l[0]].length ? H[l[0]].length + ' objek di titik uji' : 'tidak ada objek di titik uji'] : H[l[0]] === 'sumber' ? ['<span style="color:#FBBF24">bermasalah di server BIG</span>', 'bukan masalah aplikasi'] : ['<span style="color:#FB7185">tidak terjangkau</span>', 'periksa jaringan'];
+    const ok = Ls.filter(l => Array.isArray(H[l[0]])).length, sb = Ls.filter(l => H[l[0]] === 'sumber').length, gg = Ls.length - ok - sb;
+    O.innerHTML = `<p class="st-note" style="color:${gg ? '#FB7185' : '#34D399'}">${ok}/${Ls.length} lapisan berfungsi${sb ? ' · ' + sb + ' bermasalah di sumber' : ''}${gg ? ' · ' + gg + ' tidak terjangkau' : ''} (${((Date.now() - t0) / 1000).toFixed(1)} dtk, titik uji Kapuas Hulu).</p><div class="st-wrap"><table class="st-tb"><tbody>${Ls.map(l => { const x = st(l); return `<tr><td>${esc(l[3]())}</td><td>${x[0]}<small class="st-note" style="display:block">${x[1]}</small></td></tr>`; }).join('')}</tbody></table></div>`;
     kb.disabled = false;
   };
   try {   // sebaran versi aplikasi pengguna: siapa yang belum mendapat pembaruan otomatis

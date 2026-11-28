@@ -120,5 +120,5 @@ function lapisan(id) {
 }
 function toggle(id, map, btn) { if (!map || !LP[id]) return; const l = AKT[id] || (AKT[id] = lapisan(id)); const on = !map.hasLayer(l); on ? l.addTo(map) : map.removeLayer(l); if (btn) btn.setAttribute('aria-pressed', String(on)); return on; }
 const aktif = (id, map) => !!(AKT[id] && map && map.hasLayer(AKT[id]));
-window.FHKawasan = { buka, cek, ringkas, toggle, aktif, fungsi };
+window.FHKawasan = { buka, cek, ringkas, toggle, aktif, fungsi, L };
 })();
