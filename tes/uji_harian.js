@@ -122,7 +122,7 @@ for(const plat of PLAT){
    if(GJ&&PAKET){ // wilayah SHP: semua fitur otomatis dari paket wilayah (perlakuan sama dengan Hutan Desa)
     await p.waitForFunction(()=>window.FHWilSaya&&FHWilSaya.aktif(),null,{timeout:30000}).catch(()=>{});
     const f=await p.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms)),o={aktif:!!(window.FHWilSaya&&FHWilSaya.aktif())};if(!o.aktif)return o;
-     const buka=async(f,ms)=>{try{FHApp.closeAll()}catch(e){};await w(400);f();await w(ms||2500);return document.querySelector('#page.on #pageBody')||document.body;};
+     const buka=async(f,ms)=>{try{FHApp.closeAll()}catch(e){};await w(400);f();await w(ms||2500);const B=()=>document.querySelector('#page.on #pageBody');for(let i=0;i<16;i++){const b=B();const t=b?b.innerText:'';if(b&&t.length>60&&!/Memuat…|Loading…/.test(t))break;await w(500);}return B()||document.body;};
      const kunci=pg=>/Khusus Hutan Desa|Partner village forests only/.test(pg.innerText);o.kunci=[];
      let pg=await buka(()=>FHApp.hubGo('siaga'));if(kunci(pg))o.kunci.push('siaga');o.siaga=/Aman|Waspada|Siaga|Awas/.test((pg.querySelector('.ik-hero')||{}).innerText||'')?pg.querySelectorAll('.ik-row').length:0;
      pg=await buka(()=>FHApp.hubGo('prakmusim'));if(kunci(pg))o.kunci.push('prakmusim');o.prak=pg.querySelectorAll('.ik-row[data-i]').length;

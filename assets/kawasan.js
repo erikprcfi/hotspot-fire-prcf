@@ -63,12 +63,14 @@ async function cek(G, onP) {
 }
 /* ringkas untuk detail titik panas: fungsi kawasan · PIPPIB · fungsi ekosistem gambut */
 async function ringkas(lat, lon) {
-  const G = { titik: [lat, lon] }, ambil = async (k) => { const l = L.find(x => x[0] === k); try { const d = await J(`${SP}${l[1]}/MapServer/${l[2]}/query?${new URLSearchParams(Object.assign(geomParam(G), { inSR: '4326', spatialRel: 'esriSpatialRelIntersects', outFields: '*', returnGeometry: 'false', f: 'json' }))}`, 15000); return (d.features || []).map(f => f.attributes); } catch (e) { return null; } };
+  const G = { titik: [lat, lon] }, ambil = async (k) => { const l = L.find(x => x[0] === k); const u = `${SP}${l[1]}/MapServer/${l[2]}/query?${new URLSearchParams(Object.assign(geomParam(G), { inSR: '4326', spatialRel: 'esriSpatialRelIntersects', outFields: '*', returnGeometry: 'false', f: 'json' }))}`;
+    for (let k = 0; k < 2; k++) { try { const d = await J(u, 15000); return (d.features || []).map(f => f.attributes); } catch (e) { if (k === 0) await new Promise(r => setTimeout(r, 1200)); } }
+    return null; };
   const [kw, pp, fe] = await Promise.all([ambil('kawasan'), ambil('pippib'), ambil('feg')]);
   if (kw == null && pp == null && fe == null) return null;
   const t = [];
-  if (kw && kw.length) t.push(fungsi(kw[0].fungsitap) + (v(kw[0].nkws) ? ' (' + kw[0].nkws + ')' : '')); else if (kw) t.push(I('Tidak tercantum di peta penetapan kawasan hutan', 'Not in the gazetted forest-area map'));
-  if (pp && pp.length) t.push(I('PIPPIB: ', 'PIPPIB: ') + (pp[0].pippib || I('ya', 'yes')));
+  if (kw && kw.length) t.push(fungsi(kw[0].fungsitap) + (v(kw[0].nkws) ? ' (' + kw[0].nkws + ')' : '')); else if (kw) t.push(I('Tidak tercantum di peta penetapan kawasan hutan', 'Not in the gazetted forest-area map')); else t.push(I('Fungsi kawasan belum terbaca', 'Forest function not read yet'));
+  if (pp && pp.length) { const x = String(pp[0].pippib || '').replace(/^\s*PIPPIB\s*/i, '').trim(); t.push(I('Termasuk PIPPIB', 'Within PIPPIB') + (x ? ' (' + x.toLowerCase() + ')' : '')); }
   if (fe && fe.length) t.push(I('Ekosistem gambut: ', 'Peat ecosystem: ') + (fe[0].feg_50k || fe[0].feg_peat || ''));
   return t.join(' · ');
 }
