@@ -16,7 +16,7 @@ const T={'.html':'text/html; charset=utf-8','.js':'application/javascript','.css
 const berkas=(p)=>{const f=path.join(REPO,decodeURIComponent(p));return fs.existsSync(f)&&fs.statSync(f).isFile()?f:null;};
 (async()=>{const b=await chromium.launch();
 for(const plat of PLAT){
- const sken=plat==='web'?[['tamu',null],['akun-tanpa-kode',''],['admin-ganti-hd','ADMIN'],...NSHP.map(s=>['shp:'+s,s])]:[['tamu',null],['admin-ganti-hd','ADMIN'],['shp:'+NSHP[1],NSHP[1]]];
+ let sken=plat==='web'?[['tamu',null],['akun-tanpa-kode',''],['admin-ganti-hd','ADMIN'],...NSHP.map(s=>['shp:'+s,s])]:[['tamu',null],['admin-ganti-hd','ADMIN'],['shp:'+NSHP[1],NSHP[1]]]; if(process.env.SKEN)sken=sken.filter(x=>process.env.SKEN.split(',').includes(x[0]));
  for(const [sk,shp] of sken.filter(([n])=>!process.env.SKEN||process.env.SKEN.split(',').includes(n))){
   const c=await b.newContext({...devices['Pixel 5'],serviceWorkers:'block',ignoreHTTPSErrors:true});
   const ADM=shp==='ADMIN',GJ=shp&&!ADM?SHP[shp]:null,NM=GJ?'Wilayah Uji '+shp.split('_')[0]:null;
@@ -205,8 +205,8 @@ for(const plat of PLAT){
      const m=FHApp.map();if(!m)return '';const on=FHLapNas.toggle('gambut',m);m.setView([-2.4,113.9],9,{animate:false});await new Promise(r=>setTimeout(r,1500));const n=document.querySelectorAll('img.lapnas').length;FHLapNas.toggle('gambut',m);return on&&n?'':'lapisan gambut tidak tampil di peta';});
     if(gb)masalah.push(`${lbl}: gambut – ${gb}`);}
    { // Cuaca di lokasi saya (GPS): modul FHLokasi harus termuat & menampilkan cuaca
-    const lx=await p.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));if(!window.FHLokasi)return 'FHLokasi tidak termuat';try{FHApp.closeAll()}catch(e){};await w(300);FHApp.hubGo('lokasi');for(let i=0;i<30;i++){await w(500);const t=(document.getElementById('lxBody')||{}).innerText||'';if(/°/.test(t))return '';}return 'tidak tampil';});
-    if(lx&&!(lx==='tidak tampil'&&om429.n))masalah.push(`${lbl}: Cuaca di lokasi saya – ${lx}`);else if(lx)console.log(`(catatan) ${lbl}: cuaca lokasi tidak tampil karena server Open-Meteo membatasi permintaan (HTTP 429) dari mesin uji – bukan galat aplikasi`);}
+    const lx=await p.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));if(!window.FHLokasi)return 'FHLokasi tidak termuat';try{FHApp.closeAll()}catch(e){};await w(300);FHApp.hubGo('lokasi');let t='';for(let i=0;i<120;i++){await w(500);t=(document.getElementById('lxBody')||{}).innerText||'';if(/°/.test(t))return '';if(/belum dapat dimuat/.test(t))break;}return 'tidak tampil'+(t?' – layar: '+t.replace(/\s+/g,' ').slice(0,140):'');});
+    if(lx&&!(/^tidak tampil/.test(lx)&&om429.n))masalah.push(`${lbl}: Cuaca di lokasi saya – ${lx}`);else if(lx)console.log(`(catatan) ${lbl}: cuaca lokasi tidak tampil karena server Open-Meteo membatasi permintaan (HTTP 429) dari mesin uji – bukan galat aplikasi`);}
    ringkas.push(`${lbl.padEnd(34)} alat ${String(keys.length).padStart(2)} · galat ${E.length} · ${((Date.now()-t0)/1000).toFixed(0)} dtk`);console.log(ringkas[ringkas.length-1]);
   }catch(e){masalah.push(`${lbl}: GAGAL dijalankan – ${e.message.slice(0,160)}`);console.log(lbl,'GAGAL',e.message.slice(0,160));}
   await c.close();}}
